@@ -51,11 +51,14 @@ sub loadLibraries()
 end sub
 
 sub updateSize()
-    m.top.translation = [111, 180]
-    itemHeight = 330
+    m.top.translation = [0, 180]
 
-    'Set width of Rows to cut off at edge of Safe Zone
-    m.top.itemSize = [1703, itemHeight]
+    ' rows take up full width of the screen
+    m.top.itemSize = [1920, 330]
+
+    ' align with edge of "action" safe zone
+    m.top.focusXOffset = [96]
+    m.top.rowLabelOffset = [96, 20]
 
     ' spacing between rows
     m.top.itemSpacing = [0, 105]
