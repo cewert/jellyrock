@@ -6,7 +6,7 @@ sub setFields()
     json = m.top.json
     m.top.id = json.id
     if isValid(json.number)
-        m.top.title = `CH ${json.number} ${json.name}`
+        m.top.title = `${tr("CH")} ${json.number} ${json.name}`
     else
         m.top.title = json.name
     end if
