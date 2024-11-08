@@ -1344,5 +1344,45 @@
             <translation>Use the full display width for all rows displayed on the home screen. Jellyfin will need to be closed and reopened for changes to take effect.</translation>
             <extracomment>User Setting - Setting description</extracomment>
         </message>
+        <message>
+            <source>Episode Next Up Behavior</source>
+            <translation>Episode Next Up Behavior</translation>
+            <extracomment>User Setting - Setting option title</extracomment>
+        </message>
+        <message>
+            <source>This controls what clicking OK on a Next Up episode does.</source>
+            <translation>This controls what clicking OK on a Next Up episode does.</translation>
+            <extracomment>User Setting - Setting description</extracomment>
+        </message>
+        <message>
+            <source>View Episode Details</source>
+            <translation>View Episode Details</translation>
+            <extracomment>User Setting - Setting option title</extracomment>
+        </message>
+        <message>
+            <source>View Season Details</source>
+            <translation>View Season Details</translation>
+            <extracomment>User Setting - Setting option title</extracomment>
+        </message>
+        <message>
+            <source>Time of Day</source>
+            <translation>Time of Day</translation>
+            <extracomment>User Setting - Setting option title</extracomment>
+        </message>
+        <message>
+            <source>Both</source>
+            <translation>Both</translation>
+            <extracomment>User Setting - Setting option title</extracomment>
+        </message>
+        <message>
+            <source>Special</source>
+            <translation>Special</translation>
+            <extracomment>Special episode of a TV Show</extracomment>
+        </message>
+        <message>
+            <source>CH</source>
+            <translation>CH</translation>
+            <extracomment>Abbreviation for Channel</extracomment>
+        </message>
     </context>
 </TS>
