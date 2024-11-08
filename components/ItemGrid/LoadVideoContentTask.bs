@@ -116,6 +116,21 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
         end if
     end if
 
+    if videotype = "tvchannel" and isValid(meta.json) and isValid(meta.json.CurrentProgram)
+        if isValid(meta.json.CurrentProgram.Name)
+            meta.title = `${meta.title}: ${meta.json.CurrentProgram.Name}`
+        end if
+        if isValid(meta.json.CurrentProgram.ParentIndexNumber)
+            video.seasonNumber = meta.json.CurrentProgram.ParentIndexNumber
+        end if
+        if isValid(meta.json.CurrentProgram.IndexNumber)
+            video.episodeNumber = meta.json.CurrentProgram.IndexNumber
+        end if
+        if isValid(meta.json.CurrentProgram.IndexNumberEnd)
+            video.episodeNumberEnd = meta.json.CurrentProgram.IndexNumberEnd
+        end if
+    end if
+
     video.chapters = meta.json.Chapters
     video.content.title = meta.title
     video.showID = meta.showID

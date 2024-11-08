@@ -413,7 +413,7 @@ sub onVideoContentLoaded()
     m.osd.itemTitleText = m.top.content.title
 
     ' If video is an episode, attempt to add season and episode numbers to OSD
-    if m.top.content.contenttype = 4
+    if m.top.content.contenttype = 4 or m.top.content.live
         if isValid(videoContent[0].seasonNumber)
             m.osd.seasonNumber = videoContent[0].seasonNumber
         end if
