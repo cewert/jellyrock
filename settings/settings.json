@@ -270,6 +270,13 @@
                         "default": "false"
                     },
                     {
+                        "title": "Home Screen Layout v2",
+                        "description": "Use the full display width for all rows displayed on the home screen. Jellyfin will need to be closed and reopened for changes to take effect.",
+                        "settingName": "ui.home.layoutv2",
+                        "type": "bool",
+                        "default": "true"
+                    },
+                    {
                         "title": "Max Days Next Up",
                         "description": "Set the maximum amount of days a show should stay in the 'Next Up' list without watching it.",
                         "settingName": "ui.details.maxdaysnextup",
