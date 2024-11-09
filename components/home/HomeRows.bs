@@ -65,6 +65,9 @@ sub updateSize()
             ' original layout
             m.top.translation = [111, 180]
             m.top.itemSize = [1703, 330]
+            ' reset to defaults
+            m.top.focusXOffset = []
+            m.top.rowLabelOffset = [0, 20]
         end if
     end if
 
@@ -72,9 +75,6 @@ sub updateSize()
     m.top.itemSpacing = [0, 105]
     ' spacing between items in a row
     m.top.rowItemSpacing = [21, 0]
-
-    ' Default size to wide poster, the most used size
-    m.top.rowItemSize = homeRowItemSizes.WIDE_POSTER
 
     m.top.visible = true
 end sub
@@ -456,6 +456,8 @@ end sub
 sub updateHomeRows()
     ' Hide the row counter to prevent flicker. We'll show it once loading timer fires
     m.top.showRowCounter = [false]
+    m.top.visible = false
+    updateSize()
     processUserSections()
 end sub
 

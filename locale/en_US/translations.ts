@@ -1337,8 +1337,8 @@
             <extracomment>User Setting - Setting title</extracomment>
         </message>
         <message>
-            <source>Choose how rows are displayed on the home screen. Jellyfin will need to be closed and reopened for changes to take effect.</source>
-            <translation>Choose how rows are displayed on the home screen. Jellyfin will need to be closed and reopened for changes to take effect.</translation>
+            <source>Choose how rows are displayed on the home screen.</source>
+            <translation>Choose how rows are displayed on the home screen.</translation>
             <extracomment>User Setting - Setting description</extracomment>
         </message>
         <message>

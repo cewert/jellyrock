@@ -285,7 +285,7 @@
                     },
                     {
                         "title": "Row Layout",
-                        "description": "Choose how rows are displayed on the home screen. Jellyfin will need to be closed and reopened for changes to take effect.",
+                        "description": "Choose how rows are displayed on the home screen.",
                         "settingName": "ui.row.layout",
                         "type": "radio",
                         "default": "fullwidth",
