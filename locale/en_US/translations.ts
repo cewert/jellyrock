@@ -1401,5 +1401,9 @@
             <translation>Date Show Added</translation>
             <extracomment>TV Show library sort option</extracomment>
         </message>
+        <message>
+            <source>Folders</source>
+            <translation>Folders</translation>
+        </message>
     </context>
 </TS>
