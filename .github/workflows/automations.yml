@@ -11,7 +11,7 @@ on:
 jobs:
   project:
     # don't run job on forks and prevent job from running twice when a PR pushes a new commit
-    if: github.repository == 'jellyfin/jellyfin-roku' && github.event_name != 'pull_request' || github.repository == 'jellyfin/jellyfin-roku' && github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+    if: github.repository == 'cewert/jellyfin-roku' && github.event_name != 'pull_request' || github.repository == 'cewert/jellyfin-roku' && github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     name: Project board 📊
     runs-on: ubuntu-latest
     steps:
@@ -21,10 +21,10 @@ jobs:
         with:
           project: Ongoing development
           column: In progress
-          repo-token: ${{ secrets.JF_BOT_TOKEN }}
+          repo-token: ${{ secrets.CEWERT_BOT_TOKEN }}
   label:
     # don't run job on forks and prevent job from running twice when a PR pushes a new commit
-    if: github.repository == 'jellyfin/jellyfin-roku' && github.event_name != 'pull_request' || github.repository == 'jellyfin/jellyfin-roku' && github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+    if: github.repository == 'cewert/jellyfin-roku' && github.event_name != 'pull_request' || github.repository == 'cewert/jellyfin-roku' && github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     name: Labeling 🏷️
     runs-on: ubuntu-latest
     steps:
@@ -33,4 +33,4 @@ jobs:
         with:
           dirtyLabel: "merge-conflict"
           commentOnDirty: "This pull request has merge conflicts. Please resolve the conflicts so the PR can be reviewed. Thanks!"
-          repoToken: ${{ secrets.JF_BOT_TOKEN }}
+          repoToken: ${{ secrets.CEWERT_BOT_TOKEN }}

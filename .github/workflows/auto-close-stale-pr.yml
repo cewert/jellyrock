@@ -20,4 +20,4 @@ jobs:
           days-before-pr-stale: 30
           days-before-pr-close: 15
           exempt-draft-pr: true
-          repo-token: ${{ secrets.JF_BOT_TOKEN }}
+          repo-token: ${{ secrets.CEWERT_BOT_TOKEN }}

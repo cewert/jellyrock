@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
         with:
           ref: ${{ github.head_ref }}
-          token: ${{ secrets.JF_BOT_TOKEN }}
+          token: ${{ secrets.CEWERT_BOT_TOKEN }}
       - name: Install NPM dependencies
         run: npm ci
       - name: Build API docs
