@@ -26,8 +26,8 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@8621497c8c39c72f3e2a999a26b4ca1b5058a842 # v5
         with:
           commit_message: Update API docs
-          # use jellyfin-bot to commit the changes instead of the default github-actions[bot]
-          commit_user_name: jellyfin-bot
-          commit_user_email: team@jellyfin.org
-          # use jellyfin-bot to author the changes instead of the default author of the merge commit
-          commit_author: jellyfin-bot <team@jellyfin.org>
+          # use cewert-bot to commit the changes instead of the default github-actions[bot]
+          commit_user_name: cewert-bot
+          commit_user_email: c.ewert@gmail.com
+          # use cewert-bot to author the changes instead of the default author of the merge commit
+          commit_author: cewert-bot <c.ewert@gmail.com>

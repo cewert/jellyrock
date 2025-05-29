@@ -88,8 +88,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.JF_BOT_TOKEN }}
         run: |-
-          git config user.name "jellyfin-bot"
-          git config user.email "team@jellyfin.org"
+          git config user.name "cewert-bot"
+          git config user.email "c.ewert@gmail.com"
           git checkout -b "${{ env.newBranch }}"
           git add .
           git commit -m "Bump ${{ github.event.inputs.versionType }} version"
@@ -155,8 +155,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.JF_BOT_TOKEN }}
         run: |-
-          git config user.name "jellyfin-bot"
-          git config user.email "team@jellyfin.org"
+          git config user.name "cewert-bot"
+          git config user.email "c.ewert@gmail.com"
           git checkout -b "${{ env.newBranch }}"
           git add .
           git commit -m "Bump ${{ github.event.inputs.versionType }} version"
@@ -225,8 +225,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.JF_BOT_TOKEN }}
         run: |-
-          git config user.name "jellyfin-bot"
-          git config user.email "team@jellyfin.org"
+          git config user.name "cewert-bot"
+          git config user.email "c.ewert@gmail.com"
           git checkout -b "${{ env.newBranch }}"
           git add .
           git commit -m "Bump ${{ github.event.inputs.versionType }} version"
