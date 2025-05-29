@@ -1382,11 +1382,6 @@
             <extracomment>User Setting - Setting option title</extracomment>
         </message>
         <message>
-            <source>Special</source>
-            <translation>Special</translation>
-            <extracomment>Special episode of a TV Show</extracomment>
-        </message>
-        <message>
             <source>CH</source>
             <translation>CH</translation>
             <extracomment>Abbreviation for Channel</extracomment>
