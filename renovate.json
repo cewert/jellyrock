@@ -13,8 +13,5 @@
         "**/node_modules/**"
     ],
     "timezone": "America/New_York",
-    "labels": [
-        "dependencies"
-    ],
     "packageRules": []
 }
