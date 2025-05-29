@@ -1,7 +1,20 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
     "extends": [
-        "github>jellyfin/.github//renovate-presets/default"
+        "config:base",
+        ":disableDependencyDashboard",
+        ":enableVulnerabilityAlertsWithLabel(security)"
+    ],
+    "addLabels": [
+        "dependencies"
+    ],
+    "rebaseWhen": "conflicted",
+    "ignorePaths": [
+        "**/node_modules/**"
+    ],
+    "timezone": "America/New_York",
+    "labels": [
+        "dependencies"
     ],
     "packageRules": []
 }
