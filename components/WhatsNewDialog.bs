@@ -28,7 +28,7 @@ sub init()
 
     textLine = m.content.CreateChild("StdDlgMultiStyleTextItem")
     textLine.drawingStyles = dialogStyles
-    textLine.text = tr("To view a complete list of changes visit") + " <url>https://github.com/jellyfin/jellyfin-roku/releases/tag/v" + appVersion + "</url>"
+    textLine.text = tr("To view a complete list of changes visit") + " <url>https://github.com/cewert/jellyfin-roku/releases/tag/v" + appVersion + "</url>"
 end sub
 
 sub setPalette()

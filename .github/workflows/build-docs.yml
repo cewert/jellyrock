@@ -7,7 +7,7 @@ on:
 
 jobs:
   docs:
-    if: github.repository == 'jellyfin/jellyfin-roku'
+    if: github.repository == 'cewert/jellyfin-roku'
     runs-on: ubuntu-latest
     permissions:
       # Give the default GITHUB_TOKEN write permission to commit and push the changed files back to the repository.

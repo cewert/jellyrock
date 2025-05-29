@@ -33,7 +33,7 @@ Put your Roku device in [developer mode](https://blog.roku.com/developer/2016/02
 Navigate to where you'd like to install the app then copy the application files:
 
 ```bash
-git clone https://github.com/jellyfin/jellyfin-roku.git
+git clone https://github.com/cewert/jellyfin-roku.git
 ```
 
 Open up the new folder:
@@ -124,7 +124,7 @@ Note: You only have to run this command once if you are not a developer. The Jel
 
 ### Bug/Crash Reports
 
-Did the app crash? Find a nasty bug? Use this command to view the error log and [report it to the developers](https://github.com/jellyfin/jellyfin-roku/issues):
+Did the app crash? Find a nasty bug? Use this command to view the error log and [report it to the developers](https://github.com/cewert/jellyfin-roku/issues):
 
 ```bash
 telnet ${ROKU_DEV_TARGET} 8085
