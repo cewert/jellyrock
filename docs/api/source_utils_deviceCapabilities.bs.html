@@ -537,6 +537,7 @@ function getCodecProfiles() as object
     canPlayDovi = false
 
     if canPlay4k()
+        print "This device supports 4k video"
         dp = di.GetDisplayProperties()
 
         if dp.DolbyVision
@@ -569,7 +570,6 @@ function getCodecProfiles() as object
 
             if canPlayDovi
                 hevcVideoRangeTypes = hevcVideoRangeTypes + "|DOVIWithHLG"
-                vp9VideoRangeTypes = vp9VideoRangeTypes + "|DOVIWithHLG"
                 av1VideoRangeTypes = av1VideoRangeTypes + "|DOVIWithHLG"
             end if
         end if
@@ -1087,7 +1087,7 @@ function setPreferredCodec(codecString as string, preferredCodec as string) as s
     end if
 end function
 
-' does the connected display support playing 4k video?
+' does this roku device support playing 4k video?
 function canPlay4k() as boolean
     deviceInfo = CreateObject("roDeviceInfo")
     hdmiStatus = CreateObject("roHdmiStatus")
@@ -1096,16 +1096,19 @@ function canPlay4k() as boolean
     maxVideoHeight = m.global.device.videoHeight
     if maxVideoHeight = invalid then return false
     if maxVideoHeight.ToInt() &lt; 2160
+        print "maxVideoHeight is less than 2160p. Does the TV support 4K? If yes, then go to your Roku settings and set your display type to 4K"
         return false
     end if
 
     ' Check if HDCP 2.2 is enabled, skip check for TVs
     if deviceInfo.GetModelType() = "STB" and hdmiStatus.IsHdcpActive("2.2") &lt;> true
+        print "HDCP 2.2 is not active"
         return false
     end if
 
     ' Check if the Roku player can decode 4K 60fps HEVC streams
     if deviceInfo.CanDecodeVideo({ Codec: "hevc", Profile: "main", Level: "5.1" }).result &lt;> true
+        print "Device cannot decode 4K 60fps HEVC streams"
         return false
     end if
 
