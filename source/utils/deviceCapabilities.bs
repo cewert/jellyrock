@@ -1085,7 +1085,7 @@ function setPreferredCodec(codecString as string, preferredCodec as string) as s
     end if
 end function
 
-' does the connected display support playing 4k video?
+' does this roku device support playing 4k video?
 function canPlay4k() as boolean
     deviceInfo = CreateObject("roDeviceInfo")
     hdmiStatus = CreateObject("roHdmiStatus")
@@ -1094,7 +1094,7 @@ function canPlay4k() as boolean
     maxVideoHeight = m.global.device.videoHeight
     if maxVideoHeight = invalid then return false
     if maxVideoHeight.ToInt() < 2160
-        print "maxVideoHeight is less than 2160p"
+        print "maxVideoHeight is less than 2160p. Does the TV support 4K? If yes, then go to your Roku settings and set your display type to 4K"
         return false
     end if
 
