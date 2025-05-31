@@ -142,7 +142,7 @@ sub Main (args as dynamic) as void
                 reportingNodeType = reportingNode.subtype()
                 print "Quick Play reporting node type=", reportingNodeType
                 ' prevent double fire bug
-                if isValid(reportingNodeType) and (reportingNodeType = "Home" or reportingNodeType = "TVEpisodes")
+                if isValid(reportingNodeType) and (reportingNodeType = "Home" or reportingNodeType = "TVEpisodes" or reportingNodeType = "MovieLibraryView")
                     reportingNode.quickPlayNode = invalid
                 end if
             end if

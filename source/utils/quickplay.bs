@@ -1,3 +1,5 @@
+import "pkg:/source/classes/VideoDefaults.bs"
+
 ' All of the Quick Play logic seperated by media type
 namespace quickplay
 
@@ -20,17 +22,14 @@ namespace quickplay
     sub video(itemNode as object)
         if not isValid(itemNode) or not isValid(itemNode.id) or not isValid(itemNode.json) then return
 
-        ' attempt to play video file. resume if possible
-        if isValid(itemNode.selectedVideoStreamId)
-            itemNode.id = itemNode.selectedVideoStreamId
-        end if
+        defaults = new VideoDefaults(itemNode.id)
 
-        audio_stream_idx = 0
-        if isValid(itemNode.selectedAudioStreamIndex) and itemNode.selectedAudioStreamIndex > 0
-            audio_stream_idx = itemNode.selectedAudioStreamIndex
-        end if
-        itemNode.selectedAudioStreamIndex = audio_stream_idx
+        ' set default video stream
 
+        ' set default audio stream
+        itemNode.selectedAudioStreamIndex = defaults.getDefaultAudioStreamIndex()
+
+        ' resume playback if possible
         playbackPosition = 0
         if isValid(itemNode.json.userdata) and isValid(itemNode.json.userdata.PlaybackPositionTicks)
             playbackPosition = itemNode.json.userdata.PlaybackPositionTicks

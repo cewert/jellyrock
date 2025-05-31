@@ -1,0 +1,154 @@
+import "pkg:/source/api/Items.bs"
+
+class VideoDefaults
+    sub new(itemId as string)
+        m.itemData = ItemMetaData(itemId)
+        m.mediaStreams = m.itemData.json.mediaStreams
+    end sub
+
+    ' returns the entire object of the default stream
+    function getDefaultAudioStream() as object
+        ' TODO: use web client user setting for user's preferred language
+
+        di = CreateObject("roDeviceInfo")
+        audioTracks = []
+        hasMultiChannelSupport = false
+
+        ' find the audio tracks for this video
+        for i = 0 to m.mediaStreams.Count() - 1
+            print "m.mediaStreams[i] =", m.mediaStreams[i]
+            if m.mediaStreams[i].Type = "Audio"
+                audioTracks.push(m.mediaStreams[i])
+
+                if m.mediaStreams[i].channels > 2
+                    hasMultiChannelSupport = true
+                end if
+            end if
+        end for
+
+        numAudioTracks = audioTracks.count()
+
+        if numAudioTracks = 0
+            ' No audio tracks found
+            return {}
+        else if numAudioTracks = 1
+            ' Only one audio track, so use it
+            return audioTracks[0]
+        else
+            ' Multiple audio tracks
+
+            ' how many channels can we play?
+            audioCodecs = ["ac3", "dts", "eac3"]
+            audioChannels = [8, 6]
+            maxAudioChannels = 2
+            for each audioCodec in audioCodecs
+                for each audioChannel in audioChannels
+                    if di.CanDecodeAudio({ Codec: audioCodec, ChCnt: audioChannel }).Result
+                        maxAudioChannels = audioChannel
+                        exit for
+                    end if
+                end for
+            end for
+
+            ' how many audio tracks match our maxAudioChannels?
+            channelMatchingTracks = []
+            for each track in audioTracks
+                if track.channels = maxAudioChannels
+                    channelMatchingTracks.push(track)
+                end if
+            end for
+
+            if channelMatchingTracks.count() = 0
+                ' No audio tracks match our maxAudioChannels
+
+                if maxAudioChannels = 2
+                    ' look for a track with less than 8 channels to make transcoding easier
+                    for each track in audioTracks
+                        if track.channels < 8
+                            return track
+                        end if
+                    end for
+
+                    ' all tracks have 8 channels, so just use the first track
+                    return audioTracks[0]
+                else if maxAudioChannels = 6
+                    ' look for 8 channel audio to preserve surround sound
+                    if hasMultiChannelSupport
+                        for each track in audioTracks
+                            if track.channels = 8
+                                return track
+                            end if
+                        end for
+                    else
+                        ' No multi-channel support, so just use the first track
+                        return audioTracks[0]
+                    end if
+                else if maxAudioChannels = 8
+                    ' look for 6 channel audio to preserve surround sound
+                    if hasMultiChannelSupport
+                        for each track in audioTracks
+                            if track.channels = 6
+                                return track
+                            end if
+                        end for
+                    else
+                        ' No multi-channel support, so just use the first track
+                        return audioTracks[0]
+                    end if
+
+                end if
+            else if channelMatchingTracks.count() = 1
+                ' Only one audio track matches our maxAudioChannels
+
+                if maxAudioChannels = 8
+                    ' validate that this track is direct playable before using it - prioritize direct play
+                    if di.CanDecodeAudio({ ChCnt: channelMatchingTracks[0].channels, Codec: channelMatchingTracks[0].codec }).Result
+                        return channelMatchingTracks[0]
+                    else
+                        ' This 8 channel track is not direct playable, look for a 6 channel track we can direct play
+                        sixChannelTracks = []
+                        for each track in audioTracks
+                            if track.channels = 6
+                                sixChannelTracks.push(track)
+                            end if
+                        end for
+
+                        for each sixChannelTrack in sixChannelTracks
+                            if di.CanDecodeAudio({ Codec: sixChannelTrack.codec, ChCnt: sixChannelTrack.channels }).Result
+                                return sixChannelTrack
+                            end if
+                        end for
+
+                        ' No 6 channel track we can direct play, so use the 8 channel track and transcode it
+                        return channelMatchingTracks[0]
+                    end if
+                else
+                    return channelMatchingTracks[0]
+                end if
+
+            else if channelMatchingTracks.count() > 1
+                ' Multiple audio tracks match our maxAudioChannels
+                ' Use the first one we find with a codec we can direct play
+                for each track in channelMatchingTracks
+                    if di.CanDecodeAudio({ ChCnt: track.channels, Codec: track.codec }).Result
+                        return track
+                    end if
+                end for
+
+                ' None of our preferred audio tracks are direct playable, so just use the first one and transcode it
+                return channelMatchingTracks[0]
+            end if
+        end if
+
+        return {}
+    end function
+
+    ' returns the index number of the default stream
+    function getDefaultAudioStreamIndex() as integer
+        defaultStream = m.getDefaultAudioStream()
+
+        if defaultStream.index <> invalid then return defaultStream.index
+
+        return 0
+    end function
+end class
