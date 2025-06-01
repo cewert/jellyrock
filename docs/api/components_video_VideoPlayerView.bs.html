@@ -649,6 +649,8 @@ sub onState(msg)
             m.LoadMetaDataTask.observeField("content", "onVideoContentLoaded")
 
             m.LoadMetaDataTask.control = "RUN"
+        else if m.top.errorStr = "player: only one playing instance supported."
+            m.global.sceneManager.callfunc("popScene")
         else
             ' If an error was encountered, Display dialog
             showPlaybackErrorDialog(tr("Error During Playback"))
