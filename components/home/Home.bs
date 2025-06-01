@@ -46,10 +46,6 @@ sub OnScreenShown()
         m.top.setFocus(true)
     end if
 
-    if not m.isFirstRun
-        refresh()
-    end if
-
     ' post the device profile the first time this screen is loaded
     if m.isFirstRun
         m.isFirstRun = false
@@ -57,6 +53,14 @@ sub OnScreenShown()
         m.postTask.apiUrl = "/Sessions/Capabilities/Full"
         m.postTask.control = "RUN"
         m.postTask.observeField("responseCode", "postFinished")
+    else
+        refresh()
+
+        if m.global.session.user.settings["ui.home.splashBackground"] = true
+            m.backdrop.uri = buildURL("/Branding/Splashscreen?format=jpg&foregroundLayer=0.15&fillWidth=1280&width=1280&fillHeight=720&height=720&tag=splash")
+        else
+            m.backdrop.uri = ""
+        end if
     end if
 end sub
 

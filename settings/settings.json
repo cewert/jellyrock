@@ -309,7 +309,7 @@
                     },
                     {
                         "title": "Use Splashscreen as Home Background",
-                        "description": "Use generated splashscreen image as Jellyfin's home background. Jellyfin will need to be closed and reopened for change to take effect.",
+                        "description": "Use generated splashscreen image as Jellyfin's home background.",
                         "settingName": "ui.home.splashBackground",
                         "type": "bool",
                         "default": "false"
