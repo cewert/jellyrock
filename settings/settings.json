@@ -274,7 +274,7 @@
                         "description": "Set the maximum amount of days a show should stay in the 'Next Up' list without watching it.",
                         "settingName": "ui.details.maxdaysnextup",
                         "type": "integer",
-                        "default": "365"
+                        "default": "0"
                     },
                     {
                         "title": "Rewatching Next Up",
@@ -347,7 +347,7 @@
                                         "description": "Select when to show titles.",
                                         "settingName": "itemgrid.gridTitles",
                                         "type": "radio",
-                                        "default": "showonhover",
+                                        "default": "showalways",
                                         "options": [
                                             {
                                                 "title": "Show On Hover",
@@ -397,7 +397,7 @@
                                 "description": "Default view for Movie Libraries.",
                                 "settingName": "itemgrid.movieDefaultView",
                                 "type": "radio",
-                                "default": "movies",
+                                "default": "moviesgrid",
                                 "options": [
                                     {
                                         "title": "Movies (Presentation)",
