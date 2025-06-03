@@ -67,7 +67,6 @@ function format12HourTime() as string
 
     displayedHour = StrI(currentHour).trim()
     displayedMinute = StrI(currentMinute).trim()
-    meridian = currentHour &lt; 12 ? "am" : "pm"
 
     if currentHour = 0
         displayedHour = "12"
@@ -82,7 +81,7 @@ function format12HourTime() as string
         displayedMinute = `0${displayedMinute}`
     end if
 
-    return `${displayedHour}:${displayedMinute} ${meridian}`
+    return `${displayedHour}:${displayedMinute}`
 end function
 
 ' format24HourTime: Returns a string with the current time formatted for a 24 hour clock

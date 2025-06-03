@@ -73,6 +73,7 @@ function secondsToHuman(totalSeconds as integer, addLeadingMinuteZero as boolean
 end function
 
 ' Format time as 12 or 24 hour format based on system clock setting
+' NOTE: This is NOT used by app's clock, only for displaying time in dialogs
 function formatTime(time) as string
     hours = time.getHours()
     minHourDigits = 1
