@@ -24,8 +24,6 @@ sub init()
         ' save node references
         m.overlayHours = m.top.findNode("overlayHours")
         m.overlayMinutes = m.top.findNode("overlayMinutes")
-        m.overlayMeridian = m.top.findNode("overlayMeridian")
-        m.overlayMeridian.font.size = 20
         m.currentTimeTimer = m.top.findNode("currentTimeTimer")
         ' display current time
         updateTime()
@@ -99,7 +97,6 @@ end sub
 
 sub updateTimeDisplay()
     if m.global.device.clockFormat = "24h"
-        m.overlayMeridian.text = ""
         if m.currentHours < 10
             m.overlayHours.text = "0" + StrI(m.currentHours).trim()
         else
@@ -107,14 +104,12 @@ sub updateTimeDisplay()
         end if
     else
         if m.currentHours < 12
-            m.overlayMeridian.text = "AM"
             if m.currentHours = 0
                 m.overlayHours.text = "12"
             else
                 m.overlayHours.text = m.currentHours
             end if
         else
-            m.overlayMeridian.text = "PM"
             if m.currentHours = 12
                 m.overlayHours.text = "12"
             else
