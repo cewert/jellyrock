@@ -21,10 +21,6 @@ sub init()
     m.isFirstRun = true
 end sub
 
-sub setSeasonLoading()
-    m.top.overhangTitle = tr("Loading...")
-end sub
-
 ' Updates the visibility of the Extras button based on if this season has any extra features
 sub setExtraButtonVisibility()
     if isValid(m.top.extrasObjects) and isValidAndNotEmpty(m.top.extrasObjects.items)
