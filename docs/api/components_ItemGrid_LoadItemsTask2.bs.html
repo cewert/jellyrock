@@ -132,11 +132,6 @@ sub loadItems()
         url = Substitute("Users/{0}/Items/", m.global.session.user.id)
         params.append({ ImageTypeLimit: 1 })
         params.append({ EnableImageTypes: "Primary,Backdrop,Banner,Thumb" })
-    else if LCase(m.top.ItemType) = "nextup"
-        url = "Shows/NextUp"
-        params.limit = 100 ' If you have more than 100 in your Next Up queue, maybe go outside a bit more.
-        params.append({ ImageTypeLimit: 1 })
-        params.append({ EnableImageTypes: "Primary,Backdrop,Banner,Thumb" })
     else
         url = Substitute("Users/{0}/Items/", m.global.session.user.id)
     end if
@@ -201,10 +196,6 @@ sub loadItems()
                 tmp.image = PosterImage(item.id, { "maxHeight": 425, "maxWidth": 290, "quality": "90" })
             else if item.type = "Episode"
                 tmp = CreateObject("roSGNode", "TVEpisode")
-                if LCase(m.top.ItemType) = "nextup"
-                    tmp.title = item.name
-                    tmp.type = "Episode"
-                end if
             else if LCase(item.Type) = "recording"
                 tmp = CreateObject("roSGNode", "RecordingData")
             else if item.Type = "Genre"
