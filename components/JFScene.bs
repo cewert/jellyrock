@@ -14,14 +14,20 @@ end sub
 ' Triggered when the disableRemote boolean component field is changed
 sub disableRemoteChanged()
     if m.top.disableRemote
-        dialog = createObject("roSGNode", "ProgressDialog")
-        dialog.id = "invisibiledialog"
-        dialog.visible = false
-        dialog.opacity = 0
-        m.top.dialog = dialog
+        group = m.global.sceneManager.callFunc("getActiveScene")
+
+        if isValid(group)
+            dialog = createObject("roSGNode", "ProgressDialog")
+            dialog.id = "invisibiledialog"
+            dialog.visible = false
+            dialog.opacity = 0
+            group.dialog = dialog
+        end if
     else
-        if isValid(m.top.dialog)
-            m.top.dialog.close = true
+        group = m.global.sceneManager.callFunc("getActiveScene")
+
+        if isValid(group) and isValid(group.dialog)
+            group.dialog.close = true
         end if
     end if
 end sub
