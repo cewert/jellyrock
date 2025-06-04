@@ -22,7 +22,7 @@
     "rooibos-roku": "5.15.7",
     "ropm": "0.10.34",
     "spellchecker-cli": "7.0.0",
-    "undent": "0.1.0"
+    "undent": "1.0.0"
   },
   "scripts": {
     "build": "npx rimraf build/ out/ && npx bsc --project bsconfig.json",
