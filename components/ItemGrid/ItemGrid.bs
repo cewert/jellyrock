@@ -793,7 +793,7 @@ sub alphaActiveChanged()
         m.swapAnimation.state = "stop"
         m.queuedBGUri = ""
         ' use a 1px image because we can't use the animation to fade into a blank uri string
-        SetBackground("pkg:/images/1px-262626.png")
+        SetBackground("pkg:/images/1px-000000.png")
     end if
 
     m.log.debug("end alphaActiveChanged()")
