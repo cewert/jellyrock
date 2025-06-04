@@ -10,26 +10,19 @@ end sub
 
 ' Triggered when the isLoading boolean component field is changed
 sub isLoadingChanged()
-    m.spinner.visible = m.top.isLoading
-end sub
+    ' toggle visibility of active view/group
+    group = m.global.sceneManager.callFunc("getActiveScene")
+    if not isValid(group) then return
 
-' Triggered when the disableRemote boolean component field is changed
-sub disableRemoteChanged()
-    if m.top.disableRemote
-        dialog = createObject("roSGNode", "ProgressDialog")
-        dialog.id = "invisibiledialog"
-        dialog.visible = false
-        dialog.opacity = 0
-        m.top.dialog = dialog
-    else
-        if isValid(m.top.dialog)
-            m.top.dialog.close = true
-        end if
-    end if
+    group.visible = not m.top.isLoading
+
+    ' toggle visibility of loading spinner
+    m.spinner.visible = m.top.isLoading
 end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
     if not press then return false
+    if m.top.disableRemote then return true
 
     if key = "back"
         m.global.sceneManager.callFunc("popScene")
