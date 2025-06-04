@@ -6,7 +6,7 @@
     <Spinner id="spinner" translation="[897, 477]" visible="false" />
   </children>
   <interface>
-    <field id="disableRemote" type="boolean" value="false" onchange="disableRemoteChanged" />
+    <field id="disableRemote" type="boolean" value="false" />
     <field id="isLoading" type="boolean" value="false" onchange="isLoadingChanged" />
     <field id="exit" type="boolean" alwaysNotify="true" />
   </interface>

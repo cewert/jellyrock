@@ -501,6 +501,7 @@ sub startLoadingSpinner(disableRemote = true as boolean)
     end if
 
     if not m.scene.isLoading
+        ' disableRemote must be set first
         m.scene.disableRemote = disableRemote
         m.scene.isLoading = true
     end if
