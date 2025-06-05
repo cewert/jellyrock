@@ -179,13 +179,14 @@ end sub
 sub onVisibleChanged()
     if m.top.visible
         resetFocusToDefaultButton()
-        m.inactivityTimer.observeField("fire", "inactiveCheck")
-        m.inactivityTimer.control = "start"
-        return
+        if m.top.playbackState <> "paused"
+            m.inactivityTimer.observeField("fire", "inactiveCheck")
+            m.inactivityTimer.control = "start"
+        end if
+    else
+        m.inactivityTimer.unobserveField("fire")
+        m.inactivityTimer.control = "stop"
     end if
-
-    m.inactivityTimer.unobserveField("fire")
-    m.inactivityTimer.control = "stop"
 end sub
 
 ' onFocusChanged: Handler for changes to the focus of this menu.
@@ -239,11 +240,6 @@ function onKeyEvent(key as string, press as boolean) as boolean
 
     if key = "OK"
         onButtonSelected()
-        return true
-    end if
-
-    if key = "play"
-        m.top.action = "videoplaypause"
         return true
     end if
 
@@ -335,7 +331,11 @@ function onKeyEvent(key as string, press as boolean) as boolean
         return true
     end if
 
-    ' All other keys hide the menu
-    m.top.action = "hide"
-    return true
+    if key = "back" and m.top.visible
+        m.top.action = "hide"
+
+        return true
+    end if
+
+    return false
 end function

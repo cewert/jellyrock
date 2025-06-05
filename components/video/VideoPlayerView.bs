@@ -877,6 +877,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
 
         ' Pause video and show OSD
         m.top.control = "pause"
+        m.osd.playbackState = "paused"
         m.osd.visible = true
         m.osd.hasFocus = true
         m.osd.setFocus(true)
