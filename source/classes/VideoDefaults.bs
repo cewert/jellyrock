@@ -1,9 +1,9 @@
 import "pkg:/source/api/Items.bs"
 
 class VideoDefaults
-    sub new(itemId as string)
-        m.itemData = ItemMetaData(itemId)
-        m.mediaStreams = m.itemData.json.mediaStreams
+    sub new(jsonMetaData as object)
+        m.itemData = jsonMetaData
+        m.mediaStreams = jsonMetaData.mediaStreams
     end sub
 
     ' returns the entire object of the default stream

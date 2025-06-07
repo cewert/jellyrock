@@ -272,7 +272,7 @@ end sub
 
 sub SetDefaultAudioTrack(itemData)
 
-    defaults = new VideoDefaults(itemData.id)
+    defaults = new VideoDefaults(itemData)
 
     defaultAudioStream = defaults.getDefaultAudioStream()
 
