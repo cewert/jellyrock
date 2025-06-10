@@ -23,7 +23,7 @@ jobs:
         # TODO: fix jsdoc build errors then remove '|| true' from run command below
         run: npm run docs || true
       - name: Commit any changes back to the unstable branch
-        uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5
+        uses: stefanzweifel/git-auto-commit-action@3cc016cfc892e0844046da36fc68da4e525e081f # v6
         with:
           commit_message: Update API docs
           # use cewert-bot to commit the changes instead of the default github-actions[bot]
