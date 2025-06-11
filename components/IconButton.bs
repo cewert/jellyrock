@@ -56,7 +56,7 @@ end sub
 
 sub OnImageLoadStatusChanged(event as object)
     status = event.GetData()
-    print "OnImageLoadStatusChanged() status =", status
+
     if status <> invalid and status = "ready"
         setIconSize()
     end if
@@ -84,8 +84,6 @@ sub setIconSize()
             iconWidth = m.buttonIcon.bitmapWidth
             iconHeight = m.buttonIcon.bitmapHeight
 
-            print "iconWidth =", iconWidth
-            print "iconHeight =", iconHeight
             ' set buttonBackground width and height to size of poster + padding
             if m.top.padding > 0
                 m.buttonBackground.width = iconWidth + (m.top.padding * 2)

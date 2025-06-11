@@ -17,7 +17,7 @@
 
     <!-- MAIN -->
     <!-- Video information - title, season/episode number etc. -->
-    <LayoutGroup id="videoInfoGroup" itemSpacings="[9]" layoutDirection="vert" translation="[103,740]">
+    <LayoutGroup id="videoInfoGroup" itemSpacings="[18]" layoutDirection="vert" translation="[103,740]">
       <Label id="videoTitle" font="font:LargeBoldSystemFont" color="0x8d8d8dFF" />
       <LayoutGroup id="videoSubtitleGroup" itemSpacings="[9]" layoutDirection="horiz" />
     </LayoutGroup>
