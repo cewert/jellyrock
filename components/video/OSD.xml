@@ -1,56 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="OSD" extends="Group" initialFocus="chapterNext">
   <children>
-    <Poster uri="pkg:/images/osdBackground.png" width="1920" height="279" />
+    <!-- Background overlay so we can see UI -->
+    <Poster uri="pkg:/images/osd/background-top.png" width="1920" height="300" translation="[0,0]" />
+    <Poster uri="pkg:/images/osd/background-bottom.png" width="1920" height="500" translation="[0,480]" />
+    <Rectangle color="0x000000FF" width="1920" height="100" translation="[0,980]" />
 
-    <LayoutGroup id="videoInfo" layoutDirection="vert" translation="[103,61]">
-      <ScrollingLabel id="itemTitle" font="font:LargeBoldSystemFont" maxWidth="1400" />
-      <LayoutGroup id="videoInfo" layoutDirection="horiz" translation="[103,61]">
-        <Label id="itemSeason" font="font:MediumSystemFont" color="0xffffffFF" />
-        <Label id="itemEpisode" font="font:MediumSystemFont" color="0xffffffFF" />
-        <Label id="itemEpisodeEnd" font="font:MediumSystemFont" color="0xffffffFF" />
-      </LayoutGroup>
+    <!-- HEADER LEFT -->
+    <LayoutGroup id="videoLogoGroup" itemSpacings="[15]" layoutDirection="vert" translation="[103,54]">
+      <Poster id="videoLogo" />
     </LayoutGroup>
 
-    <Clock id="clock" translation="[1618, 46]" />
+    <!-- HEADER RIGHT -->
+    <!-- Clock -->
+    <Clock id="clock" translation="[1624, 102]" />
 
-    <ButtonGroup id="optionControls" itemSpacings="[20]" layoutDirection="horiz" horizAlignment="left" translation="[103,120]">
-      <IconButton id="showVideoInfoPopup" background="#070707" focusBackground="#00a4dc" padding="16" icon="pkg:/images/icons/videoInfo.png" height="65" width="100" />
-      <IconButton id="chapterList" background="#070707" focusBackground="#00a4dc" padding="16" icon="pkg:/images/icons/numberList.png" height="65" width="100" />
-      <IconButton id="showSubtitleMenu" background="#070707" focusBackground="#00a4dc" padding="0" icon="pkg:/images/icons/subtitle.png" height="65" width="100" />
-      <IconButton id="showAudioMenu" background="#070707" focusBackground="#00a4dc" padding="27" icon="pkg:/images/icons/musicNote.png" height="65" width="100" />
-    </ButtonGroup>
-
-    <ButtonGroup id="videoControls" itemSpacings="[20]" layoutDirection="horiz" horizAlignment="center" translation="[960,875]">
-      <IconButton id="itemBack" background="#070707" focusBackground="#00a4dc" padding="35" icon="pkg:/images/icons/itemPrevious.png" height="65" width="100" />
-      <IconButton id="chapterBack" background="#070707" focusBackground="#00a4dc" padding="16" icon="pkg:/images/icons/previousChapter.png" height="65" width="100" />
-      <IconButton id="videoPlayPause" background="#070707" focusBackground="#00a4dc" padding="35" icon="pkg:/images/icons/play.png" height="65" width="100" />
-      <IconButton id="chapterNext" background="#070707" focusBackground="#00a4dc" padding="16" icon="pkg:/images/icons/nextChapter.png" height="65" width="100" />
-      <IconButton id="itemNext" background="#070707" focusBackground="#00a4dc" padding="35" icon="pkg:/images/icons/itemNext.png" height="65" width="100" />
-    </ButtonGroup>
-
-    <Rectangle id="progressBarBackground" color="0x00000098" width="1714" height="8" translation="[103,970]">
-      <Rectangle id="progressBar" color="#e5e4e2FF" width="0" height="8" />
+    <!-- MAIN -->
+    <!-- Video information - title, season/episode number etc. -->
+    <LayoutGroup id="videoInfoGroup" itemSpacings="[9]" layoutDirection="vert" translation="[103,740]">
+      <Label id="videoTitle" font="font:LargeBoldSystemFont" color="0x8d8d8dFF" />
+      <LayoutGroup id="videoSubtitleGroup" itemSpacings="[9]" layoutDirection="horiz" />
+    </LayoutGroup>
+    <!-- Time elapsed and time remaining -->
+    <Label id="videoPositionTime" font="font:SmallBoldSystemFont" color="0xe9e9e9CE" translation="[103,888]" />
+    <Rectangle id="progressBarBackground" color="0xe9e9e9CE" width="1350" height="8" translation="[270,903]">
+      <Rectangle id="progressBar" color="#00a4dc" width="0" height="8" />
     </Rectangle>
+    <Label id="videoRemainingTime" font="font:SmallBoldSystemFont" color="0xe9e9e9CE" horizAlign="right" width="200" translation="[1617,888]" />
 
-    <Label id="videoPositionTime" font="font:MediumSystemFont" color="0xffffffFF" translation="[103,985]" />
-    <Label id="videoRemainingTime" font="font:MediumSystemFont" color="0xffffffFF" horizAlign="right" width="200" translation="[1617,985]" />
+    <!-- FOOTER -->
+    <!-- Button menu -->
+    <ButtonGroup id="osdButtons" itemSpacings="[36]" layoutDirection="horiz" horizAlignment="left" translation="[103,975]">
+      <IconButton id="itemBack" background="0x161616FF" iconBackground="0xF5F5F5FF" focusBackground="#00a4dc" iconFocusBackground="0x161616FF" padding="15" icon="pkg:/images/icons/itemPrevious.png" />
+      <IconButton id="videoPlayPause" background="0x161616FF" iconBackground="0xF5F5F5FF" focusBackground="#00a4dc" iconFocusBackground="0x161616FF" padding="15" icon="pkg:/images/icons/play.png" />
+      <IconButton id="itemNext" background="0x161616FF" iconBackground="0xF5F5F5FF" focusBackground="#00a4dc" iconFocusBackground="0x161616FF" padding="15" icon="pkg:/images/icons/itemNext.png" />
+      <IconButton id="showAudioMenu" background="0x161616FF" iconBackground="0xF5F5F5FF" focusBackground="#00a4dc" iconFocusBackground="0x161616FF" padding="15" icon="pkg:/images/icons/musicNote.png" />
+      <IconButton id="showSubtitleMenu" background="0x161616FF" iconBackground="0xF5F5F5FF" focusBackground="#00a4dc" iconFocusBackground="0x161616FF" padding="15" icon="pkg:/images/icons/closedCaptions.png" />
+      <IconButton id="chapterList" background="0x161616FF" iconBackground="0xF5F5F5FF" focusBackground="#00a4dc" iconFocusBackground="0x161616FF" padding="15" icon="pkg:/images/icons/chapters.png" />
+      <IconButton id="showVideoInfoPopup" background="0x161616FF" iconBackground="0xF5F5F5FF" focusBackground="#00a4dc" iconFocusBackground="0x161616FF" padding="15" icon="pkg:/images/icons/fileInfo.png" />
+    </ButtonGroup>
 
     <Timer id="inactivityTimer" duration="1" repeat="true" />
   </children>
   <interface>
-    <field id="itemTitleText" type="string" />
+    <field id="type" type="string" value="" />
+    <field id="videoTitle" type="string" value="" />
     <field id="seasonNumber" type="integer" />
     <field id="episodeNumber" type="integer" />
     <field id="episodeNumberEnd" type="integer" />
-    <field id="logoImage" type="string" />
+    <field id="seriesName" type="string" value="" />
+    <!-- eg. TV-PG -->
+    <field id="officialRating" type="string" value="" />
+    <!-- eg. 7.3 (out of 10) -->
+    <field id="communityRating" type="float" />
+    <!-- eg. "2011-01-17T00:00:00.0000000Z" -->
+    <field id="premiereDate" type="string" value="" />
+    <field id="productionYear" type="integer" />
+    <field id="runTimeTicks" type="longinteger" />
+    <field id="runTimeMinutes" type="integer" />
+    <field id="runTimeHours" type="integer" />
+    <field id="videoLogo" type="string" value="" />
     <field id="inactiveTimeout" type="integer" />
     <field id="progressPercentage" type="float" />
     <field id="positionTime" type="float" />
     <field id="remainingPositionTime" type="float" />
-    <field id="playbackState" type="string" alwaysNotify="true" />
+    <field id="playbackState" type="string" value="" alwaysNotify="true" />
     <field id="action" type="string" alwaysNotify="true" />
     <field id="showChapterList" type="boolean" alwaysNotify="true" />
     <field id="hasFocus" type="boolean" alwaysNotify="true" />
+    <field id="json" type="assocarray" onChange="setFields" />
   </interface>
 </component>

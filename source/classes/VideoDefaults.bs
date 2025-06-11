@@ -4,6 +4,15 @@ class VideoDefaults
     sub new(jsonMetaData as object)
         m.itemData = jsonMetaData
         m.mediaStreams = jsonMetaData.mediaStreams
+
+        if m.mediaStreams = invalid
+            ' look for metadata attached to the node
+            if m.itemData.json <> invalid and m.itemData.json.MediaStreams <> invalid
+                m.mediaStreams = m.itemData.json.MediaStreams
+            else
+                m.mediaStreams = []
+            end if
+        end if
     end sub
 
     ' returns the entire object of the default stream

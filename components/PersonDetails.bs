@@ -62,7 +62,7 @@ sub loadPerson()
     if item.posterURL <> invalid and item.posterURL <> ""
         m.top.findnode("personImage").uri = item.posterURL
     else
-        m.top.findnode("personImage").uri = "pkg:/images/baseline_person_white_48dp.png"
+        m.top.findnode("personImage").uri = "pkg:/images/icons/baseline_person_white_48dp.png"
     end if
     m.vidsList.callFunc("loadPersonVideos", m.top.Id)
 

@@ -1,9 +1,11 @@
 sub init()
     m.buttonBackground = m.top.findNode("buttonBackground")
     m.buttonIcon = m.top.findNode("buttonIcon")
+    m.buttonIcon.ObserveField("loadStatus", "OnImageLoadStatusChanged")
     m.buttonText = m.top.findNode("buttonText")
 
     m.top.observeField("background", "onBackgroundChanged")
+    m.top.observeField("iconBackground", "onIconBackgroundChanged")
     m.top.observeField("icon", "onIconChanged")
     m.top.observeField("text", "onTextChanged")
     m.top.observeField("height", "onHeightChanged")
@@ -14,14 +16,33 @@ end sub
 
 sub onFocusChanged()
     if m.top.focus
-        m.buttonBackground.blendColor = m.top.focusBackground
+        ' Button background
+        if m.top.focusBackground <> invalid
+            m.buttonBackground.blendColor = m.top.focusBackground
+        end if
+        ' Button icon
+        if m.top.iconFocusBackground <> invalid
+            m.buttonIcon.blendColor = m.top.iconFocusBackground
+        end if
     else
-        m.buttonBackground.blendColor = m.top.background
+        ' Button background
+        if m.top.background <> invalid
+            m.buttonBackground.blendColor = m.top.background
+        end if
+        ' Button icon
+        if m.top.iconBackground <> invalid
+            m.buttonIcon.blendColor = m.top.iconBackground
+        end if
     end if
 end sub
 
 sub onBackgroundChanged()
     m.buttonBackground.blendColor = m.top.background
+    m.top.unobserveField("background")
+end sub
+
+sub onIconBackgroundChanged()
+    m.buttonIcon.blendColor = m.top.iconBackground
     m.top.unobserveField("background")
 end sub
 
@@ -33,9 +54,17 @@ sub onTextChanged()
     m.buttonText.text = m.top.text
 end sub
 
+sub OnImageLoadStatusChanged(event as object)
+    status = event.GetData()
+    print "OnImageLoadStatusChanged() status =", status
+    if status <> invalid and status = "ready"
+        setIconSize()
+    end if
+end sub
+
 sub setIconSize()
-    height = m.buttonBackground.height
-    width = m.buttonBackground.width
+    height = m.top.height
+    width = m.top.width
     if height > 0 and width > 0
         ' TODO: Use smallest number between them
         m.buttonIcon.height = m.top.height
@@ -49,6 +78,27 @@ sub setIconSize()
         m.buttonIcon.translation = [((width - m.buttonIcon.width) / 2), ((height - m.buttonIcon.height) / 2)]
         m.buttonText.translation = [0, height + 10]
         m.buttonText.width = width
+    else if height = 0 and width = 0
+        ' determine size of icon
+        if m.buttonIcon.bitmapWidth > 0 and m.buttonIcon.bitmapHeight > 0
+            iconWidth = m.buttonIcon.bitmapWidth
+            iconHeight = m.buttonIcon.bitmapHeight
+
+            print "iconWidth =", iconWidth
+            print "iconHeight =", iconHeight
+            ' set buttonBackground width and height to size of poster + padding
+            if m.top.padding > 0
+                m.buttonBackground.width = iconWidth + (m.top.padding * 2)
+                m.buttonBackground.height = iconHeight + (m.top.padding * 2)
+            else
+                m.buttonBackground.width = iconWidth
+                m.buttonBackground.height = iconHeight
+            end if
+
+            m.buttonIcon.translation = [((m.buttonBackground.width - iconWidth) / 2), ((m.buttonBackground.height - iconHeight) / 2)]
+            m.buttonText.translation = [0, m.buttonBackground.height + 10]
+            m.buttonText.width = width
+        end if
     end if
 end sub
 

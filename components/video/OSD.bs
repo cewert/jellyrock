@@ -1,47 +1,222 @@
 import "pkg:/source/utils/misc.bs"
 
-const LOGO_RIGHT_PADDING = 30
-const OPTIONCONTROLS_TOP_PADDING = 50
-
 sub init()
-    m.videoControls = m.top.findNode("videoControls")
-    m.optionControls = m.top.findNode("optionControls")
-
     m.inactivityTimer = m.top.findNode("inactivityTimer")
-    m.videoInfo = m.top.findNode("videoInfo")
-    m.itemTitle = m.top.findNode("itemTitle")
+
+    m.videoLogo = m.top.findNode("videoLogo")
+    m.videoOfficialRating = m.top.findNode("videoOfficialRating")
+    m.videoTitle = m.top.findNode("videoTitle")
+    m.videoTitle.font.size = 60
+    m.videoSubtitleGroup = m.top.findNode("videoSubtitleGroup")
+
     m.videoPlayPause = m.top.findNode("videoPlayPause")
     m.videoPositionTime = m.top.findNode("videoPositionTime")
+    m.videoPositionTime.font.size = 36
     m.videoRemainingTime = m.top.findNode("videoRemainingTime")
+    m.videoRemainingTime.font.size = 36
     m.progressBar = m.top.findNode("progressBar")
     m.progressBarBackground = m.top.findNode("progressBarBackground")
 
+    m.top.observeField("json", "setFields")
     m.top.observeField("visible", "onVisibleChanged")
     m.top.observeField("hasFocus", "onFocusChanged")
     m.top.observeField("progressPercentage", "onProgressPercentageChanged")
     m.top.observeField("playbackState", "onPlaybackStateChanged")
 
-    m.top.observeField("itemTitleText", "onItemTitleTextChanged")
-    m.top.observeField("seasonNumber", "onSeasonNumberChanged")
-    m.top.observeField("episodeNumber", "onEpisodeNumberChanged")
-    m.top.observeField("episodeNumberEnd", "onEpisodeNumberEndChanged")
-    m.top.observeField("logoImage", "onLogoImageChanged")
+    m.defaultButtonIndex = 1
+    m.focusedButtonIndex = 1
+    m.subtitleDividerCount = 0
 
-    m.defaultButtonIndex = 2
-    m.focusedButtonIndex = 2
-    m.optionControlsMoved = false
+    m.osdButtons = m.top.findNode("osdButtons")
+    m.osdButtons.buttonFocused = m.defaultButtonIndex
 
-    m.videoControls.buttonFocused = m.defaultButtonIndex
-    m.optionControls.buttonFocused = m.optionControls.getChildCount() - 1
+    m.osdButtons.getChild(m.defaultButtonIndex).focus = true
+end sub
 
-    m.videoControls.getChild(m.defaultButtonIndex).focus = true
+' setFields: Grab data from json metadata and save it to local fields
+sub setFields()
+    print "Start setFields()"
+    print "m.top.json =", m.top.json
+    if not isValid(m.top.json) then return
+
+    if m.top.json.Type <> invalid
+        m.top.type = m.top.json.Type
+    end if
+
+    if m.top.json.logoImage <> invalid and m.top.json.logoImage <> ""
+        m.top.videoLogo = m.top.json.logoImage
+    end if
+
+    if m.top.json.Name <> invalid
+        m.top.videoTitle = m.top.json.Name
+    end if
+
+    if m.top.json.SeriesName <> invalid
+        m.top.seriesName = m.top.json.SeriesName
+    end if
+
+    if m.top.json.ParentIndexNumber <> invalid
+        m.top.seasonNumber = m.top.json.ParentIndexNumber
+    end if
+
+    if m.top.json.IndexNumber <> invalid
+        m.top.episodeNumber = m.top.json.IndexNumber
+    end if
+
+    if m.top.json.IndexNumberEnd <> invalid
+        m.top.episodeNumberEnd = m.top.json.IndexNumberEnd
+    end if
+
+    if m.top.json.CommunityRating <> invalid
+        m.top.communityRating = m.top.json.CommunityRating
+    end if
+
+    if m.top.json.OfficialRating <> invalid
+        m.top.officialRating = m.top.json.OfficialRating
+    end if
+
+    if m.top.json.PremiereDate <> invalid
+        m.top.premiereDate = m.top.json.PremiereDate
+    end if
+
+    if m.top.json.RunTimeTicks <> invalid
+        m.top.runTimeTicks = m.top.json.RunTimeTicks
+        print "RunTimeTicks =", m.top.runTimeTicks
+        m.top.runTimeMinutes = ticksToMinutes(m.top.runTimeTicks)
+        print "RunTimeMinutes =", m.top.runTimeMinutes
+        m.top.runTimeHours = int(m.top.runTimeMinutes / 60)
+    end if
+
+    if m.top.json.ProductionYear <> invalid
+        m.top.productionYear = m.top.json.ProductionYear
+    end if
+
+    populateData()
+end sub
+
+sub populateData()
+    setVideoLogoGroup()
+    setVideoTitle()
+    setVideoSubTitle()
+end sub
+
+sub setVideoLogoGroup()
+    m.videoLogo.uri = m.top.videoLogo
+
+    ' if m.top.officialRating <> invalid and m.top.officialRating <> ""
+    '     m.videoOfficialRating.text = m.top.officialRating
+    ' end if
+end sub
+
+sub setVideoTitle()
+    m.videoTitle.text = m.top.videoTitle
+end sub
+
+sub setVideoSubTitle()
+    ' start fresh by removing all subtitle nodes
+    m.videoSubtitleGroup.removeChildrenIndex(m.videoSubtitleGroup.getChildCount(), 0)
+
+    airDateNodeCreated = false
+
+    ' EPISODE
+    if m.top.type <> invalid
+        if m.top.Type = "Episode" or m.top.Type = "Recording"
+            ' TITLE
+            if m.top.seriesName <> ""
+                m.videoTitle.text = m.top.seriesName
+            end if
+
+            ' episodeInfo
+            episodeInfoText = ""
+            '
+            ' Season number
+            if m.top.seasonNumber <> invalid
+                episodeInfoText = episodeInfoText + `${tr("S")}${m.top.seasonNumber}`
+            else
+                episodeInfoText = episodeInfoText + `${tr("S")}?`
+            end if
+
+            ' Episode number
+            if m.top.episodeNumber <> invalid
+                episodeInfoText = episodeInfoText + `:${tr("E")}${m.top.episodeNumber}`
+            else
+                episodeInfoText = episodeInfoText + `:${tr("E")}??`
+            end if
+
+            ' Episode number end
+            if m.top.episodeNumberEnd <> invalid and m.top.episodeNumberEnd <> 0 and m.top.episodeNumberEnd > m.top.episodeNumber
+                ' add entry for every episode eg. S6:E1E2
+                for i = m.top.episodeNumber + 1 to m.top.episodeNumberEnd
+                    episodeInfoText = episodeInfoText + `${tr("E")}${m.top.episodeNumberEnd}`
+                end for
+            end if
+
+            ' Episode name
+            if m.top.videoTitle <> invalid and m.top.videoTitle <> ""
+                episodeInfoText = episodeInfoText + ` - ${m.top.videoTitle}`
+            end if
+
+            if episodeInfoText <> ""
+                episodeInfoNode = createSubtitleLabelNode("episodeInfo")
+                episodeInfoNode.text = episodeInfoText
+                displaySubtitleNode(episodeInfoNode)
+            end if
+        else if m.top.type = "Movie"
+            ' videoAirDate
+            if m.top.premiereDate <> invalid and m.top.premiereDate <> ""
+                airDateNodeCreated = true
+
+                premiereDateNode = createSubtitleLabelNode("videoAirDate")
+                premiereDateNode.text = formatIsoDateMovie(m.top.premiereDate)
+
+                displaySubtitleNode(premiereDateNode)
+            end if
+        end if
+    end if
+
+    ' append these to all video types
+    '
+    ' videoAirDate if needed
+    if not airDateNodeCreated and m.top.premiereDate <> invalid and m.top.premiereDate <> ""
+        premiereDateNode = createSubtitleLabelNode("videoAirDate")
+        premiereDateNode.text = formatIsoDateVideo(m.top.premiereDate)
+        displaySubtitleNode(premiereDateNode)
+    end if
+
+    ' videoRunTime
+    if m.top.runTimeMinutes <> invalid and m.top.runTimeMinutes <> 0
+        runTimeNode = createSubtitleLabelNode("videoRunTime")
+
+        hoursShortText = tr("h")
+        minutesShortText = tr("m")
+        runTimeText = ""
+
+        if m.top.runTimeHours <> invalid and m.top.runTimeHours > 0
+            runTimeText = `${m.top.runTimeHours}${hoursShortText}`
+        end if
+
+        if m.top.runTimeMinutes <> invalid and m.top.runTimeMinutes > 0
+
+            if m.top.runTimeMinutes < 60
+                runTimeText = `${runTimeText}${m.top.runTimeMinutes}${minutesShortText}`
+            else
+                minutesRemaining = m.top.runTimeMinutes mod 60
+                runTimeText = `${runTimeText}${minutesRemaining}${minutesShortText}`
+            end if
+        end if
+
+        runTimeNode.text = runTimeText
+        displaySubtitleNode(runTimeNode)
+    end if
+
+
 end sub
 
 ' onProgressPercentageChanged: Handler for changes to m.top.progressPercentage param
 '
 sub onProgressPercentageChanged()
-    m.videoPositionTime.text = secondsToHuman(m.top.positionTime, true)
-    m.videoRemainingTime.text = secondsToHuman(m.top.remainingPositionTime, true)
+    m.videoPositionTime.text = secondsToTimestamp(m.top.positionTime, true)
+    m.videoRemainingTime.text = "-" + secondsToTimestamp(m.top.remainingPositionTime, true)
     m.progressBar.width = m.progressBarBackground.width * m.top.progressPercentage
 end sub
 
@@ -56,122 +231,21 @@ sub onPlaybackStateChanged()
     m.videoPlayPause.icon = "pkg:/images/icons/play.png"
 end sub
 
-' onItemTitleTextChanged: Handler for changes to m.top.itemTitleText param.
-'
-sub onItemTitleTextChanged()
-    m.itemTitle.text = m.top.itemTitleText
-end sub
-
-' onSeasonNumberChanged: Handler for changes to m.top.seasonNumber param.
-'
-sub onSeasonNumberChanged()
-    m.top.unobserveField("seasonNumber")
-    itemSeason = m.top.findNode("itemSeason")
-    itemSeason.font.size = 32
-    itemSeason.text = `S${m.top.seasonNumber}`
-
-    ' Move the option controls down to give room for season number
-    if not m.optionControlsMoved
-        moveOptionControls(0, OPTIONCONTROLS_TOP_PADDING)
-        m.optionControlsMoved = true
-    end if
-end sub
-
-' onEpisodeNumberChanged: Handler for changes to m.top.episodeNumber param.
-'
-sub onEpisodeNumberChanged()
-    m.top.unobserveField("episodeNumber")
-    itemEpisode = m.top.findNode("itemEpisode")
-    itemEpisode.font.size = 32
-    itemEpisode.text = `E${m.top.episodeNumber}`
-
-    ' Move the option controls down to give room for episode number
-    if not m.optionControlsMoved
-        moveOptionControls(0, OPTIONCONTROLS_TOP_PADDING)
-        m.optionControlsMoved = true
-    end if
-end sub
-
-' onEpisodeNumberEndChanged: Handler for changes to m.top.episodeNumberEnd param.
-'
-sub onEpisodeNumberEndChanged()
-    m.top.unobserveField("episodeNumberEnd")
-    itemEpisodeEnd = m.top.findNode("itemEpisodeEnd")
-    itemEpisodeEnd.font.size = 32
-    itemEpisodeEnd.text = `-${m.top.episodeNumberEnd}`
-
-    ' Move the option controls down to give room for episode number
-    if not m.optionControlsMoved
-        moveOptionControls(0, OPTIONCONTROLS_TOP_PADDING)
-        m.optionControlsMoved = true
-    end if
-end sub
-
-' moveOptionControls: Moves option controls node based on passed pixel values
-'
-' @param {integer} horizontalPixels - Number of horizontal pixels to move option controls
-' @param {integer} verticalPixels - Number of vertical pixels to move option controls
-sub moveOptionControls(horizontalPixels as integer, verticalPixels as integer)
-    m.optionControls.translation = `[${m.optionControls.translation[0] + horizontalPixels}, ${m.optionControls.translation[1] + verticalPixels}]`
-end sub
-
-' onLogoLoadStatusChanged: Handler for changes to logo image's status.
-'
-' @param {dynamic} event - field change event
-sub onLogoLoadStatusChanged(event)
-    if LCase(event.GetData()) = "ready"
-        logoImage = event.getRoSGNode()
-        logoImage.unobserveField("loadStatus")
-
-        ' Move video info to the right based on the logo width
-        m.videoInfo.translation = `[${m.videoInfo.translation[0] + logoImage.bitmapWidth + LOGO_RIGHT_PADDING}, ${m.videoInfo.translation[1]}]`
-        m.itemTitle.maxWidth = m.itemTitle.maxWidth - (logoImage.bitmapWidth + LOGO_RIGHT_PADDING)
-
-        ' Move the option controls down based on the logo height
-        if not m.optionControlsMoved
-            moveOptionControls(0, OPTIONCONTROLS_TOP_PADDING)
-            m.optionControlsMoved = true
-        end if
-    end if
-end sub
-
-' onLogoImageChanged: Handler for changes to m.top.logoImage param.
-'
-sub onLogoImageChanged()
-    if isValidAndNotEmpty(m.top.logoImage)
-        logoImage = createObject("roSGNode", "Poster")
-        logoImage.Id = "logoImage"
-        logoImage.observeField("loadStatus", "onLogoLoadStatusChanged")
-        logoImage.uri = m.top.logoImage
-        logoImage.translation = [103, 61]
-        m.top.appendChild(logoImage)
-    end if
-end sub
-
 ' resetFocusToDefaultButton: Reset focus back to the default button
 '
 sub resetFocusToDefaultButton()
     ' Remove focus from previously selected button
-    for each child in m.videoControls.getChildren(-1, 0)
+    for each child in m.osdButtons.getChildren(-1, 0)
         if isValid(child.focus)
             child.focus = false
         end if
     end for
-
-    for each child in m.optionControls.getChildren(-1, 0)
-        if isValid(child.focus)
-            child.focus = false
-        end if
-    end for
-
-    m.optionControls.setFocus(false)
 
     ' Set focus back to the default button
-    m.videoControls.setFocus(true)
+    m.osdButtons.setFocus(true)
     m.focusedButtonIndex = m.defaultButtonIndex
-    m.videoControls.getChild(m.defaultButtonIndex).focus = true
-    m.videoControls.buttonFocused = m.defaultButtonIndex
-    m.optionControls.buttonFocused = m.optionControls.getChildCount() - 1
+    m.osdButtons.getChild(m.defaultButtonIndex).focus = true
+    m.osdButtons.buttonFocused = m.defaultButtonIndex
 end sub
 
 ' onVisibleChanged: Handler for changes to the visibility of this menu.
@@ -193,13 +267,7 @@ end sub
 '
 sub onFocusChanged()
     if m.top.hasfocus
-        focusedButton = m.optionControls.getChild(m.focusedButtonIndex)
-        if focusedButton.focus
-            m.optionControls.setFocus(true)
-            return
-        end if
-
-        m.videoControls.setFocus(true)
+        m.osdButtons.setFocus(true)
     end if
 end sub
 
@@ -220,11 +288,7 @@ end sub
 ' onButtonSelected: Handler for selection of buttons from the menu.
 '
 sub onButtonSelected()
-    if m.optionControls.isInFocusChain()
-        buttonGroup = m.optionControls
-    else
-        buttonGroup = m.videoControls
-    end if
+    buttonGroup = m.osdButtons
 
     selectedButton = buttonGroup.getChild(m.focusedButtonIndex)
 
@@ -235,8 +299,57 @@ sub onButtonSelected()
     m.top.action = selectedButton.id
 end sub
 
+function createSubtitleLabelNode(labelId as string) as object
+    labelNode = CreateObject("roSGNode", "Label")
+    labelNode.id = labelId
+    labelNode.font = "font:MediumBoldSystemFont"
+    labelNode.font.size = 33
+    labelNode.color = "0xF5F5F5FF"
+    labelNode.horizAlign = "left"
+    labelNode.vertAlign = "center"
+    labelNode.width = 0
+    labelNode.height = 0
+
+    return labelNode
+end function
+
+function createSubtitleDividerNode() as object
+    m.subtitleDividerCount++
+
+    labelNode = CreateObject("roSGNode", "Label")
+    labelNode.id = "divider" + m.subtitleDividerCount.toStr()
+    labelNode.font = "font:SmallSystemFont"
+    labelNode.font.size = 26
+    labelNode.color = "0xa8a8a8FF"
+    labelNode.horizAlign = "left"
+    labelNode.vertAlign = "center"
+    labelNode.width = 0
+    labelNode.height = 40
+    labelNode.text = "•"
+
+    return labelNode
+end function
+
+sub displaySubtitleNode(node as object)
+    if not isValid(node) then return
+
+    subtitleChildrenCount = m.videoSubtitleGroup.getChildCount()
+    if subtitleChildrenCount > 0
+        ' add a divider
+        dividerNode = createSubtitleDividerNode()
+        m.videoSubtitleGroup.appendChild(dividerNode)
+    end if
+
+    m.videoSubtitleGroup.appendChild(node)
+end sub
+
 function onKeyEvent(key as string, press as boolean) as boolean
     if not press then return false
+
+    if key = "play"
+        m.top.action = "videoplaypause"
+        return true
+    end if
 
     if key = "OK"
         onButtonSelected()
@@ -244,11 +357,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
     end if
 
     if key = "right"
-        if m.optionControls.isInFocusChain()
-            buttonGroup = m.optionControls
-        else
-            buttonGroup = m.videoControls
-        end if
+        buttonGroup = m.osdButtons
 
         if m.focusedButtonIndex + 1 >= buttonGroup.getChildCount()
             return true
@@ -277,11 +386,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
             return true
         end if
 
-        if m.optionControls.isInFocusChain()
-            buttonGroup = m.optionControls
-        else
-            buttonGroup = m.videoControls
-        end if
+        buttonGroup = m.osdButtons
 
         focusedButton = buttonGroup.getChild(m.focusedButtonIndex)
         focusedButton.focus = false
@@ -297,36 +402,6 @@ function onKeyEvent(key as string, press as boolean) as boolean
                 exit for
             end if
         end for
-
-        return true
-    end if
-
-    if key = "up"
-        if m.videoControls.isInFocusChain()
-            focusedButton = m.videoControls.getChild(m.focusedButtonIndex)
-            focusedButton.focus = false
-            m.videoControls.setFocus(false)
-
-            m.focusedButtonIndex = m.optionControls.buttonFocused
-            focusedButton = m.optionControls.getChild(m.focusedButtonIndex)
-            focusedButton.focus = true
-            m.optionControls.setFocus(true)
-        end if
-
-        return true
-    end if
-
-    if key = "down"
-        if m.optionControls.isInFocusChain()
-            focusedButton = m.optionControls.getChild(m.focusedButtonIndex)
-            focusedButton.focus = false
-            m.optionControls.setFocus(false)
-
-            m.focusedButtonIndex = m.videoControls.buttonFocused
-            focusedButton = m.videoControls.getChild(m.focusedButtonIndex)
-            focusedButton.focus = true
-            m.videoControls.setFocus(true)
-        end if
 
         return true
     end if

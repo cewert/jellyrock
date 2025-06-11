@@ -43,7 +43,16 @@ function ticksToHuman(ticks as longinteger) as string
     return r
 end function
 
-function secondsToHuman(totalSeconds as integer, addLeadingMinuteZero as boolean) as string
+' Converts ticks to number of minutes
+' eg. 3661 totalSeconds = 61
+function ticksToMinutes(ticks as longinteger) as longinteger
+    totalSeconds = int(ticks / 10000000)
+    return int(totalSeconds / 60)
+end function
+
+' Converts seconds to a human readable timestamp. Used for progress bar during playback
+' eg. 3661 seconds = "01:01:01"
+function secondsToTimestamp(totalSeconds as integer, addLeadingMinuteZero as boolean) as string
     humanTime = ""
     hours = stri(int(totalSeconds / 3600)).trim()
     minutes = stri(int((totalSeconds - (val(hours) * 3600)) / 60)).trim()
@@ -95,6 +104,61 @@ function formatTime(time) as string
 
     return Substitute("{0}:{1} {2}", leftPad(stri(hours).trim(), "0", minHourDigits), leftPad(stri(time.getMinutes()).trim(), "0", 2), meridian)
 
+end function
+
+' convert iso date string to a human readable date string
+' eg. "March 13th, 2014"
+function formatIsoDateVideo(isoDateString as string) as string
+    ' Parse the ISO date string "2014-03-13T00:00:00.0000000Z"
+    dateParts = isoDateString.Split("T")[0].Split("-")
+    year = dateParts[0]
+    month = dateParts[1].ToInt()
+    day = dateParts[2].ToInt()
+
+    ' Month names array
+    monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ]
+
+    ' Get month name
+    monthName = monthNames[month - 1]
+
+    ' Add ordinal suffix to day
+    dayWithSuffix = addOrdinalSuffix(day)
+
+    ' Return formatted string
+    return monthName + " " + dayWithSuffix + ", " + year
+end function
+
+' convert iso date string to a year string
+function formatIsoDateMovie(isoDateString as string) as string
+    ' Parse the ISO date string "2014-03-13T00:00:00.0000000Z"
+    dateParts = isoDateString.Split("T")[0].Split("-")
+
+    ' Return formatted string
+    return dateParts[0]
+end function
+
+function addOrdinalSuffix(day as integer) as string
+    dayStr = day.ToStr().Trim()
+
+    ' Special cases for 11th, 12th, 13th
+    if day >= 11 and day <= 13
+        return dayStr + "th"
+    end if
+
+    ' Check last digit
+    lastDigit = day mod 10
+    if lastDigit = 1
+        return dayStr + "st"
+    else if lastDigit = 2
+        return dayStr + "nd"
+    else if lastDigit = 3
+        return dayStr + "rd"
+    else
+        return dayStr + "th"
+    end if
 end function
 
 function div_ceiling(a as integer, b as integer) as integer
@@ -552,7 +616,7 @@ end function
 function createLogoPoster()
     logoPoster = createObject("roSGNode", "Poster")
     logoPoster.id = "overlayLogo"
-    logoPoster.uri = "pkg:/images/logo.png"
+    logoPoster.uri = "pkg:/images/branding/logo.png"
     logoPoster.translation = "[70, 53]"
     logoPoster.width = "191"
     logoPoster.height = "66"

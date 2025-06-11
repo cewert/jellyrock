@@ -575,7 +575,7 @@ sub onItemFocused()
 
     itemData = m.selectedFavoriteItem.json
 
-    m.star.uri = "pkg:/images/sharp_star_white_18dp.png"
+    m.star.uri = "pkg:/images/icons/sharp_star_white_18dp.png"
 
     if m.global.session.user.settings["ui.movies.showRatings"]
         if isValid(itemData.communityRating)
@@ -586,10 +586,10 @@ sub onItemFocused()
         if isValid(itemData.CriticRating)
             setFieldText("criticRatingLabel", itemData.criticRating)
 
-            tomato = "pkg:/images/rotten.png"
+            tomato = "pkg:/images/icons/rotten.png"
 
             if itemData.CriticRating > 60
-                tomato = "pkg:/images/fresh.png"
+                tomato = "pkg:/images/icons/fresh.png"
             end if
 
             m.criticRatingIcon.uri = tomato

@@ -20,7 +20,7 @@
       <Label id="selectedMovieOfficialRating" font="font:SmallestSystemFont" />
 
       <LayoutGroup id="communityRatingGroup" visible="false" layoutDirection="horiz" itemSpacings="[-5]">
-        <Poster id="star" uri="pkg:/images/sharp_star_white_18dp.png" height="28" width="28" blendColor="#00a4dcFF" />
+        <Poster id="star" uri="pkg:/images/icons/sharp_star_white_18dp.png" height="28" width="28" blendColor="#00a4dcFF" />
         <Label id="communityRating" font="font:SmallestSystemFont" />
       </LayoutGroup>
 

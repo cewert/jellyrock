@@ -34,7 +34,7 @@ sub showContent()
         m.role.Text = cont.subTitle
     else
         m.role.text = tr("Unknown")
-        m.posterImg.uri = "pkg:/images/baseline_person_white_48dp.png"
+        m.posterImg.uri = "pkg:/images/icons/baseline_person_white_48dp.png"
     end if
 end sub
 

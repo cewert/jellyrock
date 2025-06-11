@@ -100,16 +100,16 @@ images/:; mkdir $@
 $(BANNER) $(ICON): images/ redo
 	$(CURL_CMD) https://raw.githubusercontent.com/jellyfin/jellyfin-ux/master/branding/SVG/$(@F) > $@
 
-images/logo.png: $(BANNER); $(CONVERT_CMD) -background none -scale 1000x48 -extent 180x48 $< $@
-images/channel-poster_fhd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -scale 535x400 -extent 540x405 $< $@
-images/channel-poster_hd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -scale 275x205 -extent 336x210 $< $@
-images/channel-poster_sd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -scale 182x135 -extent 246x140 $< $@
-images/splash-screen_fhd.jpg: $(BANNER); $(CONVERT_BLUEBG_CMD) -scale 540x540 -extent 1920x1080 $< $@
-images/splash-screen_hd.jpg: $(BANNER); $(CONVERT_BLUEBG_CMD) -scale 360x360 -extent 1280x720 $< $@
-images/splash-screen_sd.jpg: $(BANNER); $(CONVERT_BLUEBG_CMD) -scale 240x240 -extent 720x480 $< $@
+images/branding/logo.png: $(BANNER); $(CONVERT_CMD) -background none -scale 1000x48 -extent 180x48 $< $@
+images/branding/channel-poster_fhd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -scale 535x400 -extent 540x405 $< $@
+images/branding/channel-poster_hd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -scale 275x205 -extent 336x210 $< $@
+images/branding/channel-poster_sd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -scale 182x135 -extent 246x140 $< $@
+images/branding/splash-screen_fhd.jpg: $(BANNER); $(CONVERT_BLUEBG_CMD) -scale 540x540 -extent 1920x1080 $< $@
+images/branding/splash-screen_hd.jpg: $(BANNER); $(CONVERT_BLUEBG_CMD) -scale 360x360 -extent 1280x720 $< $@
+images/branding/splash-screen_sd.jpg: $(BANNER); $(CONVERT_BLUEBG_CMD) -scale 240x240 -extent 720x480 $< $@
 
 .PHONY: get_images
 get_images: $(ICON)
-get_images: images/logo.png
-get_images: images/channel-poster_fhd.png images/channel-poster_hd.png images/channel-poster_sd.png
-get_images: images/splash-screen_fhd.jpg images/splash-screen_hd.jpg images/splash-screen_sd.jpg
+get_images: images/branding/logo.png
+get_images: images/branding/channel-poster_fhd.png images/branding/channel-poster_hd.png images/branding/channel-poster_sd.png
+get_images: images/branding/splash-screen_fhd.jpg images/branding/splash-screen_hd.jpg images/branding/splash-screen_sd.jpg

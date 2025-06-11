@@ -18,7 +18,7 @@
           <LayoutGroup id="infoBar" layoutDirection="horiz" itemSpacings="[20]">
             <Label id="runtime" font="font:SmallestSystemFont" />
             <LayoutGroup id="rating" layoutDirection="horiz" itemSpacings="[-5]">
-              <Poster id="star" uri="pkg:/images/sharp_star_white_18dp.png" height="26" width="26" blendColor="#cb272a" />
+              <Poster id="star" uri="pkg:/images/icons/sharp_star_white_18dp.png" height="26" width="26" blendColor="#cb272a" />
               <Label id="communityRating" font="font:SmallestSystemFont" />
             </LayoutGroup>
             <Label id="endtime" font="font:SmallestSystemFont" />

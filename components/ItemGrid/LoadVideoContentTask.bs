@@ -81,6 +81,8 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
         return
     end if
 
+    video.json = meta.json
+
     queueManager = m.global.queueManager
     userSession = m.global.session.user
     userSettings = userSession.settings
@@ -150,7 +152,7 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
 
     logoImageExists = api.items.HeadImageURLByName(logoLookupID, "logo")
     if logoImageExists
-        video.logoImage = api.items.GetImageURL(logoLookupID, "logo", 0, { "maxHeight": 65, "maxWidth": 300, "quality": "90" })
+        video.json.logoImage = api.items.GetImageURL(logoLookupID, "logo", 0, { "maxHeight": 500, "maxWidth": 500, "quality": "90" })
     end if
 
     if LCase(m.top.itemType) = "episode"

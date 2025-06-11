@@ -2,22 +2,23 @@
 <component name="JFOverhang" extends="Group">
   <children>
     <LayoutGroup id="overlayLeftGroup" layoutDirection="horiz" translation="[54, 54]" itemSpacings="60">
-      <Poster id="overlayLogo" uri="pkg:/images/logo.png" height="66" width="191" />
-      <ScrollingLabel id="overlayTitle" font="font:LargeSystemFont" vertAlign="center" height="64" maxWidth="1100" repeatCount="0" />
+      <Poster id="overlayLogo" uri="pkg:/images/branding/logo.png" height="66" width="191" />
+      <ScrollingLabel id="overlayTitle" font="font:LargeSystemFont" vertAlign="center" height="64" maxWidth="1100" repeatCount="0" color="#F5F5F5" />
     </LayoutGroup>
+
     <LayoutGroup id="overlayRightGroup" layoutDirection="horiz" itemSpacings="30" translation="[1766, 53]" horizAlignment="right">
-      <Label id="overlayCurrentUser" font="font:MediumSystemFont" width="300" horizAlign="right" vertAlign="center" height="64" />
-      <Rectangle id="overlayRightSeperator" color="#666666" width="2" height="64" visible="false" />
-      <LayoutGroup id="overlayTimeGroup" layoutDirection="horiz" horizAlignment="right" itemSpacings="0">
-        <Label id="overlayHours" font="font:LargeSystemFont" vertAlign="center" height="64" />
-        <Label font="font:LargeSystemFont" text=":" vertAlign="center" height="64" />
-        <Label id="overlayMinutes" font="font:LargeSystemFont" vertAlign="center" height="64" />
+      <Label id="overlayCurrentUser" font="font:MediumSystemFont" width="300" horizAlign="right" vertAlign="center" height="64" color="#F5F5F5" />
+      <Rectangle id="overlayRightSeperator" color="#F5F5F5" width="2" height="64" visible="false" />
+      <LayoutGroup id="overlayTimeGroup" layoutDirection="horiz" horizAlignment="right" itemSpacings="3">
+        <Label id="overlayHours" font="font:LargeSystemFont" vertAlign="center" height="64" color="#F5F5F5" />
+        <Label id="overlayTimeSeperator" font="font:LargeSystemFont" text=":" vertAlign="center" height="64" color="#F5F5F5" />
+        <Label id="overlayMinutes" font="font:LargeSystemFont" vertAlign="center" height="64" color="#F5F5F5" />
       </LayoutGroup>
     </LayoutGroup>
 
     <LayoutGroup layoutDirection="horiz" horizAlignment="right" translation="[1766, 125]" vertAlignment="custom">
-      <Label id="overlayOptionsStar" font="font:LargeSystemFont" text="*" />
-      <Label id="overlayOptionsText" font="font:SmallSystemFont" text="Options" translation="[0,6]" />
+      <Label id="overlayOptionsStar" font="font:LargeSystemFont" text="*" color="#F5F5F5" />
+      <Label id="overlayOptionsText" font="font:SmallSystemFont" text="Options" translation="[0,6]" color="#F5F5F5" />
     </LayoutGroup>
     <Timer id="currentTimeTimer" repeat="true" duration="60" />
 
