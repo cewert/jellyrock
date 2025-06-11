@@ -132,9 +132,9 @@ sub itemContentChanged()
             if isValid(itemData.CriticRating)
                 setFieldText("criticRatingLabel", itemData.criticRating)
                 if itemData.CriticRating > 60
-                    tomato = "pkg:/images/fresh.png"
+                    tomato = "pkg:/images/icons/fresh.png"
                 else
-                    tomato = "pkg:/images/rotten.png"
+                    tomato = "pkg:/images/icons/rotten.png"
                 end if
                 criticRatingIcon = m.top.findNode("criticRatingIcon")
                 if isValid(criticRatingIcon) then criticRatingIcon.uri = tomato
@@ -274,7 +274,7 @@ end sub
 
 sub SetDefaultAudioTrack(itemData)
 
-    defaults = new VideoDefaults(itemData.id)
+    defaults = new VideoDefaults(itemData)
 
     defaultAudioStream = defaults.getDefaultAudioStream()
 

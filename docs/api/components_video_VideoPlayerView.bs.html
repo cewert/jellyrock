@@ -385,18 +385,13 @@ sub onVideoContentLoaded()
     videoContent = m.LoadMetaDataTask.content
     m.LoadMetaDataTask.content = []
 
-    stopLoadingSpinner()
-
     ' If we have nothing to play, return to previous screen
-    if not isValid(videoContent)
+    if not isValidAndNotEmpty(videoContent)
+        stopLoadingSpinner()
         showPlaybackErrorDialog(tr("There was an error retrieving the data for this item from the server."))
         return
     end if
 
-    if not isValid(videoContent[0])
-        showPlaybackErrorDialog(tr("There was an error retrieving the data for this item from the server."))
-        return
-    end if
 
     m.top.observeField("state", "onState")
 
@@ -412,31 +407,13 @@ sub onVideoContentLoaded()
     m.chapters = videoContent[0].chapters
     m.top.showID = videoContent[0].showID
 
-    m.osd.itemTitleText = videoContent[0].title
-
-    ' If video is an episode, attempt to add season and episode numbers to OSD
-    if m.top.content.contenttype = 4 or m.top.content.live
-        if isValid(videoContent[0].seasonNumber)
-            m.osd.seasonNumber = videoContent[0].seasonNumber
-        end if
-
-        if isValid(videoContent[0].episodeNumber)
-            m.osd.episodeNumber = videoContent[0].episodeNumber
-        end if
-
-        if isValid(videoContent[0].episodeNumberEnd)
-            m.osd.episodeNumberEnd = videoContent[0].episodeNumberEnd
-        end if
+    if isValidAndNotEmpty(videoContent[0].json)
+        m.osd.json = videoContent[0].json
     end if
 
     ' Attempt to add logo to OSD
     if isValidAndNotEmpty(videoContent[0].logoImage)
         m.osd.logoImage = videoContent[0].logoImage
-
-        ' Don't show both the logo and the video title if this isn't an episode
-        if m.top.content.contenttype &lt;> 4
-            m.osd.itemTitleText = ""
-        end if
     end if
 
     populateChapterMenu()
@@ -482,6 +459,7 @@ sub onVideoContentLoaded()
         m.top.audioTrack = "2"
     end if
 
+    stopLoadingSpinner()
     m.top.setFocus(true)
     m.top.control = "play"
 end sub
@@ -879,6 +857,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
 
         ' Pause video and show OSD
         m.top.control = "pause"
+        m.osd.playbackState = "paused"
         m.osd.visible = true
         m.osd.hasFocus = true
         m.osd.setFocus(true)

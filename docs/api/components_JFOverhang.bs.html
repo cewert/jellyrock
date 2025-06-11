@@ -25,8 +25,13 @@ sub init()
     if not m.hideClock
         ' save node references
         m.overlayHours = m.top.findNode("overlayHours")
+        m.overlayHours.font.size = 50
         m.overlayMinutes = m.top.findNode("overlayMinutes")
+        m.overlayMinutes.font.size = 50
+        m.overlayTimeSeperator = m.top.findNode("overlayTimeSeperator")
+        m.overlayTimeSeperator.font.size = 40
         m.currentTimeTimer = m.top.findNode("currentTimeTimer")
+
         ' display current time
         updateTime()
         ' start timer to update clock every minute

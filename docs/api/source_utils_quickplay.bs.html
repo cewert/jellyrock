@@ -24,7 +24,7 @@ namespace quickplay
     sub video(itemNode as object)
         if not isValid(itemNode) or not isValid(itemNode.id) or not isValid(itemNode.json) then return
 
-        defaults = new VideoDefaults(itemNode.id)
+        defaults = new VideoDefaults(itemNode)
 
         ' set default video stream
 

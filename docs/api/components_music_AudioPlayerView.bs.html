@@ -65,7 +65,7 @@ sub setupScreenSaver()
 
     ' Jellyfin Screensaver
     m.PosterOne = m.top.findNode("PosterOne")
-    m.PosterOne.uri = "pkg:/images/logo.png"
+    m.PosterOne.uri = "pkg:/images/branding/logo.png"
     m.BounceAnimation = m.top.findNode("BounceAnimation")
     m.PosterOneFadeIn = m.top.findNode("PosterOneFadeIn")
 end sub
@@ -189,7 +189,7 @@ sub audioPositionChanged()
     if not m.inScrubMode
         moveSeekbarThumb(playPositionBarWidth)
         ' Change the seek position timestamp
-        m.seekTimestamp.text = secondsToHuman(m.audioPlayer.position, false)
+        m.seekTimestamp.text = secondsToTimestamp(m.audioPlayer.position, false)
     end if
 
     ' Use animation to make the display smooth
@@ -199,7 +199,7 @@ sub audioPositionChanged()
     ' Update displayed position timestamp
     if isValid(m.audioPlayer.position)
         m.lastRecordedPositionTimestamp = m.audioPlayer.position
-        m.positionTimestamp.text = secondsToHuman(m.audioPlayer.position, false)
+        m.positionTimestamp.text = secondsToTimestamp(m.audioPlayer.position, false)
     else
         m.lastRecordedPositionTimestamp = 0
         m.positionTimestamp.text = "0:00"
@@ -659,7 +659,7 @@ sub processScrubAction(seekStep as integer)
     moveSeekbarThumb(playPositionBarWidth)
 
     ' Change the displayed position timestamp
-    m.seekTimestamp.text = secondsToHuman(m.scrubTimestamp, false)
+    m.seekTimestamp.text = secondsToTimestamp(m.scrubTimestamp, false)
 end sub
 
 ' resetSeekbarThumb: Resets the thumb to the playing position

@@ -18,6 +18,7 @@ sub init()
     end if
 
     m.clockTime = m.top.findNode("clockTime")
+    m.clockTime.font.size = 60
 
     m.currentTimeTimer = m.top.findNode("currentTimeTimer")
     m.dateTimeObject = CreateObject("roDateTime")
