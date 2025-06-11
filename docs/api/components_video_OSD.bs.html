@@ -37,8 +37,6 @@ end sub
 
 ' setFields: Grab data from json metadata and save it to local fields
 sub setFields()
-    print "Start setFields()"
-    print "m.top.json =", m.top.json
     if not isValid(m.top.json) then return
 
     if m.top.json.Type &lt;> invalid
@@ -83,9 +81,7 @@ sub setFields()
 
     if m.top.json.RunTimeTicks &lt;> invalid
         m.top.runTimeTicks = m.top.json.RunTimeTicks
-        print "RunTimeTicks =", m.top.runTimeTicks
         m.top.runTimeMinutes = ticksToMinutes(m.top.runTimeTicks)
-        print "RunTimeMinutes =", m.top.runTimeMinutes
         m.top.runTimeHours = int(m.top.runTimeMinutes / 60)
     end if
 
