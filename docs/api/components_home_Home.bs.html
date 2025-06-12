@@ -15,8 +15,8 @@ sub init()
 
   m.fadeInFocusBitmap = m.top.findNode("fadeInFocusBitmap")
 
+  m.backdrop = m.top.findNode("backdrop")
   if m.global.session.user.settings["ui.home.splashBackground"] = true
-    m.backdrop = m.top.findNode("backdrop")
     m.backdrop.uri = buildURL("/Branding/Splashscreen?format=jpg&amp;foregroundLayer=0.15&amp;fillWidth=1280&amp;width=1280&amp;fillHeight=720&amp;height=720&amp;tag=splash")
   end if
 end sub

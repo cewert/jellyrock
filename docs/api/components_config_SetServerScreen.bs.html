@@ -73,17 +73,19 @@ function onKeyEvent(key as string, press as boolean) as boolean
 end function
 
 sub ScanForServers()
+  startLoadingSpinner(false)
+
   m.ssdpScanner = CreateObject("roSGNode", "ServerDiscoveryTask")
   'run the task
   m.ssdpScanner.observeField("content", "ScanForServersComplete")
   m.ssdpScanner.control = "RUN"
-  startLoadingSpinner(false)
 end sub
 
 sub ScanForServersComplete(event)
   m.servers = event.getData()
 
   items = CreateObject("roSGNode", "ContentNode")
+  stopLoadingSpinner()
   for each server in m.servers
     server.subtype = "ContentNode"
     'add new fields for every server property onto the ContentNode (rather than making a dedicated component just to hold data...)
@@ -110,7 +112,6 @@ sub ScanForServersComplete(event)
   end if
 
   m.serverPicker.content = items
-  stopLoadingSpinner()
 
   'if we have at least one server, focus on the server picker
   if m.servers.Count() > 0

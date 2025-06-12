@@ -689,16 +689,19 @@
         group.findNode("SearchBox").findNode("search_Key").setFocus(true)
         group.findNode("SearchBox").findNode("search_Key").active = true
       else if button.id = "change_server"
+        startLoadingSpinner()
         unset_setting("server")
         session.server.Delete()
         SignOut(false)
         sceneManager.callFunc("clearScenes")
         goto app_start
       else if button.id = "change_user"
+        startLoadingSpinner()
         SignOut(false)
         sceneManager.callFunc("clearScenes")
         goto app_start
       else if button.id = "sign_out"
+        startLoadingSpinner()
         SignOut()
         sceneManager.callFunc("clearScenes")
         goto app_start
