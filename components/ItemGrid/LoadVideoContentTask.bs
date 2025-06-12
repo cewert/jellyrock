@@ -9,274 +9,274 @@ import "pkg:/source/utils/deviceCapabilities.bs"
 import "pkg:/source/utils/session.bs"
 
 enum SubtitleSelection
-    notset = -2
-    none = -1
+  notset = -2
+  none = -1
 end enum
 
 sub init()
-    m.top.functionName = "loadItems"
+  m.top.functionName = "loadItems"
 end sub
 
 sub loadItems()
-    queueManager = m.global.queueManager
+  queueManager = m.global.queueManager
 
-    ' Reset intro tracker in case task gets reused
-    m.top.isIntro = false
+  ' Reset intro tracker in case task gets reused
+  m.top.isIntro = false
 
-    ' Only show preroll once per queue
-    if queueManager.callFunc("isPrerollActive")
-        ' Prerolls not allowed if we're resuming video
-        if queueManager.callFunc("getCurrentItem").startingPoint = 0
-            preRoll = GetIntroVideos(m.top.itemId)
-            if isValid(preRoll) and preRoll.TotalRecordCount > 0 and isValid(preRoll.items[0])
-                ' If an error is thrown in the Intros plugin, instead of passing the error they pass the entire rick roll music video.
-                ' Bypass the music video and treat it as an error message
-                if lcase(preRoll.items[0].name) <> "rick roll'd"
-                    queueManager.callFunc("push", queueManager.callFunc("getCurrentItem"))
-                    m.top.itemId = preRoll.items[0].id
-                    queueManager.callFunc("setPrerollStatus", false)
-                    m.top.isIntro = true
-                end if
-            end if
+  ' Only show preroll once per queue
+  if queueManager.callFunc("isPrerollActive")
+    ' Prerolls not allowed if we're resuming video
+    if queueManager.callFunc("getCurrentItem").startingPoint = 0
+      preRoll = GetIntroVideos(m.top.itemId)
+      if isValid(preRoll) and preRoll.TotalRecordCount > 0 and isValid(preRoll.items[0])
+        ' If an error is thrown in the Intros plugin, instead of passing the error they pass the entire rick roll music video.
+        ' Bypass the music video and treat it as an error message
+        if lcase(preRoll.items[0].name) <> "rick roll'd"
+          queueManager.callFunc("push", queueManager.callFunc("getCurrentItem"))
+          m.top.itemId = preRoll.items[0].id
+          queueManager.callFunc("setPrerollStatus", false)
+          m.top.isIntro = true
         end if
+      end if
     end if
+  end if
 
-    if m.top.selectedAudioStreamIndex = 0
-        currentItem = queueManager.callFunc("getCurrentItem")
-        if isValid(currentItem) and isValid(currentItem.json)
-            m.top.selectedAudioStreamIndex = FindPreferredAudioStream(currentItem.json.MediaStreams)
-        end if
+  if m.top.selectedAudioStreamIndex = 0
+    currentItem = queueManager.callFunc("getCurrentItem")
+    if isValid(currentItem) and isValid(currentItem.json)
+      m.top.selectedAudioStreamIndex = FindPreferredAudioStream(currentItem.json.MediaStreams)
     end if
+  end if
 
-    id = m.top.itemId
-    mediaSourceId = invalid
-    audio_stream_idx = m.top.selectedAudioStreamIndex
-    forceTranscoding = false
+  id = m.top.itemId
+  mediaSourceId = invalid
+  audio_stream_idx = m.top.selectedAudioStreamIndex
+  forceTranscoding = false
 
-    m.top.content = [LoadItems_VideoPlayer(id, mediaSourceId, audio_stream_idx, forceTranscoding)]
-    m.top.forceMp3 = false
+  m.top.content = [LoadItems_VideoPlayer(id, mediaSourceId, audio_stream_idx, forceTranscoding)]
+  m.top.forceMp3 = false
 end sub
 
 function LoadItems_VideoPlayer(id as string, mediaSourceId = invalid as dynamic, audio_stream_idx = 1 as integer, forceTranscoding = false as boolean) as dynamic
 
-    video = {}
-    video.id = id
-    video.content = createObject("RoSGNode", "ContentNode")
+  video = {}
+  video.id = id
+  video.content = createObject("RoSGNode", "ContentNode")
 
-    LoadItems_AddVideoContent(video, mediaSourceId, audio_stream_idx, forceTranscoding)
+  LoadItems_AddVideoContent(video, mediaSourceId, audio_stream_idx, forceTranscoding)
 
-    if video.content = invalid
-        return invalid
-    end if
+  if video.content = invalid
+    return invalid
+  end if
 
-    return video
+  return video
 end function
 
 sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx = 1 as integer, forceTranscoding = false as boolean)
 
-    meta = ItemMetaData(video.id)
-    if not isValid(meta)
-        video.errorMsg = "Error loading metadata"
-        video.content = invalid
-        return
+  meta = ItemMetaData(video.id)
+  if not isValid(meta)
+    video.errorMsg = "Error loading metadata"
+    video.content = invalid
+    return
+  end if
+
+  video.json = meta.json
+
+  queueManager = m.global.queueManager
+  userSession = m.global.session.user
+  userSettings = userSession.settings
+
+  session.video.Update(meta)
+
+  if isValid(meta.json.MediaSources[0].RunTimeTicks)
+    if meta.json.MediaSources[0].RunTimeTicks = 0
+      video.length = 0
+    else
+      video.length = meta.json.MediaSources[0].RunTimeTicks / 10000000
     end if
+  end if
+  if isValid(meta.json.MediaSources[0]) and isValid(meta.json.MediaSources[0].MediaStreams[0])
+    video.MaxVideoDecodeResolution = [meta.json.MediaSources[0].MediaStreams[0].Width, meta.json.MediaSources[0].MediaStreams[0].Height]
+  end if
 
-    video.json = meta.json
+  subtitle_idx = m.top.selectedSubtitleIndex
+  videotype = LCase(meta.type)
 
-    queueManager = m.global.queueManager
-    userSession = m.global.session.user
-    userSettings = userSession.settings
-
-    session.video.Update(meta)
-
-    if isValid(meta.json.MediaSources[0].RunTimeTicks)
-        if meta.json.MediaSources[0].RunTimeTicks = 0
-            video.length = 0
-        else
-            video.length = meta.json.MediaSources[0].RunTimeTicks / 10000000
-        end if
+  ' Check for any Live TV streams or Recordings coming from other places other than the TV Guide
+  if videotype = "recording" or (isValid(meta.json) and isValid(meta.json.ChannelId))
+    if isValid(meta.json.EpisodeTitle)
+      meta.title = meta.json.EpisodeTitle
+    else if isValid(meta.json.Name)
+      meta.title = meta.json.Name
     end if
-    if isValid(meta.json.MediaSources[0]) and isValid(meta.json.MediaSources[0].MediaStreams[0])
-        video.MaxVideoDecodeResolution = [meta.json.MediaSources[0].MediaStreams[0].Width, meta.json.MediaSources[0].MediaStreams[0].Height]
+    meta.live = true
+    if LCase(meta.json.type) = "program"
+      video.id = meta.json.ChannelId
+    else
+      video.id = meta.json.id
     end if
+  end if
 
-    subtitle_idx = m.top.selectedSubtitleIndex
-    videotype = LCase(meta.type)
-
-    ' Check for any Live TV streams or Recordings coming from other places other than the TV Guide
-    if videotype = "recording" or (isValid(meta.json) and isValid(meta.json.ChannelId))
-        if isValid(meta.json.EpisodeTitle)
-            meta.title = meta.json.EpisodeTitle
-        else if isValid(meta.json.Name)
-            meta.title = meta.json.Name
-        end if
-        meta.live = true
-        if LCase(meta.json.type) = "program"
-            video.id = meta.json.ChannelId
-        else
-            video.id = meta.json.id
-        end if
+  if videotype = "tvchannel" and isValid(meta.json) and isValid(meta.json.CurrentProgram)
+    if isValid(meta.json.CurrentProgram.Name)
+      meta.title = `${meta.title}: ${meta.json.CurrentProgram.Name}`
     end if
-
-    if videotype = "tvchannel" and isValid(meta.json) and isValid(meta.json.CurrentProgram)
-        if isValid(meta.json.CurrentProgram.Name)
-            meta.title = `${meta.title}: ${meta.json.CurrentProgram.Name}`
-        end if
-        if isValid(meta.json.CurrentProgram.ParentIndexNumber)
-            video.seasonNumber = meta.json.CurrentProgram.ParentIndexNumber
-        end if
-        if isValid(meta.json.CurrentProgram.IndexNumber)
-            video.episodeNumber = meta.json.CurrentProgram.IndexNumber
-        end if
-        if isValid(meta.json.CurrentProgram.IndexNumberEnd)
-            video.episodeNumberEnd = meta.json.CurrentProgram.IndexNumberEnd
-        end if
+    if isValid(meta.json.CurrentProgram.ParentIndexNumber)
+      video.seasonNumber = meta.json.CurrentProgram.ParentIndexNumber
     end if
-
-    video.chapters = meta.json.Chapters
-    video.title = meta.title
-    video.showID = meta.showID
-
-    logoLookupID = video.id
-
-    if videotype = "episode" or videotype = "series"
-        video.content.contenttype = "episode"
-        video.seasonNumber = meta.json.ParentIndexNumber
-        video.episodeNumber = meta.json.IndexNumber
-        video.episodeNumberEnd = meta.json.IndexNumberEnd
-
-        if isValid(meta.showID)
-            logoLookupID = meta.showID
-        end if
+    if isValid(meta.json.CurrentProgram.IndexNumber)
+      video.episodeNumber = meta.json.CurrentProgram.IndexNumber
     end if
-
-    logoImageExists = api.items.HeadImageURLByName(logoLookupID, "logo")
-    if logoImageExists
-        video.json.logoImage = api.items.GetImageURL(logoLookupID, "logo", 0, { "maxHeight": 500, "maxWidth": 500, "quality": "90" })
+    if isValid(meta.json.CurrentProgram.IndexNumberEnd)
+      video.episodeNumberEnd = meta.json.CurrentProgram.IndexNumberEnd
     end if
+  end if
 
-    if LCase(m.top.itemType) = "episode"
-        if userSettings["playback.playnextepisode"] = "enabled" or userSettings["playback.playnextepisode"] = "webclient" and userSession.Configuration.EnableNextEpisodeAutoPlay
-            addNextEpisodesToQueue(video.showID)
-        end if
+  video.chapters = meta.json.Chapters
+  video.title = meta.title
+  video.showID = meta.showID
+
+  logoLookupID = video.id
+
+  if videotype = "episode" or videotype = "series"
+    video.content.contenttype = "episode"
+    video.seasonNumber = meta.json.ParentIndexNumber
+    video.episodeNumber = meta.json.IndexNumber
+    video.episodeNumberEnd = meta.json.IndexNumberEnd
+
+    if isValid(meta.showID)
+      logoLookupID = meta.showID
     end if
+  end if
 
-    playbackPosition = 0!
+  logoImageExists = api.items.HeadImageURLByName(logoLookupID, "logo")
+  if logoImageExists
+    video.json.logoImage = api.items.GetImageURL(logoLookupID, "logo", 0, { "maxHeight": 500, "maxWidth": 500, "quality": "90" })
+  end if
 
-    currentItem = queueManager.callFunc("getCurrentItem")
-
-    if isValid(currentItem) and isValid(currentItem.startingPoint)
-        playbackPosition = currentItem.startingPoint
+  if LCase(m.top.itemType) = "episode"
+    if userSettings["playback.playnextepisode"] = "enabled" or userSettings["playback.playnextepisode"] = "webclient" and userSession.Configuration.EnableNextEpisodeAutoPlay
+      addNextEpisodesToQueue(video.showID)
     end if
+  end if
 
-    ' PlayStart requires the time to be in seconds
-    video.content.PlayStart = int(playbackPosition / 10000000)
+  playbackPosition = 0!
 
-    if not isValid(mediaSourceId) then mediaSourceId = video.id
-    if meta.live then mediaSourceId = ""
+  currentItem = queueManager.callFunc("getCurrentItem")
 
-    m.playbackInfo = ItemPostPlaybackInfo(video.id, mediaSourceId, audio_stream_idx, subtitle_idx, playbackPosition, m.top.forceMp3)
-    if not isValid(m.playbackInfo)
+  if isValid(currentItem) and isValid(currentItem.startingPoint)
+    playbackPosition = currentItem.startingPoint
+  end if
+
+  ' PlayStart requires the time to be in seconds
+  video.content.PlayStart = int(playbackPosition / 10000000)
+
+  if not isValid(mediaSourceId) then mediaSourceId = video.id
+  if meta.live then mediaSourceId = ""
+
+  m.playbackInfo = ItemPostPlaybackInfo(video.id, mediaSourceId, audio_stream_idx, subtitle_idx, playbackPosition, m.top.forceMp3)
+  if not isValid(m.playbackInfo)
+    video.errorMsg = "Error loading playback info"
+    video.content = invalid
+    return
+  end if
+
+  addSubtitlesToVideo(video, meta)
+
+  ' Enable default subtitle track
+  if subtitle_idx = SubtitleSelection.notset
+    defaultSubtitleIndex = defaultSubtitleTrackFromVid(video.id)
+
+    if defaultSubtitleIndex <> SubtitleSelection.none
+      video.SelectedSubtitle = defaultSubtitleIndex
+      subtitle_idx = defaultSubtitleIndex
+
+      m.playbackInfo = ItemPostPlaybackInfo(video.id, mediaSourceId, audio_stream_idx, subtitle_idx, playbackPosition, m.top.forceMp3)
+      if not isValid(m.playbackInfo)
         video.errorMsg = "Error loading playback info"
         video.content = invalid
         return
-    end if
+      end if
 
-    addSubtitlesToVideo(video, meta)
-
-    ' Enable default subtitle track
-    if subtitle_idx = SubtitleSelection.notset
-        defaultSubtitleIndex = defaultSubtitleTrackFromVid(video.id)
-
-        if defaultSubtitleIndex <> SubtitleSelection.none
-            video.SelectedSubtitle = defaultSubtitleIndex
-            subtitle_idx = defaultSubtitleIndex
-
-            m.playbackInfo = ItemPostPlaybackInfo(video.id, mediaSourceId, audio_stream_idx, subtitle_idx, playbackPosition, m.top.forceMp3)
-            if not isValid(m.playbackInfo)
-                video.errorMsg = "Error loading playback info"
-                video.content = invalid
-                return
-            end if
-
-            addSubtitlesToVideo(video, meta)
-        else
-            video.SelectedSubtitle = subtitle_idx
-        end if
+      addSubtitlesToVideo(video, meta)
     else
-        video.SelectedSubtitle = subtitle_idx
+      video.SelectedSubtitle = subtitle_idx
     end if
+  else
+    video.SelectedSubtitle = subtitle_idx
+  end if
 
-    video.videoId = video.id
-    video.mediaSourceId = mediaSourceId
-    video.audioIndex = audio_stream_idx
+  video.videoId = video.id
+  video.mediaSourceId = mediaSourceId
+  video.audioIndex = audio_stream_idx
 
-    video.PlaySessionId = m.playbackInfo.PlaySessionId
+  video.PlaySessionId = m.playbackInfo.PlaySessionId
 
-    if meta.live
-        video.content.live = true
-        video.content.StreamFormat = "hls"
+  if meta.live
+    video.content.live = true
+    video.content.StreamFormat = "hls"
+  end if
+
+  video.container = getContainerType(meta)
+
+  if not isValid(m.playbackInfo.MediaSources[0])
+    m.playbackInfo = meta.json
+  end if
+
+  addAudioStreamsToVideo(video)
+  if meta.live
+    video.transcodeParams = {
+      "MediaSourceId": m.playbackInfo.MediaSources[0].Id,
+      "LiveStreamId": m.playbackInfo.MediaSources[0].LiveStreamId,
+      "PlaySessionId": video.PlaySessionId
+    }
+  end if
+
+  ' 'TODO: allow user selection of subtitle track before playback initiated, for now set to no subtitles
+  video.directPlaySupported = m.playbackInfo.MediaSources[0].SupportsDirectPlay
+  fully_external = false
+
+  ' For h264/hevc video, Roku spec states that it supports specfic encoding levels
+  ' The device can decode content with a Higher Encoding level but may play it back with certain
+  ' artifacts. If the user preference is set, and the only reason the server says we need to
+  ' transcode is that the Encoding Level is not supported, then try to direct play but silently
+  ' fall back to the transcode if that fails.
+  if m.playbackInfo.MediaSources[0].MediaStreams.Count() > 0 and meta.live = false
+    tryDirectPlay = userSettings["playback.tryDirect.h264ProfileLevel"] and m.playbackInfo.MediaSources[0].MediaStreams[0].codec = "h264"
+    tryDirectPlay = tryDirectPlay or (userSettings["playback.tryDirect.hevcProfileLevel"] and m.playbackInfo.MediaSources[0].MediaStreams[0].codec = "hevc")
+    if tryDirectPlay and isValid(m.playbackInfo.MediaSources[0].TranscodingUrl) and forceTranscoding = false
+      transcodingReasons = getTranscodeReasons(m.playbackInfo.MediaSources[0].TranscodingUrl)
+      if transcodingReasons.Count() = 1 and transcodingReasons[0] = "VideoLevelNotSupported"
+        video.directPlaySupported = true
+        video.transcodeAvailable = true
+      end if
     end if
+  end if
 
-    video.container = getContainerType(meta)
-
-    if not isValid(m.playbackInfo.MediaSources[0])
-        m.playbackInfo = meta.json
+  if video.directPlaySupported
+    video.isTranscoded = false
+    addVideoContentURL(video, mediaSourceId, audio_stream_idx, fully_external)
+  else
+    if m.playbackInfo.MediaSources[0].TranscodingUrl = invalid
+      ' If server does not provide a transcode URL, display a message to the user
+      m.global.sceneManager.callFunc("userMessage", tr("Error Getting Playback Information"), tr("An error was encountered while playing this item.  Server did not provide required transcoding data."))
+      video.errorMsg = "Error getting playback information"
+      video.content = invalid
+      return
     end if
+    ' Get transcoding reason
+    video.transcodeReasons = getTranscodeReasons(m.playbackInfo.MediaSources[0].TranscodingUrl)
+    video.content.url = buildURL(m.playbackInfo.MediaSources[0].TranscodingUrl)
+    video.isTranscoded = true
+  end if
 
-    addAudioStreamsToVideo(video)
-    if meta.live
-        video.transcodeParams = {
-            "MediaSourceId": m.playbackInfo.MediaSources[0].Id,
-            "LiveStreamId": m.playbackInfo.MediaSources[0].LiveStreamId,
-            "PlaySessionId": video.PlaySessionId
-        }
-    end if
+  setCertificateAuthority(video.content)
+  video.audioTrack = (audio_stream_idx + 1).ToStr() ' Roku's track indexes count from 1. Our index is zero based
 
-    ' 'TODO: allow user selection of subtitle track before playback initiated, for now set to no subtitles
-    video.directPlaySupported = m.playbackInfo.MediaSources[0].SupportsDirectPlay
-    fully_external = false
-
-    ' For h264/hevc video, Roku spec states that it supports specfic encoding levels
-    ' The device can decode content with a Higher Encoding level but may play it back with certain
-    ' artifacts. If the user preference is set, and the only reason the server says we need to
-    ' transcode is that the Encoding Level is not supported, then try to direct play but silently
-    ' fall back to the transcode if that fails.
-    if m.playbackInfo.MediaSources[0].MediaStreams.Count() > 0 and meta.live = false
-        tryDirectPlay = userSettings["playback.tryDirect.h264ProfileLevel"] and m.playbackInfo.MediaSources[0].MediaStreams[0].codec = "h264"
-        tryDirectPlay = tryDirectPlay or (userSettings["playback.tryDirect.hevcProfileLevel"] and m.playbackInfo.MediaSources[0].MediaStreams[0].codec = "hevc")
-        if tryDirectPlay and isValid(m.playbackInfo.MediaSources[0].TranscodingUrl) and forceTranscoding = false
-            transcodingReasons = getTranscodeReasons(m.playbackInfo.MediaSources[0].TranscodingUrl)
-            if transcodingReasons.Count() = 1 and transcodingReasons[0] = "VideoLevelNotSupported"
-                video.directPlaySupported = true
-                video.transcodeAvailable = true
-            end if
-        end if
-    end if
-
-    if video.directPlaySupported
-        video.isTranscoded = false
-        addVideoContentURL(video, mediaSourceId, audio_stream_idx, fully_external)
-    else
-        if m.playbackInfo.MediaSources[0].TranscodingUrl = invalid
-            ' If server does not provide a transcode URL, display a message to the user
-            m.global.sceneManager.callFunc("userMessage", tr("Error Getting Playback Information"), tr("An error was encountered while playing this item.  Server did not provide required transcoding data."))
-            video.errorMsg = "Error getting playback information"
-            video.content = invalid
-            return
-        end if
-        ' Get transcoding reason
-        video.transcodeReasons = getTranscodeReasons(m.playbackInfo.MediaSources[0].TranscodingUrl)
-        video.content.url = buildURL(m.playbackInfo.MediaSources[0].TranscodingUrl)
-        video.isTranscoded = true
-    end if
-
-    setCertificateAuthority(video.content)
-    video.audioTrack = (audio_stream_idx + 1).ToStr() ' Roku's track indexes count from 1. Our index is zero based
-
-    if not fully_external
-        video.content = authRequest(video.content)
-    end if
+  if not fully_external
+    video.content = authRequest(video.content)
+  end if
 end sub
 
 ' defaultSubtitleTrackFromVid: Identifies the default subtitle track given video id
@@ -284,38 +284,38 @@ end sub
 ' @param {dynamic} videoID - id of video user is playing
 ' @return {integer} indicating the default track's server-side index. Defaults to {SubtitleSelection.none} is one is not found
 function defaultSubtitleTrackFromVid(videoID) as integer
-    userSession = m.global.session.user
-    if userSession.configuration.SubtitleMode = "None"
-        return SubtitleSelection.none ' No subtitles desired: return none
-    end if
+  userSession = m.global.session.user
+  if userSession.configuration.SubtitleMode = "None"
+    return SubtitleSelection.none ' No subtitles desired: return none
+  end if
 
-    meta = ItemMetaData(videoID)
+  meta = ItemMetaData(videoID)
 
-    if not isValid(meta) then return SubtitleSelection.none
-    if not isValid(meta.json) then return SubtitleSelection.none
-    if not isValidAndNotEmpty(meta.json.mediaSources) then return SubtitleSelection.none
-    if not isValidAndNotEmpty(meta.json.MediaSources[0].MediaStreams) then return SubtitleSelection.none
+  if not isValid(meta) then return SubtitleSelection.none
+  if not isValid(meta.json) then return SubtitleSelection.none
+  if not isValidAndNotEmpty(meta.json.mediaSources) then return SubtitleSelection.none
+  if not isValidAndNotEmpty(meta.json.MediaSources[0].MediaStreams) then return SubtitleSelection.none
 
-    subtitles = sortSubtitles(meta.id, meta.json.MediaSources[0].MediaStreams)
+  subtitles = sortSubtitles(meta.id, meta.json.MediaSources[0].MediaStreams)
 
-    selectedAudioLanguage = ""
-    audioMediaStream = meta.json.MediaSources[0].MediaStreams[m.top.selectedAudioStreamIndex]
+  selectedAudioLanguage = ""
+  audioMediaStream = meta.json.MediaSources[0].MediaStreams[m.top.selectedAudioStreamIndex]
 
-    ' Ensure audio media stream is valid before using language property
-    if isValid(audioMediaStream)
-        selectedAudioLanguage = audioMediaStream.Language ?? ""
-    end if
+  ' Ensure audio media stream is valid before using language property
+  if isValid(audioMediaStream)
+    selectedAudioLanguage = audioMediaStream.Language ?? ""
+  end if
 
-    defaultTextSubs = defaultSubtitleTrack(subtitles["text"], selectedAudioLanguage, true) ' Find correct subtitle track (forced text)
-    if defaultTextSubs <> SubtitleSelection.none
-        return defaultTextSubs
-    end if
+  defaultTextSubs = defaultSubtitleTrack(subtitles["text"], selectedAudioLanguage, true) ' Find correct subtitle track (forced text)
+  if defaultTextSubs <> SubtitleSelection.none
+    return defaultTextSubs
+  end if
 
-    if not userSession.settings["playback.subs.onlytext"]
-        return defaultSubtitleTrack(subtitles["all"], selectedAudioLanguage) ' if no appropriate text subs exist, allow non-text
-    end if
+  if not userSession.settings["playback.subs.onlytext"]
+    return defaultSubtitleTrack(subtitles["all"], selectedAudioLanguage) ' if no appropriate text subs exist, allow non-text
+  end if
 
-    return SubtitleSelection.none
+  return SubtitleSelection.none
 end function
 
 ' defaultSubtitleTrack:
@@ -325,94 +325,94 @@ end function
 ' @param {boolean} [requireText=false] - indicates if only text subtitles should be considered
 ' @return {integer} indicating the default track's server-side index. Defaults to {SubtitleSelection.none} is one is not found
 function defaultSubtitleTrack(sortedSubtitles, selectedAudioLanguage as string, requireText = false as boolean) as integer
-    userConfig = m.global.session.user.configuration
+  userConfig = m.global.session.user.configuration
 
-    subtitleMode = isValid(userConfig.SubtitleMode) ? LCase(userConfig.SubtitleMode) : ""
+  subtitleMode = isValid(userConfig.SubtitleMode) ? LCase(userConfig.SubtitleMode) : ""
 
-    allowSmartMode = false
+  allowSmartMode = false
 
-    ' Only evaluate selected audio language if we have a value
-    if selectedAudioLanguage <> ""
-        allowSmartMode = selectedAudioLanguage <> userConfig.SubtitleLanguagePreference
+  ' Only evaluate selected audio language if we have a value
+  if selectedAudioLanguage <> ""
+    allowSmartMode = selectedAudioLanguage <> userConfig.SubtitleLanguagePreference
+  end if
+
+  for each item in sortedSubtitles
+    ' Only auto-select subtitle if language matches SubtitleLanguagePreference
+    languageMatch = true
+    if userConfig.SubtitleLanguagePreference <> ""
+      languageMatch = (userConfig.SubtitleLanguagePreference = item.Track.Language)
     end if
 
+    ' Ensure textuality of subtitle matches preferenced passed as arg
+    matchTextReq = ((requireText and item.IsTextSubtitleStream) or not requireText)
+
+    if languageMatch and matchTextReq
+      if subtitleMode = "default" and (item.isForced or item.IsDefault)
+        ' Return first forced or default subtitle track
+        return item.Index
+      else if subtitleMode = "always"
+        ' Return the first found subtitle track
+        return item.Index
+      else if subtitleMode = "onlyforced" and item.IsForced
+        ' Return first forced subtitle track
+        return item.Index
+      else if subtitleMode = "smart" and allowSmartMode
+        ' Return the first found subtitle track
+        return item.Index
+      end if
+    end if
+  end for
+
+  ' User has chosed smart subtitle mode
+  ' We already attempted to load subtitles in preferred language, but none were found.
+  ' Fall back to default behaviour while ignoring preferredlanguage
+  if subtitleMode = "smart" and allowSmartMode
     for each item in sortedSubtitles
-        ' Only auto-select subtitle if language matches SubtitleLanguagePreference
-        languageMatch = true
-        if userConfig.SubtitleLanguagePreference <> ""
-            languageMatch = (userConfig.SubtitleLanguagePreference = item.Track.Language)
+      ' Ensure textuality of subtitle matches preferenced passed as arg
+      matchTextReq = ((requireText and item.IsTextSubtitleStream) or not requireText)
+      if matchTextReq
+        if item.isForced or item.IsDefault
+          ' Return first forced or default subtitle track
+          return item.Index
         end if
-
-        ' Ensure textuality of subtitle matches preferenced passed as arg
-        matchTextReq = ((requireText and item.IsTextSubtitleStream) or not requireText)
-
-        if languageMatch and matchTextReq
-            if subtitleMode = "default" and (item.isForced or item.IsDefault)
-                ' Return first forced or default subtitle track
-                return item.Index
-            else if subtitleMode = "always"
-                ' Return the first found subtitle track
-                return item.Index
-            else if subtitleMode = "onlyforced" and item.IsForced
-                ' Return first forced subtitle track
-                return item.Index
-            else if subtitleMode = "smart" and allowSmartMode
-                ' Return the first found subtitle track
-                return item.Index
-            end if
-        end if
+      end if
     end for
+  end if
 
-    ' User has chosed smart subtitle mode
-    ' We already attempted to load subtitles in preferred language, but none were found.
-    ' Fall back to default behaviour while ignoring preferredlanguage
-    if subtitleMode = "smart" and allowSmartMode
-        for each item in sortedSubtitles
-            ' Ensure textuality of subtitle matches preferenced passed as arg
-            matchTextReq = ((requireText and item.IsTextSubtitleStream) or not requireText)
-            if matchTextReq
-                if item.isForced or item.IsDefault
-                    ' Return first forced or default subtitle track
-                    return item.Index
-                end if
-            end if
-        end for
-    end if
-
-    return SubtitleSelection.none ' Keep current default behavior of "None", if no correct subtitle is identified
+  return SubtitleSelection.none ' Keep current default behavior of "None", if no correct subtitle is identified
 end function
 
 sub addVideoContentURL(video, mediaSourceId, audio_stream_idx, fully_external)
-    protocol = LCase(m.playbackInfo.MediaSources[0].Protocol)
-    if protocol <> "file"
-        uri = parseUrl(m.playbackInfo.MediaSources[0].Path)
-        if not isValidAndNotEmpty(uri) then return
+  protocol = LCase(m.playbackInfo.MediaSources[0].Protocol)
+  if protocol <> "file"
+    uri = parseUrl(m.playbackInfo.MediaSources[0].Path)
+    if not isValidAndNotEmpty(uri) then return
 
-        if isValid(uri[2]) and isLocalhost(uri[2])
-            ' if the domain of the URI is local to the server,
-            ' create a new URI by appending the received path to the server URL
-            ' later we will substitute the users provided URL for this case
-            if isValid(uri[4])
-                video.content.url = buildURL(uri[4])
-            end if
-        else
-            fully_external = true
-            video.content.url = m.playbackInfo.MediaSources[0].Path
-        end if
+    if isValid(uri[2]) and isLocalhost(uri[2])
+      ' if the domain of the URI is local to the server,
+      ' create a new URI by appending the received path to the server URL
+      ' later we will substitute the users provided URL for this case
+      if isValid(uri[4])
+        video.content.url = buildURL(uri[4])
+      end if
     else
-        params = {
-            "Static": "true",
-            "Container": video.container,
-            "PlaySessionId": video.PlaySessionId,
-            "AudioStreamIndex": audio_stream_idx
-        }
-
-        if mediaSourceId <> ""
-            params.MediaSourceId = mediaSourceId
-        end if
-
-        video.content.url = buildURL(Substitute("Videos/{0}/stream", video.id), params)
+      fully_external = true
+      video.content.url = m.playbackInfo.MediaSources[0].Path
     end if
+  else
+    params = {
+      "Static": "true",
+      "Container": video.container,
+      "PlaySessionId": video.PlaySessionId,
+      "AudioStreamIndex": audio_stream_idx
+    }
+
+    if mediaSourceId <> ""
+      params.MediaSourceId = mediaSourceId
+    end if
+
+    video.content.url = buildURL(Substitute("Videos/{0}/stream", video.id), params)
+  end if
 end sub
 
 
@@ -420,39 +420,39 @@ end sub
 '
 ' @param {dynamic} video component to add fullAudioData to
 sub addAudioStreamsToVideo(video)
-    audioStreams = []
-    mediaStreams = m.playbackInfo.MediaSources[0].MediaStreams
+  audioStreams = []
+  mediaStreams = m.playbackInfo.MediaSources[0].MediaStreams
 
-    for i = 0 to mediaStreams.Count() - 1
-        if LCase(mediaStreams[i].Type) = "audio"
-            audioStreams.push(mediaStreams[i])
-        end if
-    end for
+  for i = 0 to mediaStreams.Count() - 1
+    if LCase(mediaStreams[i].Type) = "audio"
+      audioStreams.push(mediaStreams[i])
+    end if
+  end for
 
-    video.fullAudioData = audioStreams
+  video.fullAudioData = audioStreams
 end sub
 
 sub addSubtitlesToVideo(video, meta)
-    if not isValid(meta) then return
-    if not isValid(meta.id) then return
-    if not isValid(m.playbackInfo) then return
-    if not isValidAndNotEmpty(m.playbackInfo.MediaSources) then return
-    if not isValid(m.playbackInfo.MediaSources[0].MediaStreams) then return
+  if not isValid(meta) then return
+  if not isValid(meta.id) then return
+  if not isValid(m.playbackInfo) then return
+  if not isValidAndNotEmpty(m.playbackInfo.MediaSources) then return
+  if not isValid(m.playbackInfo.MediaSources[0].MediaStreams) then return
 
-    subtitles = sortSubtitles(meta.id, m.playbackInfo.MediaSources[0].MediaStreams)
-    safesubs = subtitles["all"]
-    subtitleTracks = []
+  subtitles = sortSubtitles(meta.id, m.playbackInfo.MediaSources[0].MediaStreams)
+  safesubs = subtitles["all"]
+  subtitleTracks = []
 
-    if m.global.session.user.settings["playback.subs.onlytext"] = true
-        safesubs = subtitles["text"]
-    end if
+  if m.global.session.user.settings["playback.subs.onlytext"] = true
+    safesubs = subtitles["text"]
+  end if
 
-    for each subtitle in safesubs
-        subtitleTracks.push(subtitle.track)
-    end for
+  for each subtitle in safesubs
+    subtitleTracks.push(subtitle.track)
+  end for
 
-    video.content.SubtitleTracks = subtitleTracks
-    video.fullSubtitleData = safesubs
+  video.content.SubtitleTracks = subtitleTracks
+  video.fullSubtitleData = safesubs
 end sub
 
 
@@ -461,184 +461,184 @@ end sub
 ' @returns Array of Strings
 function getTranscodeReasons(url as string) as object
 
-    regex = CreateObject("roRegex", "&TranscodeReasons=([^&]*)", "")
-    match = regex.Match(url)
+  regex = CreateObject("roRegex", "&TranscodeReasons=([^&]*)", "")
+  match = regex.Match(url)
 
-    if match.count() > 1
-        return match[1].Split(",")
-    end if
+  if match.count() > 1
+    return match[1].Split(",")
+  end if
 
-    return []
+  return []
 end function
 
 function directPlaySupported(meta as object) as boolean
-    devinfo = CreateObject("roDeviceInfo")
-    if isValid(meta.json.MediaSources[0]) and meta.json.MediaSources[0].SupportsDirectPlay = false
-        return false
-    end if
+  devinfo = CreateObject("roDeviceInfo")
+  if isValid(meta.json.MediaSources[0]) and meta.json.MediaSources[0].SupportsDirectPlay = false
+    return false
+  end if
 
-    if meta.json.MediaStreams[0] = invalid
-        return false
-    end if
+  if meta.json.MediaStreams[0] = invalid
+    return false
+  end if
 
-    streamInfo = { Codec: meta.json.MediaStreams[0].codec }
-    if isValid(meta.json.MediaStreams[0].Profile) and meta.json.MediaStreams[0].Profile.len() > 0
-        streamInfo.Profile = LCase(meta.json.MediaStreams[0].Profile)
+  streamInfo = { Codec: meta.json.MediaStreams[0].codec }
+  if isValid(meta.json.MediaStreams[0].Profile) and meta.json.MediaStreams[0].Profile.len() > 0
+    streamInfo.Profile = LCase(meta.json.MediaStreams[0].Profile)
+  end if
+  if isValid(meta.json.MediaSources[0].container) and meta.json.MediaSources[0].container.len() > 0
+    'CanDecodeVideo() requires the .container to be format: “mp4”, “hls”, “mkv”, “ism”, “dash”, “ts” if its to direct stream
+    if meta.json.MediaSources[0].container = "mov"
+      streamInfo.Container = "mp4"
+    else
+      streamInfo.Container = meta.json.MediaSources[0].container
     end if
-    if isValid(meta.json.MediaSources[0].container) and meta.json.MediaSources[0].container.len() > 0
-        'CanDecodeVideo() requires the .container to be format: “mp4”, “hls”, “mkv”, “ism”, “dash”, “ts” if its to direct stream
-        if meta.json.MediaSources[0].container = "mov"
-            streamInfo.Container = "mp4"
-        else
-            streamInfo.Container = meta.json.MediaSources[0].container
-        end if
-    end if
+  end if
 
-    decodeResult = devinfo.CanDecodeVideo(streamInfo)
-    return decodeResult <> invalid and decodeResult.result
+  decodeResult = devinfo.CanDecodeVideo(streamInfo)
+  return decodeResult <> invalid and decodeResult.result
 
 end function
 
 function getContainerType(meta as object) as string
-    ' Determine the file type of the video file source
-    if meta.json.mediaSources = invalid then return ""
+  ' Determine the file type of the video file source
+  if meta.json.mediaSources = invalid then return ""
 
-    container = meta.json.mediaSources[0].container
-    if container = invalid
-        container = ""
-    else if container = "m4v" or container = "mov"
-        container = "mp4"
-    end if
+  container = meta.json.mediaSources[0].container
+  if container = invalid
+    container = ""
+  else if container = "m4v" or container = "mov"
+    container = "mp4"
+  end if
 
-    return container
+  return container
 end function
 
 ' Add next episodes to the playback queue
 sub addNextEpisodesToQueue(showID)
-    queueManager = m.global.queueManager
+  queueManager = m.global.queueManager
 
-    ' Don't queue next episodes if we already have a playback queue
-    maxQueueCount = 1
+  ' Don't queue next episodes if we already have a playback queue
+  maxQueueCount = 1
 
-    if m.top.isIntro
-        maxQueueCount = 2
+  if m.top.isIntro
+    maxQueueCount = 2
+  end if
+
+  if queueManager.callFunc("getCount") > maxQueueCount then return
+
+  videoID = m.top.itemId
+
+  ' If first item is an intro video, use the next item in the queue
+  if m.top.isIntro
+    currentVideo = queueManager.callFunc("getItemByIndex", 1)
+
+    if isValid(currentVideo) and isValid(currentVideo.id)
+      videoID = currentVideo.id
+
+      ' Override showID value since it's for the intro video
+      meta = ItemMetaData(videoID)
+      if isValid(meta)
+        showID = meta.showID
+      end if
     end if
+  end if
 
-    if queueManager.callFunc("getCount") > maxQueueCount then return
+  url = Substitute("Shows/{0}/Episodes", showID)
+  urlParams = { "UserId": m.global.session.user.id }
+  urlParams.Append({ "StartItemId": videoID })
+  urlParams.Append({ "Limit": 50 })
+  resp = APIRequest(url, urlParams)
+  data = getJson(resp)
 
-    videoID = m.top.itemId
-
-    ' If first item is an intro video, use the next item in the queue
-    if m.top.isIntro
-        currentVideo = queueManager.callFunc("getItemByIndex", 1)
-
-        if isValid(currentVideo) and isValid(currentVideo.id)
-            videoID = currentVideo.id
-
-            ' Override showID value since it's for the intro video
-            meta = ItemMetaData(videoID)
-            if isValid(meta)
-                showID = meta.showID
-            end if
-        end if
-    end if
-
-    url = Substitute("Shows/{0}/Episodes", showID)
-    urlParams = { "UserId": m.global.session.user.id }
-    urlParams.Append({ "StartItemId": videoID })
-    urlParams.Append({ "Limit": 50 })
-    resp = APIRequest(url, urlParams)
-    data = getJson(resp)
-
-    if isValid(data) and data.Items.Count() > 1
-        for i = 1 to data.Items.Count() - 1
-            queueManager.callFunc("push", data.Items[i])
-        end for
-    end if
+  if isValid(data) and data.Items.Count() > 1
+    for i = 1 to data.Items.Count() - 1
+      queueManager.callFunc("push", data.Items[i])
+    end for
+  end if
 end sub
 
 'Checks available subtitle tracks and puts subtitles in forced, default, and non-default/forced but preferred language at the top
 function sortSubtitles(id as string, MediaStreams)
-    tracks = { "forced": [], "default": [], "normal": [], "text": [] }
-    'Too many args for using substitute
-    prefered_lang = m.global.session.user.configuration.SubtitleLanguagePreference
-    for each stream in MediaStreams
-        if stream.type = "Subtitle"
+  tracks = { "forced": [], "default": [], "normal": [], "text": [] }
+  'Too many args for using substitute
+  prefered_lang = m.global.session.user.configuration.SubtitleLanguagePreference
+  for each stream in MediaStreams
+    if stream.type = "Subtitle"
 
-            url = ""
-            if isValid(stream.DeliveryUrl)
-                url = buildURL(stream.DeliveryUrl)
-            end if
+      url = ""
+      if isValid(stream.DeliveryUrl)
+        url = buildURL(stream.DeliveryUrl)
+      end if
 
-            stream = {
-                "Track": { "Language": stream.language, "Description": stream.displaytitle, "TrackName": url },
-                "IsTextSubtitleStream": stream.IsTextSubtitleStream,
-                "Index": stream.index,
-                "IsDefault": stream.IsDefault,
-                "IsForced": stream.IsForced,
-                "IsExternal": stream.IsExternal,
-                "IsEncoded": stream.DeliveryMethod = "Encode"
-            }
+      stream = {
+        "Track": { "Language": stream.language, "Description": stream.displaytitle, "TrackName": url },
+        "IsTextSubtitleStream": stream.IsTextSubtitleStream,
+        "Index": stream.index,
+        "IsDefault": stream.IsDefault,
+        "IsForced": stream.IsForced,
+        "IsExternal": stream.IsExternal,
+        "IsEncoded": stream.DeliveryMethod = "Encode"
+      }
 
-            if stream.isForced
-                trackType = "forced"
-            else if stream.IsDefault
-                trackType = "default"
-            else
-                trackType = "normal"
-            end if
+      if stream.isForced
+        trackType = "forced"
+      else if stream.IsDefault
+        trackType = "default"
+      else
+        trackType = "normal"
+      end if
 
-            if prefered_lang <> "" and prefered_lang = stream.Track.Language
-                tracks[trackType].unshift(stream)
+      if prefered_lang <> "" and prefered_lang = stream.Track.Language
+        tracks[trackType].unshift(stream)
 
-                if stream.IsTextSubtitleStream
-                    tracks["text"].unshift(stream)
-                end if
-            else
-                tracks[trackType].push(stream)
-
-                if stream.IsTextSubtitleStream
-                    tracks["text"].push(stream)
-                end if
-            end if
+        if stream.IsTextSubtitleStream
+          tracks["text"].unshift(stream)
         end if
-    end for
+      else
+        tracks[trackType].push(stream)
 
-    tracks["default"].append(tracks["normal"])
-    tracks["forced"].append(tracks["default"])
+        if stream.IsTextSubtitleStream
+          tracks["text"].push(stream)
+        end if
+      end if
+    end if
+  end for
 
-    return { "all": tracks["forced"], "text": tracks["text"] }
+  tracks["default"].append(tracks["normal"])
+  tracks["forced"].append(tracks["default"])
+
+  return { "all": tracks["forced"], "text": tracks["text"] }
 end function
 
 function FindPreferredAudioStream(streams as dynamic) as integer
-    userConfig = m.global.session.user.configuration
-    preferredLanguage = userConfig.AudioLanguagePreference
-    playDefault = userConfig.PlayDefaultAudioTrack
+  userConfig = m.global.session.user.configuration
+  preferredLanguage = userConfig.AudioLanguagePreference
+  playDefault = userConfig.PlayDefaultAudioTrack
 
-    if playDefault <> invalid and playDefault = true
-        return 1
-    end if
-
-    ' Do we already have the MediaStreams or not?
-    if streams = invalid
-        url = Substitute("Users/{0}/Items/{1}", m.global.session.user.id, m.top.itemId)
-        resp = APIRequest(url)
-        jsonResponse = getJson(resp)
-
-        if jsonResponse = invalid or jsonResponse.MediaStreams = invalid then return 1
-
-        streams = jsonResponse.MediaStreams
-    end if
-
-    if preferredLanguage <> invalid
-        for i = 0 to streams.Count() - 1
-            if LCase(streams[i].Type) = "audio"
-                if streams[i].Language <> invalid and LCase(streams[i].Language) = LCase(preferredLanguage)
-                    return i
-                end if
-            end if
-        end for
-    end if
-
+  if playDefault <> invalid and playDefault = true
     return 1
+  end if
+
+  ' Do we already have the MediaStreams or not?
+  if streams = invalid
+    url = Substitute("Users/{0}/Items/{1}", m.global.session.user.id, m.top.itemId)
+    resp = APIRequest(url)
+    jsonResponse = getJson(resp)
+
+    if jsonResponse = invalid or jsonResponse.MediaStreams = invalid then return 1
+
+    streams = jsonResponse.MediaStreams
+  end if
+
+  if preferredLanguage <> invalid
+    for i = 0 to streams.Count() - 1
+      if LCase(streams[i].Type) = "audio"
+        if streams[i].Language <> invalid and LCase(streams[i].Language) = LCase(preferredLanguage)
+          return i
+        end if
+      end if
+    end for
+  end if
+
+  return 1
 end function

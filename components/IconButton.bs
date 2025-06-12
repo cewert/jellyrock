@@ -1,129 +1,129 @@
 sub init()
-    m.buttonBackground = m.top.findNode("buttonBackground")
-    m.buttonIcon = m.top.findNode("buttonIcon")
-    m.buttonIcon.ObserveField("loadStatus", "OnImageLoadStatusChanged")
-    m.buttonText = m.top.findNode("buttonText")
+  m.buttonBackground = m.top.findNode("buttonBackground")
+  m.buttonIcon = m.top.findNode("buttonIcon")
+  m.buttonIcon.ObserveField("loadStatus", "OnImageLoadStatusChanged")
+  m.buttonText = m.top.findNode("buttonText")
 
-    m.top.observeField("background", "onBackgroundChanged")
-    m.top.observeField("iconBackground", "onIconBackgroundChanged")
-    m.top.observeField("icon", "onIconChanged")
-    m.top.observeField("text", "onTextChanged")
-    m.top.observeField("height", "onHeightChanged")
-    m.top.observeField("width", "onWidthChanged")
-    m.top.observeField("padding", "onPaddingChanged")
-    m.top.observeField("focus", "onFocusChanged")
+  m.top.observeField("background", "onBackgroundChanged")
+  m.top.observeField("iconBackground", "onIconBackgroundChanged")
+  m.top.observeField("icon", "onIconChanged")
+  m.top.observeField("text", "onTextChanged")
+  m.top.observeField("height", "onHeightChanged")
+  m.top.observeField("width", "onWidthChanged")
+  m.top.observeField("padding", "onPaddingChanged")
+  m.top.observeField("focus", "onFocusChanged")
 end sub
 
 sub onFocusChanged()
-    if m.top.focus
-        ' Button background
-        if m.top.focusBackground <> invalid
-            m.buttonBackground.blendColor = m.top.focusBackground
-        end if
-        ' Button icon
-        if m.top.iconFocusBackground <> invalid
-            m.buttonIcon.blendColor = m.top.iconFocusBackground
-        end if
-    else
-        ' Button background
-        if m.top.background <> invalid
-            m.buttonBackground.blendColor = m.top.background
-        end if
-        ' Button icon
-        if m.top.iconBackground <> invalid
-            m.buttonIcon.blendColor = m.top.iconBackground
-        end if
+  if m.top.focus
+    ' Button background
+    if m.top.focusBackground <> invalid
+      m.buttonBackground.blendColor = m.top.focusBackground
     end if
+    ' Button icon
+    if m.top.iconFocusBackground <> invalid
+      m.buttonIcon.blendColor = m.top.iconFocusBackground
+    end if
+  else
+    ' Button background
+    if m.top.background <> invalid
+      m.buttonBackground.blendColor = m.top.background
+    end if
+    ' Button icon
+    if m.top.iconBackground <> invalid
+      m.buttonIcon.blendColor = m.top.iconBackground
+    end if
+  end if
 end sub
 
 sub onBackgroundChanged()
-    m.buttonBackground.blendColor = m.top.background
-    m.top.unobserveField("background")
+  m.buttonBackground.blendColor = m.top.background
+  m.top.unobserveField("background")
 end sub
 
 sub onIconBackgroundChanged()
-    m.buttonIcon.blendColor = m.top.iconBackground
-    m.top.unobserveField("background")
+  m.buttonIcon.blendColor = m.top.iconBackground
+  m.top.unobserveField("background")
 end sub
 
 sub onIconChanged()
-    m.buttonIcon.uri = m.top.icon
+  m.buttonIcon.uri = m.top.icon
 end sub
 
 sub onTextChanged()
-    m.buttonText.text = m.top.text
+  m.buttonText.text = m.top.text
 end sub
 
 sub OnImageLoadStatusChanged(event as object)
-    status = event.GetData()
+  status = event.GetData()
 
-    if status <> invalid and status = "ready"
-        setIconSize()
-    end if
+  if status <> invalid and status = "ready"
+    setIconSize()
+  end if
 end sub
 
 sub setIconSize()
-    height = m.top.height
-    width = m.top.width
-    if height > 0 and width > 0
-        ' TODO: Use smallest number between them
-        m.buttonIcon.height = m.top.height
+  height = m.top.height
+  width = m.top.width
+  if height > 0 and width > 0
+    ' TODO: Use smallest number between them
+    m.buttonIcon.height = m.top.height
 
-        if m.top.padding > 0
-            m.buttonIcon.height = m.buttonIcon.height - m.top.padding
-        end if
-
-        m.buttonIcon.width = m.buttonIcon.height
-
-        m.buttonIcon.translation = [((width - m.buttonIcon.width) / 2), ((height - m.buttonIcon.height) / 2)]
-        m.buttonText.translation = [0, height + 10]
-        m.buttonText.width = width
-    else if height = 0 and width = 0
-        ' determine size of icon
-        if m.buttonIcon.bitmapWidth > 0 and m.buttonIcon.bitmapHeight > 0
-            iconWidth = m.buttonIcon.bitmapWidth
-            iconHeight = m.buttonIcon.bitmapHeight
-
-            ' set buttonBackground width and height to size of poster + padding
-            if m.top.padding > 0
-                m.buttonBackground.width = iconWidth + (m.top.padding * 2)
-                m.buttonBackground.height = iconHeight + (m.top.padding * 2)
-            else
-                m.buttonBackground.width = iconWidth
-                m.buttonBackground.height = iconHeight
-            end if
-
-            m.buttonIcon.translation = [((m.buttonBackground.width - iconWidth) / 2), ((m.buttonBackground.height - iconHeight) / 2)]
-            m.buttonText.translation = [0, m.buttonBackground.height + 10]
-            m.buttonText.width = width
-        end if
+    if m.top.padding > 0
+      m.buttonIcon.height = m.buttonIcon.height - m.top.padding
     end if
+
+    m.buttonIcon.width = m.buttonIcon.height
+
+    m.buttonIcon.translation = [((width - m.buttonIcon.width) / 2), ((height - m.buttonIcon.height) / 2)]
+    m.buttonText.translation = [0, height + 10]
+    m.buttonText.width = width
+  else if height = 0 and width = 0
+    ' determine size of icon
+    if m.buttonIcon.bitmapWidth > 0 and m.buttonIcon.bitmapHeight > 0
+      iconWidth = m.buttonIcon.bitmapWidth
+      iconHeight = m.buttonIcon.bitmapHeight
+
+      ' set buttonBackground width and height to size of poster + padding
+      if m.top.padding > 0
+        m.buttonBackground.width = iconWidth + (m.top.padding * 2)
+        m.buttonBackground.height = iconHeight + (m.top.padding * 2)
+      else
+        m.buttonBackground.width = iconWidth
+        m.buttonBackground.height = iconHeight
+      end if
+
+      m.buttonIcon.translation = [((m.buttonBackground.width - iconWidth) / 2), ((m.buttonBackground.height - iconHeight) / 2)]
+      m.buttonText.translation = [0, m.buttonBackground.height + 10]
+      m.buttonText.width = width
+    end if
+  end if
 end sub
 
 sub onHeightChanged()
-    m.buttonBackground.height = m.top.height
-    setIconSize()
+  m.buttonBackground.height = m.top.height
+  setIconSize()
 end sub
 
 sub onWidthChanged()
-    m.buttonBackground.width = m.top.width
-    setIconSize()
+  m.buttonBackground.width = m.top.width
+  setIconSize()
 end sub
 
 sub onPaddingChanged()
-    setIconSize()
+  setIconSize()
 end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
-    if not press then return false
+  if not press then return false
 
-    if key = "right" and m.top.focus
-        m.top.escape = "right"
-    end if
+  if key = "right" and m.top.focus
+    m.top.escape = "right"
+  end if
 
-    if key = "left" and m.top.focus
-        m.top.escape = "left"
-    end if
+  if key = "left" and m.top.focus
+    m.top.escape = "left"
+  end if
 
-    return false
+  return false
 end function

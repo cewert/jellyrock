@@ -1,46 +1,46 @@
 sub init()
-    m.top.setFocus(false)
+  m.top.setFocus(false)
 
-    m.alphaText = m.top.findNode("alphaText")
-    m.alphaMenu = m.top.findNode("alphaMenu")
+  m.alphaText = m.top.findNode("alphaText")
+  m.alphaMenu = m.top.findNode("alphaMenu")
 
-    m.alphaMenu.setFocus(false)
-    m.alphaMenu.focusedFont.size = 25
-    m.alphaMenu.font.size = 25
+  m.alphaMenu.setFocus(false)
+  m.alphaMenu.focusedFont.size = 25
+  m.alphaMenu.font.size = 25
 
-    ' show mic icon above alpha menu if remote supports voice commands
-    if m.global.device.hasVoiceRemote
-        alphaMic = m.top.findNode("alphaMic")
-        alphaMic.visible = true
+  ' show mic icon above alpha menu if remote supports voice commands
+  if m.global.device.hasVoiceRemote
+    alphaMic = m.top.findNode("alphaMic")
+    alphaMic.visible = true
 
-        micText = m.top.findNode("alphaMicText")
-        micText.font.size = 22
-    end if
+    micText = m.top.findNode("alphaMicText")
+    micText.font.size = 22
+  end if
 end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
-    if not press then return false
-    if not m.alphaMenu.isInFocusChain() then return false
+  if not press then return false
+  if not m.alphaMenu.isInFocusChain() then return false
 
-    if key = "OK"
-        child = m.alphaText.getChild(m.alphaMenu.itemFocused)
-        m.top.letterSelected = child.title
-        return true
+  if key = "OK"
+    child = m.alphaText.getChild(m.alphaMenu.itemFocused)
+    m.top.letterSelected = child.title
+    return true
+  end if
+
+  if key = "up"
+    if m.alphaMenu.itemFocused = 0
+      m.alphaMenu.jumpToItem = m.alphaMenu.numRows - 1
+      return true
     end if
+  end if
 
-    if key = "up"
-        if m.alphaMenu.itemFocused = 0
-            m.alphaMenu.jumpToItem = m.alphaMenu.numRows - 1
-            return true
-        end if
+  if key = "down"
+    if m.alphaMenu.itemFocused = m.alphaMenu.numRows - 1
+      m.alphaMenu.jumpToItem = 0
+      return true
     end if
+  end if
 
-    if key = "down"
-        if m.alphaMenu.itemFocused = m.alphaMenu.numRows - 1
-            m.alphaMenu.jumpToItem = 0
-            return true
-        end if
-    end if
-
-    return false
+  return false
 end function

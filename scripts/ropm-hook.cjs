@@ -35,25 +35,25 @@ let sourceDir = path.join(__dirname, '..', 'source', 'roku_modules');
 parseFolder(sourceDir);
 
 function parseFolder(sourceDir) {
-    try {
-        fs.readdirSync(sourceDir).forEach(file => {
-            let filePath = path.join(sourceDir, file);
-            let fileStats = fs.statSync(filePath);
-            if (fileStats.isDirectory()) {
-                parseFolder(filePath);
-            } else if (filePath.endsWith('.xml')) {
-                let text = fs.readFileSync(filePath, 'utf8');
-                let r = /\/roku_modules\/undefined\/bslib\.brs/gim;
-                text = text.replace(r, '/roku_modules/rokucommunity_bslib/bslib.brs');
-                r = /\/roku_modules\/bslib\/bslib\.brs/gim;
-                text = text.replace(r, '/roku_modules/rokucommunity_bslib/bslib.brs');
-                r = /\/roku_modules\/undefined/gim;
-                text = text.replace(r, '/roku_modules/maestro');
-                fs.writeFileSync(filePath, text);
-                // console.log('fixed', filePath);
-            }
-        });
-    } catch (e) {
-        console.log(e);
-    }
+  try {
+    fs.readdirSync(sourceDir).forEach(file => {
+      let filePath = path.join(sourceDir, file);
+      let fileStats = fs.statSync(filePath);
+      if (fileStats.isDirectory()) {
+        parseFolder(filePath);
+      } else if (filePath.endsWith('.xml')) {
+        let text = fs.readFileSync(filePath, 'utf8');
+        let r = /\/roku_modules\/undefined\/bslib\.brs/gim;
+        text = text.replace(r, '/roku_modules/rokucommunity_bslib/bslib.brs');
+        r = /\/roku_modules\/bslib\/bslib\.brs/gim;
+        text = text.replace(r, '/roku_modules/rokucommunity_bslib/bslib.brs');
+        r = /\/roku_modules\/undefined/gim;
+        text = text.replace(r, '/roku_modules/maestro');
+        fs.writeFileSync(filePath, text);
+        // console.log('fixed', filePath);
+      }
+    });
+  } catch (e) {
+    console.log(e);
+  }
 }

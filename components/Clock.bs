@@ -4,102 +4,102 @@ import "pkg:/source/utils/misc.bs"
 
 ' Possible clock formats
 enum ClockFormat
-    h12 = "12h"
-    h24 = "24h"
+  h12 = "12h"
+  h24 = "24h"
 end enum
 
 sub init()
 
-    ' If hideclick setting is enabled, exit without setting any variables
-    if m.global.session.user.settings["ui.design.hideclock"]
-        return
-    end if
+  ' If hideclick setting is enabled, exit without setting any variables
+  if m.global.session.user.settings["ui.design.hideclock"]
+    return
+  end if
 
-    m.clockTime = m.top.findNode("clockTime")
-    m.clockTime.font.size = 60
+  m.clockTime = m.top.findNode("clockTime")
+  m.clockTime.font.size = 60
 
-    m.currentTimeTimer = m.top.findNode("currentTimeTimer")
-    m.dateTimeObject = CreateObject("roDateTime")
+  m.currentTimeTimer = m.top.findNode("currentTimeTimer")
+  m.dateTimeObject = CreateObject("roDateTime")
 
-    m.currentTimeTimer.observeField("fire", "onCurrentTimeTimerFire")
-    m.currentTimeTimer.control = "start"
+  m.currentTimeTimer.observeField("fire", "onCurrentTimeTimerFire")
+  m.currentTimeTimer.control = "start"
 
-    ' Default to 12 hour clock
-    m.format = ClockFormat.h12
+  ' Default to 12 hour clock
+  m.format = ClockFormat.h12
 
-    ' If user has selected a 24 hour clock, update date display format
-    if LCase(m.global.device.clockFormat) = ClockFormat.h24
-        m.format = ClockFormat.h24
-    end if
+  ' If user has selected a 24 hour clock, update date display format
+  if LCase(m.global.device.clockFormat) = ClockFormat.h24
+    m.format = ClockFormat.h24
+  end if
 end sub
 
 
 ' onCurrentTimeTimerFire: Code that runs every time the currentTimeTimer fires
 '
 sub onCurrentTimeTimerFire()
-    ' Refresh time variable
-    m.dateTimeObject.Mark()
+  ' Refresh time variable
+  m.dateTimeObject.Mark()
 
-    ' Convert to local time zone
-    m.dateTimeObject.ToLocalTime()
+  ' Convert to local time zone
+  m.dateTimeObject.ToLocalTime()
 
-    ' Format time for display - based on 12h/24h setting
-    formattedTime = formatTimeAsString()
+  ' Format time for display - based on 12h/24h setting
+  formattedTime = formatTimeAsString()
 
-    ' Display time
-    m.clockTime.text = formattedTime
+  ' Display time
+  m.clockTime.text = formattedTime
 end sub
 
 ' formatTimeAsString: Returns a string with the current time formatted for either a 12 or 24 hour clock
 '
 ' @return {string} current time formatted for either a 12 hour or 24 hour clock
 function formatTimeAsString() as string
-    return m.format = ClockFormat.h12 ? format12HourTime() : format24HourTime()
+  return m.format = ClockFormat.h12 ? format12HourTime() : format24HourTime()
 end function
 
 ' format12HourTime: Returns a string with the current time formatted for a 12 hour clock
 '
 ' @return {string} current time formatted for a 12 hour clock
 function format12HourTime() as string
-    currentHour = m.dateTimeObject.GetHours()
-    currentMinute = m.dateTimeObject.GetMinutes()
+  currentHour = m.dateTimeObject.GetHours()
+  currentMinute = m.dateTimeObject.GetMinutes()
 
-    displayedHour = StrI(currentHour).trim()
-    displayedMinute = StrI(currentMinute).trim()
+  displayedHour = StrI(currentHour).trim()
+  displayedMinute = StrI(currentMinute).trim()
 
-    if currentHour = 0
-        displayedHour = "12"
-    end if
+  if currentHour = 0
+    displayedHour = "12"
+  end if
 
-    if currentHour > 12
-        correctedHour = currentHour - 12
-        displayedHour = StrI(correctedHour).trim()
-    end if
+  if currentHour > 12
+    correctedHour = currentHour - 12
+    displayedHour = StrI(correctedHour).trim()
+  end if
 
-    if currentMinute < 10
-        displayedMinute = `0${displayedMinute}`
-    end if
+  if currentMinute < 10
+    displayedMinute = `0${displayedMinute}`
+  end if
 
-    return `${displayedHour}:${displayedMinute}`
+  return `${displayedHour}:${displayedMinute}`
 end function
 
 ' format24HourTime: Returns a string with the current time formatted for a 24 hour clock
 '
 ' @return {string} current time formatted for a 24 hour clock
 function format24HourTime() as string
-    currentHour = m.dateTimeObject.GetHours()
-    currentMinute = m.dateTimeObject.GetMinutes()
+  currentHour = m.dateTimeObject.GetHours()
+  currentMinute = m.dateTimeObject.GetMinutes()
 
-    displayedHour = StrI(currentHour).trim()
-    displayedMinute = StrI(currentMinute).trim()
+  displayedHour = StrI(currentHour).trim()
+  displayedMinute = StrI(currentMinute).trim()
 
-    if currentHour < 10
-        displayedHour = `0${displayedHour}`
-    end if
+  if currentHour < 10
+    displayedHour = `0${displayedHour}`
+  end if
 
-    if currentMinute < 10
-        displayedMinute = `0${displayedMinute}`
-    end if
+  if currentMinute < 10
+    displayedMinute = `0${displayedMinute}`
+  end if
 
-    return `${displayedHour}:${displayedMinute}`
+  return `${displayedHour}:${displayedMinute}`
 end function

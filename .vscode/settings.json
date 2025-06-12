@@ -9,6 +9,9 @@
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
   },
   "xml.format.maxLineWidth": 0,
+  "editor.detectIndentation": false,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
   "editor.formatOnSave": true,
   "brightscript.output.hyperlinkFormat": "FilenameAndFunction",
   "brightscript.bsdk": "node_modules/brighterscript",

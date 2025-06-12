@@ -10,62 +10,134 @@
           "rows": [
             {
               "keys": [
-                { "label": "a" },
-                { "label": "b" },
-                { "label": "c" },
-                { "label": "d" },
-                { "label": "e" },
-                { "label": "f" }
+                {
+                  "label": "a"
+                },
+                {
+                  "label": "b"
+                },
+                {
+                  "label": "c"
+                },
+                {
+                  "label": "d"
+                },
+                {
+                  "label": "e"
+                },
+                {
+                  "label": "f"
+                }
               ]
             },
             {
               "keys": [
-                { "label": "g" },
-                { "label": "h" },
-                { "label": "i" },
-                { "label": "j" },
-                { "label": "k" },
-                { "label": "l" }
+                {
+                  "label": "g"
+                },
+                {
+                  "label": "h"
+                },
+                {
+                  "label": "i"
+                },
+                {
+                  "label": "j"
+                },
+                {
+                  "label": "k"
+                },
+                {
+                  "label": "l"
+                }
               ]
             },
             {
               "keys": [
-                { "label": "m" },
-                { "label": "n" },
-                { "label": "o" },
-                { "label": "p" },
-                { "label": "q" },
-                { "label": "r" }
+                {
+                  "label": "m"
+                },
+                {
+                  "label": "n"
+                },
+                {
+                  "label": "o"
+                },
+                {
+                  "label": "p"
+                },
+                {
+                  "label": "q"
+                },
+                {
+                  "label": "r"
+                }
               ]
             },
             {
               "keys": [
-                { "label": "s" },
-                { "label": "t" },
-                { "label": "u" },
-                { "label": "v" },
-                { "label": "w" },
-                { "label": "x" }
+                {
+                  "label": "s"
+                },
+                {
+                  "label": "t"
+                },
+                {
+                  "label": "u"
+                },
+                {
+                  "label": "v"
+                },
+                {
+                  "label": "w"
+                },
+                {
+                  "label": "x"
+                }
               ]
             },
             {
               "keys": [
-                { "label": "y" },
-                { "label": "z" },
-                { "label": "1" },
-                { "label": "2" },
-                { "label": "3" },
-                { "label": "4" }
+                {
+                  "label": "y"
+                },
+                {
+                  "label": "z"
+                },
+                {
+                  "label": "1"
+                },
+                {
+                  "label": "2"
+                },
+                {
+                  "label": "3"
+                },
+                {
+                  "label": "4"
+                }
               ]
             },
             {
               "keys": [
-                { "label": "5" },
-                { "label": "6" },
-                { "label": "7" },
-                { "label": "8" },
-                { "label": "9" },
-                { "label": "0" }
+                {
+                  "label": "5"
+                },
+                {
+                  "label": "6"
+                },
+                {
+                  "label": "7"
+                },
+                {
+                  "label": "8"
+                },
+                {
+                  "label": "9"
+                },
+                {
+                  "label": "0"
+                }
               ]
             },
             {
@@ -78,12 +150,12 @@
                 {
                   "icon": "theme:DKB_SpaceKeyBitmap",
                   "focusIcon": "theme:DKB_SpaceKeyFocusBitmap",
-          "strOut": "space"
+                  "strOut": "space"
                 },
                 {
                   "icon": "theme:DKB_DeleteKeyBitmap",
                   "focusIcon": "theme:DKB_DeleteKeyFocusBitmap",
-          "autoRepeat": 1,
+                  "autoRepeat": 1,
                   "strOut": "backspace"
                 }
               ]

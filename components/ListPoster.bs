@@ -2,130 +2,130 @@ import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/misc.bs"
 
 sub init()
-    m.title = m.top.findNode("title")
-    m.staticTitle = m.top.findNode("staticTitle")
-    m.series = m.top.findNode("Series")
-    m.poster = m.top.findNode("poster")
-    m.unplayedCount = m.top.findNode("unplayedCount")
-    m.unplayedEpisodeCount = m.top.findNode("unplayedEpisodeCount")
-    m.playedIndicator = m.top.findNode("playedIndicator")
-    m.checkmark = m.top.findNode("checkmark")
-    m.checkmark.width = 90
-    m.checkmark.height = 60
+  m.title = m.top.findNode("title")
+  m.staticTitle = m.top.findNode("staticTitle")
+  m.series = m.top.findNode("Series")
+  m.poster = m.top.findNode("poster")
+  m.unplayedCount = m.top.findNode("unplayedCount")
+  m.unplayedEpisodeCount = m.top.findNode("unplayedEpisodeCount")
+  m.playedIndicator = m.top.findNode("playedIndicator")
+  m.checkmark = m.top.findNode("checkmark")
+  m.checkmark.width = 90
+  m.checkmark.height = 60
 
-    m.backdrop = m.top.findNode("backdrop")
+  m.backdrop = m.top.findNode("backdrop")
 
-    ' Randomize the background colors
-    backdropColor = "#00a4db" ' set default in case global var is invalid
-    myGlobal = m.global
+  ' Randomize the background colors
+  backdropColor = "#00a4db" ' set default in case global var is invalid
+  myGlobal = m.global
 
-    if isValid(myGlobal) and isValid(myGlobal.constants) and isValid(myGlobal.constants.poster_bg_pallet)
-        posterBackgrounds = myGlobal.constants.poster_bg_pallet
-        backdropColor = posterBackgrounds[rnd(posterBackgrounds.count()) - 1]
-    end if
+  if isValid(myGlobal) and isValid(myGlobal.constants) and isValid(myGlobal.constants.poster_bg_pallet)
+    posterBackgrounds = myGlobal.constants.poster_bg_pallet
+    backdropColor = posterBackgrounds[rnd(posterBackgrounds.count()) - 1]
+  end if
 
-    m.backdrop.color = backdropColor
-    updateSize()
+  m.backdrop.color = backdropColor
+  updateSize()
 end sub
 
 sub updateSize()
-    image = invalid
-    if isValid(m.top.itemContent) and isValid(m.top.itemContent.image)
-        image = m.top.itemContent.image
-    end if
+  image = invalid
+  if isValid(m.top.itemContent) and isValid(m.top.itemContent.image)
+    image = m.top.itemContent.image
+  end if
 
-    if image = invalid
-        m.backdrop.visible = true
-    else
-        m.backdrop.visible = false
-    end if
+  if image = invalid
+    m.backdrop.visible = true
+  else
+    m.backdrop.visible = false
+  end if
 
-    ' TODO - abstract this in case the parent doesnt have itemSize
-    maxSize = m.top.getParent().itemSize
+  ' TODO - abstract this in case the parent doesnt have itemSize
+  maxSize = m.top.getParent().itemSize
 
-    ' Always reserve the bottom for the Poster Title
-    m.title.maxWidth = maxSize[0]
-    m.title.height = 40
-    m.title.translation = [0, int(maxSize[1]) - m.title.height + 5]
+  ' Always reserve the bottom for the Poster Title
+  m.title.maxWidth = maxSize[0]
+  m.title.height = 40
+  m.title.translation = [0, int(maxSize[1]) - m.title.height + 5]
 
-    m.staticTitle.width = maxSize[0]
-    m.staticTitle.height = m.title.height
-    m.staticTitle.translation = m.title.translation
+  m.staticTitle.width = maxSize[0]
+  m.staticTitle.height = m.title.height
+  m.staticTitle.translation = m.title.translation
 
-    m.series.maxWidth = maxSize[0]
+  m.series.maxWidth = maxSize[0]
 
-    m.poster.width = int(maxSize[0]) - 4
-    m.poster.height = int(maxSize[1]) - m.title.height 'Set poster height to available space
+  m.poster.width = int(maxSize[0]) - 4
+  m.poster.height = int(maxSize[1]) - m.title.height 'Set poster height to available space
 
-    m.backdrop.width = m.poster.width
-    m.backdrop.height = m.poster.height
+  m.backdrop.width = m.poster.width
+  m.backdrop.height = m.poster.height
 end sub
 
 sub itemContentChanged() as void
-    m.poster = m.top.findNode("poster")
-    itemData = m.top.itemContent
-    m.title.text = itemData.title
-    userSettings = m.global.session.user.settings
+  m.poster = m.top.findNode("poster")
+  itemData = m.top.itemContent
+  m.title.text = itemData.title
+  userSettings = m.global.session.user.settings
 
-    if not userSettings["ui.tvshows.disableUnwatchedEpisodeCount"]
-        if isValid(itemData.json.UserData) and isValid(itemData.json.UserData.UnplayedItemCount)
-            if itemData.json.UserData.UnplayedItemCount > 0
-                m.unplayedCount.visible = true
-                m.unplayedEpisodeCount.text = itemData.json.UserData.UnplayedItemCount
-            end if
-        end if
+  if not userSettings["ui.tvshows.disableUnwatchedEpisodeCount"]
+    if isValid(itemData.json.UserData) and isValid(itemData.json.UserData.UnplayedItemCount)
+      if itemData.json.UserData.UnplayedItemCount > 0
+        m.unplayedCount.visible = true
+        m.unplayedEpisodeCount.text = itemData.json.UserData.UnplayedItemCount
+      end if
     end if
+  end if
 
-    if isValid(itemData.json) and isValid(itemData.json.UserData) and isValid(itemData.json.UserData.Played) and itemData.json.UserData.Played
-        m.playedIndicator.visible = true
+  if isValid(itemData.json) and isValid(itemData.json.UserData) and isValid(itemData.json.UserData.Played) and itemData.json.UserData.Played
+    m.playedIndicator.visible = true
+  end if
+
+  if itemData.json.lookup("Type") = "Episode" and isValid(itemData.json.IndexNumber)
+    m.title.text = StrI(itemData.json.IndexNumber) + ". " + m.title.text
+
+    m.series.text = itemData.json.Series
+    m.series.visible = true
+  else if itemData.json.lookup("Type") = "MusicAlbum"
+    m.title.font = "font:SmallestSystemFont"
+    m.staticTitle.font = "font:SmallestSystemFont"
+  else
+    m.series.visible = false
+  end if
+  m.staticTitle.text = m.title.text
+
+  imageUrl = itemData.posterURL
+
+  if userSettings["ui.tvshows.blurunwatched"]
+    if itemData.json.lookup("Type") = "Episode" and isValid(itemData.json.userdata)
+      if not itemData.json.userdata.played
+        imageUrl = imageUrl + "&blur=15"
+      end if
     end if
+  end if
 
-    if itemData.json.lookup("Type") = "Episode" and isValid(itemData.json.IndexNumber)
-        m.title.text = StrI(itemData.json.IndexNumber) + ". " + m.title.text
+  m.poster.uri = imageUrl
 
-        m.series.text = itemData.json.Series
-        m.series.visible = true
-    else if itemData.json.lookup("Type") = "MusicAlbum"
-        m.title.font = "font:SmallestSystemFont"
-        m.staticTitle.font = "font:SmallestSystemFont"
-    else
-        m.series.visible = false
-    end if
-    m.staticTitle.text = m.title.text
-
-    imageUrl = itemData.posterURL
-
-    if userSettings["ui.tvshows.blurunwatched"]
-        if itemData.json.lookup("Type") = "Episode" and isValid(itemData.json.userdata)
-            if not itemData.json.userdata.played
-                imageUrl = imageUrl + "&blur=15"
-            end if
-        end if
-    end if
-
-    m.poster.uri = imageUrl
-
-    updateSize()
+  updateSize()
 end sub
 
 '
 ' Enable title scrolling based on item Focus
 sub focusChanged()
-    if m.top.itemHasFocus = true
-        m.title.repeatCount = -1
-        m.series.repeatCount = -1
-        m.staticTitle.visible = false
-        m.title.visible = true
-        ' text to speech for accessibility
-        if m.global.device.isAudioGuideEnabled
-            txt2Speech = CreateObject("roTextToSpeech")
-            txt2Speech.Flush()
-            txt2Speech.Say(m.title.text)
-        end if
-    else
-        m.title.repeatCount = 0
-        m.series.repeatCount = 0
-        m.staticTitle.visible = true
-        m.title.visible = false
+  if m.top.itemHasFocus = true
+    m.title.repeatCount = -1
+    m.series.repeatCount = -1
+    m.staticTitle.visible = false
+    m.title.visible = true
+    ' text to speech for accessibility
+    if m.global.device.isAudioGuideEnabled
+      txt2Speech = CreateObject("roTextToSpeech")
+      txt2Speech.Flush()
+      txt2Speech.Say(m.title.text)
     end if
+  else
+    m.title.repeatCount = 0
+    m.series.repeatCount = 0
+    m.staticTitle.visible = true
+    m.title.visible = false
+  end if
 end sub

@@ -3,188 +3,188 @@ import "pkg:/source/utils/misc.bs"
 import "pkg:/source/roku_modules/log/LogMixin.brs"
 
 sub init()
-    m.log = log.Logger("GridItem")
-    m.posterMask = m.top.findNode("posterMask")
-    m.itemPoster = m.top.findNode("itemPoster")
-    m.itemIcon = m.top.findNode("itemIcon")
-    m.posterText = m.top.findNode("posterText")
-    m.itemText = m.top.findNode("itemText")
-    m.backdrop = m.top.findNode("backdrop")
+  m.log = log.Logger("GridItem")
+  m.posterMask = m.top.findNode("posterMask")
+  m.itemPoster = m.top.findNode("itemPoster")
+  m.itemIcon = m.top.findNode("itemIcon")
+  m.posterText = m.top.findNode("posterText")
+  m.itemText = m.top.findNode("itemText")
+  m.backdrop = m.top.findNode("backdrop")
 
-    m.itemPoster.observeField("loadStatus", "onPosterLoadStatusChanged")
+  m.itemPoster.observeField("loadStatus", "onPosterLoadStatusChanged")
 
-    m.unplayedCount = m.top.findNode("unplayedCount")
-    m.unplayedEpisodeCount = m.top.findNode("unplayedEpisodeCount")
-    m.playedIndicator = m.top.findNode("playedIndicator")
-    m.checkmark = m.top.findNode("checkmark")
-    m.checkmark.width = 90
-    m.checkmark.height = 60
+  m.unplayedCount = m.top.findNode("unplayedCount")
+  m.unplayedEpisodeCount = m.top.findNode("unplayedEpisodeCount")
+  m.playedIndicator = m.top.findNode("playedIndicator")
+  m.checkmark = m.top.findNode("checkmark")
+  m.checkmark.width = 90
+  m.checkmark.height = 60
 
-    ' Add some padding space when Item Titles are always showing
-    if m.itemText.visible then m.itemText.maxWidth = 250
+  ' Add some padding space when Item Titles are always showing
+  if m.itemText.visible then m.itemText.maxWidth = 250
 
-    ' grab data from ItemGrid node
-    m.itemGrid = m.top.GetParent().GetParent() 'Parent is MarkupGrid and it's parent is the ItemGrid
+  ' grab data from ItemGrid node
+  m.itemGrid = m.top.GetParent().GetParent() 'Parent is MarkupGrid and it's parent is the ItemGrid
 
-    if isValid(m.itemGrid)
-        if isValid(m.itemGrid.imageDisplayMode)
-            m.itemPoster.loadDisplayMode = m.itemGrid.imageDisplayMode
-        end if
-        if isValid(m.itemGrid.gridTitles)
-            m.gridTitles = m.itemGrid.gridTitles
-        end if
+  if isValid(m.itemGrid)
+    if isValid(m.itemGrid.imageDisplayMode)
+      m.itemPoster.loadDisplayMode = m.itemGrid.imageDisplayMode
     end if
+    if isValid(m.itemGrid.gridTitles)
+      m.gridTitles = m.itemGrid.gridTitles
+    end if
+  end if
 
-    m.itemText.translation = [0, m.itemPoster.height + 7]
-    m.itemText.visible = m.gridTitles = "showalways"
+  m.itemText.translation = [0, m.itemPoster.height + 7]
+  m.itemText.visible = m.gridTitles = "showalways"
 
 end sub
 
 sub itemContentChanged()
-    m.backdrop.blendColor = "#00a4db" ' set default in case global var is invalid
-    myGlobal = m.global
+  m.backdrop.blendColor = "#00a4db" ' set default in case global var is invalid
+  myGlobal = m.global
 
-    if isValid(myGlobal) and isValid(myGlobal.constants) and isValid(myGlobal.constants.poster_bg_pallet)
-        posterBackgrounds = myGlobal.constants.poster_bg_pallet
-        m.backdrop.blendColor = posterBackgrounds[rnd(posterBackgrounds.count()) - 1]
+  if isValid(myGlobal) and isValid(myGlobal.constants) and isValid(myGlobal.constants.poster_bg_pallet)
+    posterBackgrounds = myGlobal.constants.poster_bg_pallet
+    m.backdrop.blendColor = posterBackgrounds[rnd(posterBackgrounds.count()) - 1]
+  end if
+
+  itemData = m.top.itemContent
+
+  if itemData = invalid then return
+
+  if itemData.type = "Movie"
+    if isValid(itemData.json) and isValid(itemData.json.UserData) and isValid(itemData.json.UserData.Played) and itemData.json.UserData.Played
+      m.playedIndicator.visible = true
     end if
 
-    itemData = m.top.itemContent
-
-    if itemData = invalid then return
-
-    if itemData.type = "Movie"
-        if isValid(itemData.json) and isValid(itemData.json.UserData) and isValid(itemData.json.UserData.Played) and itemData.json.UserData.Played
-            m.playedIndicator.visible = true
+    m.itemPoster.uri = itemData.PosterUrl
+    m.itemIcon.uri = itemData.iconUrl
+    m.itemText.text = itemData.Title
+  else if itemData.type = "Series"
+    if isValid(myGlobal) and isValid(myGlobal.session) and isValid(myGlobal.session.user) and isValid(myGlobal.session.user.settings)
+      if myGlobal.session.user.settings["ui.tvshows.disableUnwatchedEpisodeCount"] = false
+        if isValid(itemData.json) and isValid(itemData.json.UserData) and isValid(itemData.json.UserData.UnplayedItemCount)
+          if itemData.json.UserData.UnplayedItemCount > 0
+            m.unplayedCount.visible = true
+            m.unplayedEpisodeCount.text = itemData.json.UserData.UnplayedItemCount
+          else
+            m.unplayedCount.visible = false
+            m.unplayedEpisodeCount.text = ""
+          end if
         end if
+      end if
+    end if
+    if isValid(itemData.json) and isValid(itemData.json.UserData) and isValid(itemData.json.UserData.Played) and itemData.json.UserData.Played = true
+      m.playedIndicator.visible = true
+    end if
 
-        m.itemPoster.uri = itemData.PosterUrl
-        m.itemIcon.uri = itemData.iconUrl
-        m.itemText.text = itemData.Title
-    else if itemData.type = "Series"
-        if isValid(myGlobal) and isValid(myGlobal.session) and isValid(myGlobal.session.user) and isValid(myGlobal.session.user.settings)
-            if myGlobal.session.user.settings["ui.tvshows.disableUnwatchedEpisodeCount"] = false
-                if isValid(itemData.json) and isValid(itemData.json.UserData) and isValid(itemData.json.UserData.UnplayedItemCount)
-                    if itemData.json.UserData.UnplayedItemCount > 0
-                        m.unplayedCount.visible = true
-                        m.unplayedEpisodeCount.text = itemData.json.UserData.UnplayedItemCount
-                    else
-                        m.unplayedCount.visible = false
-                        m.unplayedEpisodeCount.text = ""
-                    end if
-                end if
-            end if
-        end if
-        if isValid(itemData.json) and isValid(itemData.json.UserData) and isValid(itemData.json.UserData.Played) and itemData.json.UserData.Played = true
-            m.playedIndicator.visible = true
-        end if
-
-        m.itemPoster.uri = itemData.PosterUrl
-        m.itemIcon.uri = itemData.iconUrl
-        m.itemText.text = itemData.Title
-    else if itemData.type = "Boxset"
-        m.itemPoster.uri = itemData.PosterUrl
-        m.itemIcon.uri = itemData.iconUrl
-        m.itemText.text = itemData.Title
-    else if itemData.type = "TvChannel"
-        m.itemPoster.uri = itemData.PosterUrl
-        m.itemIcon.uri = itemData.iconUrl
-        m.itemText.text = itemData.Title
-    else if itemData.type = "Folder"
-        m.itemPoster.uri = itemData.PosterUrl
-        'm.itemIcon.uri = itemData.iconUrl
-        m.itemText.text = itemData.Title
-        m.itemPoster.loadDisplayMode = m.itemGrid.imageDisplayMode
-    else if itemData.type = "Video"
-        m.itemPoster.uri = itemData.PosterUrl
-        m.itemIcon.uri = itemData.iconUrl
-        m.itemText.text = itemData.Title
-    else if itemData.type = "Playlist"
-        m.itemPoster.uri = itemData.PosterUrl
-        m.itemIcon.uri = itemData.iconUrl
-        m.itemText.text = itemData.Title
-    else if itemData.type = "Photo"
-        m.itemPoster.uri = itemData.PosterUrl
-        m.itemIcon.uri = itemData.iconUrl
-        m.itemText.text = itemData.Title
-    else if itemData.type = "Episode"
-        m.itemPoster.uri = itemData.PosterUrl
-        m.itemIcon.uri = itemData.iconUrl
-        if isValid(itemData.json) and isValid(itemData.json.SeriesName)
-            m.itemText.text = itemData.json.SeriesName + " - " + itemData.Title
-        else
-            m.itemText.text = itemData.Title
-        end if
-    else if itemData.type = "MusicArtist"
-        m.itemPoster.uri = itemData.PosterUrl
-        m.itemText.text = itemData.Title
-
-        m.itemPoster.height = 290
-        m.itemPoster.width = 290
-
-        m.itemText.translation = [0, m.itemPoster.height + 7]
-
-        m.backdrop.height = 290
-        m.backdrop.width = 290
-
-        m.posterText.height = 200
-        m.posterText.width = 280
-    else if isValid(itemData.json.type) and itemData.json.type = "MusicAlbum"
-        m.itemPoster.uri = itemData.PosterUrl
-        m.itemText.text = itemData.Title
-
-        m.itemPoster.height = 290
-        m.itemPoster.width = 290
-
-        m.itemText.translation = [0, m.itemPoster.height + 7]
-
-        m.backdrop.height = 290
-        m.backdrop.width = 290
-
-        m.posterText.height = 200
-        m.posterText.width = 280
+    m.itemPoster.uri = itemData.PosterUrl
+    m.itemIcon.uri = itemData.iconUrl
+    m.itemText.text = itemData.Title
+  else if itemData.type = "Boxset"
+    m.itemPoster.uri = itemData.PosterUrl
+    m.itemIcon.uri = itemData.iconUrl
+    m.itemText.text = itemData.Title
+  else if itemData.type = "TvChannel"
+    m.itemPoster.uri = itemData.PosterUrl
+    m.itemIcon.uri = itemData.iconUrl
+    m.itemText.text = itemData.Title
+  else if itemData.type = "Folder"
+    m.itemPoster.uri = itemData.PosterUrl
+    'm.itemIcon.uri = itemData.iconUrl
+    m.itemText.text = itemData.Title
+    m.itemPoster.loadDisplayMode = m.itemGrid.imageDisplayMode
+  else if itemData.type = "Video"
+    m.itemPoster.uri = itemData.PosterUrl
+    m.itemIcon.uri = itemData.iconUrl
+    m.itemText.text = itemData.Title
+  else if itemData.type = "Playlist"
+    m.itemPoster.uri = itemData.PosterUrl
+    m.itemIcon.uri = itemData.iconUrl
+    m.itemText.text = itemData.Title
+  else if itemData.type = "Photo"
+    m.itemPoster.uri = itemData.PosterUrl
+    m.itemIcon.uri = itemData.iconUrl
+    m.itemText.text = itemData.Title
+  else if itemData.type = "Episode"
+    m.itemPoster.uri = itemData.PosterUrl
+    m.itemIcon.uri = itemData.iconUrl
+    if isValid(itemData.json) and isValid(itemData.json.SeriesName)
+      m.itemText.text = itemData.json.SeriesName + " - " + itemData.Title
     else
-        m.log.warn("Unhandled Grid Item Type", itemData.type)
+      m.itemText.text = itemData.Title
     end if
+  else if itemData.type = "MusicArtist"
+    m.itemPoster.uri = itemData.PosterUrl
+    m.itemText.text = itemData.Title
 
-    'If Poster not loaded, ensure "blue box" is shown until loaded
-    if m.itemPoster.loadStatus <> "ready"
-        m.backdrop.visible = true
-        m.posterText.visible = true
-    end if
+    m.itemPoster.height = 290
+    m.itemPoster.width = 290
 
-    m.posterText.text = m.itemText.text
+    m.itemText.translation = [0, m.itemPoster.height + 7]
+
+    m.backdrop.height = 290
+    m.backdrop.width = 290
+
+    m.posterText.height = 200
+    m.posterText.width = 280
+  else if isValid(itemData.json.type) and itemData.json.type = "MusicAlbum"
+    m.itemPoster.uri = itemData.PosterUrl
+    m.itemText.text = itemData.Title
+
+    m.itemPoster.height = 290
+    m.itemPoster.width = 290
+
+    m.itemText.translation = [0, m.itemPoster.height + 7]
+
+    m.backdrop.height = 290
+    m.backdrop.width = 290
+
+    m.posterText.height = 200
+    m.posterText.width = 280
+  else
+    m.log.warn("Unhandled Grid Item Type", itemData.type)
+  end if
+
+  'If Poster not loaded, ensure "blue box" is shown until loaded
+  if m.itemPoster.loadStatus <> "ready"
+    m.backdrop.visible = true
+    m.posterText.visible = true
+  end if
+
+  m.posterText.text = m.itemText.text
 
 end sub
 
 '
 'Use FocusPercent to animate scaling of Poser Image
 sub focusChanging()
-    scaleFactor = 0.85 + (m.top.focusPercent * 0.15)
-    m.posterMask.scale = [scaleFactor, scaleFactor]
+  scaleFactor = 0.85 + (m.top.focusPercent * 0.15)
+  m.posterMask.scale = [scaleFactor, scaleFactor]
 end sub
 
 '
 'Display or hide title Visibility on focus change
 sub focusChanged()
-    if m.top.itemHasFocus = true
-        m.itemText.repeatCount = -1
-        m.posterMask.scale = [1, 1]
-    else
-        m.itemText.repeatCount = 0
-        if m.itemGrid.alphaActive = true
-            m.posterMask.scale = [0.85, 0.85]
-        end if
+  if m.top.itemHasFocus = true
+    m.itemText.repeatCount = -1
+    m.posterMask.scale = [1, 1]
+  else
+    m.itemText.repeatCount = 0
+    if m.itemGrid.alphaActive = true
+      m.posterMask.scale = [0.85, 0.85]
     end if
-    if m.gridTitles = "showonhover"
-        m.itemText.visible = m.top.itemHasFocus
-    end if
+  end if
+  if m.gridTitles = "showonhover"
+    m.itemText.visible = m.top.itemHasFocus
+  end if
 end sub
 
 'Hide backdrop and text when poster loaded
 sub onPosterLoadStatusChanged()
-    if m.itemPoster.loadStatus = "ready"
-        m.backdrop.visible = false
-        m.posterText.visible = false
-    end if
+  if m.itemPoster.loadStatus = "ready"
+    m.backdrop.visible = false
+    m.posterText.visible = false
+  end if
 end sub

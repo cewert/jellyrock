@@ -1,40 +1,40 @@
 import "pkg:/source/utils/misc.bs"
 
 sub init()
-    m.top.backgroundColor = "#000000"
-    m.top.backgroundURI = ""
-    m.spinner = m.top.findNode("spinner")
+  m.top.backgroundColor = "#000000"
+  m.top.backgroundURI = ""
+  m.spinner = m.top.findNode("spinner")
 end sub
 
 ' Triggered when the isLoading boolean component field is changed
 sub isLoadingChanged()
-    ' toggle visibility of active view/group
-    group = m.global.sceneManager.callFunc("getActiveScene")
-    if not isValid(group) then return
+  ' toggle visibility of active view/group
+  group = m.global.sceneManager.callFunc("getActiveScene")
+  if not isValid(group) then return
 
-    group.visible = not m.top.isLoading
+  group.visible = not m.top.isLoading
 
-    ' toggle visibility of loading spinner
-    m.spinner.visible = m.top.isLoading
+  ' toggle visibility of loading spinner
+  m.spinner.visible = m.top.isLoading
 end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
-    if not press then return false
-    if m.top.disableRemote then return true
+  if not press then return false
+  if m.top.disableRemote then return true
 
-    if key = "back"
-        m.global.sceneManager.callFunc("popScene")
-        return true
-    else if key = "options"
-        group = m.global.sceneManager.callFunc("getActiveScene")
-        if isValid(group) and isValid(group.optionsAvailable) and group.optionsAvailable
-            group.lastFocus = group.focusedChild
-            panel = group.findNode("options")
-            panel.visible = true
-            panel.findNode("panelList").setFocus(true)
-        end if
-        return true
+  if key = "back"
+    m.global.sceneManager.callFunc("popScene")
+    return true
+  else if key = "options"
+    group = m.global.sceneManager.callFunc("getActiveScene")
+    if isValid(group) and isValid(group.optionsAvailable) and group.optionsAvailable
+      group.lastFocus = group.focusedChild
+      panel = group.findNode("options")
+      panel.visible = true
+      panel.findNode("panelList").setFocus(true)
     end if
+    return true
+  end if
 
-    return false
+  return false
 end function
