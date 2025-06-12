@@ -1,209 +1,211 @@
 import "pkg:/source/utils/misc.bs"
 
 sub init()
-    m.inactivityTimer = m.top.findNode("inactivityTimer")
+  m.inactivityTimer = m.top.findNode("inactivityTimer")
 
-    m.videoLogo = m.top.findNode("videoLogo")
-    m.videoOfficialRating = m.top.findNode("videoOfficialRating")
-    m.videoTitle = m.top.findNode("videoTitle")
-    m.videoTitle.font.size = 60
-    m.videoSubtitleGroup = m.top.findNode("videoSubtitleGroup")
+  m.videoLogo = m.top.findNode("videoLogo")
+  m.videoOfficialRating = m.top.findNode("videoOfficialRating")
+  m.videoTitle = m.top.findNode("videoTitle")
+  m.videoTitle.font.size = 60
+  m.videoSubtitleGroup = m.top.findNode("videoSubtitleGroup")
 
-    m.videoPlayPause = m.top.findNode("videoPlayPause")
-    m.videoPositionTime = m.top.findNode("videoPositionTime")
-    m.videoPositionTime.font.size = 36
-    m.videoRemainingTime = m.top.findNode("videoRemainingTime")
-    m.videoRemainingTime.font.size = 36
-    m.progressBar = m.top.findNode("progressBar")
-    m.progressBarBackground = m.top.findNode("progressBarBackground")
+  m.videoPlayPause = m.top.findNode("videoPlayPause")
+  m.videoPositionTime = m.top.findNode("videoPositionTime")
+  m.videoPositionTime.font.size = 36
+  m.videoRemainingTime = m.top.findNode("videoRemainingTime")
+  m.videoRemainingTime.font.size = 36
+  m.progressBar = m.top.findNode("progressBar")
+  m.progressBarBackground = m.top.findNode("progressBarBackground")
 
-    m.top.observeField("json", "setFields")
-    m.top.observeField("visible", "onVisibleChanged")
-    m.top.observeField("hasFocus", "onFocusChanged")
-    m.top.observeField("progressPercentage", "onProgressPercentageChanged")
-    m.top.observeField("playbackState", "onPlaybackStateChanged")
+  m.top.observeField("json", "setFields")
+  m.top.observeField("visible", "onVisibleChanged")
+  m.top.observeField("hasFocus", "onFocusChanged")
+  m.top.observeField("progressPercentage", "onProgressPercentageChanged")
+  m.top.observeField("playbackState", "onPlaybackStateChanged")
 
-    m.defaultButtonIndex = 1
-    m.focusedButtonIndex = 1
-    m.subtitleDividerCount = 0
+  m.defaultButtonIndex = 1
+  m.focusedButtonIndex = 1
+  m.subtitleDividerCount = 0
 
-    m.osdButtons = m.top.findNode("osdButtons")
-    m.osdButtons.buttonFocused = m.defaultButtonIndex
+  m.osdButtons = m.top.findNode("osdButtons")
+  m.osdButtons.buttonFocused = m.defaultButtonIndex
 
-    m.osdButtons.getChild(m.defaultButtonIndex).focus = true
+  m.osdButtons.getChild(m.defaultButtonIndex).focus = true
 end sub
 
 ' setFields: Grab data from json metadata and save it to local fields
 sub setFields()
-    if not isValid(m.top.json) then return
+  if not isValid(m.top.json) or m.top.json = "" then return
 
-    if m.top.json.Type <> invalid
-        m.top.type = m.top.json.Type
-    end if
+  videoData = parseJson(m.top.json)
 
-    if m.top.json.logoImage <> invalid and m.top.json.logoImage <> ""
-        m.top.videoLogo = m.top.json.logoImage
-    end if
+  if videoData.Type <> invalid
+    m.top.type = videoData.Type
+  end if
 
-    if m.top.json.Name <> invalid
-        m.top.videoTitle = m.top.json.Name
-    end if
+  if videoData.logoImage <> invalid and videoData.logoImage <> ""
+    m.top.videoLogo = videoData.logoImage
+  end if
 
-    if m.top.json.SeriesName <> invalid
-        m.top.seriesName = m.top.json.SeriesName
-    end if
+  if videoData.Name <> invalid
+    m.top.videoTitle = videoData.Name
+  end if
 
-    if m.top.json.ParentIndexNumber <> invalid
-        m.top.seasonNumber = m.top.json.ParentIndexNumber
-    end if
+  if videoData.SeriesName <> invalid
+    m.top.seriesName = videoData.SeriesName
+  end if
 
-    if m.top.json.IndexNumber <> invalid
-        m.top.episodeNumber = m.top.json.IndexNumber
-    end if
+  if videoData.ParentIndexNumber <> invalid
+    m.top.seasonNumber = videoData.ParentIndexNumber
+  end if
 
-    if m.top.json.IndexNumberEnd <> invalid
-        m.top.episodeNumberEnd = m.top.json.IndexNumberEnd
-    end if
+  if videoData.IndexNumber <> invalid
+    m.top.episodeNumber = videoData.IndexNumber
+  end if
 
-    if m.top.json.CommunityRating <> invalid
-        m.top.communityRating = m.top.json.CommunityRating
-    end if
+  if videoData.IndexNumberEnd <> invalid
+    m.top.episodeNumberEnd = videoData.IndexNumberEnd
+  end if
 
-    if m.top.json.OfficialRating <> invalid
-        m.top.officialRating = m.top.json.OfficialRating
-    end if
+  if videoData.CommunityRating <> invalid
+    m.top.communityRating = videoData.CommunityRating
+  end if
 
-    if m.top.json.PremiereDate <> invalid
-        m.top.premiereDate = m.top.json.PremiereDate
-    end if
+  if videoData.OfficialRating <> invalid
+    m.top.officialRating = videoData.OfficialRating
+  end if
 
-    if m.top.json.RunTimeTicks <> invalid
-        m.top.runTimeTicks = m.top.json.RunTimeTicks
-        m.top.runTimeMinutes = ticksToMinutes(m.top.runTimeTicks)
-        m.top.runTimeHours = int(m.top.runTimeMinutes / 60)
-    end if
+  if videoData.PremiereDate <> invalid
+    m.top.premiereDate = videoData.PremiereDate
+  end if
 
-    if m.top.json.ProductionYear <> invalid
-        m.top.productionYear = m.top.json.ProductionYear
-    end if
+  if videoData.RunTimeTicks <> invalid
+    m.top.runTimeTicks = videoData.RunTimeTicks
+    m.top.runTimeMinutes = ticksToMinutes(m.top.runTimeTicks)
+    m.top.runTimeHours = int(m.top.runTimeMinutes / 60)
+  end if
 
-    populateData()
+  if videoData.ProductionYear <> invalid
+    m.top.productionYear = videoData.ProductionYear
+  end if
+
+  populateData()
 end sub
 
 sub populateData()
-    setVideoLogoGroup()
-    setVideoTitle()
-    setVideoSubTitle()
+  setVideoLogoGroup()
+  setVideoTitle()
+  setVideoSubTitle()
 end sub
 
 sub setVideoLogoGroup()
-    m.videoLogo.uri = m.top.videoLogo
+  m.videoLogo.uri = m.top.videoLogo
 
-    ' if m.top.officialRating <> invalid and m.top.officialRating <> ""
-    '     m.videoOfficialRating.text = m.top.officialRating
-    ' end if
+  ' if m.top.officialRating <> invalid and m.top.officialRating <> ""
+  '     m.videoOfficialRating.text = m.top.officialRating
+  ' end if
 end sub
 
 sub setVideoTitle()
-    m.videoTitle.text = m.top.videoTitle
+  m.videoTitle.text = m.top.videoTitle
 end sub
 
 sub setVideoSubTitle()
-    ' start fresh by removing all subtitle nodes
-    m.videoSubtitleGroup.removeChildrenIndex(m.videoSubtitleGroup.getChildCount(), 0)
+  ' start fresh by removing all subtitle nodes
+  m.videoSubtitleGroup.removeChildrenIndex(m.videoSubtitleGroup.getChildCount(), 0)
 
-    airDateNodeCreated = false
+  airDateNodeCreated = false
 
-    ' EPISODE
-    if m.top.type <> invalid
-        if m.top.Type = "Episode" or m.top.Type = "Recording"
-            ' TITLE
-            if m.top.seriesName <> ""
-                m.videoTitle.text = m.top.seriesName
-            end if
+  ' EPISODE
+  if m.top.type <> invalid
+    if m.top.Type = "Episode" or m.top.Type = "Recording"
+      ' TITLE
+      if m.top.seriesName <> ""
+        m.videoTitle.text = m.top.seriesName
+      end if
 
-            ' episodeInfo
-            episodeInfoText = ""
-            '
-            ' Season number
-            if m.top.seasonNumber <> invalid
-                episodeInfoText = episodeInfoText + `${tr("S")}${m.top.seasonNumber}`
-            else
-                episodeInfoText = episodeInfoText + `${tr("S")}?`
-            end if
+      ' episodeInfo
+      episodeInfoText = ""
+      '
+      ' Season number
+      if m.top.seasonNumber <> invalid
+        episodeInfoText = episodeInfoText + `${tr("S")}${m.top.seasonNumber}`
+      else
+        episodeInfoText = episodeInfoText + `${tr("S")}?`
+      end if
 
-            ' Episode number
-            if m.top.episodeNumber <> invalid
-                episodeInfoText = episodeInfoText + `:${tr("E")}${m.top.episodeNumber}`
-            else
-                episodeInfoText = episodeInfoText + `:${tr("E")}??`
-            end if
+      ' Episode number
+      if m.top.episodeNumber <> invalid
+        episodeInfoText = episodeInfoText + `:${tr("E")}${m.top.episodeNumber}`
+      else
+        episodeInfoText = episodeInfoText + `:${tr("E")}??`
+      end if
 
-            ' Episode number end
-            if m.top.episodeNumberEnd <> invalid and m.top.episodeNumberEnd <> 0 and m.top.episodeNumberEnd > m.top.episodeNumber
-                ' add entry for every episode eg. S6:E1E2
-                for i = m.top.episodeNumber + 1 to m.top.episodeNumberEnd
-                    episodeInfoText = episodeInfoText + `${tr("E")}${m.top.episodeNumberEnd}`
-                end for
-            end if
+      ' Episode number end
+      if m.top.episodeNumberEnd <> invalid and m.top.episodeNumberEnd <> 0 and m.top.episodeNumberEnd > m.top.episodeNumber
+        ' add entry for every episode eg. S6:E1E2
+        for i = m.top.episodeNumber + 1 to m.top.episodeNumberEnd
+          episodeInfoText = episodeInfoText + `${tr("E")}${m.top.episodeNumberEnd}`
+        end for
+      end if
 
-            ' Episode name
-            if m.top.videoTitle <> invalid and m.top.videoTitle <> ""
-                episodeInfoText = episodeInfoText + ` - ${m.top.videoTitle}`
-            end if
+      ' Episode name
+      if m.top.videoTitle <> invalid and m.top.videoTitle <> ""
+        episodeInfoText = episodeInfoText + ` - ${m.top.videoTitle}`
+      end if
 
-            if episodeInfoText <> ""
-                episodeInfoNode = createSubtitleLabelNode("episodeInfo")
-                episodeInfoNode.text = episodeInfoText
-                displaySubtitleNode(episodeInfoNode)
-            end if
-        else if m.top.type = "Movie"
-            ' videoAirDate
-            if m.top.premiereDate <> invalid and m.top.premiereDate <> ""
-                airDateNodeCreated = true
+      if episodeInfoText <> ""
+        episodeInfoNode = createSubtitleLabelNode("episodeInfo")
+        episodeInfoNode.text = episodeInfoText
+        displaySubtitleNode(episodeInfoNode)
+      end if
+    else if m.top.type = "Movie"
+      ' videoAirDate
+      if m.top.premiereDate <> invalid and m.top.premiereDate <> ""
+        airDateNodeCreated = true
 
-                premiereDateNode = createSubtitleLabelNode("videoAirDate")
-                premiereDateNode.text = formatIsoDateMovie(m.top.premiereDate)
-
-                displaySubtitleNode(premiereDateNode)
-            end if
-        end if
-    end if
-
-    ' append these to all video types
-    '
-    ' videoAirDate if needed
-    if not airDateNodeCreated and m.top.premiereDate <> invalid and m.top.premiereDate <> ""
         premiereDateNode = createSubtitleLabelNode("videoAirDate")
-        premiereDateNode.text = formatIsoDateVideo(m.top.premiereDate)
+        premiereDateNode.text = formatIsoDateMovie(m.top.premiereDate)
+
         displaySubtitleNode(premiereDateNode)
+      end if
+    end if
+  end if
+
+  ' append these to all video types
+  '
+  ' videoAirDate if needed
+  if not airDateNodeCreated and m.top.premiereDate <> invalid and m.top.premiereDate <> ""
+    premiereDateNode = createSubtitleLabelNode("videoAirDate")
+    premiereDateNode.text = formatIsoDateVideo(m.top.premiereDate)
+    displaySubtitleNode(premiereDateNode)
+  end if
+
+  ' videoRunTime
+  if m.top.runTimeMinutes <> invalid and m.top.runTimeMinutes <> 0
+    runTimeNode = createSubtitleLabelNode("videoRunTime")
+
+    hoursShortText = tr("h")
+    minutesShortText = tr("m")
+    runTimeText = ""
+
+    if m.top.runTimeHours <> invalid and m.top.runTimeHours > 0
+      runTimeText = `${m.top.runTimeHours}${hoursShortText}`
     end if
 
-    ' videoRunTime
-    if m.top.runTimeMinutes <> invalid and m.top.runTimeMinutes <> 0
-        runTimeNode = createSubtitleLabelNode("videoRunTime")
+    if m.top.runTimeMinutes <> invalid and m.top.runTimeMinutes > 0
 
-        hoursShortText = tr("h")
-        minutesShortText = tr("m")
-        runTimeText = ""
-
-        if m.top.runTimeHours <> invalid and m.top.runTimeHours > 0
-            runTimeText = `${m.top.runTimeHours}${hoursShortText}`
-        end if
-
-        if m.top.runTimeMinutes <> invalid and m.top.runTimeMinutes > 0
-
-            if m.top.runTimeMinutes < 60
-                runTimeText = `${runTimeText}${m.top.runTimeMinutes}${minutesShortText}`
-            else
-                minutesRemaining = m.top.runTimeMinutes mod 60
-                runTimeText = `${runTimeText}${minutesRemaining}${minutesShortText}`
-            end if
-        end if
-
-        runTimeNode.text = runTimeText
-        displaySubtitleNode(runTimeNode)
+      if m.top.runTimeMinutes < 60
+        runTimeText = `${runTimeText}${m.top.runTimeMinutes}${minutesShortText}`
+      else
+        minutesRemaining = m.top.runTimeMinutes mod 60
+        runTimeText = `${runTimeText}${minutesRemaining}${minutesShortText}`
+      end if
     end if
+
+    runTimeNode.text = runTimeText
+    displaySubtitleNode(runTimeNode)
+  end if
 
 
 end sub
@@ -211,202 +213,202 @@ end sub
 ' onProgressPercentageChanged: Handler for changes to m.top.progressPercentage param
 '
 sub onProgressPercentageChanged()
-    m.videoPositionTime.text = secondsToTimestamp(m.top.positionTime, true)
-    m.videoRemainingTime.text = "-" + secondsToTimestamp(m.top.remainingPositionTime, true)
-    m.progressBar.width = m.progressBarBackground.width * m.top.progressPercentage
+  m.videoPositionTime.text = secondsToTimestamp(m.top.positionTime, true)
+  m.videoRemainingTime.text = "-" + secondsToTimestamp(m.top.remainingPositionTime, true)
+  m.progressBar.width = m.progressBarBackground.width * m.top.progressPercentage
 end sub
 
 ' onPlaybackStateChanged: Handler for changes to m.top.playbackState param
 '
 sub onPlaybackStateChanged()
-    if LCase(m.top.playbackState) = "playing"
-        m.videoPlayPause.icon = "pkg:/images/icons/pause.png"
-        return
-    end if
+  if LCase(m.top.playbackState) = "playing"
+    m.videoPlayPause.icon = "pkg:/images/icons/pause.png"
+    return
+  end if
 
-    m.videoPlayPause.icon = "pkg:/images/icons/play.png"
+  m.videoPlayPause.icon = "pkg:/images/icons/play.png"
 end sub
 
 ' resetFocusToDefaultButton: Reset focus back to the default button
 '
 sub resetFocusToDefaultButton()
-    ' Remove focus from previously selected button
-    for each child in m.osdButtons.getChildren(-1, 0)
-        if isValid(child.focus)
-            child.focus = false
-        end if
-    end for
+  ' Remove focus from previously selected button
+  for each child in m.osdButtons.getChildren(-1, 0)
+    if isValid(child.focus)
+      child.focus = false
+    end if
+  end for
 
-    ' Set focus back to the default button
-    m.osdButtons.setFocus(true)
-    m.focusedButtonIndex = m.defaultButtonIndex
-    m.osdButtons.getChild(m.defaultButtonIndex).focus = true
-    m.osdButtons.buttonFocused = m.defaultButtonIndex
+  ' Set focus back to the default button
+  m.osdButtons.setFocus(true)
+  m.focusedButtonIndex = m.defaultButtonIndex
+  m.osdButtons.getChild(m.defaultButtonIndex).focus = true
+  m.osdButtons.buttonFocused = m.defaultButtonIndex
 end sub
 
 ' onVisibleChanged: Handler for changes to the visibility of this menu.
 '
 sub onVisibleChanged()
-    if m.top.visible
-        resetFocusToDefaultButton()
-        if m.top.playbackState <> "paused"
-            m.inactivityTimer.observeField("fire", "inactiveCheck")
-            m.inactivityTimer.control = "start"
-        end if
-    else
-        m.inactivityTimer.unobserveField("fire")
-        m.inactivityTimer.control = "stop"
+  if m.top.visible
+    resetFocusToDefaultButton()
+    if m.top.playbackState <> "paused"
+      m.inactivityTimer.observeField("fire", "inactiveCheck")
+      m.inactivityTimer.control = "start"
     end if
+  else
+    m.inactivityTimer.unobserveField("fire")
+    m.inactivityTimer.control = "stop"
+  end if
 end sub
 
 ' onFocusChanged: Handler for changes to the focus of this menu.
 '
 sub onFocusChanged()
-    if m.top.hasfocus
-        m.osdButtons.setFocus(true)
-    end if
+  if m.top.hasfocus
+    m.osdButtons.setFocus(true)
+  end if
 end sub
 
 ' inactiveCheck: Checks if the time since last keypress is greater than or equal to the allowed inactive time of the menu.
 '
 sub inactiveCheck()
-    ' If user is currently seeing a dialog box, ignore inactive check
-    if m.global.sceneManager.callFunc("isDialogOpen")
-        return
-    end if
+  ' If user is currently seeing a dialog box, ignore inactive check
+  if m.global.sceneManager.callFunc("isDialogOpen")
+    return
+  end if
 
-    deviceInfo = CreateObject("roDeviceInfo")
-    if deviceInfo.timeSinceLastKeypress() >= m.top.inactiveTimeout
-        m.top.action = "hide"
-    end if
+  deviceInfo = CreateObject("roDeviceInfo")
+  if deviceInfo.timeSinceLastKeypress() >= m.top.inactiveTimeout
+    m.top.action = "hide"
+  end if
 end sub
 
 ' onButtonSelected: Handler for selection of buttons from the menu.
 '
 sub onButtonSelected()
-    buttonGroup = m.osdButtons
+  buttonGroup = m.osdButtons
 
-    selectedButton = buttonGroup.getChild(m.focusedButtonIndex)
+  selectedButton = buttonGroup.getChild(m.focusedButtonIndex)
 
-    if LCase(selectedButton.id) = "chapterlist"
-        m.top.showChapterList = not m.top.showChapterList
-    end if
+  if LCase(selectedButton.id) = "chapterlist"
+    m.top.showChapterList = not m.top.showChapterList
+  end if
 
-    m.top.action = selectedButton.id
+  m.top.action = selectedButton.id
 end sub
 
 function createSubtitleLabelNode(labelId as string) as object
-    labelNode = CreateObject("roSGNode", "Label")
-    labelNode.id = labelId
-    labelNode.font = "font:MediumBoldSystemFont"
-    labelNode.font.size = 33
-    labelNode.color = "0xF5F5F5FF"
-    labelNode.horizAlign = "left"
-    labelNode.vertAlign = "center"
-    labelNode.width = 0
-    labelNode.height = 0
+  labelNode = CreateObject("roSGNode", "Label")
+  labelNode.id = labelId
+  labelNode.font = "font:MediumBoldSystemFont"
+  labelNode.font.size = 33
+  labelNode.color = "0xF5F5F5FF"
+  labelNode.horizAlign = "left"
+  labelNode.vertAlign = "center"
+  labelNode.width = 0
+  labelNode.height = 0
 
-    return labelNode
+  return labelNode
 end function
 
 function createSubtitleDividerNode() as object
-    m.subtitleDividerCount++
+  m.subtitleDividerCount++
 
-    labelNode = CreateObject("roSGNode", "Label")
-    labelNode.id = "divider" + m.subtitleDividerCount.toStr()
-    labelNode.font = "font:SmallSystemFont"
-    labelNode.font.size = 26
-    labelNode.color = "0xa8a8a8FF"
-    labelNode.horizAlign = "left"
-    labelNode.vertAlign = "center"
-    labelNode.width = 0
-    labelNode.height = 40
-    labelNode.text = "•"
+  labelNode = CreateObject("roSGNode", "Label")
+  labelNode.id = "divider" + m.subtitleDividerCount.toStr()
+  labelNode.font = "font:SmallSystemFont"
+  labelNode.font.size = 26
+  labelNode.color = "0xa8a8a8FF"
+  labelNode.horizAlign = "left"
+  labelNode.vertAlign = "center"
+  labelNode.width = 0
+  labelNode.height = 40
+  labelNode.text = "•"
 
-    return labelNode
+  return labelNode
 end function
 
 sub displaySubtitleNode(node as object)
-    if not isValid(node) then return
+  if not isValid(node) then return
 
-    subtitleChildrenCount = m.videoSubtitleGroup.getChildCount()
-    if subtitleChildrenCount > 0
-        ' add a divider
-        dividerNode = createSubtitleDividerNode()
-        m.videoSubtitleGroup.appendChild(dividerNode)
-    end if
+  subtitleChildrenCount = m.videoSubtitleGroup.getChildCount()
+  if subtitleChildrenCount > 0
+    ' add a divider
+    dividerNode = createSubtitleDividerNode()
+    m.videoSubtitleGroup.appendChild(dividerNode)
+  end if
 
-    m.videoSubtitleGroup.appendChild(node)
+  m.videoSubtitleGroup.appendChild(node)
 end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
-    if not press then return false
+  if not press then return false
 
-    if key = "play"
-        m.top.action = "videoplaypause"
-        return true
+  if key = "play"
+    m.top.action = "videoplaypause"
+    return true
+  end if
+
+  if key = "OK"
+    onButtonSelected()
+    return true
+  end if
+
+  if key = "right"
+    buttonGroup = m.osdButtons
+
+    if m.focusedButtonIndex + 1 >= buttonGroup.getChildCount()
+      return true
     end if
 
-    if key = "OK"
-        onButtonSelected()
-        return true
+    focusedButton = buttonGroup.getChild(m.focusedButtonIndex)
+    focusedButton.focus = false
+
+    ' Skip spacer elements until next button is found
+    for i = m.focusedButtonIndex + 1 to buttonGroup.getChildCount()
+      m.focusedButtonIndex = i
+      focusedButton = buttonGroup.getChild(m.focusedButtonIndex)
+
+      if isValid(focusedButton.focus)
+        buttonGroup.buttonFocused = m.focusedButtonIndex
+        focusedButton.focus = true
+        exit for
+      end if
+    end for
+
+    return true
+  end if
+
+  if key = "left"
+    if m.focusedButtonIndex = 0
+      return true
     end if
 
-    if key = "right"
-        buttonGroup = m.osdButtons
+    buttonGroup = m.osdButtons
 
-        if m.focusedButtonIndex + 1 >= buttonGroup.getChildCount()
-            return true
-        end if
+    focusedButton = buttonGroup.getChild(m.focusedButtonIndex)
+    focusedButton.focus = false
 
-        focusedButton = buttonGroup.getChild(m.focusedButtonIndex)
-        focusedButton.focus = false
+    ' Skip spacer elements until next button is found
+    for i = m.focusedButtonIndex - 1 to 0 step -1
+      m.focusedButtonIndex = i
+      focusedButton = buttonGroup.getChild(m.focusedButtonIndex)
 
-        ' Skip spacer elements until next button is found
-        for i = m.focusedButtonIndex + 1 to buttonGroup.getChildCount()
-            m.focusedButtonIndex = i
-            focusedButton = buttonGroup.getChild(m.focusedButtonIndex)
+      if isValid(focusedButton.focus)
+        buttonGroup.buttonFocused = m.focusedButtonIndex
+        focusedButton.focus = true
+        exit for
+      end if
+    end for
 
-            if isValid(focusedButton.focus)
-                buttonGroup.buttonFocused = m.focusedButtonIndex
-                focusedButton.focus = true
-                exit for
-            end if
-        end for
+    return true
+  end if
 
-        return true
-    end if
+  if key = "back" and m.top.visible
+    m.top.action = "hide"
 
-    if key = "left"
-        if m.focusedButtonIndex = 0
-            return true
-        end if
+    return true
+  end if
 
-        buttonGroup = m.osdButtons
-
-        focusedButton = buttonGroup.getChild(m.focusedButtonIndex)
-        focusedButton.focus = false
-
-        ' Skip spacer elements until next button is found
-        for i = m.focusedButtonIndex - 1 to 0 step -1
-            m.focusedButtonIndex = i
-            focusedButton = buttonGroup.getChild(m.focusedButtonIndex)
-
-            if isValid(focusedButton.focus)
-                buttonGroup.buttonFocused = m.focusedButtonIndex
-                focusedButton.focus = true
-                exit for
-            end if
-        end for
-
-        return true
-    end if
-
-    if key = "back" and m.top.visible
-        m.top.action = "hide"
-
-        return true
-    end if
-
-    return false
+  return false
 end function

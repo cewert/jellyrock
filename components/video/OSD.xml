@@ -68,6 +68,6 @@
     <field id="action" type="string" alwaysNotify="true" />
     <field id="showChapterList" type="boolean" alwaysNotify="true" />
     <field id="hasFocus" type="boolean" alwaysNotify="true" />
-    <field id="json" type="assocarray" onChange="setFields" />
+    <field id="json" type="string" onChange="setFields" />
   </interface>
 </component>
