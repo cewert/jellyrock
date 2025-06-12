@@ -1,5 +1,10 @@
 {
   "rules": {
-    "unused-variable": "error"
+    "unused-variable": "error",
+    "unreachable-code": "error",
+    "no-stop": "error",
+    "no-assocarray-component-field-type": "warn",
+    "no-array-component-field-type": "warn",
+    "no-regex-duplicates": "error"
   }
 }

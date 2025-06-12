@@ -145,10 +145,11 @@ sub ProcessSSDPResponse(message)
       width = 0
       server = invalid
       icons = deviceNode.GetNamedElementsCi("iconList")[0].GetNamedElementsCi("icon")
+      dlnaRegex = CreateObject("roRegex", "(.*?)\/dlna\/", "i")
       for each iconNode in icons
         iconUrl = iconNode.GetNamedElementsCi("url").GetText()
         baseUrl = invalid
-        match = CreateObject("roRegex", "(.*?)\/dlna\/", "i").Match(iconUrl)
+        match = dlnaRegex.Match(iconUrl)
         if match.Count() = 2
           baseUrl = match[1]
         end if
