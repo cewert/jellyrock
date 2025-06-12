@@ -17,7 +17,7 @@ sub execute()
   SendClientDiscoveryBroadcast()
 
   ts = CreateObject("roTimespan")
-  maxTimeMs = 2200
+  maxTimeMs = 1500
 
   'monitor each port and collect messages
   while True

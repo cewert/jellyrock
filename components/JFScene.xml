@@ -3,11 +3,11 @@
   <children>
     <Group id="content" />
     <JFOverhang id="overhang" />
-    <Spinner id="spinner" translation="[897, 477]" visible="false" />
+    <Spinner id="spinner" translation="[897, 477]" />
   </children>
   <interface>
-    <field id="disableRemote" type="boolean" value="false" />
-    <field id="isLoading" type="boolean" value="false" onchange="isLoadingChanged" />
+    <field id="disableRemote" type="boolean" value="true" />
+    <field id="isLoading" type="boolean" value="true" onchange="isLoadingChanged" />
     <field id="exit" type="boolean" alwaysNotify="true" />
   </interface>
 </component>

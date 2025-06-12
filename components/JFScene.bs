@@ -10,9 +10,9 @@ end sub
 sub isLoadingChanged()
   ' toggle visibility of active view/group
   group = m.global.sceneManager.callFunc("getActiveScene")
-  if not isValid(group) then return
-
-  group.visible = not m.top.isLoading
+  if isValid(group)
+    group.visible = not m.top.isLoading
+  end if
 
   ' toggle visibility of loading spinner
   m.spinner.visible = m.top.isLoading
