@@ -564,11 +564,9 @@ sub startLoadingSpinner(disableRemote = true as boolean)
     m.scene = m.top.getScene()
   end if
 
-  if not m.scene.isLoading
-    ' disableRemote must be set first
-    m.scene.disableRemote = disableRemote
-    m.scene.isLoading = true
-  end if
+  ' disableRemote must be set first
+  m.scene.disableRemote = disableRemote
+  m.scene.isLoading = true
 end sub
 
 sub stopLoadingSpinner()
@@ -576,10 +574,8 @@ sub stopLoadingSpinner()
     m.scene = m.top.getScene()
   end if
 
-  if m.scene.isLoading
-    m.scene.disableRemote = false
-    m.scene.isLoading = false
-  end if
+  m.scene.disableRemote = false
+  m.scene.isLoading = false
 end sub
 
 ' accepts the raw json string of /system/info/public and returns
