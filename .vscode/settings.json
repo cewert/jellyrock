@@ -17,8 +17,13 @@
   "brightscript.bsdk": "node_modules/brighterscript",
   "search.exclude": {
     "**/.git": true,
-    "**/node_modules": true,
-    "docs/api/**": true
+    "**/node_modules/**": true,
+    "docs/api/**": true,
+    ".github/**": true,
+    ".vscode/settings.json": true,
+    "package.json": true,
+    "package-lock.json": true,
+    "renovate.json": true
   },
   "brightscriptcomment.addExtraAtStartAndEnd": false
 }
