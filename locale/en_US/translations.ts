@@ -217,12 +217,12 @@
       <translation>Unable to load Channel Data from the server</translation>
     </message>
     <message>
-      <comment>Message displayed in Item Grid when no item to display. %1 is container type (e.g. Boxset, Collection, Folder, etc)</comment>
+      <extracomment>Message displayed in Item Grid when no item to display. %1 is container type (e.g. Boxset, Collection, Folder, etc)</extracomment>
       <source>NO_ITEMS</source>
       <translation>This %1 contains no items</translation>
     </message>
     <message>
-      <comment>Name or Title field of media item</comment>
+      <extracomment>Name or Title field of media item</extracomment>
       <source>TITLE</source>
       <translation>Name</translation>
     </message>
@@ -259,17 +259,17 @@
       <translation>Run Time</translation>
     </message>
     <message>
-      <comment>Title of Tab for switching &quot;views&quot; when looking at a library</comment>
+      <extracomment>Title of Tab for switching &quot;views&quot; when looking at a library</extracomment>
       <source>TAB_VIEW</source>
       <translation>View</translation>
     </message>
     <message>
-      <comment>Title of Tab for options to sort library content</comment>
+      <extracomment>Title of Tab for options to sort library content</extracomment>
       <source>TAB_SORT</source>
       <translation>Sort</translation>
     </message>
     <message>
-      <comment>Title of Tab for options to filter library content</comment>
+      <extracomment>Title of Tab for options to filter library content</extracomment>
       <source>TAB_FILTER</source>
       <translation>Filter</translation>
     </message>
