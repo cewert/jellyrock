@@ -6,12 +6,15 @@ concurrency:
 
 on:
   push:
+    branches:
+      - master
   pull_request_target:
+    types: [opened, synchronize]
 
 jobs:
   project:
-    # don't run job on forks and prevent job from running twice when a PR pushes a new commit
-    if: github.repository == 'cewert/jellyfin-roku' && github.event_name != 'pull_request' || github.repository == 'cewert/jellyfin-roku' && github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+    # don't run job on forks
+    if: github.repository == 'cewert/jellyfin-roku'
     name: Project board 📊
     runs-on: ubuntu-latest
     steps:
@@ -23,8 +26,8 @@ jobs:
           column: In progress
           repo-token: ${{ secrets.CEWERT_BOT_TOKEN }}
   label:
-    # don't run job on forks and prevent job from running twice when a PR pushes a new commit
-    if: github.repository == 'cewert/jellyfin-roku' && github.event_name != 'pull_request' || github.repository == 'cewert/jellyfin-roku' && github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+    # don't run job on forks
+    if: github.repository == 'cewert/jellyfin-roku'
     name: Labeling 🏷️
     runs-on: ubuntu-latest
     steps:
