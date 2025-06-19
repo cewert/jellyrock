@@ -18,6 +18,7 @@
   "search.exclude": {
     "**/.git": true,
     "**/node_modules/**": true,
+    "locale/**": true,
     "docs/api/**": true,
     ".github/**": true,
     ".vscode/settings.json": true,

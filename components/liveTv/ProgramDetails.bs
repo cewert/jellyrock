@@ -98,9 +98,9 @@ sub setupLabels()
   end if
 end sub
 
-sub updateLabels(recordText = "Record", recordSeriesText = "Record Series")
-  m.recordLabel.text = tr(recordText)
-  m.recordSeriesLabel.text = tr(recordSeriesText)
+sub updateLabels(recordText = tr("Record"), recordSeriesText = tr("Record Series"))
+  m.recordLabel.text = recordText
+  m.recordSeriesLabel.text = recordSeriesText
 
   boundingRect = m.recordButton.boundingRect()
   recordButtonBackground = m.top.findNode("recordButtonBackground")
@@ -212,9 +212,9 @@ sub programUpdated()
   ' If currently being recorded, change button to "Stop Recording"
   if prog.json.TimerId <> invalid
     if prog.json.SeriesTimerId <> invalid
-      updateLabels("Cancel Recording", "Cancel Series Recording")
+      updateLabels(tr("Cancel Recording"), tr("Cancel Series Recording"))
     else
-      updateLabels("Cancel Recording", "Record Series")
+      updateLabels(tr("Cancel Recording"), tr("Record Series"))
     end if
   else
     updateLabels()
@@ -237,8 +237,18 @@ end sub
 '
 ' Get relative date name for a date (yesterday, today, tomorrow, or otherwise weekday name )
 function getRelativeDayName(date) as string
-
   now = createObject("roDateTime")
+  ' needed for update-translations script to prevent strings from being removed
+  ' tr("today")
+  ' tr("yesterday")
+  ' tr("tomorrow")
+  ' tr("Monday")
+  ' tr("Tuesday")
+  ' tr("Wednesday")
+  ' tr("Thursday")
+  ' tr("Friday")
+  ' tr("Saturday")
+  ' tr("Sunday")
 
   ' Check for Today
   if now.AsDateString("short-date-dashes") = date.AsDateString("short-date-dashes")

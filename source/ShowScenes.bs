@@ -567,23 +567,38 @@ function CreateHomeGroup()
   sidepanel = group.findNode("options")
   sidepanel.observeField("closeSidePanel", m.port)
   new_options = []
-  options_buttons = [
-    { "title": "Search", "id": "goto_search" },
-    { "title": "Change user", "id": "change_user" },
-    { "title": "Change server", "id": "change_server" },
-    { "title": "Sign out", "id": "sign_out" }
-  ]
-  for each opt in options_buttons
-    o = CreateObject("roSGNode", "OptionsButton")
-    o.title = tr(opt.title)
-    o.id = opt.id
-    o.observeField("optionSelected", m.port)
-    new_options.push(o)
-  end for
+
+  o = CreateObject("roSGNode", "OptionsButton")
+  o.title = tr("Search")
+  o.id = "goto_search"
+  o.observeField("optionSelected", m.port)
+  new_options.push(o)
+  o = invalid
+
+  o = CreateObject("roSGNode", "OptionsButton")
+  o.title = tr("Change user")
+  o.id = "change_user"
+  o.observeField("optionSelected", m.port)
+  new_options.push(o)
+  o = invalid
+
+  o = CreateObject("roSGNode", "OptionsButton")
+  o.title = tr("Change server")
+  o.id = "change_server"
+  o.observeField("optionSelected", m.port)
+  new_options.push(o)
+  o = invalid
+
+  o = CreateObject("roSGNode", "OptionsButton")
+  o.title = tr("Sign out")
+  o.id = "sign_out"
+  o.observeField("optionSelected", m.port)
+  new_options.push(o)
+  o = invalid
 
   ' Add settings option to menu
   o = CreateObject("roSGNode", "OptionsButton")
-  o.title = "Settings"
+  o.title = tr("Settings")
   o.id = "settings"
   o.observeField("optionSelected", m.port)
   new_options.push(o)

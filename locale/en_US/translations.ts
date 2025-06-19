@@ -32,12 +32,12 @@
       <extracomment>Item position and count. %1 = current item. %2 = total number of items</extracomment>
     </message>
     <message>
-      <source>1080p</source>
-      <translation>1080p</translation>
+      <source>0:00</source>
+      <translation>0:00</translation>
     </message>
     <message>
-      <source>192.168.1.100:8096 or https://example.com/jellyfin</source>
-      <translation>192.168.1.100:8096 or https://example.com/jellyfin</translation>
+      <source>1080p</source>
+      <translation>1080p</translation>
     </message>
     <message>
       <source>360p</source>
@@ -62,10 +62,6 @@
     <message>
       <source>AAC</source>
       <translation>AAC</translation>
-    </message>
-    <message>
-      <source>Add User</source>
-      <translation>Add User</translation>
     </message>
     <message>
       <source>Additional Parts</source>
@@ -130,6 +126,10 @@
       <extracomment>Content of message box when trying to play an item which requires transcoding, and the server did not provide transcode url</extracomment>
     </message>
     <message>
+      <source>Appears On</source>
+      <translation>Appears On</translation>
+    </message>
+    <message>
       <source>AppearsOn</source>
       <translation>AppearsOn</translation>
     </message>
@@ -149,10 +149,6 @@
     <message>
       <source>Artists (Presentation)</source>
       <translation>Artists (Presentation)</translation>
-    </message>
-    <message>
-      <source>Ascending</source>
-      <translation>Ascending</translation>
     </message>
     <message>
       <source>Attempt Direct Play for H.264 media with unsupported profile levels before falling back to transcoding if it fails.</source>
@@ -217,11 +213,6 @@
       <translation>Born</translation>
     </message>
     <message>
-      <source>Both</source>
-      <translation>Both</translation>
-      <extracomment>User Setting - Setting option title</extracomment>
-    </message>
-    <message>
       <source>Bring the theater experience straight to your living room with the ability to play custom intros before the main feature.</source>
       <translation>Bring the theater experience straight to your living room with the ability to play custom intros before the main feature.</translation>
       <extracomment>Settings Menu - Description for option</extracomment>
@@ -248,8 +239,12 @@
       <extracomment>Abbreviation for Channel</extracomment>
     </message>
     <message>
-      <source>Change Server</source>
-      <translation>Change Server</translation>
+      <source>Change server</source>
+      <translation>Change server</translation>
+    </message>
+    <message>
+      <source>Change user</source>
+      <translation>Change user</translation>
     </message>
     <message>
       <source>Channels</source>
@@ -267,17 +262,8 @@
       <extracomment>Settings Menu - Title for option</extracomment>
     </message>
     <message>
-      <source>Close</source>
-      <translation>Close</translation>
-    </message>
-    <message>
       <source>Codec</source>
       <translation>Codec</translation>
-    </message>
-    <message>
-      <source>Codec Support</source>
-      <translation>Codec Support</translation>
-      <extracomment>Settings Menu - Title for settings group related to codec support</extracomment>
     </message>
     <message>
       <source>Codec Tag</source>
@@ -305,11 +291,6 @@
     <message>
       <source>Connect to Server</source>
       <translation>Connect to Server</translation>
-    </message>
-    <message>
-      <source>Connecting to Server</source>
-      <translation>Connecting to Server</translation>
-      <extracomment>Message to display to user while client is attempting to connect to the server</extracomment>
     </message>
     <message>
       <source>Container</source>
@@ -373,12 +354,8 @@
       <translation>Delete Saved</translation>
     </message>
     <message>
-      <source>Descending</source>
-      <translation>Descending</translation>
-    </message>
-    <message>
-      <source>Design Elements</source>
-      <translation>Design Elements</translation>
+      <source>Details</source>
+      <translation>Details</translation>
     </message>
     <message>
       <source>Died</source>
@@ -432,11 +409,6 @@
       <translation>Enable Limit</translation>
     </message>
     <message>
-      <source>Enable or disable Direct Play for optional codecs</source>
-      <translation>Enable or disable Direct Play for optional codecs</translation>
-      <extracomment>Settings Menu - Title for settings group related to codec support</extracomment>
-    </message>
-    <message>
       <source>Enable or disable Direct Play support for certain codecs.</source>
       <translation>Enable or disable Direct Play support for certain codecs.</translation>
     </message>
@@ -456,11 +428,6 @@
       <source>Ended at</source>
       <translation>Ended at</translation>
       <extracomment>(Past Tense) For defining time when a program will ended (e.g. Ended at 08:00) </extracomment>
-    </message>
-    <message>
-      <source>Ends at</source>
-      <translation>Ends at</translation>
-      <extracomment>(Past Tense) For defining a day and time when a program ended (e.g. Ended Wednesday, 08:00) </extracomment>
     </message>
     <message>
       <source>Ends at %1</source>
@@ -483,19 +450,9 @@
       <translation>Enter the server name or ip address</translation>
     </message>
     <message>
-      <source>Enter the server name or IP address</source>
-      <translation>Enter the server name or IP address</translation>
-      <extracomment>Title of KeyboardDialog when manually entering a server URL</extracomment>
-    </message>
-    <message>
       <source>Episode Images Next Up</source>
       <translation>Episode Images Next Up</translation>
       <extracomment>User Setting - Setting title</extracomment>
-    </message>
-    <message>
-      <source>Episode Next Up Behavior</source>
-      <translation>Episode Next Up Behavior</translation>
-      <extracomment>User Setting - Setting option title</extracomment>
     </message>
     <message>
       <source>Episodes</source>
@@ -510,10 +467,6 @@
       <source>Error Getting Playback Information</source>
       <translation>Error Getting Playback Information</translation>
       <extracomment>Dialog Title: Received error from server when trying to get information about the selected item for playback</extracomment>
-    </message>
-    <message>
-      <source>Error loading Channel Data</source>
-      <translation>Error loading Channel Data</translation>
     </message>
     <message>
       <source>Error loading Season</source>
@@ -577,11 +530,6 @@
       <extracomment>User Setting - Setting description</extracomment>
     </message>
     <message>
-      <source>Go directly to the episode list if a TV series has only one season.</source>
-      <translation>Go directly to the episode list if a TV series has only one season.</translation>
-      <extracomment>Settings Menu - Description for option</extracomment>
-    </message>
-    <message>
       <source>Go to episode</source>
       <translation>Go to episode</translation>
       <extracomment>Continue Watching Popup Menu - Navigate to the Episode Detail Page</extracomment>
@@ -595,11 +543,6 @@
       <source>Go to series</source>
       <translation>Go to series</translation>
       <extracomment>Continue Watching Popup Menu - Navigate to the Series Detail Page</extracomment>
-    </message>
-    <message>
-      <source>Grid</source>
-      <translation>Grid</translation>
-      <extracomment>Title of an option - name of grid view</extracomment>
     </message>
     <message>
       <source>Grid View Settings</source>
@@ -651,11 +594,6 @@
       <translation>Home</translation>
     </message>
     <message>
-      <source>Home Screen Layout v2</source>
-      <translation>Home Screen Layout v2</translation>
-      <extracomment>User Setting - Setting title</extracomment>
-    </message>
-    <message>
       <source>If enabled, selecting a TV series with only one season will go straight to the episode list rather than the show details and season list.</source>
       <translation>If enabled, selecting a TV series with only one season will go straight to the episode list rather than the show details and season list.</translation>
     </message>
@@ -667,6 +605,10 @@
     <message>
       <source>IMDB_RATING</source>
       <translation>Community Rating</translation>
+    </message>
+    <message>
+      <source>Instant Mix</source>
+      <translation>Instant Mix</translation>
     </message>
     <message>
       <source>Item Count</source>
@@ -741,15 +683,6 @@
       <extracomment>User Setting - Title</extracomment>
     </message>
     <message>
-      <source>Media Grid</source>
-      <translation>Media Grid</translation>
-      <extracomment>UI -&gt; Media Grid section in user setting screen.</extracomment>
-    </message>
-    <message>
-      <source>Media Grid options.</source>
-      <translation>Media Grid options.</translation>
-    </message>
-    <message>
       <source>Mode</source>
       <translation>Mode</translation>
       <extracomment>User Setting - Setting title</extracomment>
@@ -762,11 +695,6 @@
     <message>
       <source>More Like This</source>
       <translation>More Like This</translation>
-    </message>
-    <message>
-      <source>Movie Library Default View</source>
-      <translation>Movie Library Default View</translation>
-      <extracomment>Settings Menu - Title for option</extracomment>
     </message>
     <message>
       <source>Movies</source>
@@ -793,11 +721,6 @@
       <extracomment>Name of codec used in settings menu</extracomment>
     </message>
     <message>
-      <source>MPEG-4 Support</source>
-      <translation>MPEG-4 Support</translation>
-      <extracomment>Settings Menu - Title for option</extracomment>
-    </message>
-    <message>
       <source>My Media</source>
       <translation>My Media</translation>
     </message>
@@ -807,16 +730,12 @@
       <extracomment>Abbreviation for not available</extracomment>
     </message>
     <message>
-      <source>Name</source>
-      <translation>Name</translation>
+      <source>Name:</source>
+      <translation>Name:</translation>
     </message>
     <message>
       <source>Networks</source>
       <translation>Networks</translation>
-    </message>
-    <message>
-      <source>Next episode</source>
-      <translation>Next episode</translation>
     </message>
     <message>
       <source>Next Episode</source>
@@ -837,14 +756,13 @@
       <extracomment>Message shown in OSD when no chapter data is returned by the API</extracomment>
     </message>
     <message>
+      <source>No schedule information</source>
+      <translation>No schedule information</translation>
+    </message>
+    <message>
       <source>NO_ITEMS</source>
       <translation>This %1 contains no items</translation>
       <extracomment>Message displayed in Item Grid when no item to display. %1 is container type (e.g. Boxset, Collection, Folder, etc)</extracomment>
-    </message>
-    <message>
-      <source>Not found</source>
-      <translation>Not found</translation>
-      <extracomment>Title of message box when the requested content is not found on the server</extracomment>
     </message>
     <message>
       <source>Off - Attempt to play all resolutions</source>
@@ -878,16 +796,6 @@
       <translation>Options</translation>
     </message>
     <message>
-      <source>Options for TV Shows.</source>
-      <translation>Options for TV Shows.</translation>
-      <extracomment>Description for TV Shows user settings.</extracomment>
-    </message>
-    <message>
-      <source>Options that alter the design of Jellyfin.</source>
-      <translation>Options that alter the design of Jellyfin.</translation>
-      <extracomment>Description for Design Elements user settings.</extracomment>
-    </message>
-    <message>
       <source>Original</source>
       <translation>Original</translation>
       <extracomment>User Setting - Setting option title</extracomment>
@@ -914,6 +822,14 @@
     <message>
       <source>Play</source>
       <translation>Play</translation>
+    </message>
+    <message>
+      <source>Play Album</source>
+      <translation>Play Album</translation>
+    </message>
+    <message>
+      <source>Play All</source>
+      <translation>Play All</translation>
     </message>
     <message>
       <source>Play Next Episode Automatically</source>
@@ -959,17 +875,8 @@
       <extracomment>Settings Menu - Title of option</extracomment>
     </message>
     <message>
-      <source>Presentation</source>
-      <translation>Presentation</translation>
-      <extracomment>Title of an option - name of presentation view</extracomment>
-    </message>
-    <message>
       <source>Press &apos;Back&apos; to Close</source>
       <translation>Press &apos;Back&apos; to Close</translation>
-    </message>
-    <message>
-      <source>Press &apos;OK&apos; to Close</source>
-      <translation>Press &apos;OK&apos; to Close</translation>
     </message>
     <message>
       <source>Profile</source>
@@ -995,11 +902,6 @@
     <message>
       <source>Random On</source>
       <translation>Random On</translation>
-    </message>
-    <message>
-      <source>Ratings for how good a movie is</source>
-      <translation>Ratings for how good a movie is</translation>
-      <extracomment>User Setting - Setting description</extracomment>
     </message>
     <message>
       <source>Ratings for how good a movie is.</source>
@@ -1103,10 +1005,6 @@
       <extracomment>Settings Menu - Description for option</extracomment>
     </message>
     <message>
-      <source>Server</source>
-      <translation>Server</translation>
-    </message>
-    <message>
       <source>Server not found, is it online?</source>
       <translation>Server not found, is it online?</translation>
     </message>
@@ -1150,10 +1048,6 @@
     <message>
       <source>Settings relating to playback and supported codec and media types.</source>
       <translation>Settings relating to playback and supported codec and media types.</translation>
-    </message>
-    <message>
-      <source>Settings relating to the appearance of Library pages</source>
-      <translation>Settings relating to the appearance of Library pages</translation>
     </message>
     <message>
       <source>Settings relating to the appearance of Library pages.</source>
@@ -1216,8 +1110,8 @@
       <translation>Sign In</translation>
     </message>
     <message>
-      <source>Sign Out</source>
-      <translation>Sign Out</translation>
+      <source>Sign out</source>
+      <translation>Sign out</translation>
     </message>
     <message>
       <source>Size</source>
@@ -1256,10 +1150,6 @@
     <message>
       <source>Sort</source>
       <translation>Sort</translation>
-    </message>
-    <message>
-      <source>Sort Order</source>
-      <translation>Sort Order</translation>
     </message>
     <message>
       <source>Special</source>
@@ -1322,21 +1212,6 @@
       <extracomment>Settings Menu - Description for option</extracomment>
     </message>
     <message>
-      <source>TAB_FILTER</source>
-      <translation>Filter</translation>
-      <extracomment>Title of Tab for options to filter library content</extracomment>
-    </message>
-    <message>
-      <source>TAB_SORT</source>
-      <translation>Sort</translation>
-      <extracomment>Title of Tab for options to sort library content</extracomment>
-    </message>
-    <message>
-      <source>TAB_VIEW</source>
-      <translation>View</translation>
-      <extracomment>Title of Tab for switching &quot;views&quot; when looking at a library</extracomment>
-    </message>
-    <message>
       <source>Tags</source>
       <translation>Tags</translation>
     </message>
@@ -1344,11 +1219,6 @@
       <source>Text Subtitles Only</source>
       <translation>Text Subtitles Only</translation>
       <extracomment>Name of a setting - should we hide subtitles that might transcode</extracomment>
-    </message>
-    <message>
-      <source>The requested content does not exist on the server</source>
-      <translation>The requested content does not exist on the server</translation>
-      <extracomment>Content of message box when the requested content is not found on the server</extracomment>
     </message>
     <message>
       <source>The source file is entirely compatible with this client and the session is receiving the file without modifications.</source>
@@ -1365,19 +1235,9 @@
       <extracomment>Dialog detail when unable to load Content from Server</extracomment>
     </message>
     <message>
-      <source>This controls what clicking OK on a Next Up episode does.</source>
-      <translation>This controls what clicking OK on a Next Up episode does.</translation>
-      <extracomment>User Setting - Setting description</extracomment>
-    </message>
-    <message>
       <source>Thursday</source>
       <translation>Thursday</translation>
       <extracomment>Day of Week</extracomment>
-    </message>
-    <message>
-      <source>Time of Day</source>
-      <translation>Time of Day</translation>
-      <extracomment>User Setting - Setting option title</extracomment>
     </message>
     <message>
       <source>TITLE</source>
@@ -1431,10 +1291,6 @@
       <translation>Unable to get playback information</translation>
     </message>
     <message>
-      <source>Unable to load Channel Data from the server</source>
-      <translation>Unable to load Channel Data from the server</translation>
-    </message>
-    <message>
       <source>Unknown</source>
       <translation>Unknown</translation>
       <extracomment>Title for a cast member for which we have no information for</extracomment>
@@ -1444,6 +1300,10 @@
       <translation>Unplayed</translation>
     </message>
     <message>
+      <source>URL:</source>
+      <translation>URL:</translation>
+    </message>
+    <message>
       <source>Use Episode Image</source>
       <translation>Use Episode Image</translation>
       <extracomment>User Setting - Setting option title</extracomment>
@@ -1451,11 +1311,6 @@
     <message>
       <source>Use generated splashscreen image as Jellyfin&apos;s home background.</source>
       <translation>Use generated splashscreen image as Jellyfin&apos;s home background.</translation>
-    </message>
-    <message>
-      <source>Use generated splashscreen image as Jellyfin&apos;s home background. Jellyfin will need to be closed and reopened for change to take effect.</source>
-      <translation>Use generated splashscreen image as Jellyfin&apos;s home background. Jellyfin will need to be closed and reopened for change to take effect.</translation>
-      <extracomment>Description for option in Setting Screen</extracomment>
     </message>
     <message>
       <source>Use Show Image</source>
@@ -1512,10 +1367,6 @@
       <extracomment>User Setting - Setting title</extracomment>
     </message>
     <message>
-      <source>Version</source>
-      <translation>Version</translation>
-    </message>
-    <message>
       <source>Video</source>
       <translation>Video</translation>
     </message>
@@ -1546,16 +1397,6 @@
     <message>
       <source>View Channel</source>
       <translation>View Channel</translation>
-    </message>
-    <message>
-      <source>View Episode Details</source>
-      <translation>View Episode Details</translation>
-      <extracomment>User Setting - Setting option title</extracomment>
-    </message>
-    <message>
-      <source>View Season Details</source>
-      <translation>View Season Details</translation>
-      <extracomment>User Setting - Setting option title</extracomment>
     </message>
     <message>
       <source>Watched</source>

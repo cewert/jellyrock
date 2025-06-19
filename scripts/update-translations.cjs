@@ -7,15 +7,31 @@ const xml2js = require('xml2js');
 const ROOT_DIR = process.argv[2] || '.';
 const OUTPUT_FILE = 'locale/en_US/translations.ts';
 const SETTINGS_JSON_PATH = path.join(ROOT_DIR, 'settings/settings.json');
-const FILE_PATTERNS = [
-  '**/*.brs',
-  '**/*.bs',
+const BRS_PATTERNS = [
+  'source/**/*.brs',
+  'source/**/*.bs',
+  'components/**/*.brs',
+  'components/**/*.bs',
   '!node_modules/**',
   '!/test-app/**',
   '!**/roku_modules/**',
   '!build/**',
   '!out/**'
 ];
+const XML_PATTERNS = [
+  'components/**/*.xml',
+  '!node_modules/**',
+  '!/test-app/**',
+  '!**/roku_modules/**',
+  '!build/**',
+  '!out/**'
+];
+
+// Helper function to check if string should be excluded
+function shouldExcludeString(str) {
+  // Exclude single non-alphabet characters
+  return str.length === 1 && !/[a-zA-Z]/.test(str);
+}
 
 // Count messages in XML file
 async function countMessagesInFile(filePath) {
@@ -39,7 +55,7 @@ async function parseExistingTranslations(filePath) {
   const translationsMap = new Map();
 
   if (!fs.existsSync(filePath)) {
-    return { translations: translationsMap, count: 0 };
+    process.exit(1);
   }
 
   try {
@@ -82,7 +98,9 @@ function extractTrCalls(code) {
       .replace(/\n/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
-    translations.add(translation);
+    if (!shouldExcludeString(translation)) {
+      translations.add(translation);
+    }
   }
   return translations;
 }
@@ -97,7 +115,10 @@ function extractJsonStrings(jsonData) {
     for (const key in obj) {
       if (key === 'title' || key === 'description') {
         if (typeof obj[key] === 'string') {
-          strings.add(obj[key]);
+          const str = obj[key].trim();
+          if (!shouldExcludeString(str)) {
+            strings.add(str);
+          }
         }
       }
       traverse(obj[key]);
@@ -108,34 +129,59 @@ function extractJsonStrings(jsonData) {
   return strings;
 }
 
-// Generate TS XML content with sorted messages
-function generateTsXml(newTranslations, existingTranslations) {
-  // Combine all translations
-  const allTranslations = new Map();
+// Extract text attributes from XML files
+async function extractXmlTextParams(filePath) {
+  const texts = new Set();
+  const relativePath = path.relative(ROOT_DIR, filePath);
 
-  // First add all existing translations (preserving their exact case)
-  existingTranslations.forEach(value => {
-    allTranslations.set(value.source, {
-      source: value.source,
-      translation: value.translation,
-      comment: value.comment
+  try {
+    const xml = fs.readFileSync(filePath, 'utf8');
+    const parser = new xml2js.Parser({
+      explicitChildren: true,
+      preserveChildrenOrder: true
     });
-  });
+    const result = await parser.parseStringPromise(xml);
 
-  // Then add new translations
-  newTranslations.forEach(source => {
-    // Only add if we don't have this exact case already
-    if (!allTranslations.has(source)) {
-      allTranslations.set(source, {
-        source: source,
-        translation: source, // Default to source as translation
-        comment: undefined
-      });
+    function traverse(node) {
+      if (!node) return;
+
+      // Check for text attribute
+      if (node.$ && node.$.text && node.$.text.trim() !== '') {
+        const textValue = node.$.text.trim();
+        if (!shouldExcludeString(textValue)) {
+          texts.add(textValue);
+        }
+      }
+
+      // Recursively check children
+      if (node.$$) {
+        node.$$.forEach(child => traverse(child));
+      }
     }
-  });
 
-  // Convert to array and sort alphabetically by source (case-insensitive)
-  const sortedMessages = Array.from(allTranslations.values())
+    if (result.component) {
+      traverse(result.component);
+    }
+
+    return texts;
+  } catch (error) {
+    console.warn(`Error processing XML file ${relativePath}: ${error.message}`);
+    process.exit(1);
+  }
+}
+
+// Generate TS XML content with sorted messages
+function generateTsXml(usedTranslations, existingTranslations) {
+  // Create final sorted array of translations
+  const sortedMessages = Array.from(usedTranslations)
+    .map(source => {
+      const existing = existingTranslations.get(source);
+      return {
+        source: source,
+        translation: existing?.translation || source,
+        comment: existing?.comment
+      };
+    })
     .sort((a, b) => a.source.localeCompare(b.source));
 
   // Generate XML
@@ -146,7 +192,6 @@ function generateTsXml(newTranslations, existingTranslations) {
   <context>
     <name>default</name>\n`;
 
-  // Add all messages in alphabetical order
   sortedMessages.forEach(({ source, translation, comment }) => {
     const escapedSource = escapeXml(source);
     const escapedTranslation = escapeXml(translation);
@@ -179,61 +224,76 @@ function escapeXml(text) {
 }
 
 async function extractTranslations() {
+  console.log('Starting translation extraction...');
+
   // Get initial message count
   const initialCount = await countMessagesInFile(path.join(ROOT_DIR, OUTPUT_FILE));
+  console.log(`Initial translation count: ${initialCount}`);
 
-  // Parse existing translations to preserve them
-  const { translations: existingTranslations, count: parsedCount } = await parseExistingTranslations(path.join(ROOT_DIR, OUTPUT_FILE));
-  console.log(`Parsed ${parsedCount} existing translations`);
+  // Parse existing translations
+  const { translations: existingTranslations } = await parseExistingTranslations(path.join(ROOT_DIR, OUTPUT_FILE));
 
-  const newTranslations = new Set();
+  const usedTranslations = new Set();
 
-  // 1. Extract from BrightScript files
-  const files = await fg(FILE_PATTERNS, { cwd: ROOT_DIR, absolute: true });
-  for (const filePath of files) {
+  // 1. Process BrightScript files
+  console.log('\nScanning BrightScript files...');
+  const brsFiles = await fg(BRS_PATTERNS, { cwd: ROOT_DIR, absolute: true });
+  for (const filePath of brsFiles) {
     try {
       const code = fs.readFileSync(filePath, 'utf8');
       const fileTranslations = extractTrCalls(code);
-      fileTranslations.forEach(t => newTranslations.add(t));
+      fileTranslations.forEach(t => usedTranslations.add(t));
     } catch (error) {
       console.warn(`Error reading ${path.relative(ROOT_DIR, filePath)}: ${error.message}`);
       process.exit(1);
     }
   }
+  console.log(`Found ${usedTranslations.size} strings in BrightScript files`);
 
-  // 2. Extract from settings.json
+  // 2. Process XML files
+  console.log('\nScanning XML component files...');
+  const xmlFiles = await fg(XML_PATTERNS, { cwd: ROOT_DIR, absolute: true });
+  for (const filePath of xmlFiles) {
+    try {
+      const xmlTexts = await extractXmlTextParams(filePath);
+      xmlTexts.forEach(t => usedTranslations.add(t));
+    } catch (error) {
+      console.warn(`Error reading ${path.relative(ROOT_DIR, filePath)}: ${error.message}`);
+      process.exit(1);
+    }
+  }
+  console.log(`Found ${usedTranslations.size} total strings after XML scan`);
+
+  // 3. Process settings.json
+  console.log('\nScanning settings.json...');
   try {
     const jsonData = JSON.parse(fs.readFileSync(SETTINGS_JSON_PATH, 'utf8'));
     const jsonStrings = extractJsonStrings(jsonData);
-    jsonStrings.forEach(s => newTranslations.add(s));
+    jsonStrings.forEach(s => usedTranslations.add(s));
     console.log(`Found ${jsonStrings.size} strings in settings.json`);
   } catch (error) {
     console.warn(`Error processing settings.json: ${error.message}`);
     process.exit(1);
   }
 
-  // Generate and write TS XML file with sorted messages
-  const tsXml = generateTsXml(newTranslations, existingTranslations);
-  fs.writeFileSync(
-    path.join(ROOT_DIR, OUTPUT_FILE),
-    tsXml
-  );
+  // Generate final output with only used translations
+  console.log(`\nGenerating output with ${usedTranslations.size} strings...`);
+  const tsXml = generateTsXml(usedTranslations, existingTranslations);
+  fs.writeFileSync(path.join(ROOT_DIR, OUTPUT_FILE), tsXml);
 
-  // Get final message count
+  // Report final results
   const finalCount = await countMessagesInFile(path.join(ROOT_DIR, OUTPUT_FILE));
   console.log(`\nOld message count in ${OUTPUT_FILE}: ${initialCount}`);
   console.log(`New message count in ${OUTPUT_FILE}: ${finalCount}`);
 
-  // Calculate difference
-  const difference = finalCount - initialCount;
-  if (difference > 0) {
-    console.log(`Added ${difference} new messages`);
-  } else if (difference < 0) {
-    console.log(`Removed ${Math.abs(difference)} messages`);
-  } else {
-    console.log(`No change in total message count`);
-  }
+  const newCount = Array.from(usedTranslations).filter(t => !existingTranslations.has(t)).length;
+  const removedCount = initialCount - (finalCount - newCount);
 
+  console.log('\n=== Summary ===');
+  console.log(`- Total strings in codebase: ${usedTranslations.size}`);
+  console.log(`- Preserved translations: ${finalCount - newCount}`);
+  console.log(`- New translations added: ${newCount}`);
+  console.log(`- Old translations removed: ${removedCount}`);
 }
 
 extractTranslations().catch(console.error);

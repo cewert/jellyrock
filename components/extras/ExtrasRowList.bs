@@ -55,7 +55,7 @@ sub onAdditionalPartsLoaded()
   data = CreateObject("roSGNode", "ContentNode") ' The row Node
   m.top.content = data
   if parts <> invalid and parts.count() > 0
-    row = buildRow("Additional Parts", parts, 464)
+    row = buildRow(tr("Additional Parts"), parts, 464)
     addRowSize([464, 291])
     m.top.content.appendChild(row)
     m.top.rowItemSize = [[464, 291]]
