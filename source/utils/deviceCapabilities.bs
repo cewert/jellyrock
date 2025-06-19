@@ -1,5 +1,5 @@
-import "pkg:/source/utils/misc.bs"
 import "pkg:/source/api/baserequest.bs"
+import "pkg:/source/utils/misc.bs"
 
 ' Returns the Device Capabilities for Roku.
 ' Also prints out the device profile for debugging

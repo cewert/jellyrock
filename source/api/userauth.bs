@@ -1,6 +1,6 @@
 ' needed for SignOut() and ServerInfo()
-import "pkg:/source/utils/session.bs"
 import "pkg:/source/utils/misc.bs"
+import "pkg:/source/utils/session.bs"
 
 function get_token(user as string, password as string)
   url = "Users/AuthenticateByName?format=json"

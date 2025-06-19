@@ -1,4 +1,8 @@
 {
+  "formatSingleLineCommentType": "singlequote",
+  "indentStyle": "spaces",
+  "indentSpaceCount": 2,
+  "sortImports": true,
   "files": [
     "source/**/*.brs",
     "source/**/*.bs",

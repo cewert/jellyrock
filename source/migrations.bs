@@ -1,5 +1,5 @@
-import "pkg:/source/utils/misc.bs"
 import "pkg:/source/utils/conditional.bs"
+import "pkg:/source/utils/misc.bs"
 
 ' @fileoverview Functions that update the registry based on the last run version and the currently running version
 

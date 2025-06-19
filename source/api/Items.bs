@@ -1,7 +1,7 @@
 import "pkg:/source/api/Image.bs"
 import "pkg:/source/api/sdk.bs"
-import "pkg:/source/utils/misc.bs"
 import "pkg:/source/utils/deviceCapabilities.bs"
+import "pkg:/source/utils/misc.bs"
 
 function ItemGetPlaybackInfo(id as string, startTimeTicks = 0 as longinteger)
   params = {

@@ -1,10 +1,10 @@
+import "pkg:/source/api/baserequest.bs"
+import "pkg:/source/api/Image.bs"
+import "pkg:/source/api/Items.bs"
+import "pkg:/source/utils/config.bs"
+import "pkg:/source/utils/deviceCapabilities.bs"
 import "pkg:/source/utils/misc.bs"
 import "ViewCreator.bs"
-import "pkg:/source/api/Items.bs"
-import "pkg:/source/api/baserequest.bs"
-import "pkg:/source/utils/config.bs"
-import "pkg:/source/api/Image.bs"
-import "pkg:/source/utils/deviceCapabilities.bs"
 
 sub init()
   m.hold = []
