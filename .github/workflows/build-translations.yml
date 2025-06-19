@@ -1,0 +1,34 @@
+name: build-translations
+
+on:
+  push:
+    branches:
+      - master
+    pull_request:
+      types: [opened, synchronize]
+
+jobs:
+  docs:
+    if: github.repository == 'cewert/jellyfin-roku'
+    runs-on: ubuntu-latest
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the changed files back to the repository.
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.CEWERT_BOT_TOKEN }}
+      - name: Install NPM dependencies
+        run: npm ci
+      - name: Generate translation file
+        run: npm run update-translations
+      - name: Commit any changes
+        uses: stefanzweifel/git-auto-commit-action@778341af668090896ca464160c2def5d1d1a3eb0 # v6
+        with:
+          commit_message: Update translation file
+          # use cewert-bot to commit the changes instead of the default github-actions[bot]
+          commit_user_name: cewert-bot
+          commit_user_email: c.ewert@gmail.com
+          # use cewert-bot to author the changes instead of the default author of the merge commit
+          commit_author: cewert-bot <c.ewert@gmail.com>
