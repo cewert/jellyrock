@@ -1,8 +1,12 @@
 name: roku-analysis
 
 on:
-  pull_request:
+  push:
+    branches:
+      - master
 
 jobs:
   static:
+    # don't run job on forks
+    if: github.repository == 'cewert/jellyfin-roku'
     uses: ./.github/workflows/_roku-analysis.yml

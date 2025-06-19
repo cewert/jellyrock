@@ -2,7 +2,7 @@ name: lint-translation-files
 on:
   pull_request:
     paths:
-      - "locale/*/*.ts"
+      - "locale/en_US/translations.ts"
 
 jobs:
   run:
