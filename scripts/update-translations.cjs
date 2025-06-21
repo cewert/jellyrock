@@ -1,3 +1,6 @@
+// This script automatically generates the en_US/translations.ts file
+// by scanning the codebase for translation strings in BrightScript files, XML files, and settings/settings.json.
+
 const fs = require('fs');
 const path = require('path');
 const fg = require('fast-glob');
