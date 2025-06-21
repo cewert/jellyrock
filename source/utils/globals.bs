@@ -1,27 +1,47 @@
-' Set global constants
+' Set all global variables that don't require an roSGNode
+sub setGlobals()
+  m.global.addFields({ appLoaded: false })
+  ' Save Constants
+  setConstants()
+  ' Save information from roAppInfo to m.global.app
+  SaveAppToGlobal()
+  ' Save information from roDeviceInfo to m.global.device
+  SaveDeviceToGlobal()
+end sub
+
+' Set all global variables that require an roSGNode
+' NOTE: roSGNodes must be created after m.screen is shown
+sub setGlobalNodes()
+  playstateTask = CreateObject("roSGNode", "PlaystateTask")
+  playstateTask.id = "playstateTask"
+  m.global.addFields({ playstateTask: playstateTask })
+
+  sceneManager = CreateObject("roSGNode", "SceneManager")
+  sceneManager.observeField("dataReturned", m.port)
+  m.global.addFields({ sceneManager: sceneManager })
+
+  m.global.addFields({ queueManager: CreateObject("roSGNode", "QueueManager") })
+  m.global.addFields({ audioPlayer: CreateObject("roSGNode", "AudioPlayer") })
+end sub
+
+' Save Constants
 sub setConstants()
-  globals = m.screen.getGlobalNode()
-
-  ' Set Global Constants
-  globals.addFields({
+  m.global.addFields({
     constants: {
-
-      jellyfin_server: "jellyfin server",
-
-      poster_bg_pallet: ["#00455c", "#44bae1", "#00a4db", "#1c4c5c", "#007ea8"],
-
+      jellyfin_server_response: "jellyfin server",
       colors: {
         button: "#006fab",
         blue: "#00a4dcFF"
       },
-
       icons: {
-        ascending_black: "pkg:/images/icons/up_black.png",
-        ascending_white: "pkg:/images/icons/up_white.png",
-        descending_black: "pkg:/images/icons/down_black.png",
-        descending_white: "pkg:/images/icons/down_white.png",
-        check_black: "pkg:/images/icons/check_black.png",
-        check_white: "pkg:/images/icons/check_white.png"
+        arrow_up_black: "pkg:/images/icons/arrow-up-black.png",
+        arrow_up_white: "pkg:/images/icons/arrow-up-white.png",
+        arrow_down_black: "pkg:/images/icons/arrow-down-black.png",
+        arrow_down_white: "pkg:/images/icons/arrow-down-white.png",
+        check_black: "pkg:/images/icons/check-black.png",
+        check_white: "pkg:/images/icons/check_white.png",
+        tomato_fresh: "pkg:/images/icons/tomato-fresh.png",
+        tomato_rotten: "pkg:/images/icons/tomato-rotten.png"
       }
     }
   })

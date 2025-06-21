@@ -2,25 +2,23 @@ sub Main (args as dynamic) as void
   printRegistry()
   ' The main function that runs when the application is launched.
   m.screen = CreateObject("roSGScreen")
-  ' Set global constants
-  setConstants()
+  m.port = CreateObject("roMessagePort")
+  m.screen.setMessagePort(m.port)
+
   ' Write screen tracker for screensaver
   WriteAsciiFile("tmp:/scene.temp", "")
   MoveFile("tmp:/scene.temp", "tmp:/scene")
 
-  m.port = CreateObject("roMessagePort")
-  m.screen.setMessagePort(m.port)
-  ' Set any initial Global Variables
   m.global = m.screen.getGlobalNode()
-  SaveAppToGlobal()
-  SaveDeviceToGlobal()
+  setGlobals()
+
   session.Init()
 
   ' migrate registry if needed
   m.wasMigrated = false
   runGlobalMigrations()
   runRegistryUserMigrations()
-  ' update global LastRunVersion now that migrations are finished
+  ' update LastRunVersion now that migrations are finished
   if m.global.app.version <> m.global.app.lastRunVersion
     set_setting("LastRunVersion", m.global.app.version)
   end if
@@ -30,28 +28,21 @@ sub Main (args as dynamic) as void
   m.screen.show() ' vscode_rale_tracker_entry
   'vscode_rdb_on_device_component_entry
 
-  playstateTask = CreateObject("roSGNode", "PlaystateTask")
-  playstateTask.id = "playstateTask"
-
-  sceneManager = CreateObject("roSGNode", "SceneManager")
-  sceneManager.observeField("dataReturned", m.port)
-
-  m.global.addFields({ app_loaded: false, playstateTask: playstateTask, sceneManager: sceneManager })
-  m.global.addFields({ queueManager: CreateObject("roSGNode", "QueueManager") })
-  m.global.addFields({ audioPlayer: CreateObject("roSGNode", "AudioPlayer") })
+  ' setup global nodes now that the screen has been shown
+  setGlobalNodes()
 
   app_start:
   ' First thing to do is validate the ability to use the API
   if not LoginFlow() then return
 
   ' remove login scenes from the stack
-  sceneManager.callFunc("clearScenes")
+  m.global.sceneManager.callFunc("clearScenes")
 
   ' load home page
   group = CreateHomeGroup()
   group.callFunc("loadLibraries")
   stopLoadingSpinner()
-  sceneManager.callFunc("pushScene", group)
+  m.global.sceneManager.callFunc("pushScene", group)
 
   m.scene.observeField("exit", m.port)
 
@@ -118,7 +109,7 @@ sub Main (args as dynamic) as void
     else if isNodeEvent(msg, "exit")
       return
     else if isNodeEvent(msg, "closeSidePanel")
-      group = sceneManager.callFunc("getActiveScene")
+      group = m.global.sceneManager.callFunc("getActiveScene")
       if group.lastFocus <> invalid
         group.lastFocus.setFocus(true)
       else
@@ -128,7 +119,7 @@ sub Main (args as dynamic) as void
       ' measure processing time
       timeSpan = CreateObject("roTimespan")
 
-      group = sceneManager.callFunc("getActiveScene")
+      group = m.global.sceneManager.callFunc("getActiveScene")
       reportingNode = msg.getRoSGNode()
       itemNode = invalid
       if isValid(reportingNode)
@@ -276,7 +267,7 @@ sub Main (args as dynamic) as void
           else
             group = CreateItemGrid(selectedItem)
           end if
-          sceneManager.callFunc("pushScene", group)
+          m.global.sceneManager.callFunc("pushScene", group)
         else if selectedItemType = "Folder" and selectedItem.json.type = "Genre"
           ' User clicked on a genre folder
           if selectedItem.json.MovieCount > 0
@@ -284,13 +275,13 @@ sub Main (args as dynamic) as void
           else
             group = CreateItemGrid(selectedItem)
           end if
-          sceneManager.callFunc("pushScene", group)
+          m.global.sceneManager.callFunc("pushScene", group)
         else if selectedItemType = "Folder" and selectedItem.json.type = "MusicGenre"
           group = CreateMusicLibraryView(selectedItem)
-          sceneManager.callFunc("pushScene", group)
+          m.global.sceneManager.callFunc("pushScene", group)
         else if selectedItemType = "UserView" or selectedItemType = "Folder" or selectedItemType = "Channel" or selectedItemType = "Boxset"
           group = CreateItemGrid(selectedItem)
-          sceneManager.callFunc("pushScene", group)
+          m.global.sceneManager.callFunc("pushScene", group)
         else if selectedItemType = "Episode" or LCase(selectedItemType) = "recording"
           ' User has selected a TV episode or Recording they want us to play
           audio_stream_idx = 0
@@ -556,13 +547,13 @@ sub Main (args as dynamic) as void
         group = CreatePersonView(node)
       else if node.type = "TvChannel"
         group = CreateVideoPlayerGroup(node.id)
-        sceneManager.callFunc("pushScene", group)
+        m.global.sceneManager.callFunc("pushScene", group)
       else if node.type = "Episode"
         group = CreateVideoPlayerGroup(node.id)
-        sceneManager.callFunc("pushScene", group)
+        m.global.sceneManager.callFunc("pushScene", group)
       else if LCase(node.type) = "recording"
         group = CreateVideoPlayerGroup(node.id)
-        sceneManager.callFunc("pushScene", group)
+        m.global.sceneManager.callFunc("pushScene", group)
       else if node.type = "Audio"
         selectedIndex = msg.getData()
         screenContent = msg.getRoSGNode()
@@ -578,7 +569,7 @@ sub Main (args as dynamic) as void
     else if isNodeEvent(msg, "buttonSelected")
       ' If a button is selected, we have some determining to do
       btn = getButton(msg)
-      group = sceneManager.callFunc("getActiveScene")
+      group = m.global.sceneManager.callFunc("getActiveScene")
 
       if isValid(btn) and btn.id = "play-button"
         if not isValid(group) then return
@@ -666,7 +657,7 @@ sub Main (args as dynamic) as void
       end if
     else if isNodeEvent(msg, "optionSelected")
       button = msg.getRoSGNode()
-      group = sceneManager.callFunc("getActiveScene")
+      group = m.global.sceneManager.callFunc("getActiveScene")
       if button.id = "goto_search" and isValid(group)
         ' Exit out of the side panel
         panel = group.findNode("options")
@@ -677,7 +668,7 @@ sub Main (args as dynamic) as void
           group.setFocus(true)
         end if
         group = CreateSearchPage()
-        sceneManager.callFunc("pushScene", group)
+        m.global.sceneManager.callFunc("pushScene", group)
         group.findNode("SearchBox").findNode("search_Key").setFocus(true)
         group.findNode("SearchBox").findNode("search_Key").active = true
       else if button.id = "change_server"
@@ -685,17 +676,17 @@ sub Main (args as dynamic) as void
         unset_setting("server")
         session.server.Delete()
         SignOut(false)
-        sceneManager.callFunc("clearScenes")
+        m.global.sceneManager.callFunc("clearScenes")
         goto app_start
       else if button.id = "change_user"
         startLoadingSpinner()
         SignOut(false)
-        sceneManager.callFunc("clearScenes")
+        m.global.sceneManager.callFunc("clearScenes")
         goto app_start
       else if button.id = "sign_out"
         startLoadingSpinner()
         SignOut()
-        sceneManager.callFunc("clearScenes")
+        m.global.sceneManager.callFunc("clearScenes")
         goto app_start
       else if button.id = "settings"
         ' Exit out of the side panel
@@ -706,7 +697,7 @@ sub Main (args as dynamic) as void
         else
           group.setFocus(true)
         end if
-        sceneManager.callFunc("settings")
+        m.global.sceneManager.callFunc("settings")
       end if
     else if isNodeEvent(msg, "selectSubtitlePressed")
       node = m.scene.focusedChild
@@ -740,7 +731,7 @@ sub Main (args as dynamic) as void
               m.global.sceneManager.callFunc("pushScene", retryVideo)
             end if
           else if not isValid(node.showID)
-            sceneManager.callFunc("popScene")
+            m.global.sceneManager.callFunc("popScene")
           else
             autoPlayNextEpisode(node.id, node.showID)
           end if
@@ -750,8 +741,8 @@ sub Main (args as dynamic) as void
       event = msg.GetInfo()
 
       if event.exitedScreensaver = true
-        sceneManager.callFunc("resetTime")
-        group = sceneManager.callFunc("getActiveScene")
+        m.global.sceneManager.callFunc("resetTime")
+        group = m.global.sceneManager.callFunc("getActiveScene")
         if isValid(group)
           ' refresh the current view
           if group.isSubType("JFScreen")
@@ -876,3 +867,4 @@ sub Main (args as dynamic) as void
   end while
 
 end sub
+

@@ -123,10 +123,10 @@ sub processUserSections()
     if sectionLoaded then loadedSections++
 
     ' If 2 sections with data are loaded or we're at the end of the web client section data, consider the home view loaded
-    if not m.global.app_loaded
+    if not m.global.appLoaded
       if loadedSections = 2 or i = 6
         m.top.signalBeacon("AppLaunchComplete") ' Roku Performance monitoring
-        m.global.app_loaded = true
+        m.global.appLoaded = true
       end if
     end if
   end for

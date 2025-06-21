@@ -20,18 +20,9 @@ sub init()
   m.showProgressBarAnimation = m.top.findNode("showProgressBar")
   m.showProgressBarField = m.top.findNode("showProgressBarField")
 
-  ' Randomize the background colors
-  backdropColor = "#00a4db" ' set default in case global var is invalid
-  myGlobal = m.global
-
-  if isValid(myGlobal) and isValid(myGlobal.constants) and isValid(myGlobal.constants.poster_bg_pallet)
-    posterBackgrounds = myGlobal.constants.poster_bg_pallet
-    backdropColor = posterBackgrounds[rnd(posterBackgrounds.count()) - 1]
-  end if
-
   ' update the backdrop node
   initBackdrop()
-  m.backdrop.color = backdropColor
+  m.backdrop.color = "0x0d1117FF"
 end sub
 
 sub initItemText()
