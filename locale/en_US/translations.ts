@@ -1088,16 +1088,6 @@
       <translation>Show On Hover</translation>
     </message>
     <message>
-      <source>Show What&apos;s New Popup</source>
-      <translation>Show What&apos;s New Popup</translation>
-      <extracomment>Settings Menu - Title for option</extracomment>
-    </message>
-    <message>
-      <source>Show What&apos;s New popup when Jellyfin is updated to a new version.</source>
-      <translation>Show What&apos;s New popup when Jellyfin is updated to a new version.</translation>
-      <extracomment>Settings Menu - Description for option</extracomment>
-    </message>
-    <message>
       <source>Shows</source>
       <translation>Shows</translation>
     </message>
@@ -1243,11 +1233,6 @@
       <source>TITLE</source>
       <translation>Name</translation>
       <extracomment>Name or Title field of media item</extracomment>
-    </message>
-    <message>
-      <source>To view a complete list of changes visit</source>
-      <translation>To view a complete list of changes visit</translation>
-      <extracomment>WhatsNewDialog body text preceding the changelog URL</extracomment>
     </message>
     <message>
       <source>today</source>
@@ -1406,11 +1391,6 @@
       <source>Wednesday</source>
       <translation>Wednesday</translation>
       <extracomment>Day of Week</extracomment>
-    </message>
-    <message>
-      <source>Welcome to version</source>
-      <translation>Welcome to version</translation>
-      <extracomment>WhatsNewDialog title - Welcome to version 2.0.0</extracomment>
     </message>
     <message>
       <source>What type of images to use for Episodes shown in the &apos;Next Up&apos; and &apos;Continue Watching&apos; sections.</source>
