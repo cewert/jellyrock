@@ -132,9 +132,9 @@ sub itemContentChanged()
       if isValid(itemData.CriticRating)
         setFieldText("criticRatingLabel", itemData.criticRating)
         if itemData.CriticRating > 60
-          tomato = "pkg:/images/icons/fresh.png"
+          tomato = m.global.constants.icons.tomato_fresh
         else
-          tomato = "pkg:/images/icons/rotten.png"
+          tomato = m.global.constants.icons.tomato_rotten
         end if
         criticRatingIcon = m.top.findNode("criticRatingIcon")
         if isValid(criticRatingIcon) then criticRatingIcon.uri = tomato

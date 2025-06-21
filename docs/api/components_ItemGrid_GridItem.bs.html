@@ -43,17 +43,11 @@ sub init()
 end sub
 
 sub itemContentChanged()
-  m.backdrop.blendColor = "#00a4db" ' set default in case global var is invalid
-  myGlobal = m.global
-
-  if isValid(myGlobal) and isValid(myGlobal.constants) and isValid(myGlobal.constants.poster_bg_pallet)
-    posterBackgrounds = myGlobal.constants.poster_bg_pallet
-    m.backdrop.blendColor = posterBackgrounds[rnd(posterBackgrounds.count()) - 1]
-  end if
-
   itemData = m.top.itemContent
-
   if itemData = invalid then return
+
+  m.backdrop.blendColor = "0x0d1117FF"
+  myGlobal = m.global
 
   if itemData.type = "Movie"
     if isValid(itemData.json) and isValid(itemData.json.UserData) and isValid(itemData.json.UserData.Played) and itemData.json.UserData.Played

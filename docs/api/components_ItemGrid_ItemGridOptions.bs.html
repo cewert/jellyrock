@@ -133,12 +133,13 @@ sub optionsSet()
     m.menus[1].content = sortContent
     m.menus[1].checkedItem = m.selectedSortIndex
 
+    globalConstants = m.global.constants
     if m.top.sortAscending = 1
-      m.menus[1].focusedCheckedIconUri = m.global.constants.icons.ascending_black
-      m.menus[1].checkedIconUri = m.global.constants.icons.ascending_white
+      m.menus[1].focusedCheckedIconUri = globalConstants.icons.arrow_up_black
+      m.menus[1].checkedIconUri = globalConstants.icons.arrow_up_white
     else
-      m.menus[1].focusedCheckedIconUri = m.global.constants.icons.descending_black
-      m.menus[1].checkedIconUri = m.global.constants.icons.descending_white
+      m.menus[1].focusedCheckedIconUri = globalConstants.icons.arrow_down_black
+      m.menus[1].checkedIconUri = globalConstants.icons.arrow_down_white
     end if
   end if
 
@@ -302,9 +303,11 @@ function onKeyEvent(key as string, press as boolean) as boolean
 
       ' Handle Sort screen
       if m.selectedItem = 1
+        globalConstants = m.global.constants
+
         if m.menus[1].itemSelected &lt;> m.selectedSortIndex
-          m.menus[1].focusedCheckedIconUri = m.global.constants.icons.ascending_black
-          m.menus[1].checkedIconUri = m.global.constants.icons.ascending_white
+          m.menus[1].focusedCheckedIconUri = globalConstants.icons.arrow_up_black
+          m.menus[1].checkedIconUri = globalConstants.icons.arrow_up_white
 
           m.selectedSortIndex = m.menus[1].itemSelected
           m.top.sortAscending = true
@@ -313,12 +316,12 @@ function onKeyEvent(key as string, press as boolean) as boolean
 
           if m.top.sortAscending = true
             m.top.sortAscending = false
-            m.menus[1].focusedCheckedIconUri = m.global.constants.icons.descending_black
-            m.menus[1].checkedIconUri = m.global.constants.icons.descending_white
+            m.menus[1].focusedCheckedIconUri = globalConstants.icons.arrow_down_black
+            m.menus[1].checkedIconUri = globalConstants.icons.arrow_down_white
           else
             m.top.sortAscending = true
-            m.menus[1].focusedCheckedIconUri = m.global.constants.icons.ascending_black
-            m.menus[1].checkedIconUri = m.global.constants.icons.ascending_white
+            m.menus[1].focusedCheckedIconUri = globalConstants.icons.arrow_up_black
+            m.menus[1].checkedIconUri = globalConstants.icons.arrow_up_white
           end if
         end if
       end if

@@ -270,7 +270,7 @@ end sub
 
 ' Roku Performance monitoring
 sub SendPerformanceBeacon(signalName as string)
-  if m.global.app_loaded = false
+  if m.global.appLoaded = false
     m.scene.signalBeacon(signalName)
   end if
 end sub

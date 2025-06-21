@@ -585,7 +585,7 @@ end sub
 function isJellyfinServer(systemInfo as object) as boolean
   data = ParseJson(systemInfo)
   if isValid(data) and isValid(data.ProductName)
-    return LCase(data.ProductName) = m.global.constants.jellyfin_server
+    return LCase(data.ProductName) = m.global.constants.jellyfin_server_response
   end if
   return false
 end function

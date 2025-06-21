@@ -588,10 +588,10 @@ sub onItemFocused()
     if isValid(itemData.CriticRating)
       setFieldText("criticRatingLabel", itemData.criticRating)
 
-      tomato = "pkg:/images/icons/rotten.png"
+      tomato = m.global.constants.icons.tomato_rotten
 
       if itemData.CriticRating > 60
-        tomato = "pkg:/images/icons/fresh.png"
+        tomato = m.global.constants.icons.tomato_fresh
       end if
 
       m.criticRatingIcon.uri = tomato
