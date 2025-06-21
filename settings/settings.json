@@ -301,13 +301,6 @@
             ]
           },
           {
-            "title": "Show What's New Popup",
-            "description": "Show What's New popup when Jellyfin is updated to a new version.",
-            "settingName": "load.allowwhatsnew",
-            "type": "bool",
-            "default": "true"
-          },
-          {
             "title": "Use Splashscreen as Home Background",
             "description": "Use generated splashscreen image as Jellyfin's home background.",
             "settingName": "ui.home.splashBackground",
