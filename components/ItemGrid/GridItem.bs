@@ -11,14 +11,9 @@ sub init()
   m.itemText = m.top.findNode("itemText")
   m.backdrop = m.top.findNode("backdrop")
 
-  m.itemPoster.observeField("loadStatus", "onPosterLoadStatusChanged")
+  applyTheme()
 
-  m.unplayedCount = m.top.findNode("unplayedCount")
-  m.unplayedEpisodeCount = m.top.findNode("unplayedEpisodeCount")
-  m.playedIndicator = m.top.findNode("playedIndicator")
-  m.checkmark = m.top.findNode("checkmark")
-  m.checkmark.width = 90
-  m.checkmark.height = 60
+  m.itemPoster.observeField("loadStatus", "onPosterLoadStatusChanged")
 
   ' Add some padding space when Item Titles are always showing
   if m.itemText.visible then m.itemText.maxWidth = 250
@@ -40,39 +35,29 @@ sub init()
 
 end sub
 
+sub applyTheme()
+  m.backdrop.blendColor = m.global.constants.colors.background_secondary
+end sub
+
 sub itemContentChanged()
   itemData = m.top.itemContent
   if itemData = invalid then return
 
-  m.backdrop.blendColor = "0x0d1117FF"
-  myGlobal = m.global
+  if isValid(itemData.watched)
+    m.itemPoster.isWatched = itemData.watched
+  end if
+
+  if isValid(itemData.json) and isValid(itemData.json.UserData)
+    if isValid(itemData.json.UserData.UnplayedItemCount)
+      m.itemPoster.unplayedCount = itemData.json.UserData.UnplayedItemCount
+    end if
+  end if
 
   if itemData.type = "Movie"
-    if isValid(itemData.json) and isValid(itemData.json.UserData) and isValid(itemData.json.UserData.Played) and itemData.json.UserData.Played
-      m.playedIndicator.visible = true
-    end if
-
     m.itemPoster.uri = itemData.PosterUrl
     m.itemIcon.uri = itemData.iconUrl
     m.itemText.text = itemData.Title
   else if itemData.type = "Series"
-    if isValid(myGlobal) and isValid(myGlobal.session) and isValid(myGlobal.session.user) and isValid(myGlobal.session.user.settings)
-      if myGlobal.session.user.settings["ui.tvshows.disableUnwatchedEpisodeCount"] = false
-        if isValid(itemData.json) and isValid(itemData.json.UserData) and isValid(itemData.json.UserData.UnplayedItemCount)
-          if itemData.json.UserData.UnplayedItemCount > 0
-            m.unplayedCount.visible = true
-            m.unplayedEpisodeCount.text = itemData.json.UserData.UnplayedItemCount
-          else
-            m.unplayedCount.visible = false
-            m.unplayedEpisodeCount.text = ""
-          end if
-        end if
-      end if
-    end if
-    if isValid(itemData.json) and isValid(itemData.json.UserData) and isValid(itemData.json.UserData.Played) and itemData.json.UserData.Played = true
-      m.playedIndicator.visible = true
-    end if
-
     m.itemPoster.uri = itemData.PosterUrl
     m.itemIcon.uri = itemData.iconUrl
     m.itemText.text = itemData.Title

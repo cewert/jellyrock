@@ -3,29 +3,27 @@
   <children>
     <LayoutGroup id="toplevel" layoutDirection="vert" itemSpacings="[-10]">
       <LayoutGroup id="main_group" layoutDirection="horiz" itemSpacings="[15]">
-        <Poster id="tvshowPoster" width="300" height="450">
-          <Rectangle id="unplayedCount" visible="false" width="90" height="60" color="#00a4dcFF" translation="[210, 0]">
-            <Label id="unplayedEpisodeCount" width="90" height="60" font="font:MediumBoldSystemFont" horizAlign="center" vertAlign="center" />
-          </Rectangle>
-        </Poster>
+        <Poster id="tvshowPoster" width="300" height="450" />
         <LayoutGroup layoutDirection="vert" itemSpacings="[15]">
           <LayoutGroup layoutDirection="horiz" itemSpacings="[150]">
-            <Label id="releaseYear" />
-            <Label id="officialRating" />
+            <LabelSecondaryMedium id="releaseYear" />
+            <LabelSecondaryMedium id="officialRating" />
             <LayoutGroup layoutDirection="horiz" itemSpacings="[3]">
               <Poster id="star" uri="pkg:/images/icons/sharp_star_white_18dp.png" height="32" width="32" blendColor="#cb272a" visible="false" />
-              <Label id="communityRating" />
+              <LabelSecondaryMedium id="communityRating" />
             </LayoutGroup>
           </LayoutGroup>
-          <Label id="genres" />
-          <Label id="tagline" />
-          <Label id="overview" wrap="true" width="1400" maxLines="4" />
-          <Label id="history" />
+          <LabelSecondaryMedium id="genres" />
+          <LabelPrimaryMedium id="tagline" />
+          <LabelSecondaryMedium id="overview" wrap="true" width="1400" maxLines="4" />
+          <LabelSecondaryMedium id="history" />
           <JFButton id="Shuffle" minChars="15" text="Shuffle" translation="[90, 640]" visible="false"></JFButton>
         </LayoutGroup>
       </LayoutGroup>
-      <TVSeasonRow id="seasons" />
     </LayoutGroup>
+
+    <TVSeasonRow id="seasons" />
+
     <ExtrasSlider id="tvSeasonExtras" />
   </children>
   <interface>

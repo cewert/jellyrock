@@ -6,23 +6,13 @@ import "pkg:/source/utils/misc.bs"
 
 sub init()
   m.log = log.Logger("HomeItem")
+
   initItemText()
   initItemPoster()
-  m.itemProgress = m.top.findNode("progress")
-  m.itemProgressBackground = m.top.findNode("progressBackground")
   initItemIcon()
   initItemTextExtra()
   m.itemPoster.observeField("loadStatus", "onPosterLoadStatusChanged")
-  m.unplayedCount = m.top.findNode("unplayedCount")
-  m.unplayedEpisodeCount = m.top.findNode("unplayedEpisodeCount")
-  initPlayedIndicator()
-
-  m.showProgressBarAnimation = m.top.findNode("showProgressBar")
-  m.showProgressBarField = m.top.findNode("showProgressBarField")
-
-  ' update the backdrop node
   initBackdrop()
-  m.backdrop.color = "0x0d1117FF"
 end sub
 
 sub initItemText()
@@ -45,12 +35,8 @@ sub initItemIcon()
   m.itemIcon = m.top.findNode("itemIcon")
 end sub
 
-sub initPlayedIndicator()
-  m.playedIndicator = m.top.findNode("playedIndicator")
-end sub
-
 sub itemContentChanged()
-  if isValid(m.unplayedCount) then m.unplayedCount.visible = false
+  if isValid(m.itemPoster) then m.itemPoster.callFunc("resetBadge")
   itemData = m.top.itemContent
   if itemData = invalid then return
 
@@ -68,7 +54,6 @@ sub itemContentChanged()
   if not isValid(m.itemTextExtra) then initItemTextExtra()
   if not isValid(m.backdrop) then initBackdrop()
   if not isValid(m.itemIcon) then initItemIcon()
-  if not isValid(m.playedIndicator) then initPlayedIndicator()
 
   m.itemPoster.width = itemData.imageWidth
   m.itemText.maxWidth = itemData.imageWidth
@@ -83,21 +68,14 @@ sub itemContentChanged()
   end if
 
   if itemData.isWatched
-    m.playedIndicator.visible = true
+    m.itemPoster.isWatched = true
   else
-    m.playedIndicator.visible = false
-
     if LCase(itemData.type) = "series"
       if isValid(userSettings)
         unwatchedEpisodeCountSetting = userSettings["ui.tvshows.disableUnwatchedEpisodeCount"]
         if isValid(unwatchedEpisodeCountSetting) and not unwatchedEpisodeCountSetting
           if isValid(itemData.json.UserData) and isValid(itemData.json.UserData.UnplayedItemCount)
-            if itemData.json.UserData.UnplayedItemCount > 0
-              if isValid(m.unplayedCount) then m.unplayedCount.visible = true
-              if isValid(m.unplayedEpisodeCount)
-                m.unplayedEpisodeCount.text = itemData.json.UserData.UnplayedItemCount
-              end if
-            end if
+            m.itemPoster.unplayedCount = itemData.json.UserData.UnplayedItemCount
           end if
         end if
       end if
@@ -106,11 +84,6 @@ sub itemContentChanged()
 
   ' Format the Data based on the type of Home Data
   if itemData.type = "CollectionFolder" or itemData.type = "UserView" or itemData.type = "Channel"
-    m.itemText.font.size = 35
-    m.itemText.height = 64
-    m.itemText.horizAlign = "center"
-    m.itemText.vertAlign = "bottom"
-    m.itemText.text = itemData.name
     m.itemPoster.uri = itemData.widePosterURL
     return
   end if
@@ -124,15 +97,7 @@ sub itemContentChanged()
     return
   end if
 
-  playedIndicatorLeftPosition = m.itemPoster.width - 60
-  m.playedIndicator.translation = [playedIndicatorLeftPosition, 0]
-
-  m.itemText.height = 34
-  m.itemText.font.size = 25
-  m.itemText.horizAlign = "left"
-  m.itemText.vertAlign = "bottom"
   m.itemTextExtra.visible = true
-  m.itemTextExtra.font.size = 22
 
   ' "Program" is from clicking on an "On Now" item on the Home Screen
   if itemData.type = "Program"
@@ -156,9 +121,7 @@ sub itemContentChanged()
   if itemData.type = "Episode" or LCase(itemData.type) = "recording"
     m.itemText.text = itemData.json.SeriesName
 
-    if itemData.PlayedPercentage > 0
-      drawProgressBar(itemData)
-    end if
+    m.itemPoster.playedPercentage = itemData.PlayedPercentage
 
     if isValid(userSettings)
       if userSettings["ui.general.episodeimagesnextup"] = "webclient"
@@ -197,9 +160,7 @@ sub itemContentChanged()
   if itemData.type = "Movie" or itemData.type = "MusicVideo"
     m.itemText.text = itemData.name
 
-    if itemData.PlayedPercentage > 0
-      drawProgressBar(itemData)
-    end if
+    m.itemPoster.playedPercentage = itemData.PlayedPercentage
 
     ' Use best image, but fallback to secondary if it's empty
     if (itemData.imageWidth = 180 and itemData.posterURL <> "") or itemData.thumbnailURL = ""
@@ -228,9 +189,7 @@ sub itemContentChanged()
   if itemData.type = "Video"
     m.itemText.text = itemData.name
 
-    if itemData.PlayedPercentage > 0
-      drawProgressBar(itemData)
-    end if
+    m.itemPoster.playedPercentage = itemData.PlayedPercentage
 
     if itemData.imageWidth = 180
       m.itemPoster.uri = itemData.posterURL
@@ -355,25 +314,13 @@ sub itemContentChanged()
   m.log.warn("Unhandled Home Item Type", itemData.type)
 end sub
 
-'
-' Draws and animates item progress bar
-sub drawProgressBar(itemData)
-  m.itemProgressBackground.width = itemData.imageWidth
-  m.itemProgressBackground.visible = true
-  m.showProgressBarField.keyValue = [0, m.itemPoster.width * (itemData.PlayedPercentage / 100)]
-  m.showProgressBarAnimation.control = "Start"
-end sub
-
-'
 ' Enable title scrolling based on item Focus
 sub focusChanged()
-
   if m.top.itemHasFocus = true
     m.itemText.repeatCount = -1
   else
     m.itemText.repeatCount = 0
   end if
-
 end sub
 
 'Hide backdrop and icon when poster loaded

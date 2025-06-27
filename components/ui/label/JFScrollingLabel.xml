@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component name="JFScrollingLabel" extends="ScrollingLabel">
+  <interface>
+    <field id="bold" type="boolean" value="false" onChange="onBoldChanged" />
+  </interface>
+</component>

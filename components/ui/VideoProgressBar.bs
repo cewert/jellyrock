@@ -1,0 +1,26 @@
+sub init()
+  m.progressBar = m.top.findNode("progressBar")
+  m.progressBarBackground = m.top.findNode("progressBarBackground")
+
+  colorConstants = m.global.constants.colors
+  m.progressBar.color = colorConstants.secondary
+  m.progressBarBackground.color = colorConstants.black_alpha_60
+end sub
+
+sub onWidthChanged()
+  m.progressBarBackground.width = m.top.width
+end sub
+
+sub onPlayedPercentageChanged()
+  if m.top.playedPercentage > 0 and m.top.playedPercentage < 100
+    m.progressBar.width = m.top.width * (m.top.playedPercentage / 100)
+    m.progressBarBackground.visible = true
+  else
+    m.progressBarBackground.visible = false
+  end if
+end sub
+
+sub onHeightChanged()
+  m.progressBar.height = m.top.height
+  m.progressBarBackground.height = m.top.height
+end sub

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component name="JFPoster" extends="Poster">
+  <children>
+    <RectangleSecondary id="watchBadgeBackground" width="90" height="48" visible="false">
+      <LabelPrimarySmall id="unplayedVideosCount" bold="true" height="48" horizAlign="center" vertAlign="center" translation="[0,3]" />
+      <LabelPrimaryMedium id="checkmark" bold="true" height="48" horizAlign="center" vertAlign="center" text="✓" translation="[0,3]" visible="false" />
+    </RectangleSecondary>
+  </children>
+  <interface>
+    <field id="unplayedCount" type="integer" value="0" />
+    <field id="isWatched" type="boolean" value="false" />
+    <field id="playedPercentage" type="float" value="0" />
+    <function name="resetBadge" />
+  </interface>
+</component>

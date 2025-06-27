@@ -2,18 +2,13 @@ import "pkg:/source/utils/misc.bs"
 
 sub init()
   m.inactivityTimer = m.top.findNode("inactivityTimer")
-
   m.videoLogo = m.top.findNode("videoLogo")
   m.videoOfficialRating = m.top.findNode("videoOfficialRating")
   m.videoTitle = m.top.findNode("videoTitle")
-  m.videoTitle.font.size = 60
   m.videoSubtitleGroup = m.top.findNode("videoSubtitleGroup")
-
   m.videoPlayPause = m.top.findNode("videoPlayPause")
   m.videoPositionTime = m.top.findNode("videoPositionTime")
-  m.videoPositionTime.font.size = 36
   m.videoRemainingTime = m.top.findNode("videoRemainingTime")
-  m.videoRemainingTime.font.size = 36
   m.progressBar = m.top.findNode("progressBar")
   m.progressBarBackground = m.top.findNode("progressBarBackground")
 
@@ -31,6 +26,20 @@ sub init()
   m.osdButtons.buttonFocused = m.defaultButtonIndex
 
   m.osdButtons.getChild(m.defaultButtonIndex).focus = true
+
+  applyTheme()
+end sub
+
+sub applyTheme()
+  constantColors = m.global.constants.colors
+
+  for each button in m.osdButtons.getChildren(-1, 0)
+    button.background = constantColors.background_primary
+    button.iconBackground = constantColors.text_secondary
+    button.focusBackground = constantColors.background_primary
+    button.iconFocusBackground = constantColors.text_primary
+    button.enableBorder = true
+  end for
 end sub
 
 ' setFields: Grab data from json metadata and save it to local fields
@@ -38,6 +47,7 @@ sub setFields()
   if not isValid(m.top.json) or m.top.json = "" then return
 
   videoData = parseJson(m.top.json)
+  m.top.json = ""
 
   if videoData.Type <> invalid
     m.top.type = videoData.Type
@@ -298,15 +308,13 @@ sub onButtonSelected()
 end sub
 
 function createSubtitleLabelNode(labelId as string) as object
-  labelNode = CreateObject("roSGNode", "Label")
+  labelNode = CreateObject("roSGNode", "LabelPrimaryMedium")
   labelNode.id = labelId
-  labelNode.font = "font:MediumBoldSystemFont"
-  labelNode.font.size = 33
-  labelNode.color = "0xF5F5F5FF"
   labelNode.horizAlign = "left"
   labelNode.vertAlign = "center"
   labelNode.width = 0
   labelNode.height = 0
+  labelNode.bold = true
 
   return labelNode
 end function
@@ -314,16 +322,14 @@ end function
 function createSubtitleDividerNode() as object
   m.subtitleDividerCount++
 
-  labelNode = CreateObject("roSGNode", "Label")
+  labelNode = CreateObject("roSGNode", "LabelPrimarySmall")
   labelNode.id = "divider" + m.subtitleDividerCount.toStr()
-  labelNode.font = "font:SmallSystemFont"
-  labelNode.font.size = 26
-  labelNode.color = "0xa8a8a8FF"
   labelNode.horizAlign = "left"
   labelNode.vertAlign = "center"
   labelNode.width = 0
   labelNode.height = 40
   labelNode.text = "•"
+  labelNode.bold = true
 
   return labelNode
 end function

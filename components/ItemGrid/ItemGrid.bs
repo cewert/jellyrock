@@ -42,6 +42,7 @@ sub init()
 
   'Voice filter setup
   m.voiceBox = m.top.findNode("voiceBox")
+  m.voiceBox.opacity = 0.0001
   m.voiceBox.voiceEnabled = true
   m.voiceBox.active = true
   m.voiceBox.observeField("text", "onvoiceFilter")

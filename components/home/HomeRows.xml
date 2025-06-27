@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="HomeRows" extends="RowList">
+<component name="HomeRows" extends="JFRowList">
   <interface>
     <field id="selectedItem" type="node" alwaysNotify="true" />
     <field id="quickPlayNode" type="node" />

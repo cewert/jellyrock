@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="UserSelect" extends="JFScreen">
   <children>
-    <Label text="Please sign in" horizAlign="center" font="font:LargeSystemFont" height="100" width="1920" translation="[0, 200]" />
+    <LabelPrimaryLarge text="Please sign in" horizAlign="center" height="100" width="1920" translation="[0, 200]" />
     <UserRow id="userRow" translation="[130, 360]" />
     <LabelList id="alternateOptions" vertFocusAnimationStyle="floatingFocus" textHorizAlign="center" translation="[400,850]" itemSize="[1120,60]" itemSpacing="[0,20]" focusedColor="#EBEBEB" focusBitmapBlendColor="#00a4dcFF" focusFootprintBlendColor="#303030">
       <ContentNode id="alternate" role="content">

@@ -1,0 +1,137 @@
+
+
+sub init()
+  m.top.width = 464
+  m.top.height = 261
+  m.top.loadDisplayMode = "scaleToZoom"
+  m.disableWatchBadge = false
+
+  if m.global.session.user.settings["ui.tvshows.disableUnwatchedEpisodeCount"]
+    m.disableWatchBadge = true
+  end if
+
+  m.watchBadgeBackground = m.top.findNode("watchBadgeBackground")
+  m.unplayedVideosCount = m.top.findNode("unplayedVideosCount")
+  m.checkmark = m.top.findNode("checkmark")
+
+  startFieldObservers()
+end sub
+
+sub startFieldObservers()
+  m.top.observeField("playedPercentage", "onPlayedPercentageChanged")
+  if m.disableWatchBadge then return
+  m.top.observeField("unplayedCount", "onUnplayedCountChanged")
+  m.top.observeField("isWatched", "onIsWatchedChanged")
+end sub
+
+sub stopFieldObservers()
+  m.top.unobserveField("playedPercentage")
+  if m.disableWatchBadge then return
+  m.top.unobserveField("unplayedCount")
+  m.top.unobserveField("isWatched")
+
+end sub
+
+sub onUnplayedCountChanged()
+  if m.disableWatchBadge then return
+  if m.top.isWatched then return
+
+  if m.top.unplayedCount > 0
+    m.checkmark.visible = false
+    m.unplayedVideosCount.text = m.top.unplayedCount.ToStr()
+    m.unplayedVideosCount.visible = true
+  else
+    m.unplayedVideosCount.visible = false
+    m.unplayedVideosCount.text = ""
+    m.checkmark.visible = true
+  end if
+
+  updateBadgeSize()
+end sub
+
+sub onIsWatchedChanged()
+  if m.disableWatchBadge then return
+  if m.top.unplayedCount > 0 then return
+
+  if m.top.isWatched
+    m.unplayedVideosCount.visible = false
+    m.unplayedVideosCount.text = ""
+    m.checkmark.visible = true
+  else
+    m.checkmark.visible = false
+  end if
+
+  updateBadgeSize()
+end sub
+
+sub onPlayedPercentageChanged()
+  progressBar = m.top.findNode("progressBar")
+
+  if progressBar = invalid
+    if m.top.playedPercentage = 0
+      return
+    else
+      progressBar = createProgressBar()
+    end if
+  end if
+
+  if m.top.playedPercentage = 0
+    m.top.removeChild(progressBar)
+  else if m.top.playedPercentage > 0
+    progressBar.width = m.top.width
+    progressBar.playedPercentage = m.top.playedPercentage
+    m.top.appendChild(progressBar)
+  end if
+end sub
+
+sub resetBadge()
+  stopFieldObservers()
+  m.top.unplayedCount = 0
+  m.top.isWatched = false
+  m.top.playedPercentage = 0
+
+  m.watchBadgeBackground.visible = false
+  m.unplayedVideosCount.text = ""
+  m.checkmark.visible = false
+  m.watchBadgeBackground.width = 90
+  m.checkmark.translation = [0, 0]
+  m.unplayedVideosCount.translation = [0, 0]
+
+  progressBar = m.top.findNode("progressBar")
+  if progressBar <> invalid
+    m.top.removeChild(progressBar)
+  end if
+
+  startFieldObservers()
+end sub
+
+sub updateBadgeSize()
+  padding = 12
+
+  if m.top.isWatched
+    padding = 15
+    dataWidth = m.checkmark.localBoundingRect().width
+    m.checkmark.translation = [padding, 3]
+  else
+    dataWidth = m.unplayedVideosCount.localBoundingRect().width
+    if dataWidth < 30
+      dataWidth = 30
+      m.unplayedVideosCount.width = dataWidth
+    end if
+    m.unplayedVideosCount.translation = [padding, 3]
+  end if
+
+  badgeWidth = dataWidth + (padding * 2)
+  m.watchBadgeBackground.width = badgeWidth
+  m.watchBadgeBackground.translation = [m.top.width - badgeWidth, 0]
+  m.watchBadgeBackground.visible = true
+end sub
+
+function createProgressBar() as object
+  progressBar = CreateObject("roSGNode", "VideoProgressBar")
+  progressBar.id = "progressBar"
+  progressBar.width = m.top.width
+  progressBar.translation = [0, m.top.height - progressBar.height]
+
+  return progressBar
+end function

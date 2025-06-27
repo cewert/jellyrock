@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="TVEpisodeRow" extends="RowList">
+<component name="TVEpisodeRow" extends="JFRowList">
   <interface>
     <field id="objects" type="assocarray" onChange="setupRows" />
     <field id="escapeButton" type="string" alwaysNotify="true" />

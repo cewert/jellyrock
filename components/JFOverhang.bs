@@ -7,13 +7,12 @@ sub init()
   m.leftGroup = m.top.findNode("overlayLeftGroup")
   m.rightGroup = m.top.findNode("overlayRightGroup")
   m.rightSeperator = m.top.findNode("overlayRightSeperator")
-  ' set font sizes
+  m.rightSeperator.color = m.global.constants.colors.text_secondary
   m.optionText = m.top.findNode("overlayOptionsText")
-  m.optionText.font.size = 20
   m.optionStar = m.top.findNode("overlayOptionsStar")
-  m.optionStar.font.size = 58
   ' save node references
   m.title = m.top.findNode("overlayTitle")
+  m.user = m.top.findNode("overlayCurrentUser")
   m.overlayRightGroup = m.top.findNode("overlayRightGroup")
   m.overlayTimeGroup = m.top.findNode("overlayTimeGroup")
   m.slideDownAnimation = m.top.findNode("slideDown")
@@ -23,18 +22,10 @@ sub init()
   if not m.hideClock
     ' save node references
     m.overlayHours = m.top.findNode("overlayHours")
-    m.overlayHours.font.size = 50
     m.overlayMinutes = m.top.findNode("overlayMinutes")
-    m.overlayMinutes.font.size = 50
     m.overlayTimeSeperator = m.top.findNode("overlayTimeSeperator")
-    m.overlayTimeSeperator.font.size = 40
-    m.currentTimeTimer = m.top.findNode("currentTimeTimer")
 
-    ' display current time
-    updateTime()
-    ' start timer to update clock every minute
-    m.currentTimeTimer.control = "start"
-    m.currentTimeTimer.ObserveField("fire", "updateTime")
+    m.currentTimeTimer = m.top.findNode("currentTimeTimer")
   end if
 
   setClockVisibility()
@@ -60,7 +51,14 @@ end sub
 sub setClockVisibility()
   if m.hideClock
     m.overlayRightGroup.removeChild(m.overlayTimeGroup)
+    return
   end if
+
+  ' display current time
+  updateTime()
+  ' start timer to update clock every minute
+  m.currentTimeTimer.control = "start"
+  m.currentTimeTimer.ObserveField("fire", "updateTime")
 end sub
 
 sub setRightSeperatorVisibility()
@@ -78,10 +76,8 @@ end sub
 
 sub updateUser()
   setRightSeperatorVisibility()
-  user = m.top.findNode("overlayCurrentUser")
-  if isValid(user)
-    user.text = m.top.currentUser
-  end if
+
+  m.user.text = m.top.currentUser
 end sub
 
 sub updateTime()
@@ -131,13 +127,13 @@ sub updateTimeDisplay()
 end sub
 
 sub updateOptions()
-  if m.top.showOptions = true
-    m.optionText.visible = true
-    m.optionStar.visible = true
-  else
-    m.optionText.visible = false
-    m.optionStar.visible = false
-  end if
+  ' if m.top.showOptions = true
+  '   m.optionText.visible = true
+  '   m.optionStar.visible = true
+  ' else
+  '   m.optionText.visible = false
+  '   m.optionStar.visible = false
+  ' end if
 end sub
 
 ' component boolean field isLogoVisibleChange has changed value

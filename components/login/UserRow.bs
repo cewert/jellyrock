@@ -19,9 +19,10 @@ sub updateSize()
   m.top.itemSpacing = [0, 40]
 
   ' Size of items in the row
-  m.top.rowItemSize = [itemWidth, itemHeight]
+  m.top.rowItemSize = [itemWidth, 300]
   ' Spacing between items in the row
   m.top.rowItemSpacing = [40, 0]
+  m.top.focusXOffset = [0]
 end sub
 
 

@@ -59,6 +59,7 @@ sub init()
   m.itemGrid.observeField("itemSelected", "onItemSelected")
 
   'Voice filter setup
+  m.voiceBox.opacity = 0.0001
   m.voiceBox.voiceEnabled = true
   m.voiceBox.active = true
   m.voiceBox.observeField("text", "onvoiceFilter")

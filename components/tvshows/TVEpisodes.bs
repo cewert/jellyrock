@@ -29,14 +29,10 @@ sub setExtraButtonVisibility()
 end sub
 
 sub updateSeason()
-  if m.global.session.user.settings["ui.tvshows.disableUnwatchedEpisodeCount"] = false
-    if isValid(m.top.seasonData) and isValid(m.top.seasonData.UserData) and isValid(m.top.seasonData.UserData.UnplayedItemCount)
-      if m.top.seasonData.UserData.UnplayedItemCount > 0
-        m.unplayedCount.visible = true
-        m.unplayedEpisodeCount.text = m.top.seasonData.UserData.UnplayedItemCount
-      else
-        m.unplayedCount.visible = false
-      end if
+  if isValid(m.top.seasonData) and isValid(m.top.seasonData.UserData)
+    userData = m.top.seasonData.UserData
+    if isValid(userData.UnplayedItemCount)
+      m.poster.unplayedCount = userData.UnplayedItemCount
     end if
   end if
 

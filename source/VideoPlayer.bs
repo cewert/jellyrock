@@ -12,11 +12,12 @@ function VideoPlayer(id as string, mediaSourceId = invalid as dynamic, audio_str
     stopLoadingSpinner()
     return invalid
   end if
-  jellyfin_blue = "#00a4dcFF"
 
-  video.retrievingBar.filledBarBlendColor = jellyfin_blue
-  video.bufferingBar.filledBarBlendColor = jellyfin_blue
-  video.trickPlayBar.filledBarBlendColor = jellyfin_blue
+  primaryColor = m.global.constants.colors.primary
+  video.retrievingBar.filledBarBlendColor = primaryColor
+  video.bufferingBar.filledBarBlendColor = primaryColor
+  video.trickPlayBar.filledBarBlendColor = primaryColor
+
   return video
 end function
 

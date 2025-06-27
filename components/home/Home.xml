@@ -2,12 +2,18 @@
 <component name="Home" extends="JFScreen">
   <children>
     <Poster id="backdrop" loadDisplayMode="scaleToZoom" width="1920" height="1200" />
-    <HomeRows id="homeRows" focusBitmapBlendColor="0xFFFFFF00" />
-    <OptionsSlider id="options" />
+    <HomeRows id="homeRows" />
 
-    <Animation id="fadeInFocusBitmap" delay="1" duration=".2" repeat="false" easeFunction="inQuad">
-      <ColorFieldInterpolator id="fadeInFocusBitmapInterpolator" key="[0.0, 1.0]" keyValue="[0xFFFFFF00, 0xFFFFFFFF]" fieldToInterp="homeRows.focusBitmapBlendColor" />
-    </Animation>
+    <!-- <LabelSmallest id="LabelSmallest" text="The quick brown fox jumps over the lazy dog." translation="[0, 300]" />
+    <LabelSmaller id="LabelSmaller" text="The quick brown fox jumps over the lazy dog." translation="[0, 350]" />
+    <LabelSmall id="LabelSmall" text="The quick brown fox jumps over the lazy dog." translation="[0, 400]" />
+    <LabelMedium id="LabelMedium" text="The quick brown fox jumps over the lazy dog." translation="[0, 450]" />
+    <LabelLarge id="LabelLarge" text="The quick brown fox jumps over the lazy dog." translation="[0, 500]" />
+    <LabelLarger id="LabelLarger" text="The quick brown fox jumps over the lazy dog." translation="[0, 550]" />
+    <LabelLargest id="LabelLargest" text="The quick brown fox jumps over the lazy dog." translation="[0, 600]" />
+    <LabelBadge id="LabelBadge" text="The quick brown fox jumps over the lazy dog." translation="[0, 650]" /> -->
+
+    <OptionsSlider id="options" />
   </children>
   <interface>
     <field id="selectedItem" alias="homeRows.selectedItem" />

@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="PlayedCheckmark" extends="Rectangle">
   <children>
-    <Label id="checkmark" width="60" height="50" font="font:MediumBoldSystemFont" horizAlign="center" vertAlign="bottom" text="✓" />
+    <Label id="checkmark" font="font:MediumBoldSystemFont" horizAlign="center" vertAlign="bottom" text="✓" />
   </children>
+  <interface>
+    <field id="color" type="string" onChange="onColorChanged" value="" />
+    <field id="size" type="integer" onChange="onSizeChanged" value="" />
+    <field id="width" type="integer" onChange="onWidthChanged" value="" />
+    <field id="height" type="integer" onChange="onHeightChanged" value="" />
+  </interface>
 </component>

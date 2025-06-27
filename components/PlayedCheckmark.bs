@@ -1,4 +1,23 @@
 sub init()
-  checkmark = m.top.findNode("checkmark")
-  checkmark.font.size = 48
+  m.checkmark = m.top.findNode("checkmark")
+
+  m.checkmark.font.size = 48
+  m.checkmark.width = 60
+  m.checkmark.height = 50
+end sub
+
+sub onColorChanged()
+  m.checkmark.color = m.top.color
+end sub
+
+sub onSizeChanged()
+  m.checkmark.font.size = m.top.size
+end sub
+
+sub onWidthChanged()
+  m.checkmark.width = m.top.width
+end sub
+
+sub onHeightChanged()
+  m.checkmark.height = m.top.height
 end sub

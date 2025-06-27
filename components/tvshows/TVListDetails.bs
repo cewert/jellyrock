@@ -6,15 +6,7 @@ sub init()
   m.title.text = tr("Loading...")
   m.overview = m.top.findNode("overview")
   m.poster = m.top.findNode("poster")
-
-  m.rating = m.top.findnode("rating")
   m.infoBar = m.top.findnode("infoBar")
-  m.progressBackground = m.top.findNode("progressBackground")
-  m.progressBar = m.top.findnode("progressBar")
-  m.playedIndicator = m.top.findNode("playedIndicator")
-  m.checkmark = m.top.findNode("checkmark")
-  m.checkmark.font.size = 35
-
   m.videoCodec = m.top.findNode("video_codec")
 end sub
 
@@ -44,7 +36,7 @@ sub itemContentChanged()
   if isValid(itemData.PremiereDate)
     airDate = CreateObject("roDateTime")
     airDate.FromISO8601String(itemData.PremiereDate)
-    m.top.findNode("aired").text = tr("Aired") + ": " + airDate.AsDateString("short-month-no-weekday")
+    m.top.findNode("aired").text = airDate.AsDateString("short-month-no-weekday")
   end if
 
   imageUrl = item.posterURL
@@ -74,33 +66,32 @@ sub itemContentChanged()
 
   if userSettings["ui.tvshows.disableCommunityRating"] = false
     if isValid(itemData.communityRating)
-      m.top.findNode("star").visible = true
-      m.top.findNode("communityRating").text = str(int(itemData.communityRating * 10) / 10)
+      if m.communityRating = invalid
+        m.communityRating = CreateObject("roSGNode", "CommunityRating")
+        m.communityRating.id = "communityRating"
+      end if
+
+      m.communityRating.rating = itemData.communityRating
+      m.infoBar.insertChild(m.communityRating, 1)
     else
-      m.top.findNode("star").visible = false
+      if m.communityRating <> invalid
+        m.infoBar.removeChild(m.communityRating)
+      end if
     end if
   else
-    m.rating.visible = false
-    m.infoBar.itemSpacings = [20, -25, 20, 20]
+    if m.communityRating <> invalid
+      m.infoBar.removeChild(m.communityRating)
+    end if
   end if
 
-  ' Add checkmark in corner (if applicable)
-  if isValid(itemData.UserData) and isValid(itemData.UserData.Played) and itemData.UserData.Played = true
-    m.playedIndicator.visible = true
-  else
-    m.playedIndicator.visible = false
+  ' Mark as watched
+  if isValid(itemData.UserData) and isValid(itemData.UserData.Played)
+    m.poster.isWatched = itemData.UserData.Played
   end if
 
-  ' Add progress bar on bottom (if applicable)
-  if isValid(itemData.UserData) and isValid(itemData.UserData.PlayedPercentage) and itemData.UserData.PlayedPercentage > 0
-    m.progressBackground.width = m.poster.width
-    m.progressBackground.visible = true
-    progressWidthInPixels = int(m.progressBackground.width * itemData.UserData.PlayedPercentage / 100)
-    m.progressBar.width = progressWidthInPixels
-    m.progressBar.visible = true
-  else
-    m.progressBackground.visible = false
-    m.progressBar.visible = false
+  ' Update progress bar
+  if isValid(itemData.UserData) and isValidAndNotEmpty(itemData.UserData.PlayedPercentage)
+    m.poster.playedPercentage = itemData.UserData.PlayedPercentage
   end if
 
   ' Display current video_codec and check if there is more than one video to choose from...

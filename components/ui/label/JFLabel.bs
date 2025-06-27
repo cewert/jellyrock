@@ -1,0 +1,15 @@
+sub init()
+  m.top.color = m.global.constants.colors.text_primary
+end sub
+
+sub onBoldChanged()
+  oldFontSize = m.top.font.size
+
+  if m.top.bold
+    m.top.font = "font:MediumBoldSystemFont"
+  else
+    m.top.font = "font:MediumSystemFont"
+  end if
+
+  m.top.font.size = oldFontSize
+end sub

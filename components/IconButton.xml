@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="IconButton" extends="Group">
   <children>
+    <Poster id="buttonFocusBorder" uri="pkg:/images/white.9.png" visible="false" />
     <Poster id="buttonBackground" uri="pkg:/images/white.9.png" />
     <Poster id="buttonIcon" />
     <Label id="buttonText" color="#F5F5F5" font="font:SmallestSystemFont" horizAlign="center" />
@@ -18,5 +19,7 @@
     <field id="selected" type="boolean" value="false" />
     <field id="focus" type="boolean" />
     <field id="escape" type="string" value="" />
+    <field id="enableBorder" type="boolean" value="false" />
+    <field id="borderSize" type="integer" value="6" />
   </interface>
 </component>

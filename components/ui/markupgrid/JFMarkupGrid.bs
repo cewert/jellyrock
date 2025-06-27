@@ -1,0 +1,5 @@
+sub init()
+  m.top.vertFocusAnimationStyle = "fixed"
+  m.top.focusBitmapBlendColor = m.global.constants.colors.primary ' color of the item selector
+  m.top.itemSpacing = "[0, 45]"
+end sub

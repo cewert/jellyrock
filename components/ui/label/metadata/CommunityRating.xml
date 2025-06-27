@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component name="CommunityRating" extends="Group">
+  <children>
+    <LayoutGroup id="rating" layoutDirection="horiz" itemSpacings="[3]">
+      <Poster id="star" uri="pkg:/images/icons/sharp_star_white_18dp.png" height="27" width="27" blendColor="#cb272a" />
+      <LabelSecondarySmall id="communityRating" bold="true" />
+    </LayoutGroup>
+  </children>
+  <interface>
+    <field id="rating" type="float" onChange="onRatingChanged" />
+  </interface>
+</component>

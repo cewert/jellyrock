@@ -28,10 +28,35 @@ end sub
 sub setConstants()
   m.global.addFields({
     constants: {
-      jellyfin_server_response: "jellyfin server",
       colors: {
-        button: "#006fab",
-        blue: "#00a4dcFF"
+        primary: "0x8b5cf6FF",
+        secondary: "0x3b82f6FF",
+        text_primary: "0xf0f0f0FF",
+        text_secondary: "0xa8a8a8FF",
+        text_disabled: "0x4a4a4aFF",
+        background_primary: "0x0d1117FF",
+        background_secondary: "0x161b22FF",
+
+        black_alpha_0: "0x00000000",
+        black_alpha_10: "0x0000001A",
+        black_alpha_20: "0x00000033",
+        black_alpha_30: "0x0000004D",
+        black_alpha_40: "0x00000066",
+        black_alpha_50: "0x00000080",
+        black_alpha_60: "0x00000099",
+        black_alpha_70: "0x000000B3",
+        black_alpha_80: "0x000000CC",
+        black_alpha_90: "0x000000E6",
+        black_alpha_100: "0x000000FF"
+      },
+      font_sizes: {
+        smallest: 21,
+        smaller: 25,
+        small: 27,
+        medium: 32,
+        large: 42,
+        larger: 50,
+        largest: 60
       },
       icons: {
         arrow_up_black: "pkg:/images/icons/arrow-up-black.png",
@@ -42,7 +67,8 @@ sub setConstants()
         check_white: "pkg:/images/icons/check_white.png",
         tomato_fresh: "pkg:/images/icons/tomato-fresh.png",
         tomato_rotten: "pkg:/images/icons/tomato-rotten.png"
-      }
+      },
+      jellyfin_server_response: "jellyfin server"
     }
   })
 end sub

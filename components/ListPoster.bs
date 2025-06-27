@@ -6,15 +6,9 @@ sub init()
   m.staticTitle = m.top.findNode("staticTitle")
   m.series = m.top.findNode("Series")
   m.poster = m.top.findNode("poster")
-  m.unplayedCount = m.top.findNode("unplayedCount")
-  m.unplayedEpisodeCount = m.top.findNode("unplayedEpisodeCount")
   m.playedIndicator = m.top.findNode("playedIndicator")
-  m.checkmark = m.top.findNode("checkmark")
-  m.checkmark.width = 90
-  m.checkmark.height = 60
-
   m.backdrop = m.top.findNode("backdrop")
-  m.backdrop.color = "0x0d1117FF"
+
   updateSize()
 end sub
 
@@ -36,7 +30,7 @@ sub updateSize()
   ' Always reserve the bottom for the Poster Title
   m.title.maxWidth = maxSize[0]
   m.title.height = 40
-  m.title.translation = [0, int(maxSize[1]) - m.title.height + 5]
+  m.title.translation = [0, int(maxSize[1]) - m.title.height + 15]
 
   m.staticTitle.width = maxSize[0]
   m.staticTitle.height = m.title.height
@@ -52,22 +46,26 @@ sub updateSize()
 end sub
 
 sub itemContentChanged() as void
-  m.poster = m.top.findNode("poster")
   itemData = m.top.itemContent
+  if itemData = invalid then return
+
+  print "ListPoster: itemContentChanged()"
+  print "ListPoster: itemData =", itemData
+  print "ListPoster: itemData.image =", itemData.image
+  print "ListPoster: itemData.json =", itemData.json
   m.title.text = itemData.title
   userSettings = m.global.session.user.settings
 
   if not userSettings["ui.tvshows.disableUnwatchedEpisodeCount"]
     if isValid(itemData.json.UserData) and isValid(itemData.json.UserData.UnplayedItemCount)
       if itemData.json.UserData.UnplayedItemCount > 0
-        m.unplayedCount.visible = true
-        m.unplayedEpisodeCount.text = itemData.json.UserData.UnplayedItemCount
+        m.poster.unplayedCount = itemData.json.UserData.UnplayedItemCount
       end if
     end if
   end if
 
   if isValid(itemData.json) and isValid(itemData.json.UserData) and isValid(itemData.json.UserData.Played) and itemData.json.UserData.Played
-    m.playedIndicator.visible = true
+    m.poster.isWatched = true
   end if
 
   if itemData.json.lookup("Type") = "Episode" and isValid(itemData.json.IndexNumber)

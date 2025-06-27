@@ -1,0 +1,9 @@
+sub init()
+  m.communityRating = m.top.findNode("communityRating")
+end sub
+
+sub onRatingChanged()
+  if m.top.rating = invalid or m.top.rating = 0 then return
+
+  m.communityRating.text = m.top.rating
+end sub

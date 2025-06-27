@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component name="VideoProgressBar" extends="Group">
+  <children>
+    <Rectangle id="progressBarBackground" height="9" visible="false">
+      <Rectangle id="progressBar" width="0" height="9" />
+    </Rectangle>
+  </children>
+  <interface>
+    <field id="width" type="integer" onChange="onWidthChanged" />
+    <field id="height" type="integer" value="9" onChange="onHeightChanged" />
+    <field id="playedPercentage" type="float" onChange="onPlayedPercentageChanged" value="0" />
+  </interface>
+</component>

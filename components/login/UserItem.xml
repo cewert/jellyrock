@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="UserItem" extends="Group">
   <children>
-    <LayoutGroup layoutDirection="vert">
+    <LayoutGroup layoutDirection="vert" itemSpacings="[15]">
       <Poster id="profileImage" width="300" height="300" loadDisplayMode="scaleToZoom" />
-      <Label id="profileName" horizAlign="center" vertAlign="center" font="font:SmallBoldSystemFont" color="#EBEBEB" height="64" width="300" />
+      <LabelPrimaryMedium id="profileName" bold="true" horizAlign="center" vertAlign="center" height="64" width="300" />
     </LayoutGroup>
   </children>
   <interface>

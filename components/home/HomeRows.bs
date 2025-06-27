@@ -7,12 +7,8 @@ sub init()
   m.top.itemComponentName = "HomeItem"
   ' how many rows are visible on the screen
   m.top.numRows = 3
-
-  m.top.rowFocusAnimationStyle = "fixedFocusWrap"
   m.top.vertFocusAnimationStyle = "fixedFocus"
 
-  m.top.showRowLabel = [true]
-  m.top.rowLabelOffset = [0, 20]
   ' Hide the row counter to prevent flicker. We'll show it once loading timer fires
   m.top.showRowCounter = [false]
 
@@ -55,26 +51,21 @@ sub updateSize()
 
   if isValid(uiRowLayout)
     if uiRowLayout = "fullwidth"
-      m.top.translation = [0, 180]
+      m.top.translation = [0, 170]
       ' rows take up full width of the screen
       m.top.itemSize = [1920, 330]
       ' align with edge of "action" safe zone
       m.top.focusXOffset = [96]
-      m.top.rowLabelOffset = [96, 20]
+      m.top.rowLabelOffset = [96, 30]
     else
       ' original layout
-      m.top.translation = [111, 180]
+      m.top.translation = [111, 170]
       m.top.itemSize = [1703, 330]
       ' reset to defaults
       m.top.focusXOffset = []
-      m.top.rowLabelOffset = [0, 20]
+      m.top.rowLabelOffset = [0, 30]
     end if
   end if
-
-  ' spacing between rows
-  m.top.itemSpacing = [0, 105]
-  ' spacing between items in a row
-  m.top.rowItemSpacing = [21, 0]
 
   m.top.visible = true
 end sub
