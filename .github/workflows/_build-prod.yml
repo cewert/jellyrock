@@ -18,13 +18,10 @@ jobs:
       - name: Install roku module dependencies
         run: npm run ropm
       - name: Find and save major_version from manifest
-        if: github.event.inputs.targetBranch == 'bugfix'
         run: awk 'BEGIN { FS="=" } /^major_version/ { print "majorVersion="$2; }' manifest >> $GITHUB_ENV
       - name: Find and save minor_version from manifest
-        if: github.event.inputs.targetBranch == 'bugfix'
         run: awk 'BEGIN { FS="=" } /^minor_version/ { print "MinorVersion="$2; }' manifest >> $GITHUB_ENV
       - name: Find and save build_version from manifest
-        if: github.event.inputs.targetBranch == 'bugfix'
         run: awk 'BEGIN { FS="=" } /^build_version/ { print "BuildVersion="$2; }' manifest >> $GITHUB_ENV
       - name: Build app for production
         run: npm run build-prod
