@@ -17,10 +17,19 @@ jobs:
         run: npm ci
       - name: Install roku module dependencies
         run: npm run ropm
+      - name: Find and save major_version from manifest
+        if: github.event.inputs.targetBranch == 'bugfix'
+        run: awk 'BEGIN { FS="=" } /^major_version/ { print "majorVersion="$2; }' manifest >> $GITHUB_ENV
+      - name: Find and save minor_version from manifest
+        if: github.event.inputs.targetBranch == 'bugfix'
+        run: awk 'BEGIN { FS="=" } /^minor_version/ { print "MinorVersion="$2; }' manifest >> $GITHUB_ENV
+      - name: Find and save build_version from manifest
+        if: github.event.inputs.targetBranch == 'bugfix'
+        run: awk 'BEGIN { FS="=" } /^build_version/ { print "BuildVersion="$2; }' manifest >> $GITHUB_ENV
       - name: Build app for production
         run: npm run build-prod
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: JellyRock-v${{ env.newManVersion }}-${{ github.sha }}
+          name: JellyRock-v${{ env.majorVersion }}.${{ env.MinorVersion }}.${{ env.BuildVersion }}-${{ github.sha }}
           path: ${{ github.workspace }}/build/staging
           if-no-files-found: error
