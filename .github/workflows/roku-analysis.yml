@@ -3,7 +3,7 @@ name: roku-analysis
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   static:

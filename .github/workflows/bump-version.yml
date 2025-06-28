@@ -9,7 +9,7 @@ on:
         type: choice
         options:
         - bugfix
-        - master
+        - main
       versionType:
         description: 'What Version to Bump'
         required: true
