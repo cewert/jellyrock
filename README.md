@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/github/license/jellyfin/jellyfin-roku.svg "GPL 2.0 License")](LICENSE)
 <!-- [![Translation Status](https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-roku/svg-badge.svg "Translation Status")](https://translate.jellyfin.org/projects/jellyfin/jellyfin-roku/?utm_source=widget) -->
 
-JellyRock is a [Jellyfin](https://jellyfin.org) client for Roku devices.
+JellyRock is a Jellyfin client for Roku devices.
 
 ## Install / Sideload
 
