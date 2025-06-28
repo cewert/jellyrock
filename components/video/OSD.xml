@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component name="OSD" extends="Group" initialFocus="chapterNext">
+  <children>
+    <Poster uri="pkg:/images/osdBackground.png" width="1920" height="279" />
+
+    <LayoutGroup id="videoInfo" layoutDirection="vert" translation="[103,61]">
+      <ScrollingLabel id="itemTitle" font="font:LargeBoldSystemFont" maxWidth="1400" />
+      <LayoutGroup id="videoInfo" layoutDirection="horiz" translation="[103,61]">
+        <Label id="itemSeason" font="font:MediumSystemFont" color="0xffffffFF" />
+        <Label id="itemEpisode" font="font:MediumSystemFont" color="0xffffffFF" />
+        <Label id="itemEpisodeEnd" font="font:MediumSystemFont" color="0xffffffFF" />
+      </LayoutGroup>
+    </LayoutGroup>
+
+    <Clock id="clock" translation="[1618, 46]" />
+
+    <ButtonGroup id="optionControls" itemSpacings="[20]" layoutDirection="horiz" horizAlignment="left" translation="[103,120]">
+      <IconButton id="showVideoInfoPopup" background="#070707" focusBackground="#00a4dc" padding="16" icon="pkg:/images/icons/videoInfo.png" height="65" width="100" />
+      <IconButton id="chapterList" background="#070707" focusBackground="#00a4dc" padding="16" icon="pkg:/images/icons/numberList.png" height="65" width="100" />
+      <IconButton id="showSubtitleMenu" background="#070707" focusBackground="#00a4dc" padding="0" icon="pkg:/images/icons/subtitle.png" height="65" width="100" />
+      <IconButton id="showAudioMenu" background="#070707" focusBackground="#00a4dc" padding="27" icon="pkg:/images/icons/musicNote.png" height="65" width="100" />
+    </ButtonGroup>
+
+    <ButtonGroup id="videoControls" itemSpacings="[20]" layoutDirection="horiz" horizAlignment="center" translation="[960,875]">
+      <IconButton id="itemBack" background="#070707" focusBackground="#00a4dc" padding="35" icon="pkg:/images/icons/itemPrevious.png" height="65" width="100" />
+      <IconButton id="chapterBack" background="#070707" focusBackground="#00a4dc" padding="16" icon="pkg:/images/icons/previousChapter.png" height="65" width="100" />
+      <IconButton id="videoPlayPause" background="#070707" focusBackground="#00a4dc" padding="35" icon="pkg:/images/icons/play.png" height="65" width="100" />
+      <IconButton id="chapterNext" background="#070707" focusBackground="#00a4dc" padding="16" icon="pkg:/images/icons/nextChapter.png" height="65" width="100" />
+      <IconButton id="itemNext" background="#070707" focusBackground="#00a4dc" padding="35" icon="pkg:/images/icons/itemNext.png" height="65" width="100" />
+    </ButtonGroup>
+
+    <Rectangle id="progressBarBackground" color="0x00000098" width="1714" height="8" translation="[103,970]">
+      <Rectangle id="progressBar" color="#e5e4e2FF" width="0" height="8" />
+    </Rectangle>
+
+    <Label id="videoPositionTime" font="font:MediumSystemFont" color="0xffffffFF" translation="[103,985]" />
+    <Label id="videoRemainingTime" font="font:MediumSystemFont" color="0xffffffFF" horizAlign="right" width="200" translation="[1617,985]" />
+
+    <Timer id="inactivityTimer" duration="1" repeat="true" />
+  </children>
+  <interface>
+    <field id="itemTitleText" type="string" />
+    <field id="seasonNumber" type="integer" />
+    <field id="episodeNumber" type="integer" />
+    <field id="episodeNumberEnd" type="integer" />
+    <field id="logoImage" type="string" />
+    <field id="inactiveTimeout" type="integer" />
+    <field id="progressPercentage" type="float" />
+    <field id="positionTime" type="float" />
+    <field id="remainingPositionTime" type="float" />
+    <field id="playbackState" type="string" alwaysNotify="true" />
+    <field id="action" type="string" alwaysNotify="true" />
+    <field id="showChapterList" type="boolean" alwaysNotify="true" />
+    <field id="hasFocus" type="boolean" alwaysNotify="true" />
+  </interface>
+</component>

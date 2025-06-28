@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<component name="LoadItemsTask" extends="Task">
+  <interface>
+    <field id="itemsToLoad" type="string" value="libraries" />
+    <field id="itemId" type="string" />
+    <field id="metadata" type="assocarray" />
+    <field id="peopleList" type="array" />
+    <field id="content" type="array" />
+  </interface>
+</component>

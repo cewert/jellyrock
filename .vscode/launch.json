@@ -1,0 +1,98 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Build and Deploy",
+            "type": "brightscript",
+            "request": "launch",
+            "rootDir": "${workspaceFolder}/build/staging",
+            "preLaunchTask": "build-dev",
+            "stopOnEntry": false,
+            // To enable RALE:
+            // set "brightscript.debug.raleTrackerTaskFileLocation": "/absolute/path/to/rale/TrackerTask.xml" in your vscode user settings
+            // set the below field to true
+            "injectRaleTrackerTask": false,
+            "injectRdbOnDeviceComponent": true,
+            //WARNING: don't edit this value. Instead, set "brightscript.debug.host": "YOUR_HOST_HERE" in your vscode user settings
+            //"host": "${promptForHost}",
+            //WARNING: don't edit this value. Instead, set "brightscript.debug.password": "YOUR_PASSWORD_HERE" in your vscode user settings
+            //"password": "${promptForPassword}",
+        },
+        {
+            "name": "Deploy",
+            "type": "brightscript",
+            "request": "launch",
+            "rootDir": "${workspaceFolder}/build/staging",
+            "stopOnEntry": false,
+            // To enable RALE:
+            // set "brightscript.debug.raleTrackerTaskFileLocation": "/absolute/path/to/rale/TrackerTask.xml" in your vscode user settings
+            // set the below field to true
+            "injectRaleTrackerTask": false,
+            "injectRdbOnDeviceComponent": true,
+            //WARNING: don't edit this value. Instead, set "brightscript.debug.host": "YOUR_HOST_HERE" in your vscode user settings
+            //"host": "${promptForHost}",
+            //WARNING: don't edit this value. Instead, set "brightscript.debug.password": "YOUR_PASSWORD_HERE" in your vscode user settings
+            //"password": "${promptForPassword}",
+        },
+        {
+            "name": "Run tests",
+            "type": "brightscript",
+            "request": "launch",
+            "consoleOutput": "full",
+            "internalConsoleOptions": "neverOpen",
+            "preLaunchTask": "build-tests",
+            "retainStagingFolder": true,
+            "stopOnEntry": false,
+            "files": [
+                "!**/images/*.*",
+                "!**/fonts/*.*",
+                "!*.jpg",
+                "!*.png",
+                "*",
+                "*.*",
+                "**/*.*",
+                "!*.zip",
+                "!**/*.zip"
+            ],
+            "rootDir": "${workspaceFolder}/build",
+            "sourceDirs": [
+                "${workspaceFolder}/test-app"
+            ],
+            "enableDebuggerAutoRecovery": true,
+            "stopDebuggerOnAppExit": true,
+            "enableVariablesPanel": false,
+            "injectRaleTrackerTask": false,
+            "enableDebugProtocol": false
+        },
+        {
+            "name": "Run test-tdd",
+            "type": "brightscript",
+            "request": "launch",
+            "consoleOutput": "full",
+            "internalConsoleOptions": "neverOpen",
+            "preLaunchTask": "build-tdd",
+            "retainStagingFolder": true,
+            "stopOnEntry": false,
+            "files": [
+                "!**/images/*.*",
+                "!**/fonts/*.*",
+                "!*.jpg",
+                "!*.png",
+                "*",
+                "*.*",
+                "**/*.*",
+                "!*.zip",
+                "!**/*.zip"
+            ],
+            "rootDir": "${workspaceFolder}/build",
+            "sourceDirs": [
+                "${workspaceFolder}/test-app"
+            ],
+            "enableDebuggerAutoRecovery": true,
+            "stopDebuggerOnAppExit": true,
+            "enableVariablesPanel": false,
+            "injectRaleTrackerTask": false,
+            "enableDebugProtocol": false
+        }
+    ]
+}

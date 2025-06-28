@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component name="PhotoData" extends="JFContentItem">
+  <interface>
+    <field id="image" type="node" onChange="setPoster" />
+    <field id="photoID" type="string" />
+  </interface>
+</component>

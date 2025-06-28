@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component name="OptionsSlider" extends="PanelSet">
+  <children>
+    <ListPanel id="panel">
+      <Rectangle id="backdrop"
+        translation="[0, 0]"
+        color="#101010DD"
+        width="575"
+        height="1080" />
+      <LabelList id="panelList">
+        <ContentNode id="fieldList" role="content" />
+      </LabelList>
+    </ListPanel>
+  </children>
+  <interface>
+    <field id="buttons" type="nodearray" onChange="setFields" />
+    <field id="options" type="nodearray" onChange="setFields" />
+    <field id="closeSidePanel" type="boolean" alwaysNotify="true" />
+  </interface>
+</component>

@@ -1,0 +1,58 @@
+{
+  "name": "jellyfin-roku",
+  "type": "module",
+  "version": "2.2.5",
+  "description": "Roku app for Jellyfin media server",
+  "dependencies": {
+    "@rokucommunity/bslib": "0.1.1",
+    "brighterscript-formatter": "1.7.5",
+    "log": "npm:roku-log@0.11.1"
+  },
+  "devDependencies": {
+    "@rokucommunity/bslint": "0.8.25",
+    "brighterscript": "0.67.7",
+    "brighterscript-jsdocs-plugin": "0.7.3",
+    "clean-jsdoc-theme": "4.3.0",
+    "jsdoc": "4.0.3",
+    "jshint": "2.13.6",
+    "markdownlint-cli2": "0.14.0",
+    "rimraf": "6.0.1",
+    "roku-deploy": "3.12.1",
+    "roku-log-bsc-plugin": "0.8.1",
+    "rooibos-roku": "5.14.0",
+    "ropm": "0.10.26",
+    "spellchecker-cli": "6.2.0",
+    "undent": "0.1.0"
+  },
+  "scripts": {
+    "build": "npx rimraf build/ out/ && npx bsc --project bsconfig.json",
+    "build-prod": "npx rimraf build/ out/ && npx bsc --project bsconfig-prod.json",
+    "build-tests": "npx rimraf build/ out/ && npx bsc --project bsconfig-tests.json",
+    "build-tdd": "npx rimraf build/ out/ && npx bsc --project bsconfig-tdd.json",
+    "check-formatting": "npx bsfmt --check",
+    "docs": "npx rimraf docs/api && jsdoc -c jsdoc.json -d docs/api --readme docs/api-docs-readme.md",
+    "format": "npx bsfmt --write",
+    "lint": "npm run check-formatting && npm run lint-bs && npm run validate && npm run lint-json && npm run lint-markdown && npm run lint-spelling",
+    "lint-bs": "bslint",
+    "lint-json": "jshint --extra-ext .json --verbose --exclude node_modules,scripts,docs ./",
+    "lint-markdown": "markdownlint-cli2 \"**/*.md\" \"#node_modules\"",
+    "lint-spelling": "spellchecker -d dictionary.txt --files \"**/*.md\" \"**/.*/**/*.md\" \"!node_modules/**/*.md\"",
+    "postinstall": "npm run ropm",
+    "ropm": "ropm copy && node scripts/ropm-hook.cjs",
+    "validate": "npx bsc --copy-to-staging=false --create-package=false"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jellyfin/jellyfin-roku.git"
+  },
+  "keywords": [
+    "jellyfin",
+    "roku"
+  ],
+  "author": "jellyfin",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/jellyfin/jellyfin-roku/issues"
+  },
+  "homepage": "https://github.com/jellyfin/jellyfin-roku"
+}
