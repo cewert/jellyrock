@@ -8,5 +8,5 @@ on:
 jobs:
   static:
     # don't run job on forks
-    if: github.repository == 'cewert/jellyfin-roku'
+    if: github.repository == 'cewert/jellyrock'
     uses: ./.github/workflows/_roku-analysis.yml

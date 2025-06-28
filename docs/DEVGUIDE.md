@@ -1,8 +1,8 @@
-# Dev Guide For The Jellyfin Roku App
+# Dev Guide For The JellyRock Roku App
 
 Follow the steps below to install the app on your personal Roku device. This will enable you to write code for the app, install the latest beta release, as well as provide app logs to the developers if you encounter a bug.
 
-- [Dev Guide For The Jellyfin Roku App](#dev-guide-for-the-jellyfin-roku-app)
+- [Dev Guide For The JellyRock Roku App](#dev-guide-for-the-jellyrock-roku-app)
   - [Developer Mode](#developer-mode)
   - [Clone the GitHub Repo](#clone-the-github-repo)
   - [Install Dependencies](#install-dependencies)
@@ -22,7 +22,6 @@ Follow the steps below to install the app on your personal Roku device. This wil
     - [The order of any particular menu is as follows](#the-order-of-any-particular-menu-is-as-follows)
     - [When giving your setting a name](#when-giving-your-setting-a-name)
     - [When giving your setting a description](#when-giving-your-setting-a-description)
-      - [**Remember to add all new strings to locale/en\_US/translations.ts**](#remember-to-add-all-new-strings-to-localeen_ustranslationsts)
 
 ## Developer Mode
 
@@ -33,13 +32,13 @@ Put your Roku device in [developer mode](https://blog.roku.com/developer/2016/02
 Navigate to where you'd like to install the app then copy the application files:
 
 ```bash
-git clone https://github.com/cewert/jellyfin-roku.git
+git clone https://github.com/cewert/jellyrock.git
 ```
 
 Open up the new folder:
 
 ```bash
-cd jellyfin-roku
+cd jellyrock
 ```
 
 ## Install Dependencies
@@ -63,7 +62,7 @@ We recommend using Visual Studio Code when working on this project. The [BrightS
 
 ### Usage
 
-1. Open the `jellyfin-roku` folder in VSCode
+1. Open the `jellyrock` folder in VSCode
 2. Press `F5` on your keyboard or click `Run` -> `Start Debugging` from the VSCode menu. ![image](https://user-images.githubusercontent.com/2544493/170696233-8ba49bf4-bebb-4655-88f3-ac45150dda02.png)
 
 3. Enter your Roku IP address and developer password when prompted
@@ -102,7 +101,7 @@ Build the package
 make build-dev
 ```
 
-This will create a zip in `out/jellyfin-roku.zip`, that you can upload on your Roku's device via your browser.
+This will create a zip in `out/jellyrock.zip`, that you can upload on your Roku's device via your browser.
 Or you can continue with the next steps to do it via the command line.
 
 ### Deploy
@@ -124,7 +123,7 @@ Note: You only have to run this command once if you are not a developer. The Jel
 
 ### Bug/Crash Reports
 
-Did the app crash? Find a nasty bug? Use this command to view the error log and [report it to the developers](https://github.com/cewert/jellyfin-roku/issues):
+Did the app crash? Find a nasty bug? Use this command to view the error log and [report it to the developers](https://github.com/cewert/jellyrock/issues):
 
 ```bash
 telnet ${ROKU_DEV_TARGET} 8085
@@ -183,5 +182,3 @@ Generally, we should not repeat the name of a setting's parent in the setting's 
 ### When giving your setting a description
 
 A setting's description should begin with a grammatically correct, complete, imperative sentence that ends with a period. _Characters are not a commodity in descriptions_ so be specific. Again, do not use infinitive verb phrases ("...ing" should not appear anywhere in the text of your setting). While the first sentence should be imperative, additional sentences may be necessary to tell your user how to use the setting or why its doing what its doing. If you _must_ use non-imperative sentences, be concise and consider the fact that your description will need to be translated into many languages. Do not use colloquialism, metaphor, or idiomatic phrases.
-
-#### **Remember to add all new strings to locale/en_US/translations.ts**

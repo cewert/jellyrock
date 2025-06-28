@@ -1,4 +1,4 @@
-Jellyfin
+JellyRock
 VSCode
 BrighterScript
 BrightScript

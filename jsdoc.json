@@ -22,38 +22,24 @@
     },
     "theme_opts": {
       "default_theme": "fallback-dark",
-      "base_url": "https://jellyfin.github.io/jellyfin-roku/",
-      "title": "jellyfin-roku Code Documentation",
-      "homepageTitle": "jellyfin-roku Code Documentation",
+      "base_url": "https://cewert.github.io/jellyrock/",
+      "title": "JellyRock Code Documentation",
+      "homepageTitle": "JellyRock Code Documentation",
       "displayModuleHeader": true,
       "menu": [
         {
-          "title": "Jellyfin",
-          "link": "https://jellyfin.org/",
-          "target": "_blank",
-          "class": "external-link",
-          "id": "jellyfin-link"
-        },
-        {
-          "title": "GitHub",
-          "link": "https://github.com/jellyfin/jellyfin-roku",
+          "title": "Source Code",
+          "link": "https://github.com/cewert/jellyrock",
           "target": "_blank",
           "class": "external-link",
           "id": "github-link"
         },
         {
-          "title": "Forum",
-          "link": "https://forum.jellyfin.org/f-roku-development",
+          "title": "Jellyfin Server",
+          "link": "https://jellyfin.org/",
           "target": "_blank",
           "class": "external-link",
-          "id": "forum-link"
-        },
-        {
-          "title": "Matrix",
-          "link": "https://matrix.to/#/#jellyfin-dev-roku:matrix.org",
-          "target": "_blank",
-          "class": "external-link",
-          "id": "matrix-link"
+          "id": "jellyfin-link"
         }
       ],
       "footer": "<span class=\"jsdoc-message\">Automatically generated using <a href=\"https://github.com/jsdoc/jsdoc\" target=\"_blank\">JSDoc</a> and the <a href=\"https://github.com/ankitskvmdam/clean-jsdoc-theme\" target=\"_blank\">clean-jsdoc-theme</a>.</span>"

@@ -14,7 +14,7 @@ on:
 jobs:
   project:
     # don't run job on forks
-    if: github.repository == 'cewert/jellyfin-roku'
+    if: github.repository == 'cewert/jellyrock'
     name: Project board 📊
     runs-on: ubuntu-latest
     steps:
@@ -27,7 +27,7 @@ jobs:
           repo-token: ${{ secrets.CEWERT_BOT_TOKEN }}
   label:
     # don't run job on forks
-    if: github.repository == 'cewert/jellyfin-roku'
+    if: github.repository == 'cewert/jellyrock'
     name: Labeling 🏷️
     runs-on: ubuntu-latest
     steps:
