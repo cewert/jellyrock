@@ -549,10 +549,6 @@
       <translation>Grid View Settings</translation>
     </message>
     <message>
-      <source>h</source>
-      <translation>h</translation>
-    </message>
-    <message>
       <source>H.264</source>
       <translation>H.264</translation>
       <extracomment>Name of codec used in settings menu</extracomment>
@@ -660,10 +656,6 @@
       <translation>Login attempt failed.</translation>
     </message>
     <message>
-      <source>m</source>
-      <translation>m</translation>
-    </message>
-    <message>
       <source>Make the arrangement of the Roku home view sections match the web client&apos;s home screen. Jellyfin will need to be closed and reopened for change to take effect.</source>
       <translation>Make the arrangement of the Roku home view sections match the web client&apos;s home screen. Jellyfin will need to be closed and reopened for change to take effect.</translation>
       <extracomment>User Setting - Setting description</extracomment>
@@ -681,6 +673,14 @@
       <source>Maximum Resolution</source>
       <translation>Maximum Resolution</translation>
       <extracomment>User Setting - Title</extracomment>
+    </message>
+    <message>
+      <source>min</source>
+      <translation>min</translation>
+    </message>
+    <message>
+      <source>mins</source>
+      <translation>mins</translation>
     </message>
     <message>
       <source>Mode</source>
