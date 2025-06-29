@@ -165,11 +165,6 @@
       <translation>Attempt Direct Play of potentially unsupported profile levels</translation>
     </message>
     <message>
-      <source>Attempt to prevent playback failures.</source>
-      <translation>Attempt to prevent playback failures.</translation>
-      <extracomment>User Setting - Setting description</extracomment>
-    </message>
-    <message>
       <source>Audio</source>
       <translation>Audio</translation>
     </message>
@@ -275,11 +270,6 @@
       <extracomment>User Setting - Setting title</extracomment>
     </message>
     <message>
-      <source>Compatibility</source>
-      <translation>Compatibility</translation>
-      <extracomment>User Setting - Setting title</extracomment>
-    </message>
-    <message>
       <source>Configure the maximum playback bitrate.</source>
       <translation>Configure the maximum playback bitrate.</translation>
     </message>
@@ -376,16 +366,6 @@
     <message>
       <source>Disable Community Rating for Episodes</source>
       <translation>Disable Community Rating for Episodes</translation>
-    </message>
-    <message>
-      <source>Disable HEVC</source>
-      <translation>Disable HEVC</translation>
-      <extracomment>User Setting - Setting title</extracomment>
-    </message>
-    <message>
-      <source>Disable the HEVC codec on this device. This may improve playback for some devices (ultra).</source>
-      <translation>Disable the HEVC codec on this device. This may improve playback for some devices (ultra).</translation>
-      <extracomment>User Setting - Setting description</extracomment>
     </message>
     <message>
       <source>Disable Unwatched Episode Count</source>
