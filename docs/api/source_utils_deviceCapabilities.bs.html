@@ -88,13 +88,8 @@ function GetDirectPlayProfiles() as object
     }
   }
   ' all possible codecs (besides those restricted by user settings)
-  videoCodecs = ["h264", "mpeg4 avc", "vp8", "vp9", "h263", "mpeg1"]
+  videoCodecs = ["h264", "hevc", "mpeg4 avc", "vp8", "vp9", "h263", "mpeg1"]
   audioCodecs = ["mp3", "mp2", "pcm", "lpcm", "wav", "ac3", "ac4", "aiff", "wma", "flac", "alac", "aac", "opus", "dts", "wmapro", "vorbis", "eac3", "mpg123"]
-
-  ' check if hevc is disabled
-  if globalUserSettings["playback.compatibility.disablehevc"] = false
-    videoCodecs.push("hevc")
-  end if
 
   ' check video codecs for each container
   for each container in supportedCodecs
@@ -229,29 +224,27 @@ function getTranscodingProfiles() as object
   end for
 
   ' HEVC / h265
-  if globalUserSettings["playback.compatibility.disablehevc"] = false
-    for each container in transcodingContainers
-      if di.CanDecodeVideo({ Codec: "hevc", Container: container }).Result
-        if container = "mp4"
-          ' check for codec string before adding it
-          if mp4VideoCodecs.Instr(0, "h265,") = -1
-            mp4VideoCodecs = "h265," + mp4VideoCodecs
-          end if
-          if mp4VideoCodecs.Instr(0, "hevc,") = -1
-            mp4VideoCodecs = "hevc," + mp4VideoCodecs
-          end if
-        else if container = "ts"
-          ' check for codec string before adding it
-          if tsVideoCodecs.Instr(0, "h265,") = -1
-            tsVideoCodecs = "h265," + tsVideoCodecs
-          end if
-          if tsVideoCodecs.Instr(0, "hevc,") = -1
-            tsVideoCodecs = "hevc," + tsVideoCodecs
-          end if
+  for each container in transcodingContainers
+    if di.CanDecodeVideo({ Codec: "hevc", Container: container }).Result
+      if container = "mp4"
+        ' check for codec string before adding it
+        if mp4VideoCodecs.Instr(0, "h265,") = -1
+          mp4VideoCodecs = "h265," + mp4VideoCodecs
+        end if
+        if mp4VideoCodecs.Instr(0, "hevc,") = -1
+          mp4VideoCodecs = "hevc," + mp4VideoCodecs
+        end if
+      else if container = "ts"
+        ' check for codec string before adding it
+        if tsVideoCodecs.Instr(0, "h265,") = -1
+          tsVideoCodecs = "h265," + tsVideoCodecs
+        end if
+        if tsVideoCodecs.Instr(0, "hevc,") = -1
+          tsVideoCodecs = "hevc," + tsVideoCodecs
         end if
       end if
-    end for
-  end if
+    end if
+  end for
 
   ' VP9
   for each container in transcodingContainers
@@ -734,7 +727,7 @@ function getCodecProfiles() as object
     codecProfiles.push(av1ProfileArray)
   end if
 
-  if not globalUserSettings["playback.compatibility.disablehevc"] and di.CanDecodeVideo({ Codec: "hevc" }).Result
+  if di.CanDecodeVideo({ Codec: "hevc" }).Result
     hevcLevelSupported = 0.0
     hevcAssProfiles = {}
 
