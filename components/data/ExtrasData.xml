@@ -1,19 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- The "ContentNode" for displaying the actual Extras Item -->
 <component name="ExtrasData" extends="ContentNode">
-  <script type="text/brightscript">
-  <![CDATA[
-    sub setfields()
-        datum = m.top.json
-        m.top.id = datum.id
-        m.top.subTitle = datum
-        m.top.labelText = datum.Name
-    end sub
-
-    sub setPoster()
-    end sub
-  ]]>
-  </script>
   <interface>
     <field id="image" type="node" />
     <field id="Type" type="string" />
