@@ -131,15 +131,6 @@ function formatIsoDateVideo(isoDateString as string) as string
   return monthName + " " + dayWithSuffix + ", " + year
 end function
 
-' convert iso date string to a year string
-function formatIsoDateMovie(isoDateString as string) as string
-  ' Parse the ISO date string "2014-03-13T00:00:00.0000000Z"
-  dateParts = isoDateString.Split("T")[0].Split("-")
-
-  ' Return formatted string
-  return dateParts[0]
-end function
-
 function addOrdinalSuffix(day as integer) as string
   dayStr = day.ToStr().Trim()
 

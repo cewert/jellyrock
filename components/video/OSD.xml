@@ -30,7 +30,7 @@
 
     <!-- FOOTER -->
     <!-- Button menu -->
-    <ButtonGroup id="osdButtons" itemSpacings="[36]" layoutDirection="horiz" horizAlignment="left" translation="[97,936]">
+    <JFButtonGroup id="osdButtons" itemSpacings="[36]" layoutDirection="horiz" horizAlignment="left" translation="[97,936]">
       <IconButton id="itemBack" padding="15" icon="pkg:/images/icons/itemPrevious.png" />
       <IconButton id="videoPlayPause" padding="15" icon="pkg:/images/icons/play.png" />
       <IconButton id="itemNext" padding="15" icon="pkg:/images/icons/itemNext.png" />
@@ -38,7 +38,7 @@
       <IconButton id="showSubtitleMenu" padding="15" icon="pkg:/images/icons/closedCaptions.png" />
       <IconButton id="chapterList" padding="15" icon="pkg:/images/icons/chapters.png" />
       <IconButton id="showVideoInfoPopup" padding="15" icon="pkg:/images/icons/fileInfo.png" />
-    </ButtonGroup>
+    </JFButtonGroup>
 
     <Timer id="inactivityTimer" duration="1" repeat="true" />
   </children>
@@ -49,6 +49,8 @@
     <field id="episodeNumber" type="integer" />
     <field id="episodeNumberEnd" type="integer" />
     <field id="seriesName" type="string" value="" />
+    <field id="overview" type="string" value="" />
+    <field id="seriesStudio" type="string" value="" />
     <!-- eg. TV-PG -->
     <field id="officialRating" type="string" value="" />
     <!-- eg. 7.3 (out of 10) -->
@@ -56,14 +58,17 @@
     <!-- eg. "2011-01-17T00:00:00.0000000Z" -->
     <field id="premiereDate" type="string" value="" />
     <field id="productionYear" type="integer" />
+    <field id="hasSubtitles" type="boolean" value="false" />
+    <field id="hasChapters" type="boolean" value="false" />
     <field id="runTimeTicks" type="longinteger" />
     <field id="runTimeMinutes" type="integer" />
-    <field id="runTimeHours" type="integer" />
     <field id="videoLogo" type="string" value="" />
     <field id="inactiveTimeout" type="integer" />
     <field id="progressPercentage" type="float" />
     <field id="positionTime" type="float" />
     <field id="remainingPositionTime" type="float" />
+    <field id="numVideoStreams" type="integer" />
+    <field id="numAudioStreams" type="integer" />
     <field id="playbackState" type="string" value="" alwaysNotify="true" />
     <field id="action" type="string" alwaysNotify="true" />
     <field id="showChapterList" type="boolean" alwaysNotify="true" />

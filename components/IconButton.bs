@@ -13,6 +13,18 @@ sub init()
   m.top.observeField("width", "onWidthChanged")
   m.top.observeField("padding", "onPaddingChanged")
   m.top.observeField("focus", "onFocusChanged")
+
+  applyTheme()
+end sub
+
+sub applyTheme()
+  colorConstants = m.global.constants.colors
+
+  ' Set default colors
+  m.top.background = colorConstants.background_primary
+  m.top.iconBackground = colorConstants.text_secondary
+  m.top.focusBackground = colorConstants.background_secondary
+  m.top.iconFocusBackground = colorConstants.text_primary
 end sub
 
 sub onFocusChanged()
@@ -123,6 +135,18 @@ end sub
 
 sub onPaddingChanged()
   setIconSize()
+end sub
+
+sub onEnabledChanged()
+  colorConstants = m.global.constants.colors
+
+  if m.top.enabled
+    m.top.background = colorConstants.background_primary
+    m.top.iconBackground = colorConstants.text_secondary
+  else
+    m.top.background = colorConstants.background_secondary
+    m.top.iconBackground = colorConstants.text_disabled
+  end if
 end sub
 
 sub setFocusBorderSize()

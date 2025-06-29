@@ -24,22 +24,7 @@ sub init()
 
   m.osdButtons = m.top.findNode("osdButtons")
   m.osdButtons.buttonFocused = m.defaultButtonIndex
-
   m.osdButtons.getChild(m.defaultButtonIndex).focus = true
-
-  applyTheme()
-end sub
-
-sub applyTheme()
-  constantColors = m.global.constants.colors
-
-  for each button in m.osdButtons.getChildren(-1, 0)
-    button.background = constantColors.background_primary
-    button.iconBackground = constantColors.text_secondary
-    button.focusBackground = constantColors.background_primary
-    button.iconFocusBackground = constantColors.text_primary
-    button.enableBorder = true
-  end for
 end sub
 
 ' setFields: Grab data from json metadata and save it to local fields
@@ -47,6 +32,7 @@ sub setFields()
   if not isValid(m.top.json) or m.top.json = "" then return
 
   videoData = parseJson(m.top.json)
+  mediaStreams = videoData.MediaStreams
   m.top.json = ""
 
   if videoData.Type <> invalid
@@ -59,6 +45,22 @@ sub setFields()
 
   if videoData.Name <> invalid
     m.top.videoTitle = videoData.Name
+  end if
+
+  if videoData.Overview <> invalid
+    m.top.overview = videoData.Overview
+  end if
+
+  if videoData.SeriesStudio <> invalid
+    m.top.seriesStudio = videoData.SeriesStudio
+  end if
+
+  if videoData.HasSubtitles <> invalid
+    m.top.hasSubtitles = videoData.HasSubtitles
+  end if
+
+  if videoData.Chapters <> invalid and videoData.Chapters.Count() > 0
+    m.top.hasChapters = true
   end if
 
   if videoData.SeriesName <> invalid
@@ -92,13 +94,27 @@ sub setFields()
   if videoData.RunTimeTicks <> invalid
     m.top.runTimeTicks = videoData.RunTimeTicks
     m.top.runTimeMinutes = ticksToMinutes(m.top.runTimeTicks)
-    m.top.runTimeHours = int(m.top.runTimeMinutes / 60)
   end if
 
   if videoData.ProductionYear <> invalid
     m.top.productionYear = videoData.ProductionYear
   end if
 
+  numVideoStreams = 0
+  numAudioStreams = 0
+
+  for each stream in mediaStreams
+    if stream.Type = "Video"
+      numVideoStreams++
+    else if stream.Type = "Audio"
+      numAudioStreams++
+    end if
+  end for
+
+  m.top.numVideoStreams = numVideoStreams
+  m.top.numAudioStreams = numAudioStreams
+
+  setButtonStates()
   populateData()
 end sub
 
@@ -106,6 +122,42 @@ sub populateData()
   setVideoLogoGroup()
   setVideoTitle()
   setVideoSubTitle()
+end sub
+
+sub setButtonStates()
+  queueCount = m.global.QueueManager.callFunc("getCount")
+  queueIndex = m.global.QueueManager.callFunc("getPosition")
+
+  ' Item Previous
+  if queueCount = 1 or queueIndex = 0
+    itemPrevious = m.osdButtons.findNode("itemBack")
+    itemPrevious.enabled = false
+  end if
+
+  ' Item Next
+  if queueIndex + 1 >= queueCount
+    itemNext = m.osdButtons.findNode("itemNext")
+    itemNext.enabled = false
+  end if
+
+  ' Audio Track
+  if m.top.numAudioStreams < 2
+    audioButton = m.osdButtons.findNode("showAudioMenu")
+    audioButton.enabled = false
+  end if
+
+  ' Subtitles
+  if not m.top.hasSubtitles
+    ccButon = m.osdButtons.findNode("showSubtitleMenu")
+    ccButon.enabled = false
+  end if
+
+  ' Chapters
+  if not m.top.hasChapters
+    chapterButton = m.osdButtons.findNode("chapterList")
+    chapterButton.enabled = false
+  end if
+
 end sub
 
 sub setVideoLogoGroup()
@@ -175,7 +227,7 @@ sub setVideoSubTitle()
         airDateNodeCreated = true
 
         premiereDateNode = createSubtitleLabelNode("videoAirDate")
-        premiereDateNode.text = formatIsoDateMovie(m.top.premiereDate)
+        premiereDateNode.text = formatIsoDateVideo(m.top.premiereDate)
 
         displaySubtitleNode(premiereDateNode)
       end if
@@ -195,28 +247,15 @@ sub setVideoSubTitle()
   if m.top.runTimeMinutes <> invalid and m.top.runTimeMinutes <> 0
     runTimeNode = createSubtitleLabelNode("videoRunTime")
 
-    hoursShortText = tr("h")
-    minutesShortText = tr("m")
-    runTimeText = ""
-
-    if m.top.runTimeHours <> invalid and m.top.runTimeHours > 0
-      runTimeText = `${m.top.runTimeHours}${hoursShortText}`
-    end if
-
-    if m.top.runTimeMinutes <> invalid and m.top.runTimeMinutes > 0
-
-      if m.top.runTimeMinutes < 60
-        runTimeText = `${runTimeText}${m.top.runTimeMinutes}${minutesShortText}`
-      else
-        minutesRemaining = m.top.runTimeMinutes mod 60
-        runTimeText = `${runTimeText}${minutesRemaining}${minutesShortText}`
-      end if
+    if m.top.runTimeMinutes < 2
+      runTimeText = `${m.top.runTimeMinutes} ` + tr("min")
+    else
+      runTimeText = `${m.top.runTimeMinutes} ` + tr("mins")
     end if
 
     runTimeNode.text = runTimeText
     displaySubtitleNode(runTimeNode)
   end if
-
 
 end sub
 
@@ -266,8 +305,8 @@ sub onVisibleChanged()
       m.inactivityTimer.control = "start"
     end if
   else
-    m.inactivityTimer.unobserveField("fire")
     m.inactivityTimer.control = "stop"
+    m.inactivityTimer.unobserveField("fire")
   end if
 end sub
 
@@ -296,9 +335,7 @@ end sub
 ' onButtonSelected: Handler for selection of buttons from the menu.
 '
 sub onButtonSelected()
-  buttonGroup = m.osdButtons
-
-  selectedButton = buttonGroup.getChild(m.focusedButtonIndex)
+  selectedButton = m.osdButtons.getChild(m.osdButtons.buttonFocused)
 
   if LCase(selectedButton.id) = "chapterlist"
     m.top.showChapterList = not m.top.showChapterList
@@ -357,56 +394,6 @@ function onKeyEvent(key as string, press as boolean) as boolean
 
   if key = "OK"
     onButtonSelected()
-    return true
-  end if
-
-  if key = "right"
-    buttonGroup = m.osdButtons
-
-    if m.focusedButtonIndex + 1 >= buttonGroup.getChildCount()
-      return true
-    end if
-
-    focusedButton = buttonGroup.getChild(m.focusedButtonIndex)
-    focusedButton.focus = false
-
-    ' Skip spacer elements until next button is found
-    for i = m.focusedButtonIndex + 1 to buttonGroup.getChildCount()
-      m.focusedButtonIndex = i
-      focusedButton = buttonGroup.getChild(m.focusedButtonIndex)
-
-      if isValid(focusedButton.focus)
-        buttonGroup.buttonFocused = m.focusedButtonIndex
-        focusedButton.focus = true
-        exit for
-      end if
-    end for
-
-    return true
-  end if
-
-  if key = "left"
-    if m.focusedButtonIndex = 0
-      return true
-    end if
-
-    buttonGroup = m.osdButtons
-
-    focusedButton = buttonGroup.getChild(m.focusedButtonIndex)
-    focusedButton.focus = false
-
-    ' Skip spacer elements until next button is found
-    for i = m.focusedButtonIndex - 1 to 0 step -1
-      m.focusedButtonIndex = i
-      focusedButton = buttonGroup.getChild(m.focusedButtonIndex)
-
-      if isValid(focusedButton.focus)
-        buttonGroup.buttonFocused = m.focusedButtonIndex
-        focusedButton.focus = true
-        exit for
-      end if
-    end for
-
     return true
   end if
 
