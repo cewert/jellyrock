@@ -345,7 +345,8 @@ function getTranscodingProfiles() as object
     "VideoCodec": tsVideoCodecs,
     "MaxAudioChannels": maxAudioChannels,
     "MinSegments": 1,
-    "BreakOnNonKeyFrames": false
+    "BreakOnNonKeyFrames": false,
+    "SegmentLength": 6
   }
   mp4Array = {
     "Container": "mp4",
@@ -356,14 +357,13 @@ function getTranscodingProfiles() as object
     "VideoCodec": mp4VideoCodecs,
     "MaxAudioChannels": maxAudioChannels,
     "MinSegments": 1,
-    "BreakOnNonKeyFrames": false
+    "BreakOnNonKeyFrames": false,
+    "SegmentLength": 6
   }
 
   ' apply max res to transcoding profile
-  if globalUserSettings["playback.resolution.max"] &lt;> "off"
-    tsArray.Conditions = [getMaxHeightArray(), getMaxWidthArray()]
-    mp4Array.Conditions = [getMaxHeightArray(), getMaxWidthArray()]
-  end if
+  tsArray.Conditions = [getMaxHeightArray()]
+  mp4Array.Conditions = [getMaxHeightArray()]
 
   ' add user-selected preferred codec to the front of the list
   if globalUserSettings["playback.preferredAudioCodec"] &lt;> "auto"
@@ -400,7 +400,6 @@ function getCodecProfiles() as object
   maxResSetting = globalUserSettings["playback.resolution.max"]
   di = CreateObject("roDeviceInfo")
   maxHeightArray = getMaxHeightArray()
-  maxWidthArray = getMaxWidthArray()
 
   ' AUDIO
   ' test each codec to see how many channels are supported
@@ -625,7 +624,6 @@ function getCodecProfiles() as object
   ' set max resolution
   if globalUserSettings["playback.resolution.mode"] = "everything" and maxResSetting &lt;> "off"
     h264ProfileArray.Conditions.push(maxHeightArray)
-    h264ProfileArray.Conditions.push(maxWidthArray)
   end if
 
   ' set bitrate restrictions based on user settings
@@ -662,7 +660,6 @@ function getCodecProfiles() as object
     ' set max resolution
     if globalUserSettings["playback.resolution.mode"] = "everything" and maxResSetting &lt;> "off"
       mpeg2ProfileArray.Conditions.push(maxHeightArray)
-      mpeg2ProfileArray.Conditions.push(maxWidthArray)
     end if
 
     ' set bitrate restrictions based on user settings
@@ -715,7 +712,6 @@ function getCodecProfiles() as object
     ' set max resolution
     if globalUserSettings["playback.resolution.mode"] = "everything" and maxResSetting &lt;> "off"
       av1ProfileArray.Conditions.push(maxHeightArray)
-      av1ProfileArray.Conditions.push(maxWidthArray)
     end if
 
     ' set bitrate restrictions based on user settings
@@ -784,7 +780,6 @@ function getCodecProfiles() as object
     ' set max resolution
     if globalUserSettings["playback.resolution.mode"] = "everything" and maxResSetting &lt;> "off"
       hevcProfileArray.Conditions.push(maxHeightArray)
-      hevcProfileArray.Conditions.push(maxWidthArray)
     end if
 
     ' set bitrate restrictions based on user settings
@@ -843,7 +838,6 @@ function getCodecProfiles() as object
     ' set max resolution
     if globalUserSettings["playback.resolution.mode"] = "everything" and maxResSetting &lt;> "off"
       vp9ProfileArray.Conditions.push(maxHeightArray)
-      vp9ProfileArray.Conditions.push(maxWidthArray)
     end if
 
     ' set bitrate restrictions based on user settings
@@ -936,53 +930,19 @@ function GetBitRateLimit(codec as string) as object
 end function
 
 function getMaxHeightArray() as object
-  myGlobal = m.global
-
-  maxResSetting = myGlobal.session.user.settings["playback.resolution.max"]
-  if maxResSetting = "off" then return {}
+  maxResSetting = m.global.session.user.settings["playback.resolution.max"]
 
   maxVideoHeight = maxResSetting
+  autoVideoHeight = m.global.device.videoHeight
 
-  if maxResSetting = "auto"
-    maxVideoHeight = myGlobal.device.videoHeight
+  if maxResSetting = "auto" or maxVideoHeight.ToInt() > autoVideoHeight.ToInt()
+    maxVideoHeight = autoVideoHeight
   end if
 
   return {
     "Condition": "LessThanEqual",
     "Property": "Height",
     "Value": maxVideoHeight,
-    "IsRequired": true
-  }
-end function
-
-function getMaxWidthArray() as object
-  myGlobal = m.global
-
-  maxResSetting = myGlobal.session.user.settings["playback.resolution.max"]
-  if maxResSetting = "off" then return {}
-
-  maxVideoWidth = invalid
-
-  if maxResSetting = "auto"
-    maxVideoWidth = myGlobal.device.videoWidth
-  else if maxResSetting = "360"
-    maxVideoWidth = "480"
-  else if maxResSetting = "480"
-    maxVideoWidth = "640"
-  else if maxResSetting = "720"
-    maxVideoWidth = "1280"
-  else if maxResSetting = "1080"
-    maxVideoWidth = "1920"
-  else if maxResSetting = "2160"
-    maxVideoWidth = "3840"
-  else if maxResSetting = "4320"
-    maxVideoWidth = "7680"
-  end if
-
-  return {
-    "Condition": "LessThanEqual",
-    "Property": "Width",
-    "Value": maxVideoWidth,
     "IsRequired": true
   }
 end function
