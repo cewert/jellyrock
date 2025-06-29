@@ -44,19 +44,6 @@
         "default": "false"
       },
       {
-        "title": "Compatibility",
-        "description": "Attempt to prevent playback failures.",
-        "children": [
-          {
-            "title": "Disable HEVC",
-            "description": "Disable the HEVC codec on this device. This may improve playback for some devices (ultra).",
-            "settingName": "playback.compatibility.disablehevc",
-            "type": "bool",
-            "default": "false"
-          }
-        ]
-      },
-      {
         "title": "Custom Subtitles",
         "description": "Replace Roku's default subtitle functions with custom functions that support CJK fonts. Fallback fonts must be configured and enabled on the server for CJK rendering to work.",
         "settingName": "playback.subs.custom",
