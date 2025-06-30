@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="Schedule" extends="JFGroup">
+<component name="Schedule" extends="JRGroup">
   <children>
     <rectangle translation="[0,150]" width="1920" height="930" color="#262626" />
 

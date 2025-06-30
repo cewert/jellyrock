@@ -3,7 +3,7 @@
   <children>
     <LayoutGroup id="toplevel" layoutDirection="vert" itemSpacings="[40]">
       <LayoutGroup id="main_group" layoutDirection="horiz" itemSpacings="[30]">
-        <JFPoster id="poster" width="350" height="300" loadDisplayMode="scaleToZoom" />
+        <JRPoster id="poster" width="350" height="300" loadDisplayMode="scaleToZoom" />
         <LayoutGroup id="text" layoutDirection="vert" itemSpacings="[15]">
           <ScrollingLabelPrimaryLarge id="title" bold="true" maxWidth="932" />
           <LayoutGroup id="infoBar" layoutDirection="horiz" itemSpacings="[18]">

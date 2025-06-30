@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="JFPoster" extends="Poster">
+<component name="JRPoster" extends="Poster">
   <children>
     <RectangleSecondary id="watchBadgeBackground" width="90" height="48" visible="false">
       <LabelPrimarySmall id="unplayedVideosCount" bold="true" height="48" horizAlign="center" vertAlign="center" translation="[0,3]" />

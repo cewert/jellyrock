@@ -30,7 +30,7 @@
 
     <!-- FOOTER -->
     <!-- Button menu -->
-    <JFButtonGroup id="osdButtons" itemSpacings="[36]" layoutDirection="horiz" horizAlignment="left" translation="[97,936]">
+    <JRButtonGroup id="osdButtons" itemSpacings="[36]" layoutDirection="horiz" horizAlignment="left" translation="[97,936]">
       <IconButton id="itemBack" padding="15" icon="pkg:/images/icons/itemPrevious.png" />
       <IconButton id="videoPlayPause" padding="15" icon="pkg:/images/icons/play.png" />
       <IconButton id="itemNext" padding="15" icon="pkg:/images/icons/itemNext.png" />
@@ -38,7 +38,7 @@
       <IconButton id="showSubtitleMenu" padding="15" icon="pkg:/images/icons/closedCaptions.png" />
       <IconButton id="chapterList" padding="15" icon="pkg:/images/icons/chapters.png" />
       <IconButton id="showVideoInfoPopup" padding="15" icon="pkg:/images/icons/fileInfo.png" />
-    </JFButtonGroup>
+    </JRButtonGroup>
 
     <Timer id="inactivityTimer" duration="1" repeat="true" />
   </children>

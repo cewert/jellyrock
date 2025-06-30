@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="JFButtons" extends="Group">
+<component name="JRButtons" extends="Group">
   <children>
     <Group>
 

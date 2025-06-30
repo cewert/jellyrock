@@ -206,7 +206,7 @@ sub radioSettingChanged()
   set_user_setting(selectedSetting.settingName, m.radioSetting.content.getChild(m.radioSetting.checkedItem).id)
 end sub
 
-' JFScreen hook that gets ran as needed.
+' JRScreen hook that gets ran as needed.
 ' Assumes settings were changed and they affect the device profile.
 ' Posts a new device profile to the server using the task thread
 sub OnScreenHidden()

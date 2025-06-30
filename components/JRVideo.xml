@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="JFVideo" extends="Video">
+<component name="JRVideo" extends="Video">
   <interface>
     <field id="backPressed" type="boolean" alwaysNotify="true" />
     <field id="selectSubtitlePressed" type="boolean" alwaysNotify="true" />
@@ -28,7 +28,7 @@
 
     <timer id="playbackTimer" repeat="true" duration="30" />
     <timer id="bufferCheckTimer" repeat="true" />
-    <JFButton id="nextEpisode"
+    <JRButton id="nextEpisode"
       opacity="0"
       textColor="#f0f0f0"
       focusedTextColor="#202020"

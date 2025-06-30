@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="PersonData" extends="JFContentItem">
+<component name="PersonData" extends="JRContentItem">
   <interface>
     <field id="image" type="node" onChange="setPoster" />
     <field id="movieID" type="string" />

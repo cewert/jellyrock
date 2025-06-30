@@ -5,7 +5,7 @@
 
     <Poster id="itemIcon" width="100" height="100" translation="[190,85]" loadDisplayMode="scaleToFit" />
 
-    <JFPoster id="itemPoster" />
+    <JRPoster id="itemPoster" />
 
     <LayoutGroup layoutDirection="vert" translation="[8, 273]" itemSpacings="[0]">
       <ScrollingLabelSecondarySmaller id="itemText" bold="true" horizAlign="center" height="34" maxWidth="456" repeatCount="0" />

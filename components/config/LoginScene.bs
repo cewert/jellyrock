@@ -5,7 +5,7 @@ sub init()
   m.top.optionsAvailable = false
 end sub
 
-' JFScreen hook.
+' JRScreen hook.
 sub OnScreenShown()
   scene = m.top.getScene()
   overhang = scene.findNode("overhang")

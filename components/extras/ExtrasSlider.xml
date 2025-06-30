@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="ExtrasSlider" extends="JFGroup">
+<component name="ExtrasSlider" extends="JRGroup">
   <children>
     <RectangleBackgroundSecondary id="extrasGrp" width="1920" height="900" translation="[0, 1014]">
       <ExtrasRowList id="extrasGrid" numRows="2" translation="[0,30]" itemComponentName="ExtrasItem" />

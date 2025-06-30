@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="SetServerScreen" extends="JFScreen">
+<component name="SetServerScreen" extends="JRScreen">
   <interface>
     <field id="serverUrl" type="string" alias="serverUrlTextbox.text" />
     <field id="serverWidth" alias="serverUrlOutline.width,serverUrlTextbox.width,serverUrlContainer.width,submitSizer.width" value="1620" />
@@ -15,7 +15,7 @@
       </LayoutGroup>
       <!--background for server picker-->
       <Rectangle color="0x00000020" width="1620" height="400">
-        <MarkupList id="serverPicker" translation="[50, 20]" itemComponentName="JFServer" itemSpacing="[0, 10]" itemSize="[1520, 100]" numRows="3" vertFocusAnimationStyle="floatingFocus" />
+        <MarkupList id="serverPicker" translation="[50, 20]" itemComponentName="JRServer" itemSpacing="[0, 10]" itemSize="[1520, 100]" numRows="3" vertFocusAnimationStyle="floatingFocus" />
       </Rectangle>
 
       <label text="...or enter server URL manually:" translation="[0, 690]" />
@@ -26,7 +26,7 @@
       </Rectangle>
       <label id="errorMessage" text="" font="font:MediumSystemFont" color="#ff0000FF" />
       <LayoutGroup horizAlignment="center">
-        <JFButton id="submit" minChars="30" text="Submit"></JFButton>
+        <JRButton id="submit" minChars="30" text="Submit"></JRButton>
         <!--add a known width invisibile element to allow the button to be centered-->
         <Rectangle id="submitSizer" width="1620" height="0" color="#00000000" />
       </LayoutGroup>

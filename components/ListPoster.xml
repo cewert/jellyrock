@@ -5,7 +5,7 @@
 
     <ScrollingLabelPrimarySmaller id="Series" bold="true" horizAlign="center" repeatCount="0" visible="false" />
 
-    <JFPoster id="poster" loadDisplayMode="scaleToFit" />
+    <JRPoster id="poster" loadDisplayMode="scaleToFit" />
 
     <ScrollingLabelPrimarySmaller id="title" bold="true" horizAlign="center" repeatCount="0" visible="false" />
     <LabelPrimarySmaller id="staticTitle" bold="true" horizAlign="center" wrap="false" />

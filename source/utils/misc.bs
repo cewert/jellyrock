@@ -197,7 +197,7 @@ end function
 function show_dialog(message as string, options = [], defaultSelection = 0) as integer
   lastFocus = lastFocusedChild(m.scene)
 
-  dialog = createObject("roSGNode", "JFMessageDialog")
+  dialog = createObject("roSGNode", "JRMessageDialog")
   if options.count() then dialog.options = options
   if message.len() > 0
     reg = CreateObject("roFontRegistry")
@@ -546,7 +546,7 @@ function toString(input) as string
 end function
 
 '
-' startLoadingSpinner: Start a loading spinner and attach it to the main JFScene.
+' startLoadingSpinner: Start a loading spinner and attach it to the main JRScene.
 ' Displays an invisible ProgressDialog node by default to disable keypresses while loading.
 '
 ' @param {boolean} [disableRemote=true]

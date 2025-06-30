@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="ArtistView" extends="JFScreen">
+<component name="ArtistView" extends="JRScreen">
   <children>
     <Poster id="backdrop" opacity=".4" loadDisplayMode="scaleToZoom" width="1920" height="1200" blendColor="#3f3f3f" />
 

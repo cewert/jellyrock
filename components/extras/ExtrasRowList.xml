@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- The top-Level RowList for the Extras rows -->
-<component name="ExtrasRowList" extends="JFRowList">
+<component name="ExtrasRowList" extends="JRRowList">
   <interface>
     <field id="type" type="string" />
     <field id="parentId" type="string" />

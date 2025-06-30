@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="JFOverhang" extends="Group">
+<component name="JROverhang" extends="Group">
   <children>
     <LayoutGroup id="overlayLeftGroup" layoutDirection="horiz" translation="[54, 54]" itemSpacings="90">
       <Poster id="overlayLogo" uri="pkg:/images/branding/logo.png" height="66" width="191" />

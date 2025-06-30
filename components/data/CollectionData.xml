@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="CollectionData" extends="JFContentItem">
+<component name="CollectionData" extends="JRContentItem">
   <interface>
     <field id="collectionID" type="string" />
     <field id="description" type="string" />

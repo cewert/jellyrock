@@ -32,7 +32,7 @@ sub updateSize()
   m.top.itemSize = [1920, itemHeight]
   m.top.rowItemSpacing = [36, 36]
 
-  ' override defaults from JFRowList
+  ' override defaults from JRRowList
   m.top.vertFocusAnimationStyle = "fixedFocus"
 end sub
 

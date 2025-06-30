@@ -93,7 +93,7 @@ sub statusUpdate()
   m.hideStatusAnimation.control = "start"
 end sub
 
-' JFScreen hook.
+' JRScreen hook.
 ' Used to ensure tasks are stopped
 sub OnScreenHidden()
   m.slideshowTimer.control = "stop"

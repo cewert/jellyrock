@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="JFContentItem" extends="ContentNode">
+<component name="JRContentItem" extends="ContentNode">
   <interface>
     <field id="favorite" type="boolean" />
     <field id="watched" type="boolean" />

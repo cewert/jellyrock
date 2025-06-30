@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="ScheduleProgramData" extends="JFContentItem">
+<component name="ScheduleProgramData" extends="JRContentItem">
   <interface>
     <field id="fullyLoaded" type="boolean" value="false" />
     <field id="channelIndex" type="integer" />

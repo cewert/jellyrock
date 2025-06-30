@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="MusicLibraryView" extends="JFScreen">
+<component name="MusicLibraryView" extends="JRScreen">
   <children>
     <Rectangle id="screenSaverBackground" width="1920" height="1080" color="#000000" />
 

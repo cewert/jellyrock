@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="SectionScroller" extends="JFGroup">
+<component name="SectionScroller" extends="JRGroup">
   <children>
   </children>
   <interface>

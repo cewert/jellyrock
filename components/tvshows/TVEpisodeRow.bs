@@ -2,7 +2,7 @@ sub init()
   m.top.itemComponentName = "TVListDetails"
   m.top.content = setData()
 
-  ' override defaults from JFRowList
+  ' override defaults from JRRowList
   m.top.focusXOffset = [0]
   m.top.showRowLabel = [false]
   m.top.showRowCounter = [false]

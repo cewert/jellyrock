@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="UserRow" extends="JFRowList">
+<component name="UserRow" extends="JRRowList">
   <interface>
     <field id="userSelected" type="string" alwaysNotify="true" />
     <field id="itemContent" type="array" onChange="setData" />

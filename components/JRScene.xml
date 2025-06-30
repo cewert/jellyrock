@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="JFScene" extends="Scene">
+<component name="JRScene" extends="Scene">
   <children>
     <Group id="content" />
-    <JFOverhang id="overhang" />
+    <JROverhang id="overhang" />
     <Spinner id="spinner" translation="[897, 477]" />
   </children>
   <interface>

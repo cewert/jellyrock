@@ -29,13 +29,13 @@ sub pushScene(newGroup)
         currentGroup.setFocus(false)
       end if
 
-      if currentGroup.isSubType("JFGroup")
+      if currentGroup.isSubType("JRGroup")
         unregisterOverhangData(currentGroup)
       end if
 
       currentGroup.visible = false
 
-      if currentGroup.isSubType("JFScreen")
+      if currentGroup.isSubType("JRScreen")
         currentGroup.callFunc("OnScreenHidden")
       end if
 
@@ -49,12 +49,12 @@ sub pushScene(newGroup)
       m.content.appendChild(newGroup)
     end if
 
-    if newGroup.isSubType("JFScreen")
+    if newGroup.isSubType("JRScreen")
       newGroup.callFunc("OnScreenShown")
     end if
 
     'observe info about new group, set overhang title, etc.
-    if newGroup.isSubType("JFGroup")
+    if newGroup.isSubType("JRGroup")
       registerOverhangData(newGroup)
 
       ' Some groups set focus to a specific component within init(), so we don't want to
@@ -62,7 +62,7 @@ sub pushScene(newGroup)
       if newGroup.isInFocusChain() = false
         newGroup.setFocus(true)
       end if
-    else if newGroup.isSubType("JFVideo")
+    else if newGroup.isSubType("JRVideo")
       newGroup.setFocus(true)
       newGroup.control = "play"
       m.overhang.visible = false
@@ -78,16 +78,16 @@ end sub
 sub popScene()
   group = m.groups.pop()
   if group <> invalid
-    if group.isSubType("JFGroup")
+    if group.isSubType("JRGroup")
       unregisterOverhangData(group)
-    else if group.isSubType("JFVideo")
+    else if group.isSubType("JRVideo")
       ' Stop video to make sure app communicates stop playstate to server
       group.control = "stop"
     end if
 
     group.visible = false
 
-    if group.isSubType("JFScreen")
+    if group.isSubType("JRScreen")
       group.callFunc("OnScreenHidden")
     end if
   else
@@ -103,7 +103,7 @@ sub popScene()
 
     m.content.replaceChild(group, 0)
 
-    if group.isSubType("JFScreen")
+    if group.isSubType("JRScreen")
       group.callFunc("OnScreenShown")
     else
       ' Restore focus
@@ -135,7 +135,7 @@ end function
 sub clearScenes()
   if m.content <> invalid then m.content.removeChildrenIndex(m.content.getChildCount(), 0)
   for each group in m.groups
-    if type(group) = "roSGNode" and group.isSubtype("JFScreen")
+    if type(group) = "roSGNode" and group.isSubtype("JRScreen")
       group.callFunc("OnScreenHidden")
     end if
   end for
@@ -164,7 +164,7 @@ end sub
 '
 ' Register observers for overhang data
 sub registerOverhangData(group)
-  if group.isSubType("JFGroup")
+  if group.isSubType("JRGroup")
     if group.overhangTitle <> invalid then m.overhang.title = group.overhangTitle
 
     if group.optionsAvailable
@@ -182,7 +182,7 @@ sub registerOverhangData(group)
       m.overhang.visible = false
     end if
     group.observeField("overhangVisible", "updateOverhangVisible")
-  else if group.isSubType("JFVideo")
+  else if group.isSubType("JRVideo")
     m.overhang.visible = false
   else
     m.log.error("registerOverhangData(): Unexpected group type.", group, group.subtype())

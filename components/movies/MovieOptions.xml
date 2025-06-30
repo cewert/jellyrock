@@ -5,7 +5,7 @@
     <Group translation="[100,100]">
       <Poster width="1720" height="880" uri="pkg:/images/dialog.9.png" />
       <LayoutGroup horizAlignment="center" translation="[860,50]" itemSpacings="[50]">
-        <JFButtons id="buttons" />
+        <JRButtons id="buttons" />
         <Group>
           <RadiobuttonList id="videoMenu" itemspacing="[0,10]" opacity="1" vertFocusAnimationStyle="floatingFocus" drawFocusFeedback="false" itemSize="[1500, 70]" numRows="8" />
           <RadiobuttonList id="audioMenu" itemspacing="[0,10]" opacity="0" vertFocusAnimationStyle="floatingFocus" drawFocusFeedback="false" itemSize="[1500, 70]" numRows="8" />

@@ -24,7 +24,7 @@ sub Main (args as dynamic) as void
   end if
   if m.wasMigrated then printRegistry()
 
-  m.scene = m.screen.CreateScene("JFScene")
+  m.scene = m.screen.CreateScene("JRScene")
   m.screen.show() ' vscode_rale_tracker_entry
   'vscode_rdb_on_device_component_entry
 
@@ -701,7 +701,7 @@ sub Main (args as dynamic) as void
       end if
     else if isNodeEvent(msg, "selectSubtitlePressed")
       node = m.scene.focusedChild
-      if node.focusedChild <> invalid and node.focusedChild.isSubType("JFVideo")
+      if node.focusedChild <> invalid and node.focusedChild.isSubType("JRVideo")
         trackSelected = selectSubtitleTrack(node.Subtitles, node.SelectedSubtitle)
         if trackSelected <> invalid and trackSelected <> -2
           changeSubtitleDuringPlayback(trackSelected)
@@ -709,7 +709,7 @@ sub Main (args as dynamic) as void
       end if
     else if isNodeEvent(msg, "selectPlaybackInfoPressed")
       node = m.scene.focusedChild
-      if node.focusedChild <> invalid and node.focusedChild.isSubType("JFVideo")
+      if node.focusedChild <> invalid and node.focusedChild.isSubType("JRVideo")
         info = GetPlaybackInfo()
         show_dialog(tr("Playback Information"), info)
       end if
@@ -745,7 +745,7 @@ sub Main (args as dynamic) as void
         group = m.global.sceneManager.callFunc("getActiveScene")
         if isValid(group)
           ' refresh the current view
-          if group.isSubType("JFScreen")
+          if group.isSubType("JRScreen")
             group.callFunc("OnScreenShown")
           end if
         end if

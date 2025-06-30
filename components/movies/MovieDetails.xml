@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="MovieDetails" extends="JFScreen">
+<component name="MovieDetails" extends="JRScreen">
   <children>
     <Poster id="moviePosterSwap" translation="[96,175]" width="300" height="450" />
 

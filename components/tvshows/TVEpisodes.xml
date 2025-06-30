@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="TVEpisodes" extends="JFScreen">
+<component name="TVEpisodes" extends="JRScreen">
   <children>
-    <JFPoster id="seasonPoster" width="300" height="450" translation="[95,175]" />
-    <JFButton id="shuffle" minChars="10" text="Shuffle" translation="[90, 640]" visible="false"></JFButton>
-    <JFButton id="extras" minChars="10" text="Extras" translation="[90, 740]" visible="false"></JFButton>
+    <JRPoster id="seasonPoster" width="300" height="450" translation="[95,175]" />
+    <JRButton id="shuffle" minChars="10" text="Shuffle" translation="[90, 640]" visible="false"></JRButton>
+    <JRButton id="extras" minChars="10" text="Extras" translation="[90, 740]" visible="false"></JRButton>
     <TVEpisodeRowWithOptions id="picker" visible="true" />
   </children>
   <interface>

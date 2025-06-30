@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="JFButton" extends="Button">
+<component name="JRButton" extends="Button">
   <interface>
     <field id="minChars" type="int" />
   </interface>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="Section" extends="JFGroup">
+<component name="Section" extends="JRGroup">
   <children>
     <Animation id="showFromBottomAnimation" duration="0.5" repeat="false">
       <Vector2DFieldInterpolator id="showFromBottomPosition" key="[0.0, 1.0]" keyValue="[[0, 750], [0, 0]]" fieldToInterp="" />

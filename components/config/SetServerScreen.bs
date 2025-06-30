@@ -158,7 +158,7 @@ sub clearErrorMessage()
   m.top.errorMessage = ""
 end sub
 
-' JFScreen hook called when the screen is displayed by the screen manager
+' JRScreen hook called when the screen is displayed by the screen manager
 sub OnScreenShown()
   scene = m.top.getScene()
   overhang = scene.findNode("overhang")
