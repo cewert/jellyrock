@@ -124,40 +124,38 @@ sub populateData()
   setVideoSubTitle()
 end sub
 
+' setButtonStates: Disable previous/next buttons if needed and remove any other unneeded buttons
 sub setButtonStates()
   queueCount = m.global.QueueManager.callFunc("getCount")
   queueIndex = m.global.QueueManager.callFunc("getPosition")
+
+  ' Disable these buttons
 
   ' Item Previous
   if queueCount = 1 or queueIndex = 0
     itemPrevious = m.osdButtons.findNode("itemBack")
     itemPrevious.enabled = false
   end if
-
   ' Item Next
   if queueIndex + 1 >= queueCount
     itemNext = m.osdButtons.findNode("itemNext")
     itemNext.enabled = false
   end if
 
+  ' Remove these buttons
+
   ' Audio Track
   if m.top.numAudioStreams < 2
-    audioButton = m.osdButtons.findNode("showAudioMenu")
-    audioButton.enabled = false
+    m.osdButtons.removeChild(m.osdButtons.findNode("showAudioMenu"))
   end if
-
   ' Subtitles
   if not m.top.hasSubtitles
-    ccButon = m.osdButtons.findNode("showSubtitleMenu")
-    ccButon.enabled = false
+    m.osdButtons.removeChild(m.osdButtons.findNode("showSubtitleMenu"))
   end if
-
   ' Chapters
   if not m.top.hasChapters
-    chapterButton = m.osdButtons.findNode("chapterList")
-    chapterButton.enabled = false
+    m.osdButtons.removeChild(m.osdButtons.findNode("chapterList"))
   end if
-
 end sub
 
 sub setVideoLogoGroup()
@@ -181,7 +179,7 @@ sub setVideoSubTitle()
   ' EPISODE
   if m.top.type <> invalid
     if m.top.Type = "Episode" or m.top.Type = "Recording"
-      ' TITLE
+      ' Title
       if m.top.seriesName <> ""
         m.videoTitle.text = m.top.seriesName
       end if
@@ -195,14 +193,12 @@ sub setVideoSubTitle()
       else
         episodeInfoText = episodeInfoText + `${tr("S")}?`
       end if
-
       ' Episode number
       if m.top.episodeNumber <> invalid
         episodeInfoText = episodeInfoText + `:${tr("E")}${m.top.episodeNumber}`
       else
         episodeInfoText = episodeInfoText + `:${tr("E")}??`
       end if
-
       ' Episode number end
       if m.top.episodeNumberEnd <> invalid and m.top.episodeNumberEnd <> 0 and m.top.episodeNumberEnd > m.top.episodeNumber
         ' add entry for every episode eg. S6:E1E2
@@ -210,7 +206,6 @@ sub setVideoSubTitle()
           episodeInfoText = episodeInfoText + `${tr("E")}${m.top.episodeNumberEnd}`
         end for
       end if
-
       ' Episode name
       if m.top.videoTitle <> invalid and m.top.videoTitle <> ""
         episodeInfoText = episodeInfoText + ` - ${m.top.videoTitle}`
@@ -259,16 +254,12 @@ sub setVideoSubTitle()
 
 end sub
 
-' onProgressPercentageChanged: Handler for changes to m.top.progressPercentage param
-'
 sub onProgressPercentageChanged()
   m.videoPositionTime.text = secondsToTimestamp(m.top.positionTime, true)
   m.videoRemainingTime.text = "-" + secondsToTimestamp(m.top.remainingPositionTime, true)
   m.progressBar.width = m.progressBarBackground.width * m.top.progressPercentage
 end sub
 
-' onPlaybackStateChanged: Handler for changes to m.top.playbackState param
-'
 sub onPlaybackStateChanged()
   if LCase(m.top.playbackState) = "playing"
     m.videoPlayPause.icon = "pkg:/images/icons/pause.png"
@@ -278,8 +269,6 @@ sub onPlaybackStateChanged()
   m.videoPlayPause.icon = "pkg:/images/icons/play.png"
 end sub
 
-' resetFocusToDefaultButton: Reset focus back to the default button
-'
 sub resetFocusToDefaultButton()
   ' Remove focus from previously selected button
   for each child in m.osdButtons.getChildren(-1, 0)
@@ -295,8 +284,6 @@ sub resetFocusToDefaultButton()
   m.osdButtons.buttonFocused = m.defaultButtonIndex
 end sub
 
-' onVisibleChanged: Handler for changes to the visibility of this menu.
-'
 sub onVisibleChanged()
   if m.top.visible
     resetFocusToDefaultButton()
@@ -310,8 +297,6 @@ sub onVisibleChanged()
   end if
 end sub
 
-' onFocusChanged: Handler for changes to the focus of this menu.
-'
 sub onFocusChanged()
   if m.top.hasfocus
     m.osdButtons.setFocus(true)
@@ -319,7 +304,6 @@ sub onFocusChanged()
 end sub
 
 ' inactiveCheck: Checks if the time since last keypress is greater than or equal to the allowed inactive time of the menu.
-'
 sub inactiveCheck()
   ' If user is currently seeing a dialog box, ignore inactive check
   if m.global.sceneManager.callFunc("isDialogOpen")
@@ -332,8 +316,6 @@ sub inactiveCheck()
   end if
 end sub
 
-' onButtonSelected: Handler for selection of buttons from the menu.
-'
 sub onButtonSelected()
   selectedButton = m.osdButtons.getChild(m.osdButtons.buttonFocused)
 
