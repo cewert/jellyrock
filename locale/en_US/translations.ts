@@ -543,9 +543,8 @@
       <extracomment>Name of codec used in settings menu</extracomment>
     </message>
     <message>
-      <source>Hide all clocks in Jellyfin. Jellyfin will need to be closed and reopened for changes to take effect.</source>
-      <translation>Hide all clocks in Jellyfin. Jellyfin will need to be closed and reopened for changes to take effect.</translation>
-      <extracomment>Settings Menu - Description for option</extracomment>
+      <source>Hide all clocks in JellyRock. JellyRock will need to be closed and reopened for changes to take effect.</source>
+      <translation>Hide all clocks in JellyRock. JellyRock will need to be closed and reopened for changes to take effect.</translation>
     </message>
     <message>
       <source>Hide Clock</source>
@@ -636,9 +635,8 @@
       <translation>Login attempt failed.</translation>
     </message>
     <message>
-      <source>Make the arrangement of the Roku home view sections match the web client&apos;s home screen. Jellyfin will need to be closed and reopened for change to take effect.</source>
-      <translation>Make the arrangement of the Roku home view sections match the web client&apos;s home screen. Jellyfin will need to be closed and reopened for change to take effect.</translation>
-      <extracomment>User Setting - Setting description</extracomment>
+      <source>Make the arrangement of the Roku home view sections match the web client&apos;s home screen. JellyRock will need to be closed and reopened for change to take effect.</source>
+      <translation>Make the arrangement of the Roku home view sections match the web client&apos;s home screen. JellyRock will need to be closed and reopened for change to take effect.</translation>
     </message>
     <message>
       <source>Max Days Next Up</source>
@@ -909,9 +907,8 @@
       <extracomment>User Setting - Setting title</extracomment>
     </message>
     <message>
-      <source>Remember the currently logged in user and try to log them in again next time you start the Jellyfin app.</source>
-      <translation>Remember the currently logged in user and try to log them in again next time you start the Jellyfin app.</translation>
-      <extracomment>User Setting - Setting description</extracomment>
+      <source>Remember the currently logged in user and try to log them in again next time you start the JellyRock app.</source>
+      <translation>Remember the currently logged in user and try to log them in again next time you start the JellyRock app.</translation>
     </message>
     <message>
       <source>Repeat</source>
@@ -1274,8 +1271,8 @@
       <extracomment>User Setting - Setting option title</extracomment>
     </message>
     <message>
-      <source>Use generated splashscreen image as Jellyfin&apos;s home background.</source>
-      <translation>Use generated splashscreen image as Jellyfin&apos;s home background.</translation>
+      <source>Use generated splashscreen image as JellyRock&apos;s home background.</source>
+      <translation>Use generated splashscreen image as JellyRock&apos;s home background.</translation>
     </message>
     <message>
       <source>Use Show Image</source>
