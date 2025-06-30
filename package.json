@@ -1,8 +1,8 @@
 {
-  "name": "jellyfin-roku",
+  "name": "jellyrock",
   "type": "module",
-  "version": "2.2.5",
-  "description": "Roku app for Jellyfin media server",
+  "version": "1.0.0",
+  "description": "Roku client for Jellyfin media server",
   "dependencies": {
     "@rokucommunity/bslib": "0.1.1",
     "brighterscript-formatter": "1.7.15",
@@ -46,7 +46,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/jellyfin/jellyfin-roku.git"
+    "url": "https://github.com/cewert/jellyrock.git"
   },
   "keywords": [
     "jellyfin",
@@ -55,7 +55,7 @@
   "author": "jellyfin",
   "license": "GPL-2.0",
   "bugs": {
-    "url": "https://github.com/jellyfin/jellyfin-roku/issues"
+    "url": "https://github.com/cewert/jellyrock/issues"
   },
-  "homepage": "https://github.com/jellyfin/jellyfin-roku"
+  "homepage": "https://github.com/cewert/jellyrock"
 }
