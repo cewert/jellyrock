@@ -7,7 +7,7 @@ import "pkg:/source/utils/misc.bs"
 
 const CLIENT_VERSION_REQUIRING_BASE_MIGRATION = "2.0.0"
 
-' Run all necessary registry mirations on the "global" Jellyfin registry section
+' Run all necessary registry mirations on the "global" JellyRock registry section
 sub runGlobalMigrations()
   appLastRunVersion = m.global.app.lastRunVersion
   ' Global registry migrations
@@ -20,7 +20,7 @@ sub runGlobalMigrations()
 
     ' enable remember me global setting for all devices whos last run version is &lt; 2.0.0
     ' NOTE: remember me will be disabled for new installs
-    rememberMe = registry_read("global.rememberme", "Jellyfin")
+    rememberMe = registry_read("global.rememberme", "JellyRock")
     if not isValid(rememberMe)
       ' don't overwrite users current setting (dev installs)
       set_setting("global.rememberme", "true")
@@ -38,7 +38,7 @@ sub runGlobalMigrations()
         registry_write("token", savedToken, savedUserId)
       end if
     end if
-    ' remove settings from global "jellyfin" registry block
+    ' remove settings from global "JellyRock" registry block
     unset_setting("port")
     unset_setting("token")
     unset_setting("username")
@@ -63,7 +63,7 @@ end sub
 sub runRegistryUserMigrations()
   regSections = getRegistrySections()
   for each section in regSections
-    if LCase(section) &lt;> "jellyfin"
+    if LCase(section) &lt;> "jellyrock"
       reg = CreateObject("roRegistrySection", section)
       if reg.exists("LastRunVersion")
         hasUserVersion = true

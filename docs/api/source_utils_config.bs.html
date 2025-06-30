@@ -52,19 +52,19 @@ function getRegistrySections() as object
   return registry.GetSectionList()
 end function
 
-' "Jellyfin" registry accessors for the default global settings
+' "JellyRock" registry accessors for the default global settings
 function get_setting(key, defaultValue = invalid)
-  value = registry_read(key, "Jellyfin")
+  value = registry_read(key, "JellyRock")
   if value = invalid then return defaultValue
   return value
 end function
 
 sub set_setting(key, value)
-  registry_write(key, value, "Jellyfin")
+  registry_write(key, value, "JellyRock")
 end sub
 
 sub unset_setting(key)
-  registry_delete(key, "Jellyfin")
+  registry_delete(key, "JellyRock")
 end sub
 
 ' User registry accessors for the currently active user
@@ -107,7 +107,7 @@ function getSavedUsers() as object
 
   savedUsers = []
   for each section in registrySections
-    if LCase(section) &lt;> "jellyfin"
+    if LCase(section) &lt;> "JellyRock"
       savedUsers.push(section)
     end if
   end for
