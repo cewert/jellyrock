@@ -61,7 +61,7 @@ sub setupScreenSaver()
   m.screenSaverAlbumAnimation = m.top.findNode("screenSaverAlbumAnimation")
   m.screenSaverAlbumCoverFadeIn = m.top.findNode("screenSaverAlbumCoverFadeIn")
 
-  ' Jellyfin Screensaver
+  ' Audio Screensaver
   m.PosterOne = m.top.findNode("PosterOne")
   m.PosterOne.uri = "pkg:/images/branding/logo.png"
   m.BounceAnimation = m.top.findNode("BounceAnimation")
@@ -222,7 +222,7 @@ sub startScreenSaver()
   m.top.overhangVisible = false
 
   if m.albumCover.uri = ""
-    ' Jellyfin Logo Screensaver
+    ' Audio Logo Screensaver
     m.PosterOne.visible = true
     m.PosterOneFadeIn.control = "start"
     m.BounceAnimation.control = "start"

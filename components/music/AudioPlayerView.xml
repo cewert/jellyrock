@@ -85,7 +85,7 @@
       </Animation>
     </SequentialAnimation>
 
-    <!-- Jellyfin Logo ScreenSaver -->
+    <!-- Audio ScreenSaver -->
     <SequentialAnimation id="BounceAnimation" repeat="true">
       <Animation id="AnimOne" repeat="false" easeFunction="linear" duration="7.2">
         <Vector2DFieldInterpolator id="OneInterp" key="[0.0,1.0]" keyValue="[[960,540],[1500,250]]" fieldToInterp="PosterOne.translation" />

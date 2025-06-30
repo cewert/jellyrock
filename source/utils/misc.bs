@@ -599,7 +599,7 @@ function shuffleArray(array as object) as object
   return array
 end function
 
-' Create and return a Jellyfin logo poster node
+' Create and return a logo poster node
 function createLogoPoster()
   logoPoster = createObject("roSGNode", "Poster")
   logoPoster.id = "overlayLogo"

@@ -98,7 +98,7 @@ Package up the application, send it to your Roku, and launch the channel:
 make install
 ```
 
-Note: You only have to run this command once if you are not a developer. The Jellyfin channel will still be installed after rebooting your Roku device.
+Note: You only have to run this command once if you are not a developer. The JellyRock channel will still be installed after rebooting your Roku device.
 
 ### Bug/Crash Reports
 

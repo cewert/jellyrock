@@ -5,7 +5,7 @@
     "children": [
       {
         "title": "Remember Me?",
-        "description": "Remember the currently logged in user and try to log them in again next time you start the Jellyfin app.",
+        "description": "Remember the currently logged in user and try to log them in again next time you start the JellyRock app.",
         "settingName": "global.rememberme",
         "type": "bool",
         "default": "false"
@@ -251,7 +251,7 @@
           },
           {
             "title": "Hide Clock",
-            "description": "Hide all clocks in Jellyfin. Jellyfin will need to be closed and reopened for changes to take effect.",
+            "description": "Hide all clocks in JellyRock. JellyRock will need to be closed and reopened for changes to take effect.",
             "settingName": "ui.design.hideclock",
             "type": "bool",
             "default": "false"
@@ -289,14 +289,14 @@
           },
           {
             "title": "Use Splashscreen as Home Background",
-            "description": "Use generated splashscreen image as Jellyfin's home background.",
+            "description": "Use generated splashscreen image as JellyRock's home background.",
             "settingName": "ui.home.splashBackground",
             "type": "bool",
             "default": "false"
           },
           {
             "title": "Use Web Client's Home Section Arrangement",
-            "description": "Make the arrangement of the Roku home view sections match the web client's home screen. Jellyfin will need to be closed and reopened for change to take effect.",
+            "description": "Make the arrangement of the Roku home view sections match the web client's home screen. JellyRock will need to be closed and reopened for change to take effect.",
             "settingName": "ui.home.useWebSectionArrangement",
             "type": "bool",
             "default": "true"
