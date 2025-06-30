@@ -41,8 +41,10 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.ref_name }}
           token: ${{ secrets.CEWERT_BOT_TOKEN }}
+      - name: Pull latest changes
+        run: git pull origin ${{ github.ref_name }}
       - name: Install NPM dependencies
         run: npm ci
       - name: Build API docs
