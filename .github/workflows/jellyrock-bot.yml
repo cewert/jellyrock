@@ -26,11 +26,11 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@778341af668090896ca464160c2def5d1d1a3eb0 # v6
         with:
           commit_message: Update en_US translation file
-          # use cewert-bot to commit the changes instead of the default github-actions[bot]
-          commit_user_name: cewert-bot
+          # use JellyRock-bot to commit the changes instead of the default github-actions[bot]
+          commit_user_name: JellyRock-bot
           commit_user_email: c.ewert@gmail.com
-          # use cewert-bot to author the changes instead of the default author of the merge commit
-          commit_author: cewert-bot <c.ewert@gmail.com>
+          # use JellyRock-bot to author the changes instead of the default author of the merge commit
+          commit_author: JellyRock-bot <c.ewert@gmail.com>
   build-docs:
     runs-on: ubuntu-latest
     needs: build-translation
@@ -54,8 +54,8 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@778341af668090896ca464160c2def5d1d1a3eb0 # v6
         with:
           commit_message: Update API docs
-          # use cewert-bot to commit the changes instead of the default github-actions[bot]
-          commit_user_name: cewert-bot
+          # use JellyRock-bot to commit the changes instead of the default github-actions[bot]
+          commit_user_name: JellyRock-bot
           commit_user_email: c.ewert@gmail.com
-          # use cewert-bot to author the changes instead of the default author of the merge commit
-          commit_author: cewert-bot <c.ewert@gmail.com>
+          # use JellyRock-bot to author the changes instead of the default author of the merge commit
+          commit_author: JellyRock-bot <c.ewert@gmail.com>
