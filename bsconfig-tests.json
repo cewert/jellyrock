@@ -1,7 +1,7 @@
 {
   "files": [
     {
-      "src": "test-app/**/*"
+      "src": "unit-tests/**/*"
     },
     {
       "src": "source/**/!(Main.brs)",
