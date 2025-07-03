@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '.github/**'
+      - '.vscode/**'
+      - 'docs/**'
+      - 'locale/**'
+      - 'scripts/**'
+      - 'unit-tests/**'
 
 jobs:
   static:
