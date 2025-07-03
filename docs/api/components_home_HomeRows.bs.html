@@ -313,7 +313,7 @@ sub createLatestInRows()
   ' create a "Latest In" row for each library
   for each lib in m.filteredLatest
     if lib.collectionType &lt;> "boxsets" and lib.collectionType &lt;> "livetv" and lib.json.CollectionType &lt;> "Program"
-      sectionName = `${tr("Latest in")} ${lib.name} >`
+      sectionName = `${tr("Recently Added in")} ${lib.name}`
 
       imagesize = homeRowItemSizes.WIDE_POSTER
 
@@ -422,7 +422,7 @@ end sub
 ' createNextUpRow: Creates a row displaying next episodes up to watch
 '
 sub createNextUpRow()
-  sectionName = tr("Next Up") + ">"
+  sectionName = tr("Next Up")
 
   if not sectionExists(sectionName)
     nextUpRow = m.top.content.CreateChild("HomeRow")
@@ -549,7 +549,7 @@ sub updateNextUpItems()
   m.LoadNextUpTask.content = []
   m.LoadNextUpTask.control = "STOP"
 
-  sectionName = tr("Next Up") + " >"
+  sectionName = tr("Next Up")
 
   if not isValidAndNotEmpty(itemData)
     removeHomeSection(sectionName)
@@ -558,7 +558,7 @@ sub updateNextUpItems()
 
   ' remake row using the new data
   row = CreateObject("roSGNode", "HomeRow")
-  row.title = tr("Next Up") + " >"
+  row.title = tr("Next Up")
   row.imageWidth = homeRowItemSizes.WIDE_POSTER[0]
   row.cursorSize = homeRowItemSizes.WIDE_POSTER
 
@@ -591,7 +591,7 @@ sub updateLatestItems(msg)
   node.unobserveField("content")
   node.content = []
 
-  sectionName = tr("Latest in") + " " + node.metadata.title + " >"
+  sectionName = tr("Recently Added in") + " " + node.metadata.title
 
   if not isValidAndNotEmpty(itemData)
     removeHomeSection(sectionName)
@@ -632,7 +632,7 @@ sub updateLatestItems(msg)
   setRowItemSize()
 end sub
 
-' updateOnNowItems: Processes LoadOnNowTask content. Removes, Creates, or Updates latest in on now row as needed
+' updateOnNowItems: Processes LoadOnNowTask content. Removes, Creates, or Updates on now row as needed
 '
 sub updateOnNowItems()
   m.processedRowCount++
