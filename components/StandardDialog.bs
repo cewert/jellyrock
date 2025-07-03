@@ -7,26 +7,28 @@ sub init()
   m.top.title = "What's New?"
   m.top.buttons = [tr("OK")]
 
+  colorConstants = m.global.constants.colors
+
   m.dialogStyles = {
     "default": {
       "fontSize": 27,
       "fontUri": "font:BoldSystemFontFile",
-      "color": "#EFEFEFFF"
+      "color": colorConstants.text_primary
     },
     "b": {
       "fontSize": 27,
       "fontUri": "font:SystemFontFile",
-      "color": "#999999"
+      "color": colorConstants.text_secondary
     },
     "header": {
       "fontSize": 35,
       "fontUri": "font:SystemFontFile",
-      "color": "#00a4dcFF"
+      "color": colorConstants.secondary
     },
     "p": {
       "fontSize": 27,
       "fontUri": "font:SystemFontFile",
-      "color": "#EFEFEFFF"
+      "color": colorConstants.text_primary
     }
   }
 
