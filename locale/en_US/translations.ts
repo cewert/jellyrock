@@ -600,10 +600,6 @@
       <extracomment>Title of a setting - when should we show the title text of a grid item</extracomment>
     </message>
     <message>
-      <source>Latest in</source>
-      <translation>Latest in</translation>
-    </message>
-    <message>
       <source>Level</source>
       <translation>Level</translation>
       <extracomment>Video profile level</extracomment>
@@ -892,6 +888,10 @@
     <message>
       <source>Reason</source>
       <translation>Reason</translation>
+    </message>
+    <message>
+      <source>Recently Added in</source>
+      <translation>Recently Added in</translation>
     </message>
     <message>
       <source>Record</source>
