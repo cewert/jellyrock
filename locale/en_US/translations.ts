@@ -410,6 +410,10 @@
       <extracomment>(Past Tense) For defining time when a program will ended (e.g. Ended at 08:00) </extracomment>
     </message>
     <message>
+      <source>Ends at</source>
+      <translation>Ends at</translation>
+    </message>
+    <message>
       <source>Ends at %1</source>
       <translation>Ends at %1</translation>
     </message>
