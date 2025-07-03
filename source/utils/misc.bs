@@ -85,24 +85,19 @@ function formatTime(time) as string
   hours = time.getHours()
   minHourDigits = 1
   if m.global.device.clockFormat = "12h"
-    meridian = "AM"
     if hours = 0
       hours = 12
-      meridian = "AM"
     else if hours = 12
       hours = 12
-      meridian = "PM"
     else if hours > 12
       hours = hours - 12
-      meridian = "PM"
     end if
   else
-    ' For 24hr Clock, no meridian and pad hours to 2 digits
+    ' For 24hr Clock, pad hours to 2 digits
     minHourDigits = 2
-    meridian = ""
   end if
 
-  return Substitute("{0}:{1} {2}", leftPad(stri(hours).trim(), "0", minHourDigits), leftPad(stri(time.getMinutes()).trim(), "0", 2), meridian)
+  return Substitute("{0}:{1}", leftPad(stri(hours).trim(), "0", minHourDigits), leftPad(stri(time.getMinutes()).trim(), "0", 2))
 
 end function
 

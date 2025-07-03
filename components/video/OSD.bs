@@ -2,6 +2,8 @@ import "pkg:/source/utils/misc.bs"
 
 sub init()
   m.inactivityTimer = m.top.findNode("inactivityTimer")
+  m.endsAtTimer = m.top.findNode("endsAtTimer")
+  m.endsAt = m.top.findNode("endsAt")
   m.videoLogo = m.top.findNode("videoLogo")
   m.videoOfficialRating = m.top.findNode("videoOfficialRating")
   m.videoTitle = m.top.findNode("videoTitle")
@@ -159,6 +161,15 @@ sub setButtonStates()
   end if
 end sub
 
+sub setEndsAtText()
+  date = CreateObject("roDateTime")
+  endTime = int(m.top.remainingPositionTime)
+  date.fromSeconds(date.asSeconds() + endTime)
+  date.toLocalTime()
+
+  m.endsAt.text = tr("Ends at") + " " + formatTime(date)
+end sub
+
 sub setVideoLogoGroup()
   m.videoLogo.uri = m.top.videoLogo
 
@@ -259,6 +270,7 @@ sub onProgressPercentageChanged()
   m.videoPositionTime.text = secondsToTimestamp(m.top.positionTime, true)
   m.videoRemainingTime.text = "-" + secondsToTimestamp(m.top.remainingPositionTime, true)
   m.progressBar.width = m.progressBarBackground.width * m.top.progressPercentage
+  setEndsAtText()
 end sub
 
 sub onPlaybackStateChanged()
@@ -294,13 +306,18 @@ end sub
 sub onVisibleChanged()
   if m.top.visible
     resetFocusToDefaultButton()
+    m.endsAtTimer.observeField("fire", "setEndsAtText")
+    m.endsAtTimer.control = "start"
+
     if m.top.playbackState <> "paused"
       m.inactivityTimer.observeField("fire", "inactiveCheck")
       m.inactivityTimer.control = "start"
     end if
   else
     m.inactivityTimer.control = "stop"
+    m.endsAtTimer.control = "stop"
     m.inactivityTimer.unobserveField("fire")
+    m.endsAtTimer.unobserveField("fire")
   end if
 end sub
 

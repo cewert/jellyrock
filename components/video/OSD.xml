@@ -12,8 +12,7 @@
     </LayoutGroup>
 
     <!-- HEADER RIGHT -->
-    <!-- Clock -->
-    <Clock id="clock" translation="[1624, 102]" />
+    <Clock id="clock" translation="[1624, 98]" />
 
     <!-- MAIN -->
     <!-- Video information - title, season/episode number etc. -->
@@ -21,7 +20,10 @@
       <LabelSecondaryLargest id="videoTitle" bold="true" />
       <LayoutGroup id="videoSubtitleGroup" itemSpacings="[9]" layoutDirection="horiz" />
     </LayoutGroup>
-    <!-- Time elapsed and time remaining -->
+    <!-- Ends at time -->
+    <LabelSecondaryMedium id="endsAt" bold="true" horizAlign="right" translation="[1624,759]" />
+
+    <!-- Progress bar -->
     <LabelSecondaryMedium id="videoPositionTime" bold="true" translation="[103,868]" />
     <RectangleBackgroundSecondary id="progressBarBackground" width="1350" height="9" translation="[270,880]">
       <RectangleSecondary id="progressBar" width="0" height="9" />
@@ -29,7 +31,6 @@
     <LabelSecondaryMedium id="videoRemainingTime" bold="true" horizAlign="right" width="200" translation="[1622,868]" />
 
     <!-- FOOTER -->
-    <!-- Button menu -->
     <OSDButtonGroup id="buttonMenuLeft" itemSpacings="[36]" layoutDirection="horiz" horizAlignment="left" translation="[97,936]">
       <IconButton id="itemBack" padding="15" icon="pkg:/images/icons/itemPrevious.png" />
       <IconButton id="videoPlayPause" padding="15" icon="pkg:/images/icons/play.png" />
@@ -44,6 +45,7 @@
     </OSDButtonGroup>
 
     <Timer id="inactivityTimer" duration="1" repeat="true" />
+    <Timer id="endsAtTimer" duration="60" repeat="true" />
   </children>
   <interface>
     <field id="type" type="string" value="" />
