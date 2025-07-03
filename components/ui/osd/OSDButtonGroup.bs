@@ -1,0 +1,115 @@
+
+function onKeyEvent(key as string, press as boolean) as boolean
+  if not press then return false
+
+  if key = "right" or key = "left"
+    currentFocus = m.top.buttonFocused
+    currentFocusButton = m.top.getChild(currentFocus)
+
+    if m.top.id = "buttonMenuLeft" and key = "right"
+      ' Move right, skipping disabled buttons
+      for i = currentFocus + 1 to m.top.getChildCount() - 1
+        button = m.top.getChild(i)
+        print "button =", button
+        if button.enabled
+          currentFocusButton.focus = false
+          m.top.buttonFocused = i
+          button.focus = true
+          return true
+        end if
+      end for
+      ' wrap if needed
+      buttonMenuRight = m.top.getParent().findNode("buttonMenuRight")
+      for i = 0 to buttonMenuRight.getChildCount() - 1
+        button = buttonMenuRight.getChild(i)
+        print "button =", button
+        if button.enabled
+          currentFocusButton.focus = false
+          buttonMenuRight.buttonFocused = i
+          button.focus = true
+          buttonMenuRight.setFocus(true)
+          return true
+        end if
+      end for
+    else if m.top.id = "buttonMenuLeft" and key = "left"
+      ' Move left, skipping disabled buttons
+      for i = currentFocus - 1 to 0 step -1
+        button = m.top.getChild(i)
+        print "button =", button
+        if button.enabled
+          currentFocusButton.focus = false
+          m.top.buttonFocused = i
+          button.focus = true
+          return true
+        end if
+      end for
+      ' wrap if needed
+      buttonMenuRight = m.top.getParent().findNode("buttonMenuRight")
+      for i = buttonMenuRight.getChildCount() - 1 to 0 step -1
+        button = buttonMenuRight.getChild(i)
+        print "button =", button
+        if button.enabled
+          currentFocusButton.focus = false
+          buttonMenuRight.buttonFocused = i
+          button.focus = true
+          buttonMenuRight.setFocus(true)
+          return true
+        end if
+      end for
+    else if m.top.id = "buttonMenuRight" and key = "right"
+      ' Move right, skipping disabled buttons
+      for i = currentFocus + 1 to m.top.getChildCount() - 1
+        button = m.top.getChild(i)
+        print "button =", button
+        if button.enabled
+          currentFocusButton.focus = false
+          m.top.buttonFocused = i
+          button.focus = true
+          return true
+        end if
+      end for
+      ' wrap if needed
+      buttonMenuLeft = m.top.getParent().findNode("buttonMenuLeft")
+      for i = 0 to buttonMenuLeft.getChildCount() - 1
+        button = buttonMenuLeft.getChild(i)
+        print "button =", button
+        if button.enabled
+          currentFocusButton.focus = false
+          buttonMenuLeft.buttonFocused = i
+          button.focus = true
+          buttonMenuLeft.setFocus(true)
+          return true
+        end if
+      end for
+    else if m.top.id = "buttonMenuRight" and key = "left"
+      ' Move left, skipping disabled buttons
+      ' if currentFocus > 0
+      for i = currentFocus - 1 to 0 step -1
+        button = m.top.getChild(i)
+        print "button =", button
+        if button.enabled
+          currentFocusButton.focus = false
+          m.top.buttonFocused = i
+          button.focus = true
+          return true
+        end if
+      end for
+      ' end if
+      ' wrap if needed
+      buttonMenuLeft = m.top.getParent().findNode("buttonMenuLeft")
+      for i = buttonMenuLeft.getChildCount() - 1 to 0 step -1
+        button = buttonMenuLeft.getChild(i)
+        print "button =", button
+        if button.enabled
+          currentFocusButton.focus = false
+          buttonMenuLeft.buttonFocused = i
+          button.focus = true
+          buttonMenuLeft.setFocus(true)
+          return true
+        end if
+      end for
+    end if
+  end if
+
+  return false
+end function

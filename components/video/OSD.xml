@@ -26,19 +26,22 @@
     <RectangleBackgroundSecondary id="progressBarBackground" width="1350" height="9" translation="[270,880]">
       <RectangleSecondary id="progressBar" width="0" height="9" />
     </RectangleBackgroundSecondary>
-    <LabelSecondaryMedium id="videoRemainingTime" bold="true" horizAlign="right" width="200" translation="[1617,868]" />
+    <LabelSecondaryMedium id="videoRemainingTime" bold="true" horizAlign="right" width="200" translation="[1622,868]" />
 
     <!-- FOOTER -->
     <!-- Button menu -->
-    <JRButtonGroup id="osdButtons" itemSpacings="[36]" layoutDirection="horiz" horizAlignment="left" translation="[97,936]">
+    <OSDButtonGroup id="buttonMenuLeft" itemSpacings="[36]" layoutDirection="horiz" horizAlignment="left" translation="[97,936]">
       <IconButton id="itemBack" padding="15" icon="pkg:/images/icons/itemPrevious.png" />
       <IconButton id="videoPlayPause" padding="15" icon="pkg:/images/icons/play.png" />
       <IconButton id="itemNext" padding="15" icon="pkg:/images/icons/itemNext.png" />
       <IconButton id="showAudioMenu" padding="15" icon="pkg:/images/icons/musicNote.png" />
       <IconButton id="showSubtitleMenu" padding="15" icon="pkg:/images/icons/closedCaptions.png" />
       <IconButton id="chapterList" padding="15" icon="pkg:/images/icons/chapters.png" />
+    </OSDButtonGroup>
+    <!-- Video info popup is right aligned-->
+    <OSDButtonGroup id="buttonMenuRight" itemSpacings="[36]" layoutDirection="horiz" horizAlignment="left" translation="[1716,936]">
       <IconButton id="showVideoInfoPopup" padding="15" icon="pkg:/images/icons/fileInfo.png" />
-    </JRButtonGroup>
+    </OSDButtonGroup>
 
     <Timer id="inactivityTimer" duration="1" repeat="true" />
   </children>

@@ -22,9 +22,10 @@ sub init()
   m.focusedButtonIndex = 1
   m.subtitleDividerCount = 0
 
-  m.osdButtons = m.top.findNode("osdButtons")
-  m.osdButtons.buttonFocused = m.defaultButtonIndex
-  m.osdButtons.getChild(m.defaultButtonIndex).focus = true
+  m.buttonMenuRight = m.top.findNode("buttonMenuRight")
+  m.buttonMenuLeft = m.top.findNode("buttonMenuLeft")
+  m.buttonMenuLeft.buttonFocused = m.defaultButtonIndex
+  m.buttonMenuLeft.getChild(m.defaultButtonIndex).focus = true
 end sub
 
 ' setFields: Grab data from json metadata and save it to local fields
@@ -129,32 +130,32 @@ sub setButtonStates()
   queueCount = m.global.QueueManager.callFunc("getCount")
   queueIndex = m.global.QueueManager.callFunc("getPosition")
 
-  ' Disable these buttons
+  ' Disable these buttons as needed
 
   ' Item Previous
   if queueCount = 1 or queueIndex = 0
-    itemPrevious = m.osdButtons.findNode("itemBack")
+    itemPrevious = m.buttonMenuLeft.findNode("itemBack")
     itemPrevious.enabled = false
   end if
   ' Item Next
   if queueIndex + 1 >= queueCount
-    itemNext = m.osdButtons.findNode("itemNext")
+    itemNext = m.buttonMenuLeft.findNode("itemNext")
     itemNext.enabled = false
   end if
 
-  ' Remove these buttons
+  ' Remove these buttons as needed
 
   ' Audio Track
   if m.top.numAudioStreams < 2
-    m.osdButtons.removeChild(m.osdButtons.findNode("showAudioMenu"))
+    m.buttonMenuLeft.removeChild(m.buttonMenuLeft.findNode("showAudioMenu"))
   end if
   ' Subtitles
   if not m.top.hasSubtitles
-    m.osdButtons.removeChild(m.osdButtons.findNode("showSubtitleMenu"))
+    m.buttonMenuLeft.removeChild(m.buttonMenuLeft.findNode("showSubtitleMenu"))
   end if
   ' Chapters
   if not m.top.hasChapters
-    m.osdButtons.removeChild(m.osdButtons.findNode("chapterList"))
+    m.buttonMenuLeft.removeChild(m.buttonMenuLeft.findNode("chapterList"))
   end if
 end sub
 
@@ -271,17 +272,23 @@ end sub
 
 sub resetFocusToDefaultButton()
   ' Remove focus from previously selected button
-  for each child in m.osdButtons.getChildren(-1, 0)
+  for each child in m.buttonMenuLeft.getChildren(-1, 0)
+    if isValid(child.focus)
+      child.focus = false
+    end if
+  end for
+
+  for each child in m.buttonMenuRight.getChildren(-1, 0)
     if isValid(child.focus)
       child.focus = false
     end if
   end for
 
   ' Set focus back to the default button
-  m.osdButtons.setFocus(true)
+  m.buttonMenuLeft.setFocus(true)
   m.focusedButtonIndex = m.defaultButtonIndex
-  m.osdButtons.getChild(m.defaultButtonIndex).focus = true
-  m.osdButtons.buttonFocused = m.defaultButtonIndex
+  m.buttonMenuLeft.getChild(m.defaultButtonIndex).focus = true
+  m.buttonMenuLeft.buttonFocused = m.defaultButtonIndex
 end sub
 
 sub onVisibleChanged()
@@ -299,7 +306,7 @@ end sub
 
 sub onFocusChanged()
   if m.top.hasfocus
-    m.osdButtons.setFocus(true)
+    m.buttonMenuLeft.setFocus(true)
   end if
 end sub
 
@@ -317,7 +324,13 @@ sub inactiveCheck()
 end sub
 
 sub onButtonSelected()
-  selectedButton = m.osdButtons.getChild(m.osdButtons.buttonFocused)
+  if m.buttonMenuLeft.isInFocusChain()
+    selectedButton = m.buttonMenuLeft.getChild(m.buttonMenuLeft.buttonFocused)
+  else if m.buttonMenuRight.isInFocusChain()
+    selectedButton = m.buttonMenuRight.getChild(m.buttonMenuRight.buttonFocused)
+  else
+    return
+  end if
 
   if LCase(selectedButton.id) = "chapterlist"
     m.top.showChapterList = not m.top.showChapterList
