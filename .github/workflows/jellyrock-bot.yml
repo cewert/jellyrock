@@ -43,8 +43,9 @@ jobs:
         with:
           ref: ${{ github.ref_name }}
           token: ${{ secrets.CEWERT_BOT_TOKEN }}
+          fetch-depth: 0
       - name: Pull latest changes
-        run: git pull origin ${{ github.ref_name }}
+        run: git pull --rebase origin ${{ github.ref_name }}
       - name: Install NPM dependencies
         run: npm ci
       - name: Build API docs
