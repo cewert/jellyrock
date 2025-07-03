@@ -205,10 +205,23 @@ sub setRowItemSize()
   homeSections = m.top.content.getChildren(-1, 0)
   newSizeArray = CreateObject("roArray", homeSections.count(), false)
 
+  myMediaIndex = -1
   for i = 0 to homeSections.count() - 1
+    if homeSections[i].title = tr("My Media")
+      myMediaIndex = i
+    end if
     newSizeArray[i] = isValid(homeSections[i].cursorSize) ? homeSections[i].cursorSize : homeRowItemSizes.WIDE_POSTER
   end for
+
+  newRowSpacing = []
+  for i = 0 to myMediaIndex - 1
+    newRowSpacing.Push(105)
+  end for
+
+  newRowSpacing.Push(45) ' My Media row has title/subtitle, so reduce spacing/padding
+
   m.top.rowItemSize = newSizeArray
+  m.top.rowSpacings = newRowSpacing
 
   ' If we have processed the expected number of content rows, stop the loading timer and run the complete function
   if m.expectedRowCount = m.processedRowCount
@@ -238,8 +251,8 @@ function addHomeSection(sectionType as string) as boolean
   end if
 
   ' Poster size library items
-  if sectionType = "smalllibrarytiles"
-    createLibraryRow()
+  if sectionType = "librarybuttons" or sectionType = "smalllibrarytiles"
+    createLibraryRow(sectionType)
     return true
   end if
 
@@ -275,7 +288,7 @@ end function
 
 ' createLibraryRow: Creates a row displaying the user's libraries
 '
-sub createLibraryRow()
+sub createLibraryRow(sectionType as string)
   m.processedRowCount++
   ' Ensure we have data
   if not isValidAndNotEmpty(m.libraryData) then return
@@ -289,8 +302,8 @@ sub createLibraryRow()
 
   row = CreateObject("roSGNode", "HomeRow")
   row.title = sectionName
-  row.imageWidth = homeRowItemSizes.WIDE_POSTER[0]
-  row.cursorSize = homeRowItemSizes.WIDE_POSTER
+  row.imageWidth = homeRowItemSizes.MY_MEDIA[0]
+  row.cursorSize = homeRowItemSizes.MY_MEDIA
 
   filteredMedia = filterNodeArray(m.libraryData, "id", m.global.session.user.configuration.MyMediaExcludes)
   for each item in filteredMedia
@@ -298,7 +311,7 @@ sub createLibraryRow()
   end for
 
   ' Row does not exist, insert it into the home view
-  m.top.content.insertChild(row, getOriginalSectionIndex("smalllibrarytiles"))
+  m.top.content.insertChild(row, getOriginalSectionIndex(sectionType))
   setRowItemSize()
 end sub
 
