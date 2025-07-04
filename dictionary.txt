@@ -1,4 +1,6 @@
 JellyRock
+Jellyfin
+GitHub
 VSCode
 BrighterScript
 BrightScript

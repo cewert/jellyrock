@@ -11,7 +11,7 @@ JellyRock is a Jellyfin client for Roku devices.
 ## Install / Sideload
 
 1. Put your Roku device in [developer mode](https://blog.roku.com/developer/2016/02/04/developer-setup-guide). Write down your Roku device IP and the password you created - you will need these!
-2. Download the [latest build](https://github.com/cewert/jellyrock/actions/workflows/build-prod.yml) created by Github Actions. Select the first item listed then click the link at the bottom of the page i.e. `JellyRock-v1.0.0-d3352495c579f6adeca085cdbc137ac36e70d558`. This will download a zip file to your computer.
+2. Download the [latest build](https://github.com/cewert/jellyrock/actions/workflows/build-prod.yml) created by GitHub Actions. Select the first item listed then click the link at the bottom of the page i.e. `JellyRock-v1.0.0-d3352495c579f6adeca085cdbc137ac36e70d558`. This will download a zip file to your computer.
 3. Put your Roku's IP from step 1 into a browser i.e. `http://192.168.1.2` and press enter.
 4. Log in with credentials from step 1.
 5. Upload and install the zip file downloaded in step 2.
