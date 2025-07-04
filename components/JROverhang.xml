@@ -16,10 +16,6 @@
       </LayoutGroup>
     </LayoutGroup>
 
-    <!-- <LayoutGroup layoutDirection="horiz" horizAlignment="right" translation="[1766, 125]" vertAlignment="custom">
-      <LabelSecondaryLarger id="overlayOptionsStar" text="*" visile="false" />
-      <LabelSecondarySmallest id="overlayOptionsText" text="Options" translation="[0,6]" visile="false" />
-    </LayoutGroup> -->
     <Timer id="currentTimeTimer" repeat="true" duration="60" />
 
     <Animation id="slideUp" duration=".5" repeat="false">
@@ -34,7 +30,6 @@
     <field id="id" type="string" />
     <field id="currentUser" type="string" onChange="updateUser" />
     <field id="title" type="string" onChange="updateTitle" />
-    <field id="showOptions" value="true" type="boolean" onChange="updateOptions" />
     <field id="isVisible" value="true" type="boolean" onChange="onVisibleChange" />
     <field id="disableMoveAnimation" value="false" type="boolean" />
     <field id="isLogoVisible" value="true" type="boolean" onChange="isLogoVisibleChange" />

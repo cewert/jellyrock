@@ -9,7 +9,6 @@ sub init()
   m.overhang = m.scene.findNode("overhang")
 end sub
 
-'
 ' Push a new group onto the stack, replacing the existing group on the screen
 sub pushScene(newGroup)
 
@@ -73,7 +72,6 @@ sub pushScene(newGroup)
 
 end sub
 
-'
 ' Remove the current group and load the last group from the stack
 sub popScene()
   group = m.groups.pop()
@@ -124,13 +122,11 @@ sub popScene()
   stopLoadingSpinner()
 end sub
 
-'
 ' Return group at top of stack without removing
 function getActiveScene() as object
   return m.groups.peek()
 end function
 
-'
 ' Clear all content from group stack
 sub clearScenes()
   if m.content <> invalid then m.content.removeChildrenIndex(m.content.getChildCount(), 0)
@@ -142,37 +138,26 @@ sub clearScenes()
   m.groups = []
 end sub
 
-'
 ' Clear previous scene from group stack
 sub clearPreviousScene()
   m.groups.pop()
 end sub
 
-'
 ' Delete scene from group stack at passed index
 sub deleteSceneAtIndex(index = 1)
   m.groups.Delete(index)
 end sub
 
-'
 ' Display user/device settings screen
 sub settings()
   settingsScreen = createObject("roSGNode", "Settings")
   pushScene(settingsScreen)
 end sub
 
-'
 ' Register observers for overhang data
 sub registerOverhangData(group)
   if group.isSubType("JRGroup")
     if group.overhangTitle <> invalid then m.overhang.title = group.overhangTitle
-
-    if group.optionsAvailable
-      m.overhang.showOptions = true
-    else
-      m.overhang.showOptions = false
-    end if
-    group.observeField("optionsAvailable", "updateOptions")
 
     group.observeField("overhangTitle", "updateOverhangTitle")
 
@@ -189,45 +174,33 @@ sub registerOverhangData(group)
   end if
 end sub
 
-'
 ' Remove observers for overhang data
 sub unregisterOverhangData(group)
   group.unobserveField("overhangTitle")
 end sub
 
-'
 ' Update overhang title
 sub updateOverhangTitle(msg)
   m.overhang.title = msg.getData()
 end sub
 
-'
-' Update options availability
-sub updateOptions(msg)
-  m.overhang.showOptions = msg.getData()
-end sub
-
-'
 ' Update whether the overhang is visible or not
 sub updateOverhangVisible(msg)
   m.overhang.visible = msg.getData()
 end sub
 
-'
 ' Update username in overhang
 sub updateUser()
   ' Passthrough to overhang
   if m.overhang <> invalid then m.overhang.currentUser = m.top.currentUser
 end sub
 
-'
 ' Reset time
 sub resetTime()
   ' Passthrough to overhang
   m.overhang.callFunc("resetTime")
 end sub
 
-'
 ' Display dialog to user with an OK button
 sub userMessage(title as string, message as string)
   dialog = createObject("roSGNode", "StandardMessageDialog")
@@ -238,7 +211,6 @@ sub userMessage(title as string, message as string)
   m.scene.dialog = dialog
 end sub
 
-'
 ' Display dialog to user with an OK button
 sub standardDialog(title, message)
   colorConstants = m.global.constants.colors
@@ -262,7 +234,6 @@ sub standardDialog(title, message)
   m.scene.dialog = dialog
 end sub
 
-'
 ' Display dialog to user with an OK button
 sub radioDialog(title, message)
   colorConstants = m.global.constants.colors
@@ -286,7 +257,6 @@ sub radioDialog(title, message)
   m.scene.dialog = dialog
 end sub
 
-'
 ' Display dialog to user with an OK button
 sub optionDialog(title, message, buttons)
   colorConstants = m.global.constants.colors
@@ -314,7 +284,6 @@ sub optionDialog(title, message, buttons)
   m.scene.dialog = dialog
 end sub
 
-'
 ' Return button the user selected
 sub optionClosed()
   if m.userselection then return
@@ -326,7 +295,6 @@ sub optionClosed()
   m.top.dataReturned = true
 end sub
 
-'
 ' Return button the user selected
 sub optionSelected()
   m.userselection = true
@@ -339,13 +307,11 @@ sub optionSelected()
   dismissDialog()
 end sub
 
-'
 ' Close currently displayed dialog
 sub dismissDialog()
   m.scene.dialog.close = true
 end sub
 
-'
 ' Returns bool indicating if dialog is currently displayed
 function isDialogOpen() as boolean
   return m.scene.dialog <> invalid
