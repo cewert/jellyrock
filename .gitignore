@@ -1,4 +1,3 @@
-*.svg
 .env
 # BrightScript 
 dist/apps
