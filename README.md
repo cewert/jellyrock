@@ -1,4 +1,5 @@
-# JellyRock
+<!-- markdownlint-disable MD041 -->
+![JellyRock](resources/branding/release/logo.png "JellyRock")
 
 <!-- [![Current Release](https://img.shields.io/github/release/cewert/jellyrock.svg?logo=github "Current Release")](https://github.com/cewert/jellyrock/releases) -->
 [![Build Status](https://img.shields.io/github/actions/workflow/status/cewert/jellyrock/build-prod.yml?logo=github&branch=main "Build Status")](https://github.com/cewert/jellyrock/actions/workflows/build-prod.yml)
