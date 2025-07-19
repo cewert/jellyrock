@@ -89,27 +89,25 @@ endif # ROKU_DEV_TARGET
 
 ## sync branding
 
-CONVERT_CMD ?= convert -gravity center
-CONVERT_BLUEBG_CMD := $(CONVERT_CMD) -background "\#000b25"
-BANNER := images/banner-dark.svg
-ICON := images/icon-transparent.svg
+CONVERT_CMD ?= convert -gravity center -density 1200
+CONVERT_BLUEBG_CMD := $(CONVERT_CMD) -background "\#0d1117" -density 1200
+BANNER := resources/branding/logo-dev.svg
 
 images/:; mkdir $@
+images/branding/:; mkdir -p $@
 
 .PHONY: redo # force rerun
-$(BANNER) $(ICON): images/ redo
-	$(CURL_CMD) https://raw.githubusercontent.com/jellyfin/jellyfin-ux/master/branding/SVG/$(@F) > $@
 
-images/branding/logo.png: $(BANNER); $(CONVERT_CMD) -background none -scale 1000x48 -extent 180x48 $< $@
-images/branding/channel-poster_fhd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -scale 535x400 -extent 540x405 $< $@
-images/branding/channel-poster_hd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -scale 275x205 -extent 336x210 $< $@
-images/branding/channel-poster_sd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -scale 182x135 -extent 246x140 $< $@
-images/branding/splash-screen_fhd.jpg: $(BANNER); $(CONVERT_BLUEBG_CMD) -scale 540x540 -extent 1920x1080 $< $@
-images/branding/splash-screen_hd.jpg: $(BANNER); $(CONVERT_BLUEBG_CMD) -scale 360x360 -extent 1280x720 $< $@
-images/branding/splash-screen_sd.jpg: $(BANNER); $(CONVERT_BLUEBG_CMD) -scale 240x240 -extent 720x480 $< $@
+images/branding/logo.png: $(BANNER); $(CONVERT_CMD) -background none -resize 180x47 -extent 180x47 $< $@
+images/branding/channel-poster_fhd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -resize 432x324 -extent 540x405 $< $@
+images/branding/channel-poster_hd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -resize 269x168 -extent 336x210 $< $@
+images/branding/channel-poster_sd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -resize 197x112 -extent 246x140 $< $@
+images/branding/splash-screen_fhd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -resize 540x540 -extent 1920x1080 $< $@
+images/branding/splash-screen_hd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -resize 360x360 -extent 1280x720 $< $@
+images/branding/splash-screen_sd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -resize 240x240 -extent 720x480 $< $@
 
 .PHONY: get_images
-get_images: $(ICON)
+get_images: $(BANNER)
 get_images: images/branding/logo.png
 get_images: images/branding/channel-poster_fhd.png images/branding/channel-poster_hd.png images/branding/channel-poster_sd.png
-get_images: images/branding/splash-screen_fhd.jpg images/branding/splash-screen_hd.jpg images/branding/splash-screen_sd.jpg
+get_images: images/branding/splash-screen_fhd.png images/branding/splash-screen_hd.png images/branding/splash-screen_sd.png
