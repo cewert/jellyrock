@@ -1,6 +1,6 @@
 ##########################################################################
 # Need curl and npm in your $PATH
-# If you want to get_images, you'll also need convert from ImageMagick
+# If you want to make_images, you'll also need convert from ImageMagick
 ##########################################################################
 
 VERSION := 1.0.0
@@ -15,7 +15,7 @@ help:
 	@echo "  build-tests  build tests package"
 	@echo "  format       format brighscripts"
 	@echo "  lint         lint code and documentation"
-	@echo "  get_images   update official jellyfin images"
+	@echo "  make_images  generate branding images from SVGs"
 	@echo "targets needing ROKU_DEV_TARGET"
 	@echo "  home         press the home button on device"
 	@echo "  launch       launch installed"
@@ -91,23 +91,37 @@ endif # ROKU_DEV_TARGET
 
 CONVERT_CMD ?= convert -gravity center -density 1200
 CONVERT_BLUEBG_CMD := $(CONVERT_CMD) -background "\#0d1117" -density 1200
-BANNER := resources/branding/logo-dev.svg
+LOGO := resources/branding/logo.svg
+LOGO_DEV := resources/branding/logo-dev.svg
 
 images/:; mkdir $@
 images/branding/:; mkdir -p $@
 
 .PHONY: redo # force rerun
 
-images/branding/logo.png: $(BANNER); $(CONVERT_CMD) -background none -resize 180x47 -extent 180x47 $< $@
-images/branding/channel-poster_fhd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -resize 432x324 -extent 540x405 $< $@
-images/branding/channel-poster_hd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -resize 269x168 -extent 336x210 $< $@
-images/branding/channel-poster_sd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -resize 197x112 -extent 246x140 $< $@
-images/branding/splash-screen_fhd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -resize 540x540 -extent 1920x1080 $< $@
-images/branding/splash-screen_hd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -resize 360x360 -extent 1280x720 $< $@
-images/branding/splash-screen_sd.png: $(BANNER); $(CONVERT_BLUEBG_CMD) -resize 240x240 -extent 720x480 $< $@
+images/branding/logo.png: $(LOGO_DEV); $(CONVERT_CMD) -background none -resize 180x39 $< $@
+images/branding/channel-poster_fhd.png: $(LOGO_DEV); $(CONVERT_BLUEBG_CMD) -resize 432x324 -extent 540x405 $< $@
+images/branding/channel-poster_hd.png: $(LOGO_DEV); $(CONVERT_BLUEBG_CMD) -resize 269x168 -extent 336x210 $< $@
+images/branding/channel-poster_sd.png: $(LOGO_DEV); $(CONVERT_BLUEBG_CMD) -resize 197x112 -extent 246x140 $< $@
+images/branding/splash-screen_fhd.png: $(LOGO_DEV); $(CONVERT_BLUEBG_CMD) -resize 540x540 -extent 1920x1080 $< $@
+images/branding/splash-screen_hd.png: $(LOGO_DEV); $(CONVERT_BLUEBG_CMD) -resize 360x360 -extent 1280x720 $< $@
+images/branding/splash-screen_sd.png: $(LOGO_DEV); $(CONVERT_BLUEBG_CMD) -resize 240x240 -extent 720x480 $< $@
 
-.PHONY: get_images
-get_images: $(BANNER)
-get_images: images/branding/logo.png
-get_images: images/branding/channel-poster_fhd.png images/branding/channel-poster_hd.png images/branding/channel-poster_sd.png
-get_images: images/branding/splash-screen_fhd.png images/branding/splash-screen_hd.png images/branding/splash-screen_sd.png
+resources/branding/release/logo.png: $(LOGO); $(CONVERT_CMD) -background none -resize 180x39 $< $@
+resources/branding/release/channel-poster_fhd.png: $(LOGO); $(CONVERT_BLUEBG_CMD) -resize 432x324 -extent 540x405 $< $@
+resources/branding/release/channel-poster_hd.png: $(LOGO); $(CONVERT_BLUEBG_CMD) -resize 269x168 -extent 336x210 $< $@
+resources/branding/release/channel-poster_sd.png: $(LOGO); $(CONVERT_BLUEBG_CMD) -resize 197x112 -extent 246x140 $< $@
+resources/branding/release/splash-screen_fhd.png: $(LOGO); $(CONVERT_BLUEBG_CMD) -resize 540x540 -extent 1920x1080 $< $@
+resources/branding/release/splash-screen_hd.png: $(LOGO); $(CONVERT_BLUEBG_CMD) -resize 360x360 -extent 1280x720 $< $@
+resources/branding/release/splash-screen_sd.png: $(LOGO); $(CONVERT_BLUEBG_CMD) -resize 240x240 -extent 720x480 $< $@
+
+.PHONY: make_images
+make_images: $(LOGO_DEV)
+make_images: images/branding/logo.png
+make_images: images/branding/channel-poster_fhd.png images/branding/channel-poster_hd.png images/branding/channel-poster_sd.png
+make_images: images/branding/splash-screen_fhd.png images/branding/splash-screen_hd.png images/branding/splash-screen_sd.png
+
+make_images: $(LOGO)
+make_images: resources/branding/release/logo.png
+make_images: resources/branding/release/channel-poster_fhd.png resources/branding/release/channel-poster_hd.png resources/branding/release/channel-poster_sd.png
+make_images: resources/branding/release/splash-screen_fhd.png resources/branding/release/splash-screen_hd.png resources/branding/release/splash-screen_sd.png

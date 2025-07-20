@@ -2,7 +2,7 @@
 <component name="JROverhang" extends="Group">
   <children>
     <LayoutGroup id="overlayLeftGroup" layoutDirection="horiz" translation="[54, 54]" itemSpacings="90">
-      <Poster id="overlayLogo" uri="pkg:/images/branding/logo.png" height="48" width="224" />
+      <Poster id="overlayLogo" uri="pkg:/images/branding/logo.png" height="39" width="180" />
       <ScrollingLabelPrimaryLarge id="overlayTitle" vertAlign="center" height="64" maxWidth="1100" repeatCount="0" />
     </LayoutGroup>
 
