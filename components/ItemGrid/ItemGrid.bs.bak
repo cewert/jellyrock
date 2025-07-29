@@ -93,7 +93,7 @@ sub loadInitialItems()
     m.top.HomeLibraryItem = m.top.parentItem.Id
   end if
 
-  if isValid(m.top.parentItem.backdropUrl)
+  if m.top.parentItem.backdropUrl <> invalid
     SetBackground(m.top.parentItem.backdropUrl)
   end if
 
@@ -121,7 +121,7 @@ sub loadInitialItems()
     m.view = userSettings["display." + m.top.parentItem.Id + ".landing"]
   end if
 
-  if not isValid(m.sortField)
+  if m.sortField = invalid
     ' Set the default order for boxsets to the Release Date - API calls it PremiereDate
     if LCase(m.top.parentItem.json.Type) = "boxset"
       m.sortField = "PremiereDate"
@@ -130,9 +130,9 @@ sub loadInitialItems()
     end if
   end if
 
-  if not isValid(m.filter) then m.filter = "All"
+  if m.filter = invalid then m.filter = "All"
 
-  if not isValid(sortAscendingStr) or sortAscendingStr = true
+  if sortAscendingStr = invalid or sortAscendingStr = true
     m.sortAscending = true
   else
     m.sortAscending = false
@@ -385,7 +385,7 @@ end sub
 
 ' Return parent collection type
 function getCollectionType() as string
-  if not isValid(m.top.parentItem.collectionType)
+  if m.top.parentItem.collectionType = invalid
     return m.top.parentItem.Type
   else
     return m.top.parentItem.CollectionType
@@ -458,7 +458,7 @@ sub ItemDataLoaded(msg)
   m.loadItemsTask.unobserveField("content")
   m.loadItemsTask.content = []
 
-  if not isValid(itemData)
+  if itemData = invalid
     m.Loading = false
     stopLoadingSpinner()
     return
@@ -656,7 +656,7 @@ sub optionsClosed()
       m.view = "livetv"
       set_user_setting("display.livetv.landing", "channels")
 
-      if isValid(m.tvGuide)
+      if m.tvGuide <> invalid
         ' Try to hide the TV Guide
         m.top.removeChild(m.tvGuide)
       end if
