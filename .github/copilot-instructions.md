@@ -1,26 +1,26 @@
 # Project Overview
 
-This project is a roku client application that connects to Jellyfin media servers using the Jellyfin API. Users can navigate and consume their Jellyfin media (only videos, movies, tv shows, music, live tv, tv show recordings, and pictures are supported). It is built using [brighterscript](https://github.com/rokucommunity/brighterscript)
+This project is a Roku client application that connects to Jellyfin media servers using the Jellyfin API. Users can navigate and consume their Jellyfin media (only videos, movies, TV shows, music, live TV, TV show recordings, and pictures are supported). It is built using [BrighterScript](https://github.com/rokucommunity/brighterscript)
 
 ## Folder Structure
 
-- `/components`: Contains scenegraph xml components and the .bs files that define the logic for each component.
+- `/components`: Contains SceneGraph XML components and the .bs files that define the logic for each component.
 - `/docs`: Contains documentation for the project.
 - `/docs/api`: Contains documentation for the app's code base. Auto generated.
 - `/images`: Contains images used in the application, such as icons and backgrounds as well as the development version of the branding images used in the app store.
 - `/locale`: Contains localization files used for translating the application into different languages.
-- `/resources`: Contains statice resources used by the application but are not automatically packaged with the app.
+- `/resources`: Contains static resources used by the application but are not automatically packaged with the app.
 - `/resources/branding`: Contains branding images. The SVG files are used to generate image files for the app store.
 - `/resources/branding/release`: Contains the branding images used in the app store for the release version of the application.
-- `/scripts`: Contains javascript code used by some NPM scripts.
+- `/scripts`: Contains JavaScript code used by some NPM scripts.
 - `/settings`: Contains user settings and preferences for the application saved in JSON format. The data from this file is imported by the app to see available settings and apply defaults.
-- `/source`: Contains all other brighterscript source code. Components must import these files to use them.
-- `/unit-tests`: Contains roku [rooibos](https://github.com/rokucommunity/rooibos) unit tests for the application. These tests can only be ran on a Roku device.
+- `/source`: Contains all other BrighterScript source code. Components must import these files to use them.
+- `/unit-tests`: Contains Roku [Rooibos](https://github.com/rokucommunity/rooibos) unit tests for the application. These tests can only be run on a Roku device.
 
 ## Libraries and Frameworks
 
 - [SceneGraph framework](https://developer.roku.com/docs/developer-program/core-concepts/core-concepts.md) for building the user interface.
-- [Brighterscript](https://github.com/rokucommunity/brighterscript) for the application logic and interaction with the Roku platform.
+- [BrighterScript](https://github.com/rokucommunity/brighterscript) for the application logic and interaction with the Roku platform.
 - [Rooibos](https://github.com/rokucommunity/rooibos) for unit testing.
 - [Jellyfin API](https://api.jellyfin.org/) for media server interaction.
 
@@ -34,7 +34,7 @@ This project is a roku client application that connects to Jellyfin media server
 - Use PascalCase for class and component names.
 - Use isValid() for conditional invalid comparisons. For components, ensure the file containing isValid() is imported as needed. i.e. `import "pkg:/source/utils/misc.bs"`
 
-## UI guidelines
+## UI Guidelines
 
 - All theme colors are defined in the `sourcel/utils/globals.bs` file.
 - Use themed labels for text elements. `/components/ui/label/colors`
