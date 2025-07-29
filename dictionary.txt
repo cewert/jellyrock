@@ -31,7 +31,6 @@ SVG
 JavaScript
 JSON
 UI
-isValid
 camelCase
 PascalCase
 Rooibos

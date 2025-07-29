@@ -26,13 +26,13 @@ This project is a Roku client application that connects to Jellyfin media server
 
 ## Coding Standards
 
-- Use `brighterscript` for application logic and interaction with the Roku platform.
+- Use `BrighterScript` for application logic and interaction with the Roku platform.
 - We use the default values for [bslint](https://github.com/rokucommunity/bslint), except for any settings saved in the `bslint.json` file. All code must pass the linter before it can be merged into the main branch.
-- Use `rooibos` for unit tests. You won't be able to test these but make sure they pass linters and are ready to be manually tested.
+- Use `Rooibos` for unit tests. You won't be able to test these but make sure they pass linters and are ready to be manually tested.
 - Use 2 spaces for indentation.
 - Use camelCase for variable and function names.
 - Use PascalCase for class and component names.
-- Use isValid() for conditional invalid comparisons. For components, ensure the file containing isValid() is imported as needed. i.e. `import "pkg:/source/utils/misc.bs"`
+- Use `isValid()` for conditional invalid comparisons. For components, ensure the file containing isValid() is imported as needed. i.e. `import "pkg:/source/utils/misc.bs"`
 
 ## UI Guidelines
 
