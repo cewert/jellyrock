@@ -22,7 +22,7 @@ function buildParams(params = {} as object) as string
       else
         item = field.key + "=false"
       end if
-    else if field.value = invalid
+    else if not isValid(field.value)
       item = field.key + "=null"
     else if isValid(field)
       print "Unhandled param type: " + type(field.value)
