@@ -614,21 +614,20 @@
       <extracomment>If TV Show is being broadcast live (not pre-recorded)</extracomment>
     </message>
     <message>
-      <source>Loading Channel Data</source>
-      <translation>Loading Channel Data</translation>
+      <source>loading Channel Data</source>
+      <translation>loading Channel Data</translation>
     </message>
     <message>
-      <source>Loading Search Data</source>
-      <translation>Loading Search Data</translation>
+      <source>loading Search Data</source>
+      <translation>loading Search Data</translation>
     </message>
     <message>
-      <source>Loading trailer</source>
-      <translation>Loading trailer</translation>
-      <extracomment>Dialog title in Main.brs</extracomment>
+      <source>loading trailer</source>
+      <translation>loading trailer</translation>
     </message>
     <message>
-      <source>Loading...</source>
-      <translation>Loading…</translation>
+      <source>loading...</source>
+      <translation>loading...</translation>
     </message>
     <message>
       <source>Login attempt failed.</source>
