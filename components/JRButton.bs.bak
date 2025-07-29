@@ -13,7 +13,7 @@ end sub
 sub onTextChanged()
   addSpaceAfter = true
   minChars = m.top.minChars
-  if not isValid(minChars) then minChars = 50
+  if minChars = invalid then minChars = 50
   while m.top.text.Len() < minChars
     if addSpaceAfter
       m.top.text = m.top.text + Chr(160)

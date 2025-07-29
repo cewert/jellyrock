@@ -10,7 +10,7 @@ end sub
 ' It is expected that screens override this function to handle focus
 ' managmenet and any other actions required on screen shown
 sub OnScreenShown()
-  if isValid(m.top.lastFocus)
+  if m.top.lastFocus <> invalid
     m.top.lastFocus.setFocus(true)
   else
     m.top.setFocus(true)

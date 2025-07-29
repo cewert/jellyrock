@@ -33,11 +33,11 @@ sub onFocusChanged()
 
   if m.top.focus
     ' Button background
-    if isValid(m.top.focusBackground)
+    if m.top.focusBackground <> invalid
       m.buttonBackground.blendColor = m.top.focusBackground
     end if
     ' Button icon
-    if isValid(m.top.iconFocusBackground)
+    if m.top.iconFocusBackground <> invalid
       m.buttonIcon.blendColor = m.top.iconFocusBackground
     end if
     ' Focus border
@@ -47,11 +47,11 @@ sub onFocusChanged()
     end if
   else
     ' Button background
-    if isValid(m.top.background)
+    if m.top.background <> invalid
       m.buttonBackground.blendColor = m.top.background
     end if
     ' Button icon
-    if isValid(m.top.iconBackground)
+    if m.top.iconBackground <> invalid
       m.buttonIcon.blendColor = m.top.iconBackground
     end if
     ' Focus border
@@ -80,7 +80,7 @@ end sub
 sub OnImageLoadStatusChanged(event as object)
   status = event.GetData()
 
-  if isValid(status) and status = "ready"
+  if status <> invalid and status = "ready"
     setIconSize()
     setFocusBorderSize()
   end if
