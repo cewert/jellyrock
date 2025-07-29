@@ -25,8 +25,8 @@ sub SetUpVideoOptions(streams as object)
       ' Create options for user to switch between video tracks
       videos.push({
         "Title": streams[i].Name,
-        "Description": tr("Video"),
-        "Selected": m.top.objects.items[m.currentSelected].selectedVideoStreamId = streams[i].id,
+        "description": tr("Video"),
+        "selected": m.top.objects.items[m.currentSelected].selectedVideoStreamId = streams[i].id,
         "StreamID": streams[i].id,
         "video_codec": streams[i].mediaStreams[0].displayTitle
       })
@@ -45,11 +45,11 @@ sub SetUpAudioOptions(streams as object)
   tracks = []
 
   for i = 0 to streams.Count() - 1
-    if streams[i].Type = "Audio"
+    if streams[i].type = "Audio"
       tracks.push({
         "Title": streams[i].displayTitle,
-        "Description": streams[i].Title,
-        "Selected": m.top.objects.items[m.currentSelected].selectedAudioStreamIndex = i,
+        "description": streams[i].Title,
+        "selected": m.top.objects.items[m.currentSelected].selectedAudioStreamIndex = i,
         "StreamIndex": i
       })
     end if

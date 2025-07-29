@@ -63,7 +63,7 @@ sub LoadMenu(configSection)
   for each item in configSection.children
     listItem = result.CreateChild("ContentNode")
     listItem.title = tr(item.title)
-    listItem.Description = tr(item.description)
+    listItem.description = tr(item.description)
     listItem.id = item.id
   end for
 
@@ -83,7 +83,7 @@ end sub
 sub settingFocused()
 
   selectedSetting = m.userLocation.peek().children[m.settingsMenu.itemFocused]
-  m.settingDesc.text = tr(selectedSetting.Description)
+  m.settingDesc.text = tr(selectedSetting.description)
   m.top.overhangTitle = tr(selectedSetting.Title)
 
   ' Hide Settings
@@ -158,7 +158,7 @@ sub settingSelected()
     return
   end if
 
-  m.settingDesc.text = m.settingsMenu.content.GetChild(m.settingsMenu.itemFocused).Description
+  m.settingDesc.text = m.settingsMenu.content.GetChild(m.settingsMenu.itemFocused).description
 
 end sub
 

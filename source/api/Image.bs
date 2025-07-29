@@ -9,7 +9,7 @@ function ItemImages(id = "" as string, params = {} as object)
   for each item in data
     tmp = CreateObject("roSGNode", "ImageData")
     tmp.json = item
-    tmp.url = ImageURL(id, tmp.imagetype, params)
+    tmp.url = imageUrl(id, tmp.imagetype, params)
     results.push(tmp)
   end for
   return results
@@ -19,23 +19,23 @@ end function
 function PosterImage(id as string, params = {} as object)
   images = ItemImages(id, params)
   if not isValid(images) then return invalid
-  primary_image = invalid
+  primaryImage = invalid
 
   for each image in images
     if image.imagetype = "Primary"
-      primary_image = image
-    else if image.imagetype = "Logo" and not isValid(primary_image)
-      primary_image = image
-    else if image.imagetype = "Thumb" and not isValid(primary_image)
-      primary_image = image
+      primaryImage = image
+    else if image.imagetype = "Logo" and not isValid(primaryImage)
+      primaryImage = image
+    else if image.imagetype = "Thumb" and not isValid(primaryImage)
+      primaryImage = image
       ' maybe find more fallback images
     end if
   end for
 
-  return primary_image
+  return primaryImage
 end function
 
-function ImageURL(id, version = "Primary", params = {})
+function imageUrl(id, version = "Primary", params = {})
   ' set defaults
   if not isValid(params.maxHeight)
     param = { "maxHeight": "384" }

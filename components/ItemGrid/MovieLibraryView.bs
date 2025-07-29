@@ -110,8 +110,8 @@ sub loadInitialItems()
   startLoadingSpinner(false)
   userSettings = m.global.session.user.settings
 
-  if m.top.parentItem.json.Type = "CollectionFolder"
-    m.top.HomeLibraryItem = m.top.parentItem.Id
+  if m.top.parentItem.json.type = "CollectionFolder"
+    m.top.HomeLibraryItem = m.top.parentItem.id
   end if
 
   if isValid(m.top.parentItem.backdropUrl)
@@ -120,11 +120,11 @@ sub loadInitialItems()
     SetBackground("")
   end if
 
-  m.sortField = userSettings["display." + m.top.parentItem.Id + ".sortField"]
-  m.filter = userSettings["display." + m.top.parentItem.Id + ".filter"]
-  m.filterOptions = userSettings["display." + m.top.parentItem.Id + ".filterOptions"]
-  m.view = userSettings["display." + m.top.parentItem.Id + ".landing"]
-  m.sortAscending = userSettings["display." + m.top.parentItem.Id + ".sortAscending"]
+  m.sortField = userSettings["display." + m.top.parentItem.id + ".sortField"]
+  m.filter = userSettings["display." + m.top.parentItem.id + ".filter"]
+  m.filterOptions = userSettings["display." + m.top.parentItem.id + ".filterOptions"]
+  m.view = userSettings["display." + m.top.parentItem.id + ".landing"]
+  m.sortAscending = userSettings["display." + m.top.parentItem.id + ".sortAscending"]
 
   ' If user has not set a preferred view for this folder, check if they've set a default view
   if not isValid(m.view)
@@ -151,7 +151,7 @@ sub loadInitialItems()
     m.loadItemsTask.studioIds = ""
     m.loadItemsTask.genreIds = ""
   else
-    m.loadItemsTask.itemId = m.top.parentItem.Id
+    m.loadItemsTask.itemId = m.top.parentItem.id
   end if
 
   ' if we already searched for this alpha text than reset filter
@@ -171,7 +171,7 @@ sub loadInitialItems()
   ' Load Item Types
   if getCollectionType() = "movies"
     m.loadItemsTask.itemType = "Movie"
-    m.loadItemsTask.itemId = m.top.parentItem.Id
+    m.loadItemsTask.itemId = m.top.parentItem.id
   end if
 
   ' By default we load movies
@@ -206,7 +206,7 @@ sub loadInitialItems()
       m.itemGrid.rowHeights = "[350]"
     end if
   else if m.options.view = "Genres" or m.view = "Genres"
-    m.loadItemsTask.StudioIds = m.top.parentItem.Id
+    m.loadItemsTask.StudioIds = m.top.parentItem.id
     m.loadItemsTask.view = "Genres"
     m.movieLogo.visible = false
     m.selectedMovieName.visible = false
@@ -220,7 +220,7 @@ sub loadInitialItems()
   m.getFiltersTask.observeField("filters", "FilterDataLoaded")
   m.getFiltersTask.params = {
     userid: m.global.session.user.id,
-    parentid: m.top.parentItem.Id,
+    parentid: m.top.parentItem.id,
     includeitemtypes: "Movie"
   }
   m.getFiltersTask.control = "RUN"
@@ -284,9 +284,9 @@ end sub
 ' Return parent collection type
 function getCollectionType() as string
   if not isValid(m.top.parentItem.collectionType)
-    return m.top.parentItem.Type
+    return m.top.parentItem.type
   else
-    return m.top.parentItem.CollectionType
+    return m.top.parentItem.collectionType
   end if
 end function
 
@@ -304,8 +304,8 @@ sub setSelectedOptions(options)
   ' Set selected view option
   for each o in options.views
     if o.Name = m.view
-      o.Selected = true
-      o.Ascending = m.sortAscending
+      o.selected = true
+      o.ascending = m.sortAscending
       m.options.view = o.Name
     end if
   end for
@@ -313,8 +313,8 @@ sub setSelectedOptions(options)
   ' Set selected sort option
   for each o in options.sort
     if o.Name = m.sortField
-      o.Selected = true
-      o.Ascending = m.sortAscending
+      o.selected = true
+      o.ascending = m.sortAscending
       m.options.sortField = o.Name
     end if
   end for
@@ -322,7 +322,7 @@ sub setSelectedOptions(options)
   ' Set selected filter
   for each o in options.filter
     if o.Name = m.filter
-      o.Selected = true
+      o.selected = true
       m.options.filter = o.Name
     end if
 
@@ -412,7 +412,7 @@ sub ItemDataLoaded(msg)
   m.loadItemsTask.content = []
 
   if not isValid(itemData)
-    m.Loading = false
+    m.loading = false
     return
   end if
 
@@ -462,7 +462,7 @@ sub ItemDataLoaded(msg)
   'Update the stored counts
   m.loadedItems = m.itemGrid.content.getChildCount()
   m.loadedRows = m.loadedItems / m.itemGrid.numColumns
-  m.Loading = false
+  m.loading = false
   'If there are no items to display, show message
   if m.loadedItems = 0
     m.selectedMovieOverview.visible = false
@@ -483,7 +483,7 @@ sub ItemDataLoaded(msg)
     m.criticRatingIcon.uri = ""
     m.star.uri = ""
 
-    m.emptyText.text = tr("NO_ITEMS").Replace("%1", m.top.parentItem.Type)
+    m.emptyText.text = tr("NO_ITEMS").Replace("%1", m.top.parentItem.type)
     m.emptyText.visible = true
   end if
 
@@ -495,25 +495,25 @@ sub ItemDataLoaded(msg)
 end sub
 
 '
-'Set Selected Movie Name
+'Set selected Movie Name
 sub SetName(movieName as string)
   m.selectedMovieName.text = movieName
 end sub
 
 '
-'Set Selected Movie Overview
+'Set selected Movie Overview
 sub SetOverview(movieOverview as string)
   m.selectedMovieOverview.text = movieOverview
 end sub
 
 '
-'Set Selected Movie OfficialRating
+'Set selected Movie OfficialRating
 sub SetOfficialRating(movieOfficialRating as string)
   m.selectedMovieOfficialRating.text = movieOfficialRating
 end sub
 
 '
-'Set Selected Movie ProductionYear
+'Set selected Movie ProductionYear
 sub SetProductionYear(movieProductionYear)
   m.selectedMovieProductionYear.text = movieProductionYear
 end sub
@@ -666,7 +666,7 @@ sub setFieldText(field, value)
 end sub
 
 '
-'When Image Loading Status changes
+'When Image loading Status changes
 sub newBGLoaded()
   'If image load was sucessful, start the fade swap
   if m.newBackdrop.loadStatus = "ready"
@@ -694,17 +694,17 @@ end sub
 '
 'Load next set of items
 sub loadMoreData()
-  if m.Loading = true then return
+  if m.loading = true then return
 
   startLoadingSpinner(false)
-  m.Loading = true
+  m.loading = true
   m.loadItemsTask.startIndex = m.loadedItems
   m.loadItemsTask.observeField("content", "ItemDataLoaded")
   m.loadItemsTask.control = "RUN"
 end sub
 
 '
-'Item Selected
+'Item selected
 sub onItemSelected()
   m.top.selectedItem = m.itemGrid.content.getChild(m.itemGrid.itemSelected)
 end sub
@@ -721,7 +721,7 @@ function getItemFocused()
 end function
 
 '
-'Genre Item Selected
+'Genre Item selected
 sub onGenreItemSelected()
   m.top.selectedItem = m.genreList.content.getChild(m.genreList.rowItemSelected[0]).getChild(m.genreList.rowItemSelected[1])
 end sub
@@ -795,14 +795,14 @@ sub optionsClosed()
       sortAscendingStr = "false"
     end if
 
-    set_user_setting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
-    set_user_setting("display." + m.top.parentItem.Id + ".sortAscending", sortAscendingStr)
+    set_user_setting("display." + m.top.parentItem.id + ".sortField", m.sortField)
+    set_user_setting("display." + m.top.parentItem.id + ".sortAscending", sortAscendingStr)
   end if
 
   if m.options.filter <> m.filter
     m.filter = m.options.filter
     reload = true
-    set_user_setting("display." + m.top.parentItem.Id + ".filter", m.options.filter)
+    set_user_setting("display." + m.top.parentItem.id + ".filter", m.options.filter)
   end if
 
   if not isValid(m.options.filterOptions)
@@ -812,14 +812,14 @@ sub optionsClosed()
   if not AssocArrayEqual(m.options.filterOptions, m.filterOptions)
     m.filterOptions = m.options.filterOptions
     reload = true
-    set_user_setting("display." + m.top.parentItem.Id + ".filterOptions", FormatJson(m.options.filterOptions))
+    set_user_setting("display." + m.top.parentItem.id + ".filterOptions", FormatJson(m.options.filterOptions))
   end if
 
-  m.view = m.global.session.user.settings["display." + m.top.parentItem.Id + ".landing"]
+  m.view = m.global.session.user.settings["display." + m.top.parentItem.id + ".landing"]
 
   if m.options.view <> m.view
     m.view = m.options.view
-    set_user_setting("display." + m.top.parentItem.Id + ".landing", m.view)
+    set_user_setting("display." + m.top.parentItem.id + ".landing", m.view)
 
     ' Reset any filtering or search terms
     m.top.alphaSelected = ""
@@ -831,10 +831,10 @@ sub optionsClosed()
     m.sortAscending = true
 
     ' Reset view to defaults
-    set_user_setting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
-    set_user_setting("display." + m.top.parentItem.Id + ".sortAscending", "true")
-    set_user_setting("display." + m.top.parentItem.Id + ".filter", m.filter)
-    set_user_setting("display." + m.top.parentItem.Id + ".filterOptions", FormatJson(m.filterOptions))
+    set_user_setting("display." + m.top.parentItem.id + ".sortField", m.sortField)
+    set_user_setting("display." + m.top.parentItem.id + ".sortAscending", "true")
+    set_user_setting("display." + m.top.parentItem.id + ".filter", m.filter)
+    set_user_setting("display." + m.top.parentItem.id + ".filterOptions", FormatJson(m.filterOptions))
 
     reload = true
   end if

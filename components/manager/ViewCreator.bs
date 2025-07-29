@@ -45,15 +45,15 @@ sub onSelectAudioPressed()
   for each item in m.view.fullAudioData
 
     audioStreamItem = {
-      "Index": item.Index,
+      "index": item.index,
       "IsExternal": item.IsExternal,
       "Track": {
         "description": item.DisplayTitle
       },
-      "Type": "audioselection"
+      "type": "audioselection"
     }
 
-    if m.view.audioIndex = item.Index
+    if m.view.audioIndex = item.index
       audioStreamItem.selected = true
     end if
 
@@ -103,12 +103,12 @@ sub onSelectSubtitlePressed()
 
   ' Manually create the None option and place at top
   subtitleData.data.Unshift({
-    "Index": -1,
+    "index": -1,
     "IsExternal": false,
     "Track": {
       "description": "None"
     },
-    "Type": "subtitleselection"
+    "type": "subtitleselection"
   })
 
   sceneManager = m.global.sceneManager
@@ -192,7 +192,7 @@ sub processSubtitleSelection()
     m.view.subtitleTrack = m.view.availableSubtitleTracks[availableSubtitleTrackIndex].TrackName
   end if
 
-  m.view.selectedSubtitle = m.selectedSubtitle.Index
+  m.view.selectedSubtitle = m.selectedSubtitle.index
 end sub
 
 ' User requested playback info

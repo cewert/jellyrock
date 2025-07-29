@@ -110,7 +110,7 @@ namespace quickplay
   end sub
 
   ' A music artist.
-  ' Shuffle play all songs by artist.
+  ' shuffle play all songs by artist.
   sub artist(itemNode as object)
     if not isValid(itemNode) or not isValid(itemNode.id) then return
 
@@ -212,7 +212,7 @@ namespace quickplay
   end sub
 
   ' More than one TV Show Series.
-  ' Shuffle play all watched episodes
+  ' shuffle play all watched episodes
   sub multipleSeries(itemNodes as object)
     if isValidAndNotEmpty(itemNodes)
       numTotal = 0
@@ -304,7 +304,7 @@ namespace quickplay
 
       if isValid(tvshowsData) and isValidAndNotEmpty(tvshowsData.items)
         ' the type of media returned from api may change.
-        if tvshowsData.items[0].Type = "Series"
+        if tvshowsData.items[0].type = "Series"
           quickplay.multipleSeries(tvshowsData.items)
         else
           ' if first item is not a series, then assume they are all videos and/or episodes
@@ -386,7 +386,7 @@ namespace quickplay
   end sub
 
   ' Quick Play A Person.
-  ' Shuffle play all videos found
+  ' shuffle play all videos found
   sub person(itemNode as object)
     if not isValid(itemNode) or not isValid(itemNode.id) then return
     ' get movies and videos by the person
@@ -468,7 +468,7 @@ namespace quickplay
   end sub
 
   ' Quick Play A folder.
-  ' Shuffle play all items found
+  ' shuffle play all items found
   sub folder(itemNode as object)
     if not isValid(itemNode) or not isValid(itemNode.id) then return
 
@@ -538,7 +538,7 @@ namespace quickplay
   end sub
 
   ' Quick Play A CollectionFolder.
-  ' Shuffle play the items inside
+  ' shuffle play the items inside
   ' with some differences based on collectionType.
   sub collectionFolder(itemNode as object)
     if not isValid(itemNode) or not isValid(itemNode.id) then return

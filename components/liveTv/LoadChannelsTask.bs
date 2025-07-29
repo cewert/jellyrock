@@ -10,18 +10,18 @@ sub loadChannels()
 
   results = []
 
-  sort_field = m.top.sortField
+  sortField = m.top.sortField
 
   if m.top.sortAscending = true
-    sort_order = "Ascending"
+    sortOrder = "ascending"
   else
-    sort_order = "Descending"
+    sortOrder = "Descending"
   end if
 
   params = {
     includeItemTypes: "LiveTvChannel",
-    SortBy: sort_field,
-    SortOrder: sort_order,
+    SortBy: sortField,
+    SortOrder: sortOrder,
     recursive: m.top.recursive,
     UserId: m.global.session.user.id
   }

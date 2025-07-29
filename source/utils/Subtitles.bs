@@ -55,15 +55,15 @@ function defaultSubtitleTrack(sorted_subtitles, require_text = false) as integer
     matchTextReq = ((require_text and item.IsTextSubtitleStream) or not require_text)
     if languageMatch and matchTextReq
       if m.global.session.user.configuration.SubtitleMode = "Default" and (item.isForced or item.IsDefault or item.IsExternal)
-        return item.Index ' Finds first forced, or default, or external subs in sorted list
+        return item.index ' Finds first forced, or default, or external subs in sorted list
       else if m.global.session.user.configuration.SubtitleMode = "Always" and not item.IsForced
-        return item.Index ' Select the first non-forced subtitle option in the sorted list
+        return item.index ' Select the first non-forced subtitle option in the sorted list
       else if m.global.session.user.configuration.SubtitleMode = "OnlyForced" and item.IsForced
-        return item.Index ' Select the first forced subtitle option in the sorted list
+        return item.index ' Select the first forced subtitle option in the sorted list
       else if m.global.session.user.configuration.SubtitlePlaybackMode = "Smart" and (item.isForced or item.IsDefault or item.IsExternal)
         ' Simplified "Smart" logic here mimics Default (as that is fallback behavior normally)
         ' Avoids detecting preferred audio language (as is utilized in main client)
-        return item.Index
+        return item.index
       end if
     end if
   end for
@@ -104,7 +104,7 @@ function getSubtitleSelIdxFromSubIdx(subtitles, sub_idx) as integer
   selIdx = 0
   if sub_idx = -1 then return -1
   for each item in subtitles
-    if item.Index = sub_idx
+    if item.index = sub_idx
       return selIdx
     end if
     selIdx = selIdx + 1
@@ -161,7 +161,7 @@ sub changeSubtitleDuringPlayback(newid)
   if newSubtitles.IsEncoded or (isValid(currentSubtitles) and currentSubtitles.IsEncoded)
     ' With encoded subtitles we need to stop/start playback
     video.control = "stop"
-    AddVideoContent(video, video.mediaSourceId, video.audioIndex, newSubtitles.Index, video.position * 10000000)
+    AddVideoContent(video, video.mediaSourceId, video.audioIndex, newSubtitles.index, video.position * 10000000)
     video.control = "play"
   else
     ' Switching from text to text (or none to text) does not require stopping playback
@@ -192,7 +192,7 @@ end sub
 function sortSubtitles(id as string, MediaStreams)
   tracks = { "forced": [], "default": [], "normal": [] }
   'Too many args for using substitute
-  prefered_lang = m.global.session.user.configuration.SubtitleLanguagePreference
+  preferedLang = m.global.session.user.configuration.SubtitleLanguagePreference
   for each stream in MediaStreams
     if stream.type = "Subtitle"
 
@@ -202,13 +202,13 @@ function sortSubtitles(id as string, MediaStreams)
       end if
 
       stream = {
-        "Track": { "Language": stream.language, "Description": stream.displaytitle, "TrackName": url },
+        "Track": { "Language": stream.language, "description": stream.displaytitle, "TrackName": url },
         "IsTextSubtitleStream": stream.IsTextSubtitleStream,
-        "Index": stream.index,
+        "index": stream.index,
         "IsDefault": stream.IsDefault,
         "IsForced": stream.IsForced,
         "IsExternal": stream.IsExternal,
-        "IsEncoded": stream.DeliveryMethod = "Encode"
+        "IsEncoded": stream.deliveryMethod = "Encode"
       }
       if stream.isForced
         trackType = "forced"
@@ -217,7 +217,7 @@ function sortSubtitles(id as string, MediaStreams)
       else
         trackType = "normal"
       end if
-      if prefered_lang <> "" and prefered_lang = stream.Track.Language
+      if preferedLang <> "" and preferedLang = stream.Track.Language
         tracks[trackType].unshift(stream)
       else
         tracks[trackType].push(stream)

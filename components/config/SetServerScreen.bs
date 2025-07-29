@@ -141,13 +141,13 @@ end sub
 
 function onDialogButton()
   d = m.dialog
-  button_text = d.buttons[d.buttonSelected]
+  buttonText = d.buttons[d.buttonSelected]
 
-  if button_text = tr("OK")
+  if buttonText = tr("OK")
     m.serverUrlTextbox.text = d.text
     m.dialog.close = true
     return true
-  else if button_text = tr("Cancel")
+  else if buttonText = tr("Cancel")
     m.dialog.close = true
     return true
   else

@@ -67,7 +67,7 @@ sub SendClientDiscoveryBroadcast()
 end sub
 
 sub ProcessClientDiscoveryResponse(message)
-  if Type(message) = "roSocketEvent" and message.GetSocketId() = m.clientDiscovery.socket.GetId() and m.clientDiscovery.socket.IsReadable()
+  if type(message) = "roSocketEvent" and message.GetSocketId() = m.clientDiscovery.socket.GetId() and m.clientDiscovery.socket.IsReadable()
     try
       responseJson = m.clientDiscovery.socket.ReceiveStr(4096)
       server = ParseJson(responseJson)
@@ -100,22 +100,22 @@ sub SendSSDPBroadcast()
   m.ssdp.urlTransfer.SetPort(m.ssdp.port)
 
   'brightscript can't escape characters in strings, so create a few vars here so we can use them in the strings below
-  Q = Chr(34)
-  CRLF = Chr(13) + Chr(10)
+  q = Chr(34)
+  crlf = Chr(13) + Chr(10)
 
-  ssdpStr = "M-SEARCH * HTTP/1.1" + CRLF
-  ssdpStr += "HOST: 239.255.255.250:1900" + CRLF
-  ssdpStr += "MAN: " + Q + "ssdp:discover" + Q + CRLF
-  ssdpStr += "ST:urn:schemas-upnp-org:device:MediaServer:1" + CRLF
-  ssdpStr += "MX: 2" + CRLF
-  ssdpStr += CRLF
+  ssdpStr = "M-SEARCH * HTTP/1.1" + crlf
+  ssdpStr += "HOST: 239.255.255.250:1900" + crlf
+  ssdpStr += "MAN: " + q + "ssdp:discover" + q + crlf
+  ssdpStr += "ST:urn:schemas-upnp-org:device:MediaServer:1" + crlf
+  ssdpStr += "MX: 2" + crlf
+  ssdpStr += crlf
 
   m.ssdp.socket.SendStr(ssdpStr)
 end sub
 
 sub ProcessSSDPResponse(message)
   locationUrl = invalid
-  if Type (message) = "roSocketEvent" and message.GetSocketId() = m.ssdp.socket.GetId() and m.ssdp.socket.IsReadable()
+  if type (message) = "roSocketEvent" and message.GetSocketId() = m.ssdp.socket.GetId() and m.ssdp.socket.IsReadable()
     recvStr = m.ssdp.socket.ReceiveStr(4096)
     match = CreateObject("roRegex", "\r\nLocation:\s*(.*?)\s*\r\n", "i").Match(recvStr)
     if match.Count() = 2

@@ -104,8 +104,8 @@ sub loadInitialItems()
   startLoadingSpinner(false)
   userSettings = m.global.session.user.settings
 
-  if LCase(m.top.parentItem.json.Type) = "collectionfolder"
-    m.top.HomeLibraryItem = m.top.parentItem.Id
+  if LCase(m.top.parentItem.json.type) = "collectionfolder"
+    m.top.HomeLibraryItem = m.top.parentItem.id
   end if
 
   if isValid(m.top.parentItem.backdropUrl)
@@ -114,10 +114,10 @@ sub loadInitialItems()
     SetBackground("")
   end if
 
-  m.sortField = userSettings["display." + m.top.parentItem.Id + ".sortField"]
-  m.sortAscending = userSettings["display." + m.top.parentItem.Id + ".sortAscending"]
-  m.filter = userSettings["display." + m.top.parentItem.Id + ".filter"]
-  m.view = userSettings["display." + m.top.parentItem.Id + ".landing"]
+  m.sortField = userSettings["display." + m.top.parentItem.id + ".sortField"]
+  m.sortAscending = userSettings["display." + m.top.parentItem.id + ".sortAscending"]
+  m.filter = userSettings["display." + m.top.parentItem.id + ".filter"]
+  m.view = userSettings["display." + m.top.parentItem.id + ".landing"]
 
   if not isValid(m.sortField) then m.sortField = "SortName"
   if not isValid(m.filter) then m.filter = "All"
@@ -141,7 +141,7 @@ sub loadInitialItems()
   else if LCase(m.view) = "albumartistspresentation" or LCase(m.options.view) = "albumartistspresentation"
     m.loadItemsTask.genreIds = ""
   else
-    m.loadItemsTask.itemId = m.top.parentItem.Id
+    m.loadItemsTask.itemId = m.top.parentItem.id
   end if
 
   ' if we already searched for this alpha text than reset filter
@@ -160,7 +160,7 @@ sub loadInitialItems()
   ' Load Item Types
   if getCollectionType() = "music"
     m.loadItemsTask.itemType = "MusicArtist"
-    m.loadItemsTask.itemId = m.top.parentItem.Id
+    m.loadItemsTask.itemId = m.top.parentItem.id
   end if
 
   ' By default we load Artists
@@ -253,9 +253,9 @@ end sub
 ' Return parent collection type
 function getCollectionType() as string
   if not isValid(m.top.parentItem.collectionType)
-    return LCase(m.top.parentItem.Type)
+    return LCase(m.top.parentItem.type)
   else
-    return LCase(m.top.parentItem.CollectionType)
+    return LCase(m.top.parentItem.collectionType)
   end if
 end function
 
@@ -278,8 +278,8 @@ sub SetUpOptions()
   ' Set selected view option
   for each o in options.views
     if LCase(o.Name) = LCase(m.view)
-      o.Selected = true
-      o.Ascending = m.sortAscending
+      o.selected = true
+      o.ascending = m.sortAscending
       m.options.view = o.Name
     end if
   end for
@@ -287,8 +287,8 @@ sub SetUpOptions()
   ' Set selected sort option
   for each o in options.sort
     if LCase(o.Name) = LCase(m.sortField)
-      o.Selected = true
-      o.Ascending = m.sortAscending
+      o.selected = true
+      o.ascending = m.sortAscending
       m.options.sortField = o.Name
     end if
   end for
@@ -296,7 +296,7 @@ sub SetUpOptions()
   ' Set selected filter option
   for each o in options.filter
     if LCase(o.Name) = LCase(m.filter)
-      o.Selected = true
+      o.selected = true
       m.options.filter = o.Name
     end if
   end for
@@ -327,7 +327,7 @@ sub ItemDataLoaded(msg)
   m.loadItemsTask.content = []
 
   if not isValid(itemData)
-    m.Loading = false
+    m.loading = false
     stopLoadingSpinner()
     return
   end if
@@ -370,23 +370,23 @@ sub ItemDataLoaded(msg)
   'Update the stored counts
   m.loadedItems = m.itemGrid.content.getChildCount()
   m.loadedRows = m.loadedItems / m.itemGrid.numColumns
-  m.Loading = false
+  m.loading = false
   'If there are no items to display, show message
   if m.loadedItems = 0
-    m.emptyText.text = tr("NO_ITEMS").Replace("%1", m.top.parentItem.Type)
+    m.emptyText.text = tr("NO_ITEMS").Replace("%1", m.top.parentItem.type)
     m.emptyText.visible = true
   end if
   stopLoadingSpinner()
 end sub
 
 '
-'Set Selected Artist Name
+'Set selected Artist Name
 sub SetName(artistName as string)
   m.selectedArtistName.text = artistName
 end sub
 
 '
-'Set Selected Artist Song Count
+'Set selected Artist Song Count
 sub SetSongCount(totalCount)
   appendText = " " + tr("Songs")
   if totalCount = 1
@@ -396,7 +396,7 @@ sub SetSongCount(totalCount)
   m.selectedArtistSongCount.text = totalCount.tostr() + appendText
 end sub
 '
-'Set Selected Artist Album Count
+'Set selected Artist Album Count
 sub SetAlbumCount(totalCount)
   appendText = " " + tr("Albums")
   if totalCount = 1
@@ -407,7 +407,7 @@ sub SetAlbumCount(totalCount)
 end sub
 
 '
-'Set Selected Artist Genres
+'Set selected Artist Genres
 sub SetGenres(artistGenres)
   m.selectedArtistGenres.text = artistGenres.join(", ")
 end sub
@@ -529,7 +529,7 @@ sub setFieldText(field, value)
 end sub
 
 '
-'When Image Loading Status changes
+'When Image loading Status changes
 sub newBGLoaded()
   'If image load was sucessful, start the fade swap
   if LCase(m.newBackdrop.loadStatus) = "ready"
@@ -557,17 +557,17 @@ end sub
 '
 'Load next set of items
 sub loadMoreData()
-  if m.Loading = true then return
+  if m.loading = true then return
 
   startLoadingSpinner(false)
-  m.Loading = true
+  m.loading = true
   m.loadItemsTask.startIndex = m.loadedItems
   m.loadItemsTask.observeField("content", "ItemDataLoaded")
   m.loadItemsTask.control = "RUN"
 end sub
 
 '
-'Item Selected
+'Item selected
 sub onItemSelected()
   m.top.selectedItem = m.itemGrid.content.getChild(m.itemGrid.itemSelected)
 end sub
@@ -584,7 +584,7 @@ function getItemFocused()
 end function
 
 '
-'Genre Item Selected
+'Genre Item selected
 sub onGenreItemSelected()
   m.top.selectedItem = m.genreList.content.getChild(m.genreList.itemSelected)
 end sub
@@ -672,22 +672,22 @@ sub optionsClosed()
       sortAscendingStr = "false"
     end if
 
-    set_user_setting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
-    set_user_setting("display." + m.top.parentItem.Id + ".sortAscending", sortAscendingStr)
+    set_user_setting("display." + m.top.parentItem.id + ".sortField", m.sortField)
+    set_user_setting("display." + m.top.parentItem.id + ".sortAscending", sortAscendingStr)
   end if
 
   if m.options.filter <> m.filter
     m.filter = m.options.filter
     reload = true
-    set_user_setting("display." + m.top.parentItem.Id + ".filter", m.options.filter)
+    set_user_setting("display." + m.top.parentItem.id + ".filter", m.options.filter)
   end if
 
-  m.view = m.global.session.user.settings["display." + m.top.parentItem.Id + ".landing"]
+  m.view = m.global.session.user.settings["display." + m.top.parentItem.id + ".landing"]
 
   if m.options.view <> m.view
     m.view = m.options.view
     m.top.view = m.view
-    set_user_setting("display." + m.top.parentItem.Id + ".landing", m.view)
+    set_user_setting("display." + m.top.parentItem.id + ".landing", m.view)
 
     ' Reset any filtering or search terms
     m.top.alphaSelected = ""
@@ -698,9 +698,9 @@ sub optionsClosed()
     m.sortAscending = true
 
     ' Reset view to defaults
-    set_user_setting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
-    set_user_setting("display." + m.top.parentItem.Id + ".sortAscending", "true")
-    set_user_setting("display." + m.top.parentItem.Id + ".filter", m.filter)
+    set_user_setting("display." + m.top.parentItem.id + ".sortField", m.sortField)
+    set_user_setting("display." + m.top.parentItem.id + ".sortAscending", "true")
+    set_user_setting("display." + m.top.parentItem.id + ".filter", m.filter)
 
     reload = true
   end if

@@ -28,8 +28,8 @@ sub init()
 
   m.screenSaverTimeout = 300
 
-  m.LoadScreenSaverTimeoutTask.observeField("content", "onScreensaverTimeoutLoaded")
-  m.LoadScreenSaverTimeoutTask.control = "RUN"
+  m.loadScreenSaverTimeoutTask.observeField("content", "onScreensaverTimeoutLoaded")
+  m.loadScreenSaverTimeoutTask.control = "RUN"
 
   m.di = CreateObject("roDeviceInfo")
 
@@ -46,8 +46,8 @@ sub init()
 end sub
 
 sub onScreensaverTimeoutLoaded()
-  data = m.LoadScreenSaverTimeoutTask.content
-  m.LoadScreenSaverTimeoutTask.unobserveField("content")
+  data = m.loadScreenSaverTimeoutTask.content
+  m.loadScreenSaverTimeoutTask.unobserveField("content")
   if isValid(data)
     m.screenSaverTimeout = data
   end if
@@ -62,10 +62,10 @@ sub setupScreenSaver()
   m.screenSaverAlbumCoverFadeIn = m.top.findNode("screenSaverAlbumCoverFadeIn")
 
   ' Audio Screensaver
-  m.PosterOne = m.top.findNode("PosterOne")
-  m.PosterOne.uri = "pkg:/images/branding/logo.png"
-  m.BounceAnimation = m.top.findNode("BounceAnimation")
-  m.PosterOneFadeIn = m.top.findNode("PosterOneFadeIn")
+  m.posterOne = m.top.findNode("posterOne")
+  m.posterOne.uri = "pkg:/images/branding/logo.png"
+  m.bounceAnimation = m.top.findNode("bounceAnimation")
+  m.posterOneFadeIn = m.top.findNode("posterOneFadeIn")
 end sub
 
 sub setupAnimationTasks()
@@ -82,18 +82,18 @@ end sub
 ' Creates tasks to gather data needed to render Scene and play song
 sub setupDataTasks()
   ' Load meta data
-  m.LoadMetaDataTask = CreateObject("roSGNode", "LoadItemsTask")
-  m.LoadMetaDataTask.itemsToLoad = "metaData"
+  m.loadMetaDataTask = CreateObject("roSGNode", "LoadItemsTask")
+  m.loadMetaDataTask.itemsToLoad = "metaData"
 
   ' Load background image
-  m.LoadBackdropImageTask = CreateObject("roSGNode", "LoadItemsTask")
-  m.LoadBackdropImageTask.itemsToLoad = "backdropImage"
+  m.loadBackdropImageTask = CreateObject("roSGNode", "LoadItemsTask")
+  m.loadBackdropImageTask.itemsToLoad = "backdropImage"
 
   ' Load audio stream
-  m.LoadAudioStreamTask = CreateObject("roSGNode", "LoadItemsTask")
-  m.LoadAudioStreamTask.itemsToLoad = "audioStream"
+  m.loadAudioStreamTask = CreateObject("roSGNode", "LoadItemsTask")
+  m.loadAudioStreamTask.itemsToLoad = "audioStream"
 
-  m.LoadScreenSaverTimeoutTask = CreateObject("roSGNode", "LoadScreenSaverTimeoutTask")
+  m.loadScreenSaverTimeoutTask = CreateObject("roSGNode", "loadScreenSaverTimeoutTask")
 end sub
 
 ' Setup playback buttons, default to Play button selected
@@ -214,7 +214,7 @@ sub audioPositionChanged()
 end sub
 
 function screenSaverActive() as boolean
-  return m.screenSaverBackground.visible or m.screenSaverAlbumCover.opacity > 0 or m.PosterOne.opacity > 0
+  return m.screenSaverBackground.visible or m.screenSaverAlbumCover.opacity > 0 or m.posterOne.opacity > 0
 end function
 
 sub startScreenSaver()
@@ -223,9 +223,9 @@ sub startScreenSaver()
 
   if m.albumCover.uri = ""
     ' Audio Logo Screensaver
-    m.PosterOne.visible = true
-    m.PosterOneFadeIn.control = "start"
-    m.BounceAnimation.control = "start"
+    m.posterOne.visible = true
+    m.posterOneFadeIn.control = "start"
+    m.bounceAnimation.control = "start"
   else
     ' Album Art Screensaver
     m.screenSaverAlbumCoverFadeIn.control = "start"
@@ -234,13 +234,13 @@ sub startScreenSaver()
 end sub
 
 sub endScreenSaver()
-  m.PosterOneFadeIn.control = "pause"
+  m.posterOneFadeIn.control = "pause"
   m.screenSaverAlbumCoverFadeIn.control = "pause"
   m.screenSaverAlbumAnimation.control = "pause"
-  m.BounceAnimation.control = "pause"
+  m.bounceAnimation.control = "pause"
   m.screenSaverBackground.visible = false
   m.screenSaverAlbumCover.opacity = 0
-  m.PosterOne.opacity = 0
+  m.posterOne.opacity = 0
   m.top.overhangVisible = true
 end sub
 
@@ -463,13 +463,13 @@ end sub
 ' Update values on screen when page content changes
 sub pageContentChanged()
 
-  m.LoadAudioStreamTask.control = "STOP"
+  m.loadAudioStreamTask.control = "STOP"
 
   currentItem = m.queueManager.callFunc("getCurrentItem")
 
-  m.LoadAudioStreamTask.itemId = currentItem.id
-  m.LoadAudioStreamTask.observeField("content", "onAudioStreamLoaded")
-  m.LoadAudioStreamTask.control = "RUN"
+  m.loadAudioStreamTask.itemId = currentItem.id
+  m.loadAudioStreamTask.observeField("content", "onAudioStreamLoaded")
+  m.loadAudioStreamTask.control = "RUN"
 end sub
 
 ' If we have more and 1 song to play, fade in the next and previous controls
@@ -484,8 +484,8 @@ end sub
 
 sub onAudioStreamLoaded()
   stopLoadingSpinner()
-  data = m.LoadAudioStreamTask.content[0]
-  m.LoadAudioStreamTask.unobserveField("content")
+  data = m.loadAudioStreamTask.content[0]
+  m.loadAudioStreamTask.unobserveField("content")
   if isValid(data) and data.count() > 0
     ' Reset buffer bar without animation
     m.bufferPosition.width = 0
@@ -510,15 +510,15 @@ sub onAudioStreamLoaded()
     end if
 
     if useMetaTask
-      m.LoadMetaDataTask.itemId = currentItem.id
-      m.LoadMetaDataTask.observeField("content", "onMetaDataLoaded")
-      m.LoadMetaDataTask.control = "RUN"
+      m.loadMetaDataTask.itemId = currentItem.id
+      m.loadMetaDataTask.observeField("content", "onMetaDataLoaded")
+      m.loadMetaDataTask.control = "RUN"
     else
       if isValid(currentItem.ParentBackdropItemId)
-        setBackdropImage(ImageURL(currentItem.ParentBackdropItemId, "Backdrop", { "maxHeight": "720", "maxWidth": "1280" }))
+        setBackdropImage(imageUrl(currentItem.ParentBackdropItemId, "Backdrop", { "maxHeight": "720", "maxWidth": "1280" }))
       end if
 
-      setPosterImage(ImageURL(currentItem.id, "Primary", { "maxHeight": 500, "maxWidth": 500 }))
+      setPosterImage(imageUrl(currentItem.id, "Primary", { "maxHeight": 500, "maxWidth": 500 }))
       setScreenTitle(currentItem)
       setOnScreenTextValues(currentItem)
       m.songDuration = currentItem.RunTimeTicks / 10000000.0
@@ -534,22 +534,22 @@ sub onAudioStreamLoaded()
 end sub
 
 sub onBackdropImageLoaded()
-  data = m.LoadBackdropImageTask.content[0]
-  m.LoadBackdropImageTask.unobserveField("content")
+  data = m.loadBackdropImageTask.content[0]
+  m.loadBackdropImageTask.unobserveField("content")
   if isValid(data) and data <> ""
     setBackdropImage(data)
   end if
 end sub
 
 sub onMetaDataLoaded()
-  data = m.LoadMetaDataTask.content[0]
-  m.LoadMetaDataTask.unobserveField("content")
+  data = m.loadMetaDataTask.content[0]
+  m.loadMetaDataTask.unobserveField("content")
   if isValid(data) and data.count() > 0 and isValid(data.json)
     ' Use metadata to load backdrop image
     if isValid(data.json.ArtistItems) and isValid(data.json.ArtistItems[0]) and isValid(data.json.ArtistItems[0].id)
-      m.LoadBackdropImageTask.itemId = data.json.ArtistItems[0].id
-      m.LoadBackdropImageTask.observeField("content", "onBackdropImageLoaded")
-      m.LoadBackdropImageTask.control = "RUN"
+      m.loadBackdropImageTask.itemId = data.json.ArtistItems[0].id
+      m.loadBackdropImageTask.observeField("content", "onBackdropImageLoaded")
+      m.loadBackdropImageTask.control = "RUN"
     end if
 
     setPosterImage(data.posterURL)

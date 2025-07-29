@@ -8,10 +8,10 @@ sub setFields()
 
   m.top.id = json.id
   m.top.Title = json.name
-  m.top.Description = json.overview
+  m.top.description = json.overview
   m.top.favorite = json.UserData.isFavorite
   m.top.watched = json.UserData.played
-  m.top.Type = "Series"
+  m.top.type = "Series"
   m.top.overview = json.overview
 
   if isValid(json.ProductionYear)
@@ -38,16 +38,16 @@ sub setPoster()
     if isValid(m.top.json.ImageTags.Primary)
 
       imgParams = { "maxHeight": 440, "maxWidth": 295, "Tag": m.top.json.ImageTags.Primary }
-      m.top.posterURL = ImageURL(m.top.json.id, "Primary", imgParams)
+      m.top.posterURL = imageUrl(m.top.json.id, "Primary", imgParams)
     else if isValid(m.top.json.BackdropImageTags)
       imgParams = { "maxHeight": 440, "Tag": m.top.json.BackdropImageTags[0] }
-      m.top.posterURL = ImageURL(m.top.json.id, "Backdrop", imgParams)
+      m.top.posterURL = imageUrl(m.top.json.id, "Backdrop", imgParams)
     end if
 
     ' Add Backdrop Image
     if isValid(m.top.json.BackdropImageTags)
       imgParams = { "maxHeight": 720, "maxWidth": 1280, "Tag": m.top.json.BackdropImageTags[0] }
-      m.top.backdropURL = ImageURL(m.top.json.id, "Backdrop", imgParams)
+      m.top.backdropURL = imageUrl(m.top.json.id, "Backdrop", imgParams)
     end if
 
   end if

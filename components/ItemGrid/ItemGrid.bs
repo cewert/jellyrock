@@ -77,7 +77,7 @@ sub init()
   m.log.debug("end init()")
 end sub
 
-'Genre Item Selected
+'Genre Item selected
 sub onGenreItemSelected()
   m.top.selectedItem = m.genreList.content.getChild(m.genreList.rowItemSelected[0]).getChild(m.genreList.rowItemSelected[1])
 end sub
@@ -89,8 +89,8 @@ sub loadInitialItems()
   startLoadingSpinner()
   userSettings = m.global.session.user.settings
 
-  if m.top.parentItem.json.Type = "CollectionFolder" 'or m.top.parentItem.json.Type = "Folder"
-    m.top.HomeLibraryItem = m.top.parentItem.Id
+  if m.top.parentItem.json.type = "CollectionFolder" 'or m.top.parentItem.json.type = "Folder"
+    m.top.HomeLibraryItem = m.top.parentItem.id
   end if
 
   if isValid(m.top.parentItem.backdropUrl)
@@ -111,19 +111,19 @@ sub loadInitialItems()
     m.filter = userSettings["display.livetv.filter"]
   else if m.top.parentItem.collectionType = "music"
     m.view = userSettings["display.music.view"]
-    m.sortField = userSettings["display." + m.top.parentItem.Id + ".sortField"]
-    sortAscendingStr = userSettings["display." + m.top.parentItem.Id + ".sortAscending"]
-    m.filter = userSettings["display." + m.top.parentItem.Id + ".filter"]
+    m.sortField = userSettings["display." + m.top.parentItem.id + ".sortField"]
+    sortAscendingStr = userSettings["display." + m.top.parentItem.id + ".sortAscending"]
+    m.filter = userSettings["display." + m.top.parentItem.id + ".filter"]
   else
-    m.sortField = userSettings["display." + m.top.parentItem.Id + ".sortField"]
-    sortAscendingStr = userSettings["display." + m.top.parentItem.Id + ".sortAscending"]
-    m.filter = userSettings["display." + m.top.parentItem.Id + ".filter"]
-    m.view = userSettings["display." + m.top.parentItem.Id + ".landing"]
+    m.sortField = userSettings["display." + m.top.parentItem.id + ".sortField"]
+    sortAscendingStr = userSettings["display." + m.top.parentItem.id + ".sortAscending"]
+    m.filter = userSettings["display." + m.top.parentItem.id + ".filter"]
+    m.view = userSettings["display." + m.top.parentItem.id + ".landing"]
   end if
 
   if not isValid(m.sortField)
     ' Set the default order for boxsets to the Release Date - API calls it PremiereDate
-    if LCase(m.top.parentItem.json.Type) = "boxset"
+    if LCase(m.top.parentItem.json.type) = "boxset"
       m.sortField = "PremiereDate"
     else
       m.sortField = "SortName"
@@ -137,12 +137,12 @@ sub loadInitialItems()
   else
     m.sortAscending = false
   end if
-  ' Set Studio Id
+  ' Set Studio id
   if m.top.parentItem.json.type = "Studio"
     m.loadItemsTask.studioIds = m.top.parentItem.id
     m.loadItemsTask.itemId = m.top.parentItem.parentFolder
     m.loadItemsTask.genreIds = ""
-    ' Set Genre Id
+    ' Set Genre id
   else if m.top.parentItem.json.type = "Genre"
     m.loadItemsTask.genreIds = m.top.parentItem.id
     m.loadItemsTask.itemId = m.top.parentItem.parentFolder
@@ -151,7 +151,7 @@ sub loadInitialItems()
     m.loadItemsTask.studioIds = ""
     m.loadItemsTask.genreIds = ""
   else
-    m.loadItemsTask.itemId = m.top.parentItem.Id
+    m.loadItemsTask.itemId = m.top.parentItem.id
   end if
 
   ' if we already searched for this alpha text than reset filter
@@ -172,17 +172,17 @@ sub loadInitialItems()
   ' Load Item Types
   if getCollectionType() = "movies"
     m.loadItemsTask.itemType = "Movie"
-    m.loadItemsTask.itemId = m.top.parentItem.Id
+    m.loadItemsTask.itemId = m.top.parentItem.id
   else if getCollectionType() = "tvshows"
     m.loadItemsTask.itemType = "Series"
-    m.loadItemsTask.itemId = m.top.parentItem.Id
+    m.loadItemsTask.itemId = m.top.parentItem.id
   else if getCollectionType() = "music"
     ' Default Settings
     m.loadItemsTask.recursive = true
     m.itemGrid.itemSize = "[290, 290]"
 
     m.loadItemsTask.itemType = "MusicArtist"
-    m.loadItemsTask.itemId = m.top.parentItem.Id
+    m.loadItemsTask.itemId = m.top.parentItem.id
 
     m.view = userSettings["display.music.view"]
 
@@ -198,7 +198,7 @@ sub loadInitialItems()
     if userSettings["display.livetv.landing"] = "guide" and m.options.view <> "livetv"
       showTvGuide()
     end if
-  else if m.top.parentItem.collectionType = "CollectionFolder" or m.top.parentItem.type = "CollectionFolder" or m.top.parentItem.collectionType = "boxsets" or m.top.parentItem.Type = "Boxset" or m.top.parentItem.Type = "Boxsets" or m.top.parentItem.Type = "Folder" or m.top.parentItem.Type = "Channel"
+  else if m.top.parentItem.collectionType = "CollectionFolder" or m.top.parentItem.type = "CollectionFolder" or m.top.parentItem.collectionType = "boxsets" or m.top.parentItem.type = "Boxset" or m.top.parentItem.type = "Boxsets" or m.top.parentItem.type = "Folder" or m.top.parentItem.type = "Channel"
     if m.voiceBox.text <> ""
       m.loadItemsTask.recursive = true
     else
@@ -213,14 +213,14 @@ sub loadInitialItems()
     m.loadItemsTask.itemType = "Series,Movie"
     m.loadItemsTask.itemId = m.top.parentItem.parentFolder
   else
-    m.log.warn("Unknown Item Type", m.top.parentItem)
+    m.log.warn("Unknown Item type", m.top.parentItem)
   end if
 
   if m.top.parentItem.type <> "Folder" and (m.options.view = "Networks" or m.view = "Networks" or m.options.view = "Studios" or m.view = "Studios")
     m.loadItemsTask.view = "Networks"
     m.top.imageDisplayMode = "scaleToFit"
   else if m.top.parentItem.type <> "Folder" and (m.options.view = "Genres" or m.view = "Genres")
-    m.loadItemsTask.StudioIds = m.top.parentItem.Id
+    m.loadItemsTask.StudioIds = m.top.parentItem.id
     m.loadItemsTask.view = "Genres"
   else if m.top.parentItem.type <> "Folder" and (m.options.view = "Shows" or m.view = "Shows")
     m.loadItemsTask.studioIds = ""
@@ -386,9 +386,9 @@ end sub
 ' Return parent collection type
 function getCollectionType() as string
   if not isValid(m.top.parentItem.collectionType)
-    return m.top.parentItem.Type
+    return m.top.parentItem.type
   else
-    return m.top.parentItem.CollectionType
+    return m.top.parentItem.collectionType
   end if
 end function
 
@@ -425,8 +425,8 @@ sub SetUpOptions()
   ' Set selected view option
   for each o in options.views
     if o.Name = m.view
-      o.Selected = true
-      o.Ascending = m.sortAscending
+      o.selected = true
+      o.ascending = m.sortAscending
       m.options.view = o.Name
     end if
   end for
@@ -434,8 +434,8 @@ sub SetUpOptions()
   ' Set selected sort option
   for each o in options.sort
     if o.Name = m.sortField
-      o.Selected = true
-      o.Ascending = m.sortAscending
+      o.selected = true
+      o.ascending = m.sortAscending
       m.options.sortField = o.Name
     end if
   end for
@@ -443,7 +443,7 @@ sub SetUpOptions()
   ' Set selected filter option
   for each o in options.filter
     if o.Name = m.filter
-      o.Selected = true
+      o.selected = true
       m.options.filter = o.Name
     end if
   end for
@@ -459,7 +459,7 @@ sub ItemDataLoaded(msg)
   m.loadItemsTask.content = []
 
   if not isValid(itemData)
-    m.Loading = false
+    m.loading = false
     stopLoadingSpinner()
     return
   end if
@@ -502,10 +502,10 @@ sub ItemDataLoaded(msg)
   'Update the stored counts
   m.loadedItems = m.itemGrid.content.getChildCount()
   m.loadedRows = m.loadedItems / m.itemGrid.numColumns
-  m.Loading = false
+  m.loading = false
   'If there are no items to display, show message
   if m.loadedItems = 0
-    m.emptyText.text = tr("NO_ITEMS").Replace("%1", m.top.parentItem.Type)
+    m.emptyText.text = tr("NO_ITEMS").Replace("%1", m.top.parentItem.type)
     m.emptyText.visible = true
   end if
 
@@ -556,7 +556,7 @@ sub onItemFocused()
   m.log.debug("end onItemFocused()")
 end sub
 
-'When Image Loading Status changes
+'When Image loading Status changes
 sub newBGLoaded()
   'If image load was sucessful, start the fade swap
   if m.newBackdrop.loadStatus = "ready"
@@ -574,7 +574,7 @@ sub swapDone()
 
     'If there is another one to load
     if m.newBackdrop.uri <> m.queuedBGUri and m.queuedBGUri <> ""
-      m.log.debug("Loading queued backdrop image", m.queuedBGUri)
+      m.log.debug("loading queued backdrop image", m.queuedBGUri)
       SetBackground(m.queuedBGUri)
       m.queuedBGUri = ""
     end if
@@ -584,17 +584,17 @@ end sub
 'Load next set of items
 sub loadMoreData()
   m.log.debug("start loadMoreData()")
-  if m.Loading = true then return
+  if m.loading = true then return
 
   startLoadingSpinner(false)
-  m.Loading = true
+  m.loading = true
   m.loadItemsTask.startIndex = m.loadedItems
   m.loadItemsTask.observeField("content", "ItemDataLoaded")
   m.loadItemsTask.control = "RUN"
   m.log.debug("end loadMoreData()")
 end sub
 
-'Item Selected
+'Item selected
 sub onItemSelected()
   m.top.selectedItem = m.itemGrid.content.getChild(m.itemGrid.itemSelected)
 end sub
@@ -663,7 +663,7 @@ sub optionsClosed()
     end if
   end if
 
-  if m.top.parentItem.Type = "CollectionFolder" or m.top.parentItem.Type = "Folder" or m.top.parentItem.CollectionType = "CollectionFolder"
+  if m.top.parentItem.type = "CollectionFolder" or m.top.parentItem.type = "Folder" or m.top.parentItem.collectionType = "CollectionFolder"
     ' Did the user just request "Random" on a PhotoAlbum?
     if m.options.view = "singlephoto"
       set_user_setting("photos.slideshow", "false")
@@ -686,11 +686,11 @@ sub optionsClosed()
       reload = true
     end if
   else
-    m.view = m.global.session.user.settings["display." + m.top.parentItem.Id + ".landing"]
+    m.view = m.global.session.user.settings["display." + m.top.parentItem.id + ".landing"]
     if m.options.view <> m.view
       'reload and store new view setting
       m.view = m.options.view
-      set_user_setting("display." + m.top.parentItem.Id + ".landing", m.view)
+      set_user_setting("display." + m.top.parentItem.id + ".landing", m.view)
       reload = true
     end if
   end if
@@ -711,8 +711,8 @@ sub optionsClosed()
       set_user_setting("display.livetv.sortField", m.sortField)
       set_user_setting("display.livetv.sortAscending", sortAscendingStr)
     else
-      set_user_setting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
-      set_user_setting("display." + m.top.parentItem.Id + ".sortAscending", sortAscendingStr)
+      set_user_setting("display." + m.top.parentItem.id + ".sortField", m.sortField)
+      set_user_setting("display." + m.top.parentItem.id + ".sortAscending", sortAscendingStr)
     end if
   end if
   if m.options.filter <> m.filter
@@ -723,7 +723,7 @@ sub optionsClosed()
     if m.top.parentItem.collectionType = "livetv"
       set_user_setting("display.livetv.filter", m.options.filter)
     else
-      set_user_setting("display." + m.top.parentItem.Id + ".filter", m.options.filter)
+      set_user_setting("display." + m.top.parentItem.id + ".filter", m.options.filter)
     end if
   end if
   if reload

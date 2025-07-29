@@ -37,7 +37,7 @@ sub updateSeason()
   end if
 
   imgParams = { "maxHeight": 450, "maxWidth": 300 }
-  m.poster.uri = ImageURL(m.top.seasonData.Id, "Primary", imgParams)
+  m.poster.uri = imageUrl(m.top.seasonData.id, "Primary", imgParams)
   m.shuffle.visible = true
   m.top.overhangTitle = m.top.seasonData.SeriesName + " - " + m.top.seasonData.name
 end sub

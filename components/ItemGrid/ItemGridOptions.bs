@@ -118,9 +118,9 @@ sub optionsSet()
       entry = sortContent.CreateChild("ContentNode")
       entry.title = sortItem.Title
       m.sortNames.push(sortItem.Name)
-      if isValid(sortItem.Selected) and sortItem.Selected = true
+      if isValid(sortItem.selected) and sortItem.selected = true
         m.selectedSortIndex = index
-        if isValid(sortItem.Ascending) and sortItem.Ascending = false
+        if isValid(sortItem.ascending) and sortItem.ascending = false
           m.top.sortAscending = 0
         else
           m.top.sortAscending = 1
@@ -269,7 +269,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
     if m.menus[m.selectedItem].isInFocusChain()
       ' Handle Filter screen
       if m.selectedItem = 2
-        ' Selected filter has options, move cursor to it
+        ' selected filter has options, move cursor to it
         if m.filterMenu.content.getChild(m.filterMenu.itemFocused).getChildCount() > 0
           m.menus[m.selectedItem].setFocus(false)
           m.filterOptions.setFocus(true)
@@ -336,7 +336,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
           return true
         end if
 
-        ' Selected filter has options, move cursor to it
+        ' selected filter has options, move cursor to it
         m.filterOptions.setFocus(true)
         m.menus[m.selectedItem].setFocus(false)
         return true

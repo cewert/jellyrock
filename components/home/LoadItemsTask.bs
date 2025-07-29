@@ -23,7 +23,7 @@ sub loadItems()
     if isValid(data) and isValid(data.Items)
       for each item in data.Items
         ' Skip Books for now as we don't support it (issue #525)
-        if item.CollectionType <> "books"
+        if item.collectionType <> "books"
           tmp = CreateObject("roSGNode", "HomeData")
           tmp.json = item
           results.push(tmp)
@@ -49,7 +49,7 @@ sub loadItems()
       if isValid(data)
         for each item in data
           ' Skip Books for now as we don't support it (issue #525)
-          if item.Type <> "Book"
+          if item.type <> "Book"
             tmp = CreateObject("roSGNode", "HomeData")
             tmp.json = item
             results.push(tmp)
@@ -114,7 +114,7 @@ sub loadItems()
       if isValid(data) and isValid(data.Items)
         for each item in data.Items
           ' Skip Books for now as we don't support it (issue #558)
-          if item.Type <> "Book"
+          if item.type <> "Book"
             tmp = CreateObject("roSGNode", "HomeData")
             tmp.json = item
             results.push(tmp)
@@ -140,14 +140,14 @@ sub loadItems()
       for each item in data.Items
         ' Skip Books for now as we don't support it (issue #558)
         ' also skip songs since there is limited space
-        if not (item.Type = "Book" or item.Type = "Audio")
+        if not (item.type = "Book" or item.type = "Audio")
           tmp = CreateObject("roSGNode", "HomeData")
 
           params = {}
           params["Tags"] = item.PrimaryImageTag
           params["MaxWidth"] = 234
           params["MaxHeight"] = 330
-          tmp.posterURL = ImageUrl(item.Id, "Primary", params)
+          tmp.posterURL = ImageUrl(item.id, "Primary", params)
           tmp.json = item
           results.push(tmp)
         end if
@@ -170,7 +170,7 @@ sub loadItems()
     if isValid(data) and isValid(data.Items)
       for each item in data.Items
         tmp = CreateObject("roSGNode", "HomeData")
-        item.ImageURL = ImageURL(item.Id)
+        item.imageUrl = imageUrl(item.id)
         tmp.json = item
         results.push(tmp)
       end for
@@ -180,13 +180,13 @@ sub loadItems()
   else if m.top.itemsToLoad = "people"
     for each person in m.top.peopleList
       tmp = CreateObject("roSGNode", "ExtrasData")
-      tmp.Id = person.Id
+      tmp.id = person.id
       tmp.labelText = person.Name
       params = {}
       params["Tags"] = person.PrimaryImageTag
       params["MaxWidth"] = 234
       params["MaxHeight"] = 330
-      tmp.posterURL = ImageUrl(person.Id, "Primary", params)
+      tmp.posterURL = ImageUrl(person.id, "Primary", params)
       tmp.json = person
       results.push(tmp)
     end for
@@ -203,7 +203,7 @@ sub loadItems()
         params["Tags"] = specfeat.ImageTags.Primary
         params["MaxWidth"] = 450
         params["MaxHeight"] = 402
-        tmp.posterURL = ImageUrl(specfeat.Id, "Primary", params)
+        tmp.posterURL = ImageUrl(specfeat.id, "Primary", params)
         tmp.json = specfeat
       end for
     end if
@@ -216,7 +216,7 @@ sub loadItems()
         params["Tags"] = part.ImageTags.Primary
         params["MaxWidth"] = 450
         params["MaxHeight"] = 402
-        tmp.posterURL = ImageUrl(part.Id, "Primary", params)
+        tmp.posterURL = ImageUrl(part.id, "Primary", params)
         tmp.json = part
         results.push(tmp)
       end for
@@ -229,7 +229,7 @@ sub loadItems()
     if isValid(data) and isValid(data.Items)
       for each item in data.items
         tmp = CreateObject("roSGNode", "ExtrasData")
-        tmp.posterURL = ImageUrl(item.Id, "Primary", { "Tags": item.PrimaryImageTag })
+        tmp.posterURL = ImageUrl(item.id, "Primary", { "Tags": item.PrimaryImageTag })
         tmp.json = item
         results.push(tmp)
       end for
@@ -262,7 +262,7 @@ sub getPersonVideos(videoType, dest, dimens)
       tmp = CreateObject("roSGNode", "ExtrasData")
       imgParms = { "Tags": item.ImageTags.Primary }
       imgParms.append(dimens)
-      tmp.posterURL = ImageUrl(item.Id, "Primary", imgParms)
+      tmp.posterURL = ImageUrl(item.id, "Primary", imgParms)
       tmp.json = item
       dest.push(tmp)
     end for

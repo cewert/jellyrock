@@ -28,19 +28,19 @@ function getDeviceProfile() as object
   globalDevice = m.global.device
   return {
     "Name": "JellyRock",
-    "Id": globalDevice.id,
+    "id": globalDevice.id,
     "Identification": {
       "FriendlyName": globalDevice.friendlyName,
       "ModelNumber": globalDevice.model,
       "SerialNumber": "string",
       "ModelName": globalDevice.name,
-      "ModelDescription": "Type: " + globalDevice.modelType,
+      "ModelDescription": "type: " + globalDevice.modelType,
       "Manufacturer": globalDevice.modelDetails.VendorName
     },
     "FriendlyName": globalDevice.friendlyName,
     "Manufacturer": globalDevice.modelDetails.VendorName,
     "ModelName": globalDevice.name,
-    "ModelDescription": "Type: " + globalDevice.modelType,
+    "ModelDescription": "type: " + globalDevice.modelType,
     "ModelNumber": globalDevice.model,
     "SerialNumber": globalDevice.serial,
     "MaxStreamingBitrate": 120000000,
@@ -160,7 +160,7 @@ function GetDirectPlayProfiles() as object
 
       directPlayProfiles.push({
         "Container": containerString,
-        "Type": "Video",
+        "type": "Video",
         "VideoCodec": videoCodecString,
         "AudioCodec": supportedCodecs[container]["audio"].Join(",")
       })
@@ -169,7 +169,7 @@ function GetDirectPlayProfiles() as object
 
   directPlayProfiles.push({
     "Container": supportedAudio.Join(","),
-    "Type": "Audio"
+    "type": "Audio"
   })
   return directPlayProfiles
 end function
@@ -302,7 +302,7 @@ function getTranscodingProfiles() as object
   ' NOTE: multichannel aac is not supported. only decode to stereo on some devices
   transcodingProfiles.push({
     "Container": "aac",
-    "Type": "Audio",
+    "type": "Audio",
     "AudioCodec": "aac",
     "Context": "Streaming",
     "Protocol": "http",
@@ -310,7 +310,7 @@ function getTranscodingProfiles() as object
   })
   transcodingProfiles.push({
     "Container": "aac",
-    "Type": "Audio",
+    "type": "Audio",
     "AudioCodec": "aac",
     "Context": "Static",
     "Protocol": "http",
@@ -319,7 +319,7 @@ function getTranscodingProfiles() as object
   ' add mp3 to TranscodingProfile for multichannel music
   transcodingProfiles.push({
     "Container": "mp3",
-    "Type": "Audio",
+    "type": "Audio",
     "AudioCodec": "mp3",
     "Context": "Streaming",
     "Protocol": "http",
@@ -327,7 +327,7 @@ function getTranscodingProfiles() as object
   })
   transcodingProfiles.push({
     "Container": "mp3",
-    "Type": "Audio",
+    "type": "Audio",
     "AudioCodec": "mp3",
     "Context": "Static",
     "Protocol": "http",
@@ -338,7 +338,7 @@ function getTranscodingProfiles() as object
     "Container": "ts",
     "Context": "Streaming",
     "Protocol": "hls",
-    "Type": "Video",
+    "type": "Video",
     "AudioCodec": tsAudioCodecs,
     "VideoCodec": tsVideoCodecs,
     "MaxAudioChannels": maxAudioChannels,
@@ -350,7 +350,7 @@ function getTranscodingProfiles() as object
     "Container": "mp4",
     "Context": "Streaming",
     "Protocol": "hls",
-    "Type": "Video",
+    "type": "Video",
     "AudioCodec": mp4AudioCodecs,
     "VideoCodec": mp4VideoCodecs,
     "MaxAudioChannels": maxAudioChannels,
@@ -411,7 +411,7 @@ function getCodecProfiles() as object
         for each codecType in ["VideoAudio", "Audio"]
           if audioCodec = "aac"
             codecProfiles.push({
-              "Type": codecType,
+              "type": codecType,
               "Codec": audioCodec,
               "Conditions": [
                 {
@@ -438,7 +438,7 @@ function getCodecProfiles() as object
             ' opus audio files not supported by roku
           else
             codecProfiles.push({
-              "Type": codecType,
+              "type": codecType,
               "Codec": audioCodec,
               "Conditions": [
                 {
@@ -584,7 +584,7 @@ function getCodecProfiles() as object
   h264LevelString = removeDecimals(h264LevelString)
 
   h264ProfileArray = {
-    "Type": "Video",
+    "type": "Video",
     "Codec": "h264",
     "Conditions": [
       {
@@ -643,7 +643,7 @@ function getCodecProfiles() as object
     end for
 
     mpeg2ProfileArray = {
-      "Type": "Video",
+      "type": "Video",
       "Codec": "mpeg2",
       "Conditions": [
         {
@@ -683,7 +683,7 @@ function getCodecProfiles() as object
     end for
 
     av1ProfileArray = {
-      "Type": "Video",
+      "type": "Video",
       "Codec": "av1",
       "Conditions": [
         {
@@ -741,7 +741,7 @@ function getCodecProfiles() as object
     end if
 
     hevcProfileArray = {
-      "Type": "Video",
+      "type": "Video",
       "Codec": "hevc",
       "Conditions": [
         {
@@ -809,7 +809,7 @@ function getCodecProfiles() as object
     end if
 
     vp9ProfileArray = {
-      "Type": "Video",
+      "type": "Video",
       "Codec": "vp9",
       "Conditions": [
         {

@@ -55,10 +55,10 @@ function LoginFlow()
       if numPubUsers > 0
         for each item in publicUsers
           user = CreateObject("roSGNode", "PublicUserData")
-          user.id = item.Id
+          user.id = item.id
           user.name = item.Name
           if isValid(item.PrimaryImageTag)
-            user.ImageURL = UserImageURL(user.id, { "tag": item.PrimaryImageTag })
+            user.imageUrl = UserImageURL(user.id, { "tag": item.PrimaryImageTag })
           end if
           publicUsersNodes.push(user)
           publicUserIds.push(user.id)
@@ -69,16 +69,16 @@ function LoginFlow()
         for each savedUser in savedUsers
           if isValid(savedUser.serverId) and savedUser.serverId = m.global.session.server.id
             ' only show unique userids on screen.
-            if not arrayHasValue(publicUserIds, savedUser.Id)
+            if not arrayHasValue(publicUserIds, savedUser.id)
               user = CreateObject("roSGNode", "PublicUserData")
-              user.id = savedUser.Id
+              user.id = savedUser.id
 
               if isValid(savedUser.username)
                 user.name = savedUser.username
               end if
 
               if isValid(savedUser.primaryImageTag)
-                user.ImageURL = UserImageURL(user.id, { "tag": savedUser.primaryImageTag })
+                user.imageUrl = UserImageURL(user.id, { "tag": savedUser.primaryImageTag })
               end if
 
               publicUsersNodes.push(user)
@@ -287,14 +287,14 @@ function CreateServerGroup()
   button = screen.findNode("submit")
   button.observeField("buttonSelected", port)
   'create delete saved server option
-  new_options = []
+  newOptions = []
   sidepanel = screen.findNode("options")
   opt = CreateObject("roSGNode", "OptionsButton")
   opt.title = tr("Delete Saved")
   opt.id = "delete_saved"
   opt.observeField("optionSelected", port)
-  new_options.push(opt)
-  sidepanel.options = new_options
+  newOptions.push(opt)
+  sidepanel.options = newOptions
   sidepanel.observeField("closeSidePanel", port)
 
   screen.observeField("backPressed", port)
@@ -428,22 +428,22 @@ function CreateSigninGroup(user = "")
   group.findNode("prompt").text = tr("Sign In")
 
   config = group.findNode("configOptions")
-  username_field = CreateObject("roSGNode", "ConfigData")
-  username_field.label = tr("Username")
-  username_field.field = "username"
-  username_field.type = "string"
+  usernameField = CreateObject("roSGNode", "ConfigData")
+  usernameField.label = tr("Username")
+  usernameField.field = "username"
+  usernameField.type = "string"
   if user = "" and isValid(get_setting("username"))
-    username_field.value = get_setting("username")
+    usernameField.value = get_setting("username")
   else
-    username_field.value = user
+    usernameField.value = user
   end if
-  password_field = CreateObject("roSGNode", "ConfigData")
-  password_field.label = tr("Password")
-  password_field.field = "password"
-  password_field.type = "password"
+  passwordField = CreateObject("roSGNode", "ConfigData")
+  passwordField.label = tr("Password")
+  passwordField.field = "password"
+  passwordField.type = "password"
   registryPassword = get_setting("password")
   if isValid(registryPassword)
-    password_field.value = registryPassword
+    passwordField.value = registryPassword
   end if
   ' Add checkbox for saving credentials
   checkbox = group.findNode("onOff")
@@ -464,7 +464,7 @@ function CreateSigninGroup(user = "")
     quickConnect.visible = false
   end if
 
-  items = [username_field, password_field]
+  items = [usernameField, passwordField]
   config.configItems = items
 
   button = group.findNode("submit")
@@ -566,34 +566,34 @@ function CreateHomeGroup()
 
   sidepanel = group.findNode("options")
   sidepanel.observeField("closeSidePanel", m.port)
-  new_options = []
+  newOptions = []
 
   o = CreateObject("roSGNode", "OptionsButton")
   o.title = tr("Search")
   o.id = "goto_search"
   o.observeField("optionSelected", m.port)
-  new_options.push(o)
+  newOptions.push(o)
   o = invalid
 
   o = CreateObject("roSGNode", "OptionsButton")
   o.title = tr("Change user")
   o.id = "change_user"
   o.observeField("optionSelected", m.port)
-  new_options.push(o)
+  newOptions.push(o)
   o = invalid
 
   o = CreateObject("roSGNode", "OptionsButton")
   o.title = tr("Change server")
   o.id = "change_server"
   o.observeField("optionSelected", m.port)
-  new_options.push(o)
+  newOptions.push(o)
   o = invalid
 
   o = CreateObject("roSGNode", "OptionsButton")
   o.title = tr("Sign out")
   o.id = "sign_out"
   o.observeField("optionSelected", m.port)
-  new_options.push(o)
+  newOptions.push(o)
   o = invalid
 
   ' Add settings option to menu
@@ -601,22 +601,22 @@ function CreateHomeGroup()
   o.title = tr("Settings")
   o.id = "settings"
   o.observeField("optionSelected", m.port)
-  new_options.push(o)
+  newOptions.push(o)
 
   ' And a profile button
-  user_node = CreateObject("roSGNode", "OptionsData")
-  user_node.id = "active_user"
-  user_node.title = tr("Profile")
-  user_node.base_title = tr("Profile")
-  user_options = []
+  userNode = CreateObject("roSGNode", "OptionsData")
+  userNode.id = "active_user"
+  userNode.title = tr("Profile")
+  userNode.base_title = tr("Profile")
+  userOptions = []
   for each user in AvailableUsers()
-    user_options.push({ display: user.username + "@" + user.server, value: user.id })
+    userOptions.push({ display: user.username + "@" + user.server, value: user.id })
   end for
-  user_node.choices = user_options
-  user_node.value = m.global.session.user.id
-  new_options.push(user_node)
+  userNode.choices = userOptions
+  userNode.value = m.global.session.user.id
+  newOptions.push(userNode)
 
-  sidepanel.options = new_options
+  sidepanel.options = newOptions
 
   return group
 end function
@@ -749,7 +749,7 @@ function CreateArtistView(artist as object) as dynamic
   return group
 end function
 
-' Shows details on selected album. Description text, image, and list of available songs
+' Shows details on selected album. description text, image, and list of available songs
 function CreateAlbumView(album as object) as dynamic
   ' validate album node
   if not isValid(album) or not isValid(album.id) then return invalid
@@ -772,7 +772,7 @@ function CreateAlbumView(album as object) as dynamic
   return group
 end function
 
-' Shows details on selected playlist. Description text, image, and list of available items
+' Shows details on selected playlist. description text, image, and list of available items
 function CreatePlaylistView(playlist as object) as dynamic
   ' validate playlist node
   if not isValid(playlist) or not isValid(playlist.id) then return invalid
@@ -904,13 +904,13 @@ function CreateSearchPage()
   return group
 end function
 
-function CreateVideoPlayerGroup(video_id as string, mediaSourceId = invalid as dynamic, audio_stream_idx = 1 as integer, forceTranscoding = false as boolean, showIntro = true as boolean, allowResumeDialog = true as boolean)
+function CreateVideoPlayerGroup(video_id as string, mediaSourceId = invalid as dynamic, audioStreamIdx = 1 as integer, forceTranscoding = false as boolean, showIntro = true as boolean, allowResumeDialog = true as boolean)
   ' validate video_id
   if not isValid(video_id) or video_id = "" then return invalid
 
   startLoadingSpinner()
   ' Video is Playing
-  video = VideoPlayer(video_id, mediaSourceId, audio_stream_idx, defaultSubtitleTrackFromVid(video_id), forceTranscoding, showIntro, allowResumeDialog)
+  video = VideoPlayer(video_id, mediaSourceId, audioStreamIdx, defaultSubtitleTrackFromVid(video_id), forceTranscoding, showIntro, allowResumeDialog)
 
   if not isValid(video) then return invalid
 

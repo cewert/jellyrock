@@ -123,7 +123,7 @@ sub itemContentChanged()
     m.posterText.height = 200
     m.posterText.width = 280
   else
-    m.log.warn("Unhandled Grid Item Type", itemData.type)
+    m.log.warn("Unhandled Grid Item type", itemData.type)
   end if
 
   'If Poster not loaded, ensure "blue box" is shown until loaded

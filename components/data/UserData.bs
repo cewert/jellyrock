@@ -22,11 +22,11 @@ end sub
 
 sub saveToRegistry()
   users = parseJson(get_setting("available_users", "[]"))
-  this_user = invalid
+  thisUser = invalid
   for each user in users
-    if user.id = m.top.id then this_user = user
+    if user.id = m.top.id then thisUser = user
   end for
-  if not isValid(this_user)
+  if not isValid(thisUser)
     users.push({
       id: m.top.id,
       username: m.top.username,
@@ -37,13 +37,13 @@ sub saveToRegistry()
 end sub
 
 sub removeFromRegistry()
-  new_users = []
+  newUsers = []
   users = parseJson(get_setting("available_users", "[]"))
   for each user in users
-    if m.top.id <> user.id then new_users.push(user)
+    if m.top.id <> user.id then newUsers.push(user)
   end for
 
-  set_setting("available_users", formatJson(new_users))
+  set_setting("available_users", formatJson(newUsers))
 end sub
 
 function getPreference(key as string)

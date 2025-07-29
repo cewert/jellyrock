@@ -21,10 +21,10 @@ sub update_title()
 end sub
 
 sub press()
-  max_opt = m.top.choices.count()
+  maxOpt = m.top.choices.count()
   i = m.top.value_index + 1
-  while i >= max_opt
-    i = i - max_opt
+  while i >= maxOpt
+    i = i - maxOpt
   end while
 
   m.top.value_index = i

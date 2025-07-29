@@ -40,11 +40,11 @@ sub optionsSet()
     for each view in m.top.options.videos
       entry = viewContent.CreateChild("VideoTrackListData")
       entry.title = view.Title
-      entry.description = view.Description
+      entry.description = view.description
       entry.streamId = view.streamId
       entry.video_codec = view.video_codec
       m.videoNames.push(view.Name)
-      if isValid(view.Selected) and view.Selected = true
+      if isValid(view.selected) and view.selected = true
         selectedViewIndex = index
         entry.selected = true
         m.top.videoStreamId = view.streamId
@@ -67,10 +67,10 @@ sub optionsSet()
     for each audio in m.top.options.audios
       entry = audioContent.CreateChild("AudioTrackListData")
       entry.title = audio.Title
-      entry.description = audio.Description
+      entry.description = audio.description
       entry.streamIndex = audio.StreamIndex
       m.audioNames.push(audio.Name)
-      if isValid(audio.Selected) and audio.Selected = true
+      if isValid(audio.selected) and audio.selected = true
         selectedAudioIndex = index
         entry.selected = true
         m.top.audioStreamIndex = audio.streamIndex

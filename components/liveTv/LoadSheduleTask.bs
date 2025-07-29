@@ -37,7 +37,7 @@ sub loadSchedule()
     program = createObject("roSGNode", "ScheduleProgramData")
     program.json = item
     ' Are we currently recording this program?
-    if isValid(program.json.TimerId) and program.json.TimerId <> ""
+    if isValid(program.json.timerId) and program.json.timerId <> ""
       program.hdSmallIconUrl = "pkg:/images/red.png"
     else
       program.hdSmallIconUrl = invalid

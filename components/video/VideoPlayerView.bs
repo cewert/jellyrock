@@ -19,12 +19,12 @@ sub init()
   }
 
   ' Load meta data
-  m.LoadMetaDataTask = CreateObject("roSGNode", "LoadVideoContentTask")
-  m.LoadMetaDataTask.itemId = m.currentItem.id
-  m.LoadMetaDataTask.itemType = m.currentItem.type
-  m.LoadMetaDataTask.selectedAudioStreamIndex = m.currentItem.selectedAudioStreamIndex
-  m.LoadMetaDataTask.observeField("content", "onVideoContentLoaded")
-  m.LoadMetaDataTask.control = "RUN"
+  m.loadMetaDataTask = CreateObject("roSGNode", "LoadVideoContentTask")
+  m.loadMetaDataTask.itemId = m.currentItem.id
+  m.loadMetaDataTask.itemType = m.currentItem.type
+  m.loadMetaDataTask.selectedAudioStreamIndex = m.currentItem.selectedAudioStreamIndex
+  m.loadMetaDataTask.observeField("content", "onVideoContentLoaded")
+  m.loadMetaDataTask.control = "RUN"
 
   m.chapterList = m.top.findNode("chapterList")
   m.chapterMenu = m.top.findNode("chapterMenu")
@@ -330,11 +330,11 @@ sub onSubtitleChange()
 
   m.top.control = "stop"
 
-  m.LoadMetaDataTask.selectedSubtitleIndex = m.top.SelectedSubtitle
-  m.LoadMetaDataTask.selectedAudioStreamIndex = m.top.audioIndex
-  m.LoadMetaDataTask.itemId = m.currentItem.id
-  m.LoadMetaDataTask.observeField("content", "onVideoContentLoaded")
-  m.LoadMetaDataTask.control = "RUN"
+  m.loadMetaDataTask.selectedSubtitleIndex = m.top.SelectedSubtitle
+  m.loadMetaDataTask.selectedAudioStreamIndex = m.top.audioIndex
+  m.loadMetaDataTask.itemId = m.currentItem.id
+  m.loadMetaDataTask.observeField("content", "onVideoContentLoaded")
+  m.loadMetaDataTask.control = "RUN"
 end sub
 
 ' Event handler for when audioIndex changes
@@ -347,11 +347,11 @@ sub onAudioIndexChange()
 
   m.top.control = "stop"
 
-  m.LoadMetaDataTask.selectedSubtitleIndex = m.top.SelectedSubtitle
-  m.LoadMetaDataTask.selectedAudioStreamIndex = m.top.audioIndex
-  m.LoadMetaDataTask.itemId = m.currentItem.id
-  m.LoadMetaDataTask.observeField("content", "onVideoContentLoaded")
-  m.LoadMetaDataTask.control = "RUN"
+  m.loadMetaDataTask.selectedSubtitleIndex = m.top.SelectedSubtitle
+  m.loadMetaDataTask.selectedAudioStreamIndex = m.top.audioIndex
+  m.loadMetaDataTask.itemId = m.currentItem.id
+  m.loadMetaDataTask.observeField("content", "onVideoContentLoaded")
+  m.loadMetaDataTask.control = "RUN"
 end sub
 
 sub onPlaybackErrorDialogClosed(msg)
@@ -378,11 +378,11 @@ sub showPlaybackErrorDialog(errorMessage as string)
 end sub
 
 sub onVideoContentLoaded()
-  m.LoadMetaDataTask.unobserveField("content")
-  m.LoadMetaDataTask.control = "STOP"
+  m.loadMetaDataTask.unobserveField("content")
+  m.loadMetaDataTask.control = "STOP"
 
-  videoContent = m.LoadMetaDataTask.content
-  m.LoadMetaDataTask.content = []
+  videoContent = m.loadMetaDataTask.content
+  m.loadMetaDataTask.content = []
 
   ' If we have nothing to play, return to previous screen
   if not isValidAndNotEmpty(videoContent)
@@ -427,7 +427,7 @@ sub onVideoContentLoaded()
   ' Set subtitleTrack property if subs are natively supported by Roku
   selectedSubtitle = invalid
   for each subtitle in m.top.fullSubtitleData
-    if subtitle.Index = videoContent[0].selectedSubtitle
+    if subtitle.index = videoContent[0].selectedSubtitle
       selectedSubtitle = subtitle
       exit for
     end if
@@ -585,7 +585,7 @@ sub onPositionChanged()
   m.dialog = m.top.getScene().findNode("dialogBackground")
   if not isValid(m.dialog)
     ' Do not show Next Episode button for intro videos
-    if not m.LoadMetaDataTask.isIntro
+    if not m.loadMetaDataTask.isIntro
       checkTimeToDisplayNextEpisode()
     end if
   end if
@@ -619,13 +619,13 @@ sub onState(msg)
       m.log.info("retrying video with mp3 audio stream", m.currentItem.id, m.top.SelectedSubtitle, m.top.audioIndex)
 
       m.top.unobserveField("state")
-      m.LoadMetaDataTask.forceMp3 = true
-      m.LoadMetaDataTask.selectedSubtitleIndex = m.top.SelectedSubtitle
-      m.LoadMetaDataTask.selectedAudioStreamIndex = m.top.audioIndex
-      m.LoadMetaDataTask.itemId = m.currentItem.id
-      m.LoadMetaDataTask.observeField("content", "onVideoContentLoaded")
+      m.loadMetaDataTask.forceMp3 = true
+      m.loadMetaDataTask.selectedSubtitleIndex = m.top.SelectedSubtitle
+      m.loadMetaDataTask.selectedAudioStreamIndex = m.top.audioIndex
+      m.loadMetaDataTask.itemId = m.currentItem.id
+      m.loadMetaDataTask.observeField("content", "onVideoContentLoaded")
 
-      m.LoadMetaDataTask.control = "RUN"
+      m.loadMetaDataTask.control = "RUN"
     else if m.top.errorStr = "player: only one playing instance supported."
       m.global.sceneManager.callfunc("popScene")
     else

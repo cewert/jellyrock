@@ -26,7 +26,7 @@ sub init()
 end sub
 
 '
-' When Selected Index set, ensure it is the one Focused
+' When selected index set, ensure it is the one Focused
 sub selectedIndexChanged()
   m.selectedFocusedIndex = m.top.selectedIndex
 end sub

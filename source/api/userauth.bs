@@ -160,7 +160,7 @@ function AuthenticateViaQuickConnect(secret)
   if isValid(jsonResponse) and isValid(jsonResponse.AccessToken) and isValid(jsonResponse.User)
     userdata = CreateObject("roSGNode", "UserData")
     userdata.json = jsonResponse
-    session.user.Update("id", jsonResponse.User.Id)
+    session.user.Update("id", jsonResponse.User.id)
     session.user.Update("authToken", jsonResponse.AccessToken)
     userdata.callFunc("saveToRegistry")
 

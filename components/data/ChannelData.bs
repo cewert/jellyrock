@@ -12,7 +12,7 @@ sub setFields()
     m.top.title = json.name
   end if
   m.top.live = true
-  m.top.Type = "TvChannel"
+  m.top.type = "TvChannel"
   setPoster()
 end sub
 
@@ -21,9 +21,9 @@ sub setPoster()
     m.top.posterURL = m.top.image.url
   else if isValid(m.top.json.ImageTags) and isValid(m.top.json.ImageTags.Primary)
     imgParams = { "maxHeight": 60, "Tag": m.top.json.ImageTags.Primary }
-    m.top.hdsmalliconurl = ImageURL(m.top.json.id, "Primary", imgParams)
+    m.top.hdsmalliconurl = imageUrl(m.top.json.id, "Primary", imgParams)
 
     imgParams = { "maxHeight": 440, "maxWidth": 295, "Tag": m.top.json.ImageTags.Primary }
-    m.top.posterURL = ImageURL(m.top.json.id, "Primary", imgParams)
+    m.top.posterURL = imageUrl(m.top.json.id, "Primary", imgParams)
   end if
 end sub

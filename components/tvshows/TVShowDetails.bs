@@ -8,7 +8,7 @@ sub init()
   m.tvshowPoster = m.top.findNode("tvshowPoster")
   m.extrasSlider = m.top.findNode("tvSeasonExtras")
   m.getShuffleEpisodesTask = createObject("roSGNode", "getShuffleEpisodesTask")
-  m.Shuffle = m.top.findNode("Shuffle")
+  m.shuffle = m.top.findNode("shuffle")
   m.extrasSlider.visible = true
   m.seasons = m.top.findNode("seasons")
   m.overview = m.top.findNode("overview")
@@ -63,7 +63,7 @@ sub itemContentChanged()
 
   setFieldText("overview", itemData.overview)
 
-  m.Shuffle.visible = true
+  m.shuffle.visible = true
 
   if type(itemData.RunTimeTicks) = "LongInteger"
     setFieldText("runtime", stri(getRuntime()) + " mins")
@@ -120,8 +120,8 @@ function getEndTime() as string
   itemData = m.top.itemContent.json
 
   date = CreateObject("roDateTime")
-  duration_s = int(itemData.RunTimeTicks / 10000000.0)
-  date.fromSeconds(date.asSeconds() + duration_s)
+  durationS = int(itemData.RunTimeTicks / 10000000.0)
+  date.fromSeconds(date.asSeconds() + durationS)
   date.toLocalTime()
 
   return formatTime(date)
@@ -191,7 +191,7 @@ end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
   if key = "OK" or key = "play"
-    if m.Shuffle.hasFocus()
+    if m.shuffle.hasFocus()
       m.getShuffleEpisodesTask.showID = m.top.itemContent.id
       m.getShuffleEpisodesTask.observeField("data", "onShuffleEpisodeDataLoaded")
       m.getShuffleEpisodesTask.control = "RUN"
@@ -215,9 +215,9 @@ function onKeyEvent(key as string, press as boolean) as boolean
   bottomGrp = m.top.findNode("extrasGrid")
 
   if key = "down" and m.overview.hasFocus()
-    m.Shuffle.setFocus(true)
+    m.shuffle.setFocus(true)
     return true
-  else if key = "down" and m.Shuffle.hasFocus()
+  else if key = "down" and m.shuffle.hasFocus()
     topGrp.setFocus(true)
     return true
   else if key = "down" and topGrp.hasFocus()
@@ -233,9 +233,9 @@ function onKeyEvent(key as string, press as boolean) as boolean
       return true
     end if
   else if key = "up" and topGrp.hasFocus()
-    m.Shuffle.setFocus(true)
+    m.shuffle.setFocus(true)
     return true
-  else if key = "up" and m.Shuffle.hasFocus()
+  else if key = "up" and m.shuffle.hasFocus()
     m.overview.setFocus(true)
     return true
   else if key = "play" and m.seasons.hasFocus()

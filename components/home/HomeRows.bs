@@ -25,25 +25,25 @@ sub init()
   m.top.observeField("rowItemSelected", "itemSelected")
 
   ' Load the Libraries from API via task
-  m.LoadLibrariesTask = createObject("roSGNode", "LoadItemsTask")
-  m.LoadLibrariesTask.observeField("content", "onLibrariesLoaded")
+  m.loadLibrariesTask = createObject("roSGNode", "LoadItemsTask")
+  m.loadLibrariesTask.observeField("content", "onLibrariesLoaded")
 
   ' set up task nodes for other rows
-  m.LoadContinueWatchingTask = createObject("roSGNode", "LoadItemsTask")
-  m.LoadContinueWatchingTask.itemsToLoad = "continue"
+  m.loadContinueWatchingTask = createObject("roSGNode", "LoadItemsTask")
+  m.loadContinueWatchingTask.itemsToLoad = "continue"
 
-  m.LoadNextUpTask = createObject("roSGNode", "LoadItemsTask")
-  m.LoadNextUpTask.itemsToLoad = "nextUp"
+  m.loadNextUpTask = createObject("roSGNode", "LoadItemsTask")
+  m.loadNextUpTask.itemsToLoad = "nextUp"
 
-  m.LoadOnNowTask = createObject("roSGNode", "LoadItemsTask")
-  m.LoadOnNowTask.itemsToLoad = "onNow"
+  m.loadOnNowTask = createObject("roSGNode", "LoadItemsTask")
+  m.loadOnNowTask.itemsToLoad = "onNow"
 
-  m.LoadFavoritesTask = createObject("roSGNode", "LoadItemsTask")
-  m.LoadFavoritesTask.itemsToLoad = "favorites"
+  m.loadFavoritesTask = createObject("roSGNode", "LoadItemsTask")
+  m.loadFavoritesTask.itemsToLoad = "favorites"
 end sub
 
 sub loadLibraries()
-  m.LoadLibrariesTask.control = "RUN"
+  m.loadLibrariesTask.control = "RUN"
 end sub
 
 sub updateSize()
@@ -89,7 +89,7 @@ sub processUserSections()
       ' expect 1 row per filtered media library
       m.filteredLatest = filterNodeArray(m.libraryData, "id", sessionUser.configuration.LatestItemsExcludes)
       for each latestLibrary in m.filteredLatest
-        if latestLibrary.collectionType <> "boxsets" and latestLibrary.collectionType <> "livetv" and latestLibrary.json.CollectionType <> "Program"
+        if latestLibrary.collectionType <> "boxsets" and latestLibrary.collectionType <> "livetv" and latestLibrary.json.collectionType <> "Program"
           m.expectedRowCount++
         end if
       end for
@@ -129,13 +129,13 @@ sub processUserSections()
   m.loadingTimer.control = "start"
 end sub
 
-' onLibrariesLoaded: Handler when LoadLibrariesTask returns data
+' onLibrariesLoaded: Handler when loadLibrariesTask returns data
 '
 sub onLibrariesLoaded()
   ' save data for other functions
-  m.libraryData = m.LoadLibrariesTask.content
-  m.LoadLibrariesTask.unobserveField("content")
-  m.LoadLibrariesTask.content = []
+  m.libraryData = m.loadLibrariesTask.content
+  m.loadLibrariesTask.unobserveField("content")
+  m.loadLibrariesTask.content = []
 
   processUserSections()
 end sub
@@ -241,7 +241,7 @@ end sub
 
 ' addHomeSection: Adds a new home section to the home rows.
 '
-' @param {string} sectionType - Type of section to add
+' @param {string} sectionType - type of section to add
 ' @return {boolean} indicating if the section was handled
 function addHomeSection(sectionType as string) as boolean
   ' Poster size library items
@@ -323,15 +323,15 @@ sub createLatestInRows()
 
   ' create a "Latest In" row for each library
   for each lib in m.filteredLatest
-    if lib.collectionType <> "boxsets" and lib.collectionType <> "livetv" and lib.json.CollectionType <> "Program"
+    if lib.collectionType <> "boxsets" and lib.collectionType <> "livetv" and lib.json.collectionType <> "Program"
       sectionName = `${tr("Recently Added in")} ${lib.name}`
 
       imagesize = homeRowItemSizes.WIDE_POSTER
 
-      if isValid(lib.json.CollectionType)
-        if LCase(lib.json.CollectionType) = "movies"
+      if isValid(lib.json.collectionType)
+        if LCase(lib.json.collectionType) = "movies"
           imagesize = homeRowItemSizes.MOVIE_POSTER
-        else if LCase(lib.json.CollectionType) = "music"
+        else if LCase(lib.json.collectionType) = "music"
           imagesize = homeRowItemSizes.MUSIC_ALBUM
         end if
       end if
@@ -348,7 +348,7 @@ sub createLatestInRows()
       loadLatest.itemId = lib.id
 
       metadata = { "title": lib.name }
-      metadata.Append({ "contentType": lib.json.CollectionType })
+      metadata.Append({ "contentType": lib.json.collectionType })
       loadLatest.metadata = metadata
 
       loadLatest.observeField("content", "updateLatestItems")
@@ -418,16 +418,16 @@ sub createLiveTVRow()
     nextUpRow.cursorSize = homeRowItemSizes.WIDE_POSTER
   end if
 
-  m.LoadOnNowTask.observeField("content", "updateOnNowItems")
-  m.LoadOnNowTask.control = "RUN"
+  m.loadOnNowTask.observeField("content", "updateOnNowItems")
+  m.loadOnNowTask.control = "RUN"
 end sub
 
 ' createContinueWatchingRow: Creates a row displaying items the user can continue watching
 '
 sub createContinueWatchingRow()
   ' Load the Continue Watching Data
-  m.LoadContinueWatchingTask.observeField("content", "updateContinueWatchingItems")
-  m.LoadContinueWatchingTask.control = "RUN"
+  m.loadContinueWatchingTask.observeField("content", "updateContinueWatchingItems")
+  m.loadContinueWatchingTask.control = "RUN"
 end sub
 
 ' createNextUpRow: Creates a row displaying next episodes up to watch
@@ -443,16 +443,16 @@ sub createNextUpRow()
   end if
 
   ' Load the Next Up Data
-  m.LoadNextUpTask.observeField("content", "updateNextUpItems")
-  m.LoadNextUpTask.control = "RUN"
+  m.loadNextUpTask.observeField("content", "updateNextUpItems")
+  m.loadNextUpTask.control = "RUN"
 end sub
 
 ' createFavoritesRow: Creates a row displaying items from the user's favorites list
 '
 sub createFavoritesRow()
   ' Load the Favorites Data
-  m.LoadFavoritesTask.observeField("content", "updateFavoritesItems")
-  m.LoadFavoritesTask.control = "RUN"
+  m.loadFavoritesTask.observeField("content", "updateFavoritesItems")
+  m.loadFavoritesTask.control = "RUN"
 end sub
 
 ' updateHomeRows: Update function exposed to outside components
@@ -465,13 +465,13 @@ sub updateHomeRows()
   processUserSections()
 end sub
 
-' updateFavoritesItems: Processes LoadFavoritesTask content. Removes, Creates, or Updates favorites row as needed
+' updateFavoritesItems: Processes loadFavoritesTask content. Removes, Creates, or Updates favorites row as needed
 '
 sub updateFavoritesItems()
   m.processedRowCount++
-  itemData = m.LoadFavoritesTask.content
-  m.LoadFavoritesTask.unobserveField("content")
-  m.LoadFavoritesTask.content = []
+  itemData = m.loadFavoritesTask.content
+  m.loadFavoritesTask.unobserveField("content")
+  m.loadFavoritesTask.content = []
 
   sectionName = tr("Favorites")
 
@@ -508,13 +508,13 @@ sub updateFavoritesItems()
   setRowItemSize()
 end sub
 
-' updateContinueWatchingItems: Processes LoadContinueWatchingTask content. Removes, Creates, or Updates continue watching row as needed
+' updateContinueWatchingItems: Processes loadContinueWatchingTask content. Removes, Creates, or Updates continue watching row as needed
 '
 sub updateContinueWatchingItems()
   m.processedRowCount++
-  itemData = m.LoadContinueWatchingTask.content
-  m.LoadContinueWatchingTask.unobserveField("content")
-  m.LoadContinueWatchingTask.content = []
+  itemData = m.loadContinueWatchingTask.content
+  m.loadContinueWatchingTask.unobserveField("content")
+  m.loadContinueWatchingTask.content = []
 
   sectionName = tr("Continue Watching")
 
@@ -530,8 +530,8 @@ sub updateContinueWatchingItems()
   row.cursorSize = homeRowItemSizes.WIDE_POSTER
 
   for each item in itemData
-    if isValid(item.json) and isValid(item.json.UserData) and isValid(item.json.UserData.PlayedPercentage)
-      item.PlayedPercentage = item.json.UserData.PlayedPercentage
+    if isValid(item.json) and isValid(item.json.UserData) and isValid(item.json.UserData.playedPercentage)
+      item.playedPercentage = item.json.UserData.playedPercentage
     end if
 
     item.usePoster = row.usePoster
@@ -551,14 +551,14 @@ sub updateContinueWatchingItems()
   setRowItemSize()
 end sub
 
-' updateNextUpItems: Processes LoadNextUpTask content. Removes, Creates, or Updates next up row as needed
+' updateNextUpItems: Processes loadNextUpTask content. Removes, Creates, or Updates next up row as needed
 '
 sub updateNextUpItems()
   m.processedRowCount++
-  itemData = m.LoadNextUpTask.content
-  m.LoadNextUpTask.unobserveField("content")
-  m.LoadNextUpTask.content = []
-  m.LoadNextUpTask.control = "STOP"
+  itemData = m.loadNextUpTask.content
+  m.loadNextUpTask.unobserveField("content")
+  m.loadNextUpTask.content = []
+  m.loadNextUpTask.control = "STOP"
 
   sectionName = tr("Next Up")
 
@@ -643,13 +643,13 @@ sub updateLatestItems(msg)
   setRowItemSize()
 end sub
 
-' updateOnNowItems: Processes LoadOnNowTask content. Removes, Creates, or Updates on now row as needed
+' updateOnNowItems: Processes loadOnNowTask content. Removes, Creates, or Updates on now row as needed
 '
 sub updateOnNowItems()
   m.processedRowCount++
-  itemData = m.LoadOnNowTask.content
-  m.LoadOnNowTask.unobserveField("content")
-  m.LoadOnNowTask.content = []
+  itemData = m.loadOnNowTask.content
+  m.loadOnNowTask.unobserveField("content")
+  m.loadOnNowTask.content = []
 
   sectionName = tr("On Now")
 

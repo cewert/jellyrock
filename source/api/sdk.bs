@@ -1816,7 +1816,7 @@ namespace api
 
   namespace users
     ' Gets a list of users.
-    ' If id is passed, gets a user by Id.
+    ' If id is passed, gets a user by id.
     function Get(id = "")
       url = "/users"
       if id <> ""

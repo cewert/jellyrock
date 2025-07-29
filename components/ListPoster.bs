@@ -68,12 +68,12 @@ sub itemContentChanged() as void
     m.poster.isWatched = true
   end if
 
-  if itemData.json.lookup("Type") = "Episode" and isValid(itemData.json.IndexNumber)
+  if itemData.json.lookup("type") = "Episode" and isValid(itemData.json.IndexNumber)
     m.title.text = StrI(itemData.json.IndexNumber) + ". " + m.title.text
 
     m.series.text = itemData.json.Series
     m.series.visible = true
-  else if itemData.json.lookup("Type") = "MusicAlbum"
+  else if itemData.json.lookup("type") = "MusicAlbum"
     m.title.font = "font:SmallestSystemFont"
     m.staticTitle.font = "font:SmallestSystemFont"
   else
@@ -84,7 +84,7 @@ sub itemContentChanged() as void
   imageUrl = itemData.posterURL
 
   if userSettings["ui.tvshows.blurunwatched"]
-    if itemData.json.lookup("Type") = "Episode" and isValid(itemData.json.userdata)
+    if itemData.json.lookup("type") = "Episode" and isValid(itemData.json.userdata)
       if not itemData.json.userdata.played
         imageUrl = imageUrl + "&blur=15"
       end if

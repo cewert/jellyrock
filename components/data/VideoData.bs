@@ -8,10 +8,10 @@ sub setFields()
 
   m.top.id = json.id
   m.top.Title = json.name
-  m.top.Description = json.overview
+  m.top.description = json.overview
   m.top.favorite = json.UserData.isFavorite
   m.top.watched = json.UserData.played
-  m.top.Type = "Video"
+  m.top.type = "Video"
 
   setPoster()
 end sub
@@ -21,6 +21,6 @@ sub setPoster()
     m.top.posterURL = m.top.image.url
   else if isValid(m.top.json.ImageTags.Primary)
     imgParams = { "maxHeight": 440, "maxWidth": 295, "Tag": m.top.json.ImageTags.Primary }
-    m.top.posterURL = ImageURL(m.top.json.id, "Primary", imgParams)
+    m.top.posterURL = imageUrl(m.top.json.id, "Primary", imgParams)
   end if
 end sub

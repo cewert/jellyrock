@@ -25,7 +25,7 @@ class VideoDefaults
 
     ' find the audio tracks for this video
     for i = 0 to m.mediaStreams.Count() - 1
-      if m.mediaStreams[i].Type = "Audio"
+      if m.mediaStreams[i].type = "Audio"
         audioTracks.push(m.mediaStreams[i])
 
         if m.mediaStreams[i].channels > 2

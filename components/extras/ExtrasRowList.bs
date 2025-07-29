@@ -7,24 +7,24 @@ sub init()
   m.top.observeField("rowItemFocused", "onRowItemFocused")
 
   ' Set up all Tasks
-  m.LoadPeopleTask = CreateObject("roSGNode", "LoadItemsTask")
-  m.LoadPeopleTask.itemsToLoad = "people"
-  m.LoadPeopleTask.observeField("content", "onPeopleLoaded")
-  m.LikeThisTask = CreateObject("roSGNode", "LoadItemsTask")
-  m.LikeThisTask.itemsToLoad = "likethis"
-  m.LikeThisTask.observeField("content", "onLikeThisLoaded")
-  m.SpecialFeaturesTask = CreateObject("roSGNode", "LoadItemsTask")
-  m.SpecialFeaturesTask.itemsToLoad = "specialfeatures"
-  m.SpecialFeaturesTask.observeField("content", "onSpecialFeaturesLoaded")
-  m.LoadAdditionalPartsTask = CreateObject("roSGNode", "LoadItemsTask")
-  m.LoadAdditionalPartsTask.itemsToLoad = "additionalparts"
-  m.LoadAdditionalPartsTask.observeField("content", "onAdditionalPartsLoaded")
-  m.LoadMoviesTask = CreateObject("roSGNode", "LoadItemsTask")
-  m.LoadMoviesTask.itemsToLoad = "personMovies"
-  m.LoadShowsTask = CreateObject("roSGNode", "LoadItemsTask")
-  m.LoadShowsTask.itemsToLoad = "personTVShows"
-  m.LoadSeriesTask = CreateObject("roSGNode", "LoadItemsTask")
-  m.LoadSeriesTask.itemsToLoad = "personSeries"
+  m.loadPeopleTask = CreateObject("roSGNode", "LoadItemsTask")
+  m.loadPeopleTask.itemsToLoad = "people"
+  m.loadPeopleTask.observeField("content", "onPeopleLoaded")
+  m.likeThisTask = CreateObject("roSGNode", "LoadItemsTask")
+  m.likeThisTask.itemsToLoad = "likethis"
+  m.likeThisTask.observeField("content", "onLikeThisLoaded")
+  m.specialFeaturesTask = CreateObject("roSGNode", "LoadItemsTask")
+  m.specialFeaturesTask.itemsToLoad = "specialfeatures"
+  m.specialFeaturesTask.observeField("content", "onSpecialFeaturesLoaded")
+  m.loadAdditionalPartsTask = CreateObject("roSGNode", "LoadItemsTask")
+  m.loadAdditionalPartsTask.itemsToLoad = "additionalparts"
+  m.loadAdditionalPartsTask.observeField("content", "onAdditionalPartsLoaded")
+  m.loadMoviesTask = CreateObject("roSGNode", "LoadItemsTask")
+  m.loadMoviesTask.itemsToLoad = "personMovies"
+  m.loadShowsTask = CreateObject("roSGNode", "LoadItemsTask")
+  m.loadShowsTask.itemsToLoad = "personTVShows"
+  m.loadSeriesTask = CreateObject("roSGNode", "LoadItemsTask")
+  m.loadSeriesTask.itemsToLoad = "personSeries"
 end sub
 
 sub updateSize()
@@ -39,20 +39,20 @@ end sub
 sub loadParts(data as object)
   m.top.parentId = data.id
   m.people = data.People
-  m.LoadAdditionalPartsTask.itemId = m.top.parentId
-  m.LoadAdditionalPartsTask.control = "RUN"
+  m.loadAdditionalPartsTask.itemId = m.top.parentId
+  m.loadAdditionalPartsTask.control = "RUN"
 end sub
 
 sub loadPersonVideos(personId)
   m.personId = personId
-  m.LoadMoviesTask.itemId = m.personId
-  m.LoadMoviesTask.observeField("content", "onMoviesLoaded")
-  m.LoadMoviesTask.control = "RUN"
+  m.loadMoviesTask.itemId = m.personId
+  m.loadMoviesTask.observeField("content", "onMoviesLoaded")
+  m.loadMoviesTask.control = "RUN"
 end sub
 
 sub onAdditionalPartsLoaded()
-  parts = m.LoadAdditionalPartsTask.content
-  m.LoadAdditionalPartsTask.unobserveField("content")
+  parts = m.loadAdditionalPartsTask.content
+  m.loadAdditionalPartsTask.unobserveField("content")
 
   data = CreateObject("roSGNode", "ContentNode") ' The row Node
   m.top.content = data
@@ -66,12 +66,12 @@ sub onAdditionalPartsLoaded()
   end if
 
   ' Load Cast and Crew and everything else...
-  m.LoadPeopleTask.peopleList = m.people
-  m.LoadPeopleTask.control = "RUN"
+  m.loadPeopleTask.peopleList = m.people
+  m.loadPeopleTask.control = "RUN"
 end sub
 
 sub onPeopleLoaded()
-  people = m.LoadPeopleTask.content
+  people = m.loadPeopleTask.content
   m.loadPeopleTask.unobserveField("content")
   if isValid(people) and people.count() > 0
     row = m.top.content.createChild("ContentNode")
@@ -80,24 +80,24 @@ sub onPeopleLoaded()
       if person.json.type = "Actor" and isValid(person.json.Role) and person.json.Role.ToStr().Trim() <> ""
         person.subTitle = "as " + person.json.Role
       else
-        person.subTitle = person.json.Type
+        person.subTitle = person.json.type
       end if
-      person.Type = "Person"
+      person.type = "Person"
       row.appendChild(person)
     end for
   end if
-  m.LikeThisTask.itemId = m.top.parentId
-  m.LikeThisTask.control = "RUN"
+  m.likeThisTask.itemId = m.top.parentId
+  m.likeThisTask.control = "RUN"
 end sub
 
 sub onLikeThisLoaded()
-  data = m.LikeThisTask.content
-  m.LikeThisTask.unobserveField("content")
+  data = m.likeThisTask.content
+  m.likeThisTask.unobserveField("content")
   if isValid(data) and data.count() > 0
     row = m.top.content.createChild("ContentNode")
     row.Title = tr("More Like This")
     for each item in data
-      item.Id = item.json.Id
+      item.id = item.json.id
       item.labelText = item.json.Name
       if isValid(item.json.ProductionYear)
         item.subTitle = stri(item.json.ProductionYear)
@@ -106,28 +106,28 @@ sub onLikeThisLoaded()
         premierYear.FromISO8601String(item.json.PremiereDate)
         item.subTitle = stri(premierYear.GetYear())
       end if
-      item.Type = item.json.Type
+      item.type = item.json.type
       row.appendChild(item)
     end for
     addRowSize([234, 396])
   end if
   ' Special Features next...
-  m.SpecialFeaturesTask.itemId = m.top.parentId
-  m.SpecialFeaturesTask.control = "RUN"
+  m.specialFeaturesTask.itemId = m.top.parentId
+  m.specialFeaturesTask.control = "RUN"
 end sub
 
 function onSpecialFeaturesLoaded()
-  data = m.SpecialFeaturesTask.content
-  m.SpecialFeaturesTask.unobserveField("content")
+  data = m.specialFeaturesTask.content
+  m.specialFeaturesTask.unobserveField("content")
   if isValid(data) and data.count() > 0
     row = m.top.content.createChild("ContentNode")
     row.Title = tr("Special Features")
     for each item in data
       m.top.visible = true
-      item.Id = item.json.Id
+      item.id = item.json.id
       item.labelText = item.json.Name
       item.subTitle = ""
-      item.Type = item.json.Type
+      item.type = item.json.type
       item.imageWidth = 450
       row.appendChild(item)
     end for
@@ -138,43 +138,43 @@ function onSpecialFeaturesLoaded()
 end function
 
 sub onMoviesLoaded()
-  data = m.LoadMoviesTask.content
-  m.LoadMoviesTask.unobserveField("content")
+  data = m.loadMoviesTask.content
+  m.loadMoviesTask.unobserveField("content")
   rlContent = CreateObject("roSGNode", "ContentNode")
   if isValid(data) and data.count() > 0
     row = rlContent.createChild("ContentNode")
     row.title = tr("Movies")
     for each mov in data
-      mov.Id = mov.json.Id
+      mov.id = mov.json.id
       mov.labelText = mov.json.Name
       mov.subTitle = mov.json.ProductionYear
-      mov.Type = mov.json.Type
+      mov.type = mov.json.type
       row.appendChild(mov)
     end for
     m.top.rowItemSize = [[234, 396]]
   end if
   m.top.content = rlContent
-  m.LoadShowsTask.itemId = m.personId
-  m.LoadShowsTask.observeField("content", "onShowsLoaded")
-  m.LoadShowsTask.control = "RUN"
+  m.loadShowsTask.itemId = m.personId
+  m.loadShowsTask.observeField("content", "onShowsLoaded")
+  m.loadShowsTask.control = "RUN"
 end sub
 
 sub onShowsLoaded()
-  data = m.LoadShowsTask.content
-  m.LoadShowsTask.unobserveField("content")
+  data = m.loadShowsTask.content
+  m.loadShowsTask.unobserveField("content")
   if isValid(data) and data.count() > 0
     row = buildRow("TV Shows", data, 502)
     addRowSize([502, 396])
     m.top.content.appendChild(row)
   end if
-  m.LoadSeriesTask.itemId = m.personId
-  m.LoadSeriesTask.observeField("content", "onSeriesLoaded")
-  m.LoadSeriesTask.control = "RUN"
+  m.loadSeriesTask.itemId = m.personId
+  m.loadSeriesTask.observeField("content", "onSeriesLoaded")
+  m.loadSeriesTask.control = "RUN"
 end sub
 
 sub onSeriesLoaded()
-  data = m.LoadSeriesTask.content
-  m.LoadSeriesTask.unobserveField("content")
+  data = m.loadSeriesTask.content
+  m.loadSeriesTask.unobserveField("content")
   if isValid(data) and data.count() > 0
     row = buildRow("Series", data)
     addRowSize([234, 396])
@@ -200,8 +200,8 @@ function buildRow(rowTitle as string, items, imgWdth = 0)
       mov.subTitle = mov.json.ProductionYear
     end if
 
-    mov.Id = mov.json.Id
-    mov.Type = mov.json.Type
+    mov.id = mov.json.id
+    mov.type = mov.json.type
     if imgWdth > 0
       mov.imageWidth = imgWdth
     end if

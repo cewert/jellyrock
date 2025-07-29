@@ -22,12 +22,12 @@ end sub
 sub loadItems()
   results = []
 
-  sort_field = m.top.sortField
+  sortField = m.top.sortField
 
   if m.top.sortAscending = true
-    sort_order = "Ascending"
+    sortOrder = "ascending"
   else
-    sort_order = "Descending"
+    sortOrder = "Descending"
   end if
 
   if m.top.ItemType = "LogoImage"
@@ -45,8 +45,8 @@ sub loadItems()
     limit: m.top.limit,
     StartIndex: m.top.startIndex,
     parentid: m.top.itemId,
-    SortBy: sort_field,
-    SortOrder: sort_order,
+    SortBy: sortField,
+    SortOrder: sortOrder,
     recursive: m.top.recursive,
     Fields: "Overview",
     StudioIds: m.top.studioIds,
@@ -172,19 +172,19 @@ sub loadItems()
 
     for each item in data.Items
       tmp = invalid
-      if item.Type = "Movie" or item.Type = "MusicVideo"
+      if item.type = "Movie" or item.type = "MusicVideo"
         tmp = CreateObject("roSGNode", "MovieData")
-      else if item.Type = "Series"
+      else if item.type = "Series"
         tmp = CreateObject("roSGNode", "SeriesData")
-      else if item.Type = "BoxSet" or item.Type = "ManualPlaylistsFolder"
+      else if item.type = "BoxSet" or item.type = "ManualPlaylistsFolder"
         tmp = CreateObject("roSGNode", "CollectionData")
-      else if item.Type = "TvChannel"
+      else if item.type = "TvChannel"
         tmp = CreateObject("roSGNode", "ChannelData")
-      else if item.Type = "Folder" or item.Type = "ChannelFolderItem" or item.Type = "CollectionFolder"
+      else if item.type = "Folder" or item.type = "ChannelFolderItem" or item.type = "CollectionFolder"
         tmp = CreateObject("roSGNode", "FolderData")
-      else if item.Type = "Video" or item.Type = "Recording"
+      else if item.type = "Video" or item.type = "Recording"
         tmp = CreateObject("roSGNode", "VideoData")
-      else if item.Type = "Photo"
+      else if item.type = "Photo"
         tmp = CreateObject("roSGNode", "PhotoData")
       else if item.type = "PhotoAlbum"
         tmp = CreateObject("roSGNode", "FolderData")
@@ -194,15 +194,15 @@ sub loadItems()
         tmp.image = PosterImage(item.id, { "maxHeight": 425, "maxWidth": 290, "quality": "90" })
       else if item.type = "Episode"
         tmp = CreateObject("roSGNode", "TVEpisode")
-      else if LCase(item.Type) = "recording"
+      else if LCase(item.type) = "recording"
         tmp = CreateObject("roSGNode", "RecordingData")
-      else if item.Type = "Genre"
+      else if item.type = "Genre"
         tmp = CreateObject("roSGNode", "ContentNode")
         tmp.title = item.name
 
         genreData = api.users.GetItemsByQuery(m.global.session.user.id, {
           SortBy: "Random",
-          SortOrder: "Ascending",
+          SortOrder: "ascending",
           IncludeItemTypes: m.top.itemType,
           Recursive: true,
           Fields: "PrimaryImageAspectRatio,MediaSourceCount,BasicSyncInfo",
@@ -252,23 +252,23 @@ sub loadItems()
           row.type = genreItem.type
         end for
 
-      else if item.Type = "Studio"
+      else if item.type = "Studio"
         tmp = CreateObject("roSGNode", "FolderData")
-      else if item.Type = "MusicAlbum"
+      else if item.type = "MusicAlbum"
         tmp = CreateObject("roSGNode", "MusicAlbumData")
         tmp.type = "MusicAlbum"
         if api.items.HeadImageURLByName(item.id, "primary")
-          tmp.posterURL = ImageURL(item.id, "Primary")
+          tmp.posterURL = imageUrl(item.id, "Primary")
         else
-          tmp.posterURL = ImageURL(item.id, "backdrop")
+          tmp.posterURL = imageUrl(item.id, "backdrop")
         end if
-      else if item.Type = "MusicArtist"
+      else if item.type = "MusicArtist"
         tmp = CreateObject("roSGNode", "MusicArtistData")
-      else if item.Type = "Audio"
+      else if item.type = "Audio"
         tmp = CreateObject("roSGNode", "MusicSongData")
         tmp.type = "Audio"
         tmp.image = api.items.GetImageURL(item.id, "primary", 0, { "maxHeight": 280, "maxWidth": 280, "quality": "90" })
-      else if item.Type = "MusicGenre"
+      else if item.type = "MusicGenre"
         tmp = CreateObject("roSGNode", "FolderData")
         tmp.title = item.name
         tmp.parentFolder = m.top.itemId
@@ -277,11 +277,11 @@ sub loadItems()
         tmp.posterUrl = api.items.GetImageURL(item.id, "primary", 0, { "maxHeight": 280, "maxWidth": 280, "quality": "90" })
 
       else
-        m.log.warn("Unknown Type", item.Type)
+        m.log.warn("Unknown type", item.type)
       end if
 
       if isValid(tmp)
-        if LCase(item.Type) <> "genre" and LCase(item.Type) <> "musicgenre"
+        if LCase(item.type) <> "genre" and LCase(item.type) <> "musicgenre"
           tmp.parentFolder = m.top.itemId
           tmp.json = item
           if isValid(item.UserData) and isValid(item.UserData.isFavorite)

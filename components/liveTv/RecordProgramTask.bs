@@ -4,21 +4,21 @@ import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/misc.bs"
 
 sub init()
-  m.log = log.Logger("RecordProgramTask")
+  m.log = log.Logger("recordProgramTask")
   m.top.functionName = "RecordOrCancelProgram"
 end sub
 
 sub RecordOrCancelProgram()
   if isValid(m.top.programDetails)
     ' Are we setting up a recording or canceling one?
-    TimerId = invalid
-    if isValid(m.top.programDetails.json.TimerId) and m.top.programDetails.json.TimerId <> ""
-      TimerId = m.top.programDetails.json.TimerId
+    timerId = invalid
+    if isValid(m.top.programDetails.json.timerId) and m.top.programDetails.json.timerId <> ""
+      timerId = m.top.programDetails.json.timerId
     end if
 
-    if not isValid(TimerId)
+    if not isValid(timerId)
       ' Setting up a recording...
-      programId = m.top.programDetails.Id
+      programId = m.top.programDetails.id
 
       ' Get Live TV default params from server...
       url = "LiveTv/Timers/Defaults"
@@ -46,10 +46,10 @@ sub RecordOrCancelProgram()
     else
       ' Cancelling a recording...
       if m.top.recordSeries = true
-        TimerId = m.top.programDetails.json.SeriesTimerId
-        url = Substitute("LiveTv/SeriesTimers/{0}", TimerId)
+        timerId = m.top.programDetails.json.SeriesTimerId
+        url = Substitute("LiveTv/SeriesTimers/{0}", timerId)
       else
-        url = Substitute("LiveTv/Timers/{0}", TimerId)
+        url = Substitute("LiveTv/Timers/{0}", timerId)
       end if
       resp = APIRequest(url)
       deleteVoid(resp)

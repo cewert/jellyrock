@@ -210,7 +210,7 @@ sub programUpdated()
   m.image.uri = prog.PosterURL
 
   ' If currently being recorded, change button to "Stop Recording"
-  if isValid(prog.json.TimerId)
+  if isValid(prog.json.timerId)
     if isValid(prog.json.SeriesTimerId)
       updateLabels(tr("Cancel Recording"), tr("Cancel Series Recording"))
     else

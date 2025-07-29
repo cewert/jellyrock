@@ -106,7 +106,7 @@ sub itemContentChanged()
     if itemData.usePoster
       m.itemPoster.uri = itemData.thumbnailURL
     else
-      m.itemPoster.uri = ImageURL(itemData.json.ChannelId)
+      m.itemPoster.uri = imageUrl(itemData.json.ChannelId)
     end if
     m.itemPoster.loadDisplayMode = "scaleToFill"
 
@@ -121,7 +121,7 @@ sub itemContentChanged()
   if itemData.type = "Episode" or LCase(itemData.type) = "recording"
     m.itemText.text = itemData.json.SeriesName
 
-    m.itemPoster.playedPercentage = itemData.PlayedPercentage
+    m.itemPoster.playedPercentage = itemData.playedPercentage
 
     if isValid(userSettings)
       if userSettings["ui.general.episodeimagesnextup"] = "webclient"
@@ -160,7 +160,7 @@ sub itemContentChanged()
   if itemData.type = "Movie" or itemData.type = "MusicVideo"
     m.itemText.text = itemData.name
 
-    m.itemPoster.playedPercentage = itemData.PlayedPercentage
+    m.itemPoster.playedPercentage = itemData.playedPercentage
 
     ' Use best image, but fallback to secondary if it's empty
     if (itemData.imageWidth = 180 and itemData.posterURL <> "") or itemData.thumbnailURL = ""
@@ -189,7 +189,7 @@ sub itemContentChanged()
   if itemData.type = "Video"
     m.itemText.text = itemData.name
 
-    m.itemPoster.playedPercentage = itemData.PlayedPercentage
+    m.itemPoster.playedPercentage = itemData.playedPercentage
 
     if itemData.imageWidth = 180
       m.itemPoster.uri = itemData.posterURL
@@ -254,34 +254,34 @@ sub itemContentChanged()
   if itemData.type = "MusicArtist"
     m.itemText.text = itemData.name
     m.itemTextExtra.text = itemData.json.AlbumArtist
-    m.itemPoster.uri = ImageURL(itemData.id)
+    m.itemPoster.uri = imageUrl(itemData.id)
     return
   end if
 
   if itemData.type = "Audio"
     m.itemText.text = itemData.name
     m.itemTextExtra.text = itemData.json.AlbumArtist
-    m.itemPoster.uri = ImageURL(itemData.id)
+    m.itemPoster.uri = imageUrl(itemData.id)
     return
   end if
 
   if itemData.type = "TvChannel"
     m.itemText.text = itemData.name
     m.itemTextExtra.text = itemData.json.AlbumArtist
-    m.itemPoster.uri = ImageURL(itemData.id)
+    m.itemPoster.uri = imageUrl(itemData.id)
     return
   end if
 
   if itemData.type = "Season"
     m.itemText.text = itemData.json.SeriesName
     m.itemTextExtra.text = itemData.name
-    m.itemPoster.uri = ImageURL(itemData.id)
+    m.itemPoster.uri = imageUrl(itemData.id)
     return
   end if
 
   if itemData.type = "Photo"
     m.itemText.text = itemData.name
-    m.itemPoster.uri = ImageURL(itemData.id)
+    m.itemPoster.uri = imageUrl(itemData.id)
 
     ' subtext
     if isValidAndNotEmpty(itemData.json)
@@ -301,7 +301,7 @@ sub itemContentChanged()
 
   if itemData.type = "PhotoAlbum"
     m.itemText.text = itemData.name
-    m.itemPoster.uri = ImageURL(itemData.id)
+    m.itemPoster.uri = imageUrl(itemData.id)
 
     ' subtext
     if isValid(itemData.json.ChildCount)
@@ -311,7 +311,7 @@ sub itemContentChanged()
     return
   end if
 
-  m.log.warn("Unhandled Home Item Type", itemData.type)
+  m.log.warn("Unhandled Home Item type", itemData.type)
 end sub
 
 ' Enable title scrolling based on item Focus

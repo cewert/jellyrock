@@ -23,9 +23,9 @@ function getData()
     end if
 
     gridAlbum.shortdescriptionline1 = album.title
-    gridAlbum.HDGRIDPOSTERURL = album.posterURL
+    gridAlbum.hdGridPosterUrl = album.posterURL
     gridAlbum.hdposterurl = album.posterURL
-    gridAlbum.SDGRIDPOSTERURL = album.posterURL
+    gridAlbum.sdGridPosterUrl = album.posterURL
     gridAlbum.sdposterurl = album.posterURL
 
     data.appendChild(gridAlbum)

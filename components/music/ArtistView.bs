@@ -33,8 +33,8 @@ sub init()
   m.overhang = m.top.getScene().findNode("overhang")
 
   ' Load background image
-  m.LoadBackdropImageTask = CreateObject("roSGNode", "LoadItemsTask")
-  m.LoadBackdropImageTask.itemsToLoad = "backdropImage"
+  m.loadBackdropImageTask = CreateObject("roSGNode", "LoadItemsTask")
+  m.loadBackdropImageTask.itemsToLoad = "backdropImage"
 
   m.backDrop = m.top.findNode("backdrop")
   m.artistImage = m.top.findNode("artistImage")
@@ -144,9 +144,9 @@ sub pageContentChanged()
   item = m.top.pageContent
 
   ' Use metadata to load backdrop image
-  m.LoadBackdropImageTask.itemId = item.json.id
-  m.LoadBackdropImageTask.observeField("content", "onBackdropImageLoaded")
-  m.LoadBackdropImageTask.control = "RUN"
+  m.loadBackdropImageTask.itemId = item.json.id
+  m.loadBackdropImageTask.observeField("content", "onBackdropImageLoaded")
+  m.loadBackdropImageTask.control = "RUN"
 
   ' Populate scene data
   setScreenTitle(item.json)
@@ -168,8 +168,8 @@ sub setPosterImage(posterURL)
 end sub
 
 sub onBackdropImageLoaded()
-  data = m.LoadBackdropImageTask.content[0]
-  m.LoadBackdropImageTask.unobserveField("content")
+  data = m.loadBackdropImageTask.content[0]
+  m.loadBackdropImageTask.unobserveField("content")
   if isValid(data) and data <> ""
     setBackdropImage(data)
   end if

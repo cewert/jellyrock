@@ -19,8 +19,8 @@ end function
 function getButton(msg, subnode = "buttons" as string) as object
   buttons = msg.getRoSGNode().findNode(subnode)
   if not isValid(buttons) then return invalid
-  active_button = buttons.focusedChild
-  return active_button
+  activeButton = buttons.focusedChild
+  return activeButton
 end function
 
 function leftPad(base as string, fill as string, length as integer) as string
@@ -636,8 +636,8 @@ end function
 ' convert value to boolean and return value
 function toBoolean(value as dynamic) as dynamic
   if not isValid(value) then return invalid
-  if Type(value) = "Boolean" then return value
-  if Type(value) <> "String" then return value
+  if type(value) = "Boolean" then return value
+  if type(value) <> "String" then return value
 
   if value = "true"
     return true

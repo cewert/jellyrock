@@ -38,8 +38,8 @@ sub setFields()
   mediaStreams = videoData.MediaStreams
   m.top.json = ""
 
-  if isValid(videoData.Type)
-    m.top.type = videoData.Type
+  if isValid(videoData.type)
+    m.top.type = videoData.type
   end if
 
   if isValid(videoData.logoImage) and videoData.logoImage <> ""
@@ -107,9 +107,9 @@ sub setFields()
   numAudioStreams = 0
 
   for each stream in mediaStreams
-    if stream.Type = "Video"
+    if stream.type = "Video"
       numVideoStreams++
-    else if stream.Type = "Audio"
+    else if stream.type = "Audio"
       numAudioStreams++
     end if
   end for
@@ -190,7 +190,7 @@ sub setVideoSubTitle()
 
   ' EPISODE
   if isValid(m.top.type)
-    if m.top.Type = "Episode" or m.top.Type = "Recording"
+    if m.top.type = "Episode" or m.top.type = "Recording"
       ' Title
       if m.top.seriesName <> ""
         m.videoTitle.text = m.top.seriesName

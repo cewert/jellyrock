@@ -92,7 +92,7 @@ namespace session
       ' make copy of global server session
       tmpSessionServer = m.global.session.server
       ' update the temp array
-      tmpSessionServer.AddReplace("id", myServerInfo.Id)
+      tmpSessionServer.AddReplace("id", myServerInfo.id)
       tmpSessionServer.AddReplace("name", myServerInfo.ServerName)
       tmpSessionServer.AddReplace("localURL", myServerInfo.LocalAddress)
       tmpSessionServer.AddReplace("os", myServerInfo.OperatingSystem)

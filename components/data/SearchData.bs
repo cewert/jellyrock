@@ -4,7 +4,7 @@ sub setFields()
 
   m.top.id = datum.id
   m.top.title = datum.name
-  m.top.type = datum.Type
+  m.top.type = datum.type
 end sub
 
 sub setPoster()
