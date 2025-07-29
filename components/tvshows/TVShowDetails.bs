@@ -8,7 +8,7 @@ sub init()
   m.tvshowPoster = m.top.findNode("tvshowPoster")
   m.extrasSlider = m.top.findNode("tvSeasonExtras")
   m.getShuffleEpisodesTask = createObject("roSGNode", "getShuffleEpisodesTask")
-  m.shuffle = m.top.findNode("shuffle")
+  m.shuffle = m.top.findNode("Shuffle")
   m.extrasSlider.visible = true
   m.seasons = m.top.findNode("seasons")
   m.overview = m.top.findNode("overview")
