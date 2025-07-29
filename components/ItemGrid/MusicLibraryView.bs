@@ -104,8 +104,8 @@ sub loadInitialItems()
   startLoadingSpinner(false)
   userSettings = m.global.session.user.settings
 
-  if LCase(m.top.parentItem.json.type) = "collectionfolder"
-    m.top.HomeLibraryItem = m.top.parentItem.id
+  if LCase(m.top.parentItem.json.Type) = "collectionfolder"
+    m.top.HomeLibraryItem = m.top.parentItem.Id
   end if
 
   if isValid(m.top.parentItem.backdropUrl)
@@ -114,10 +114,10 @@ sub loadInitialItems()
     SetBackground("")
   end if
 
-  m.sortField = userSettings["display." + m.top.parentItem.id + ".sortField"]
-  m.sortAscending = userSettings["display." + m.top.parentItem.id + ".sortAscending"]
-  m.filter = userSettings["display." + m.top.parentItem.id + ".filter"]
-  m.view = userSettings["display." + m.top.parentItem.id + ".landing"]
+  m.sortField = userSettings["display." + m.top.parentItem.Id + ".sortField"]
+  m.sortAscending = userSettings["display." + m.top.parentItem.Id + ".sortAscending"]
+  m.filter = userSettings["display." + m.top.parentItem.Id + ".filter"]
+  m.view = userSettings["display." + m.top.parentItem.Id + ".landing"]
 
   if not isValid(m.sortField) then m.sortField = "SortName"
   if not isValid(m.filter) then m.filter = "All"
@@ -253,7 +253,7 @@ end sub
 ' Return parent collection type
 function getCollectionType() as string
   if not isValid(m.top.parentItem.collectionType)
-    return LCase(m.top.parentItem.type)
+    return LCase(m.top.parentItem.Type)
   else
     return LCase(m.top.parentItem.collectionType)
   end if
@@ -373,7 +373,7 @@ sub ItemDataLoaded(msg)
   m.loading = false
   'If there are no items to display, show message
   if m.loadedItems = 0
-    m.emptyText.text = tr("NO_ITEMS").Replace("%1", m.top.parentItem.type)
+    m.emptyText.text = tr("NO_ITEMS").Replace("%1", m.top.parentItem.Type)
     m.emptyText.visible = true
   end if
   stopLoadingSpinner()
@@ -672,14 +672,14 @@ sub optionsClosed()
       sortAscendingStr = "false"
     end if
 
-    set_user_setting("display." + m.top.parentItem.id + ".sortField", m.sortField)
-    set_user_setting("display." + m.top.parentItem.id + ".sortAscending", sortAscendingStr)
+    set_user_setting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
+    set_user_setting("display." + m.top.parentItem.Id + ".sortAscending", sortAscendingStr)
   end if
 
   if m.options.filter <> m.filter
     m.filter = m.options.filter
     reload = true
-    set_user_setting("display." + m.top.parentItem.id + ".filter", m.options.filter)
+    set_user_setting("display." + m.top.parentItem.Id + ".filter", m.options.filter)
   end if
 
   m.view = m.global.session.user.settings["display." + m.top.parentItem.id + ".landing"]
@@ -687,7 +687,7 @@ sub optionsClosed()
   if m.options.view <> m.view
     m.view = m.options.view
     m.top.view = m.view
-    set_user_setting("display." + m.top.parentItem.id + ".landing", m.view)
+    set_user_setting("display." + m.top.parentItem.Id + ".landing", m.view)
 
     ' Reset any filtering or search terms
     m.top.alphaSelected = ""
@@ -698,9 +698,9 @@ sub optionsClosed()
     m.sortAscending = true
 
     ' Reset view to defaults
-    set_user_setting("display." + m.top.parentItem.id + ".sortField", m.sortField)
-    set_user_setting("display." + m.top.parentItem.id + ".sortAscending", "true")
-    set_user_setting("display." + m.top.parentItem.id + ".filter", m.filter)
+    set_user_setting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
+    set_user_setting("display." + m.top.parentItem.Id + ".sortAscending", "true")
+    set_user_setting("display." + m.top.parentItem.Id + ".filter", m.filter)
 
     reload = true
   end if
