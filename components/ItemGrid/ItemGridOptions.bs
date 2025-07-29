@@ -90,7 +90,7 @@ end function
 
 sub optionsSet()
   '  Views Tab
-  if m.top.options.views <> invalid
+  if isValid(m.top.options.views)
     viewContent = CreateObject("roSGNode", "ContentNode")
     index = 0
     selectedViewIndex = m.selectedViewIndex
@@ -109,7 +109,7 @@ sub optionsSet()
   end if
 
   ' Sort Tab
-  if m.top.options.sort <> invalid
+  if isValid(m.top.options.sort)
     sortContent = CreateObject("roSGNode", "ContentNode")
     index = 0
     m.selectedSortIndex = 0
@@ -118,9 +118,9 @@ sub optionsSet()
       entry = sortContent.CreateChild("ContentNode")
       entry.title = sortItem.Title
       m.sortNames.push(sortItem.Name)
-      if sortItem.Selected <> invalid and sortItem.Selected = true
+      if isValid(sortItem.Selected) and sortItem.Selected = true
         m.selectedSortIndex = index
-        if sortItem.Ascending <> invalid and sortItem.Ascending = false
+        if isValid(sortItem.Ascending) and sortItem.Ascending = false
           m.top.sortAscending = 0
         else
           m.top.sortAscending = 1
@@ -142,7 +142,7 @@ sub optionsSet()
   end if
 
   ' Filter Tab
-  if m.top.options.filter <> invalid
+  if isValid(m.top.options.filter)
     filterContent = CreateObject("roSGNode", "ContentNode")
     index = 0
     m.selectedFilterIndex = 0
@@ -162,7 +162,7 @@ sub optionsSet()
       end if
 
       m.filterNames.push(filterItem.Name)
-      if filterItem.selected <> invalid and filterItem.selected = true
+      if isValid(filterItem.selected) and filterItem.selected = true
         m.selectedFilterIndex = index
       end if
       index = index + 1
@@ -221,7 +221,7 @@ sub setHeartColor(color as string)
   try
     for i = 0 to 6
       node = m.favoriteMenu.getChild(i)
-      if node <> invalid and node.uri <> invalid and node.uri = "pkg:/images/icons/favorite_selected.png"
+      if isValid(node) and isValid(node.uri) and node.uri = "pkg:/images/icons/favorite_selected.png"
         m.favoriteMenu.getChild(i).blendColor = color
       end if
     end for
@@ -234,7 +234,7 @@ sub saveFavoriteItemSelected(msg)
   data = msg.GetData()
   m.selectedFavoriteItem = data
   ' Favorite button
-  if m.selectedFavoriteItem <> invalid
+  if isValid(m.selectedFavoriteItem)
     if m.selectedFavoriteItem.favorite = true
       m.favoriteMenu.iconUri = "pkg:/images/icons/favorite_selected.png"
       m.favoriteMenu.focusedIconUri = "pkg:/images/icons/favorite_selected.png"
