@@ -110,8 +110,8 @@ sub loadInitialItems()
   startLoadingSpinner(false)
   userSettings = m.global.session.user.settings
 
-  if m.top.parentItem.json.type = "CollectionFolder"
-    m.top.HomeLibraryItem = m.top.parentItem.id
+  if m.top.parentItem.json.Type = "CollectionFolder"
+    m.top.HomeLibraryItem = m.top.parentItem.Id
   end if
 
   if isValid(m.top.parentItem.backdropUrl)
@@ -120,11 +120,11 @@ sub loadInitialItems()
     SetBackground("")
   end if
 
-  m.sortField = userSettings["display." + m.top.parentItem.id + ".sortField"]
-  m.filter = userSettings["display." + m.top.parentItem.id + ".filter"]
-  m.filterOptions = userSettings["display." + m.top.parentItem.id + ".filterOptions"]
-  m.view = userSettings["display." + m.top.parentItem.id + ".landing"]
-  m.sortAscending = userSettings["display." + m.top.parentItem.id + ".sortAscending"]
+  m.sortField = userSettings["display." + m.top.parentItem.Id + ".sortField"]
+  m.filter = userSettings["display." + m.top.parentItem.Id + ".filter"]
+  m.filterOptions = userSettings["display." + m.top.parentItem.Id + ".filterOptions"]
+  m.view = userSettings["display." + m.top.parentItem.Id + ".landing"]
+  m.sortAscending = userSettings["display." + m.top.parentItem.Id + ".sortAscending"]
 
   ' If user has not set a preferred view for this folder, check if they've set a default view
   if not isValid(m.view)
@@ -139,19 +139,19 @@ sub loadInitialItems()
 
   m.filterOptions = ParseJson(m.filterOptions)
 
-  if m.top.parentItem.json.type = "Studio"
-    m.loadItemsTask.studioIds = m.top.parentItem.id
+  if m.top.parentItem.json.Type = "Studio"
+    m.loadItemsTask.studioIds = m.top.parentItem.Id
     m.loadItemsTask.itemId = m.top.parentItem.parentFolder
     m.loadItemsTask.genreIds = ""
-  else if m.top.parentItem.json.type = "Genre"
-    m.loadItemsTask.genreIds = m.top.parentItem.id
+  else if m.top.parentItem.json.Type = "Genre"
+    m.loadItemsTask.genreIds = m.top.parentItem.Id
     m.loadItemsTask.itemId = m.top.parentItem.parentFolder
     m.loadItemsTask.studioIds = ""
   else if m.view = "Movies" or m.options.view = "Movies"
     m.loadItemsTask.studioIds = ""
     m.loadItemsTask.genreIds = ""
   else
-    m.loadItemsTask.itemId = m.top.parentItem.id
+    m.loadItemsTask.itemId = m.top.parentItem.Id
   end if
 
   ' if we already searched for this alpha text than reset filter
@@ -171,7 +171,7 @@ sub loadInitialItems()
   ' Load Item Types
   if getCollectionType() = "movies"
     m.loadItemsTask.itemType = "Movie"
-    m.loadItemsTask.itemId = m.top.parentItem.id
+    m.loadItemsTask.itemId = m.top.parentItem.Id
   end if
 
   ' By default we load movies
@@ -206,7 +206,7 @@ sub loadInitialItems()
       m.itemGrid.rowHeights = "[350]"
     end if
   else if m.options.view = "Genres" or m.view = "Genres"
-    m.loadItemsTask.StudioIds = m.top.parentItem.id
+    m.loadItemsTask.StudioIds = m.top.parentItem.Id
     m.loadItemsTask.view = "Genres"
     m.movieLogo.visible = false
     m.selectedMovieName.visible = false
@@ -220,7 +220,7 @@ sub loadInitialItems()
   m.getFiltersTask.observeField("filters", "FilterDataLoaded")
   m.getFiltersTask.params = {
     userid: m.global.session.user.id,
-    parentid: m.top.parentItem.id,
+    parentid: m.top.parentItem.Id,
     includeitemtypes: "Movie"
   }
   m.getFiltersTask.control = "RUN"
@@ -284,7 +284,7 @@ end sub
 ' Return parent collection type
 function getCollectionType() as string
   if not isValid(m.top.parentItem.collectionType)
-    return m.top.parentItem.type
+    return m.top.parentItem.Type
   else
     return m.top.parentItem.collectionType
   end if
@@ -483,7 +483,7 @@ sub ItemDataLoaded(msg)
     m.criticRatingIcon.uri = ""
     m.star.uri = ""
 
-    m.emptyText.text = tr("NO_ITEMS").Replace("%1", m.top.parentItem.type)
+    m.emptyText.text = tr("NO_ITEMS").Replace("%1", m.top.parentItem.Type)
     m.emptyText.visible = true
   end if
 
@@ -795,14 +795,14 @@ sub optionsClosed()
       sortAscendingStr = "false"
     end if
 
-    set_user_setting("display." + m.top.parentItem.id + ".sortField", m.sortField)
-    set_user_setting("display." + m.top.parentItem.id + ".sortAscending", sortAscendingStr)
+    set_user_setting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
+    set_user_setting("display." + m.top.parentItem.Id + ".sortAscending", sortAscendingStr)
   end if
 
   if m.options.filter <> m.filter
     m.filter = m.options.filter
     reload = true
-    set_user_setting("display." + m.top.parentItem.id + ".filter", m.options.filter)
+    set_user_setting("display." + m.top.parentItem.Id + ".filter", m.options.filter)
   end if
 
   if not isValid(m.options.filterOptions)
@@ -812,14 +812,14 @@ sub optionsClosed()
   if not AssocArrayEqual(m.options.filterOptions, m.filterOptions)
     m.filterOptions = m.options.filterOptions
     reload = true
-    set_user_setting("display." + m.top.parentItem.id + ".filterOptions", FormatJson(m.options.filterOptions))
+    set_user_setting("display." + m.top.parentItem.Id + ".filterOptions", FormatJson(m.options.filterOptions))
   end if
 
-  m.view = m.global.session.user.settings["display." + m.top.parentItem.id + ".landing"]
+  m.view = m.global.session.user.settings["display." + m.top.parentItem.Id + ".landing"]
 
   if m.options.view <> m.view
     m.view = m.options.view
-    set_user_setting("display." + m.top.parentItem.id + ".landing", m.view)
+    set_user_setting("display." + m.top.parentItem.Id + ".landing", m.view)
 
     ' Reset any filtering or search terms
     m.top.alphaSelected = ""
@@ -831,10 +831,10 @@ sub optionsClosed()
     m.sortAscending = true
 
     ' Reset view to defaults
-    set_user_setting("display." + m.top.parentItem.id + ".sortField", m.sortField)
-    set_user_setting("display." + m.top.parentItem.id + ".sortAscending", "true")
-    set_user_setting("display." + m.top.parentItem.id + ".filter", m.filter)
-    set_user_setting("display." + m.top.parentItem.id + ".filterOptions", FormatJson(m.filterOptions))
+    set_user_setting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
+    set_user_setting("display." + m.top.parentItem.Id + ".sortAscending", "true")
+    set_user_setting("display." + m.top.parentItem.Id + ".filter", m.filter)
+    set_user_setting("display." + m.top.parentItem.Id + ".filterOptions", FormatJson(m.filterOptions))
 
     reload = true
   end if
