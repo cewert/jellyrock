@@ -1,8 +1,8 @@
 import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/api/userauth.bs"
 import "pkg:/source/utils/config.bs"
-import "pkg:/source/utils/session.bs"
 import "pkg:/source/utils/misc.bs"
+import "pkg:/source/utils/session.bs"
 
 sub init()
   m.quickConnectTimer = m.top.findNode("quickConnectTimer")
