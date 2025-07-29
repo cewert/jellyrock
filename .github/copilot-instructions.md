@@ -15,7 +15,7 @@ This project is a roku client application that connects to Jellyfin media server
 - `/scripts`: Contains javascript code used by some NPM scripts.
 - `/settings`: Contains user settings and preferences for the application saved in JSON format. The data from this file is imported by the app to see available settings and apply defaults.
 - `/source`: Contains all other brighterscript source code. Components must import these files to use them.
-- `/unit-tests`: Contains roku [rooibos](https://github.com/rokucommunity/rooibos) unit tests for the application. These tests are used to ensure the code works as expected and to catch any regressions.
+- `/unit-tests`: Contains roku [rooibos](https://github.com/rokucommunity/rooibos) unit tests for the application. These tests can only be ran on a Roku device.
 
 ## Libraries and Frameworks
 
@@ -28,10 +28,11 @@ This project is a roku client application that connects to Jellyfin media server
 
 - Use `brighterscript` for application logic and interaction with the Roku platform.
 - We use the default values for [bslint](https://github.com/rokucommunity/bslint), except for any settings saved in the `bslint.json` file. All code must pass the linter before it can be merged into the main branch.
-- Use `rooibos` for unit tests.
+- Use `rooibos` for unit tests. You won't be able to test these but make sure they pass linters and are ready to be manually tested.
 - Use 2 spaces for indentation.
 - Use camelCase for variable and function names.
 - Use PascalCase for class and component names.
+- Use isValid() for conditional invalid comparisons. For components, ensure the file containing isValid() is imported as needed. i.e. `import "pkg:/source/utils/misc.bs"`
 
 ## UI guidelines
 
