@@ -15,8 +15,6 @@ jobs:
           cache: "npm"
       - name: NPM install
         run: npm ci
-      - name: Install roku module dependencies
-        run: npm run ropm
       - name: Find and save major_version from manifest
         run: awk 'BEGIN { FS="=" } /^major_version/ { print "majorVersion="$2; }' manifest >> $GITHUB_ENV
       - name: Find and save minor_version from manifest

@@ -18,8 +18,6 @@ jobs:
           cache: "npm"
       - name: NPM install
         run: npm ci
-      - name: Install roku module dependencies
-        run: npm run ropm
       - name: Build app
         run: npm run build
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
