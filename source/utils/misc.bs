@@ -400,7 +400,7 @@ function isValidAndNotEmpty(input as dynamic) as boolean
     return trimmedInput <> ""
   else if inputType = "rosgnode"
     inputId = input.id
-    return inputId <> invalid
+    return isValid(inputId)
   else if countableTypes.doesExist(inputType)
     return input.count() > 0
   else
