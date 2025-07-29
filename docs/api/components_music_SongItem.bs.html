@@ -12,7 +12,7 @@ end sub
 
 sub itemContentChanged()
   itemData = m.top.itemContent
-  if itemData = invalid then return
+  if not isValid(itemData) then return
   m.itemText.text = itemData.title
   if itemData.trackNumber &lt;> 0
     m.trackNumber.text = itemData.trackNumber

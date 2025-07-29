@@ -59,7 +59,7 @@ sub loadItems()
   m.top.forceMp3 = false
 end sub
 
-function LoadItems_VideoPlayer(id as string, mediaSourceId = invalid as dynamic, audio_stream_idx = 1 as integer, forceTranscoding = false as boolean) as dynamic
+function LoadItems_VideoPlayer(id as string, mediaSourceId as dynamic, audio_stream_idx = 1 as integer, forceTranscoding = false as boolean) as dynamic
 
   video = {}
   video.id = id
@@ -67,7 +67,7 @@ function LoadItems_VideoPlayer(id as string, mediaSourceId = invalid as dynamic,
 
   LoadItems_AddVideoContent(video, mediaSourceId, audio_stream_idx, forceTranscoding)
 
-  if video.content = invalid
+  if not isValid(video.content)
     return invalid
   end if
 
@@ -260,7 +260,7 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
     video.isTranscoded = false
     addVideoContentURL(video, mediaSourceId, audio_stream_idx, fully_external)
   else
-    if m.playbackInfo.MediaSources[0].TranscodingUrl = invalid
+    if not isValid(m.playbackInfo.MediaSources[0].TranscodingUrl)
       ' If server does not provide a transcode URL, display a message to the user
       m.global.sceneManager.callFunc("userMessage", tr("Error Getting Playback Information"), tr("An error was encountered while playing this item.  Server did not provide required transcoding data."))
       video.errorMsg = "Error getting playback information"
@@ -479,7 +479,7 @@ function directPlaySupported(meta as object) as boolean
     return false
   end if
 
-  if meta.json.MediaStreams[0] = invalid
+  if not isValid(meta.json.MediaStreams[0])
     return false
   end if
 
@@ -497,16 +497,16 @@ function directPlaySupported(meta as object) as boolean
   end if
 
   decodeResult = devinfo.CanDecodeVideo(streamInfo)
-  return decodeResult &lt;> invalid and decodeResult.result
+  return isValid(decodeResult) and decodeResult.result
 
 end function
 
 function getContainerType(meta as object) as string
   ' Determine the file type of the video file source
-  if meta.json.mediaSources = invalid then return ""
+  if not isValid(meta.json.mediaSources) then return ""
 
   container = meta.json.mediaSources[0].container
-  if container = invalid
+  if not isValid(container)
     container = ""
   else if container = "m4v" or container = "mov"
     container = "mp4"
@@ -617,25 +617,25 @@ function FindPreferredAudioStream(streams as dynamic) as integer
   preferredLanguage = userConfig.AudioLanguagePreference
   playDefault = userConfig.PlayDefaultAudioTrack
 
-  if playDefault &lt;> invalid and playDefault = true
+  if isValid(playDefault) and playDefault = true
     return 1
   end if
 
   ' Do we already have the MediaStreams or not?
-  if streams = invalid
+  if not isValid(streams)
     url = Substitute("Users/{0}/Items/{1}", m.global.session.user.id, m.top.itemId)
     resp = APIRequest(url)
     jsonResponse = getJson(resp)
 
-    if jsonResponse = invalid or jsonResponse.MediaStreams = invalid then return 1
+    if not isValid(jsonResponse) or not isValid(jsonResponse.MediaStreams) then return 1
 
     streams = jsonResponse.MediaStreams
   end if
 
-  if preferredLanguage &lt;> invalid
+  if isValid(preferredLanguage)
     for i = 0 to streams.Count() - 1
       if LCase(streams[i].Type) = "audio"
-        if streams[i].Language &lt;> invalid and LCase(streams[i].Language) = LCase(preferredLanguage)
+        if isValid(streams[i].Language) and LCase(streams[i].Language) = LCase(preferredLanguage)
           return i
         end if
       end if

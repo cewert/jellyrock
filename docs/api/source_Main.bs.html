@@ -112,7 +112,7 @@
       return
     else if isNodeEvent(msg, "closeSidePanel")
       group = m.global.sceneManager.callFunc("getActiveScene")
-      if group.lastFocus &lt;> invalid
+      if isValid(group.lastFocus)
         group.lastFocus.setFocus(true)
       else
         group.setFocus(true)
@@ -135,7 +135,7 @@
       end if
       print "Quick Play started. itemNode=", itemNode
       if isValid(itemNode) and isValid(itemNode.id) and itemNode.id &lt;> ""
-        ' if itemNode.json &lt;> invalid
+        ' if isValid(itemNode.json)
         '   print "itemNode.json=", itemNode.json
         ' end if
         ' make sure there is a type and convert type to lowercase
@@ -610,7 +610,7 @@
           group.lastFocus.setFocus(true)
         end if
 
-      else if btn &lt;> invalid and btn.id = "trailer-button"
+      else if isValid(btn) and btn.id = "trailer-button"
         ' User chose to play a trailer from the movie detail view
         startLoadingSpinner()
         dialog = createObject("roSGNode", "ProgressDialog")
@@ -631,7 +631,7 @@
         if isValid(group) and isValid(group.lastFocus)
           group.lastFocus.setFocus(true)
         end if
-      else if btn &lt;> invalid and btn.id = "watched-button"
+      else if isValid(btn) and btn.id = "watched-button"
         movie = group.itemContent
         if isValid(movie) and isValid(movie.watched) and isValid(movie.id)
           if movie.watched
@@ -641,7 +641,7 @@
           end if
           movie.watched = not movie.watched
         end if
-      else if btn &lt;> invalid and btn.id = "favorite-button"
+      else if isValid(btn) and btn.id = "favorite-button"
         movie = group.itemContent
         if movie.favorite
           UnmarkItemFavorite(movie.id)
@@ -703,15 +703,15 @@
       end if
     else if isNodeEvent(msg, "selectSubtitlePressed")
       node = m.scene.focusedChild
-      if node.focusedChild &lt;> invalid and node.focusedChild.isSubType("JRVideo")
+      if isValid(node.focusedChild) and node.focusedChild.isSubType("JRVideo")
         trackSelected = selectSubtitleTrack(node.Subtitles, node.SelectedSubtitle)
-        if trackSelected &lt;> invalid and trackSelected &lt;> -2
+        if isValid(trackSelected) and trackSelected &lt;> -2
           changeSubtitleDuringPlayback(trackSelected)
         end if
       end if
     else if isNodeEvent(msg, "selectPlaybackInfoPressed")
       node = m.scene.focusedChild
-      if node.focusedChild &lt;> invalid and node.focusedChild.isSubType("JRVideo")
+      if isValid(node.focusedChild) and node.focusedChild.isSubType("JRVideo")
         info = GetPlaybackInfo()
         show_dialog(tr("Playback Information"), info)
       end if

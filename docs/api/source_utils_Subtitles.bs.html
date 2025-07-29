@@ -117,7 +117,7 @@ end function
 function selectSubtitleTrack(tracks, current = -1) as integer
   video = m.scene.focusedChild.focusedChild
   trackSelected = selectSubtitleTrackDialog(video.Subtitles, video.SelectedSubtitle)
-  if trackSelected = invalid or trackSelected = -1 ' back pressed in Dialog - no selection made
+  if not isValid(trackSelected) or trackSelected = -1 ' back pressed in Dialog - no selection made
     return -2
   else
     return trackSelected - 1
@@ -135,7 +135,7 @@ function selectSubtitleTrackDialog(tracks, currentTrack = -1)
     if item.IsDefault then default = " - Default"
     if isValid(item.Track.Language)
       language = iso6392.lookup(item.Track.Language)
-      if language = invalid then language = item.Track.Language
+      if not isValid(language) then language = item.Track.Language
     else
       language = "Undefined"
     end if
@@ -147,7 +147,7 @@ end function
 sub changeSubtitleDuringPlayback(newid)
 
   ' If no subtitles set
-  if newid = invalid or newid = -1
+  if not isValid(newid) or newid = -1
     turnoffSubtitles()
     return
   end if

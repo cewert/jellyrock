@@ -24,9 +24,9 @@ function buildParams(params = {} as object) as string
       else
         item = field.key + "=false"
       end if
-    else if field.value = invalid
+    else if not isValid(field.value)
       item = field.key + "=null"
-    else if field &lt;> invalid
+    else if isValid(field)
       print "Unhandled param type: " + type(field.value)
       item = field.key + "=" + field.value.EncodeUriComponent()
     end if
@@ -39,7 +39,7 @@ end function
 
 function buildURL(path as string, params = {} as object) as dynamic
   serverURL = get_url()
-  if serverURL = invalid then return invalid
+  if not isValid(serverURL) then return invalid
 
   ' Add intial '/' if path does not start with one
   if path.Left(1) = "/"
@@ -57,10 +57,10 @@ end function
 
 function APIRequest(url as string, params = {} as object) as dynamic
   full_url = buildURL(url, params)
-  if full_url = invalid then return invalid
+  if not isValid(full_url) then return invalid
 
   serverURL = m.global.session.server.url
-  if serverURL = invalid then return invalid
+  if not isValid(serverURL) then return invalid
 
   req = createObject("roUrlTransfer")
   req.setUrl(full_url)
@@ -76,7 +76,7 @@ end function
 function getJson(req)
   'req.retainBodyOnError(True)
   data = req.GetToString()
-  if data = invalid or data = ""
+  if not isValid(data) or data = ""
     return invalid
   end if
   json = ParseJson(data)
@@ -161,7 +161,7 @@ end function
 
 function get_url()
   serverURL = m.global.session.server.url
-  if serverURL &lt;> invalid
+  if isValid(serverURL)
     if serverURL.right(1) = "/"
       serverURL = serverURL.left(serverURL.len() - 1)
     end if
@@ -209,13 +209,13 @@ function buildAuthHeader() as string
   auth = auth + ", Device=" + QUOTE + m.global.device.name + " (" + m.global.device.model + ")" + QUOTE
   auth = auth + ", Version=" + QUOTE + m.global.app.version + QUOTE
 
-  if m.global.session.user.id &lt;> invalid
+  if isValid(m.global.session.user.id)
     auth = auth + ", UserId=" + QUOTE + m.global.session.user.id + QUOTE
   end if
 
   auth = auth + ", DeviceId=" + QUOTE + m.global.device.serverDeviceName + QUOTE
 
-  if m.global.session.user.authToken &lt;> invalid
+  if isValid(m.global.session.user.authToken)
     auth = auth + ", Token=" + QUOTE + m.global.session.user.authToken + QUOTE
   end if
 

@@ -50,7 +50,7 @@ end sub
 
 sub setFieldText(field, value)
   node = m.top.findNode(field)
-  if node = invalid or value = invalid then return
+  if not isValid(node) or not isValid(value) then return
 
   ' Handle non strings... Which _shouldn't_ happen, but hey
   if type(value) = "roInt" or type(value) = "Integer"
@@ -95,7 +95,7 @@ function getHistory() as string
 
   airdays = itemData.airdays
   airtime = itemData.airtime
-  if airtime &lt;> invalid and airdays.count() = 1
+  if isValid(airtime) and airdays.count() = 1
     airwords = airdays[0] + " at " + airtime
   end if
 
@@ -103,15 +103,15 @@ function getHistory() as string
     studio = itemData.studios[0].name
   end if
 
-  if studio = invalid and airwords = invalid
+  if not isValid(studio) and not isValid(airwords)
     return ""
   end if
 
   words = verb
-  if airwords &lt;> invalid
+  if isValid(airwords)
     words = words + " " + airwords
   end if
-  if studio &lt;> invalid
+  if isValid(studio)
     words = words + " on " + studio
   end if
 

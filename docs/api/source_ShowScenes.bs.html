@@ -38,7 +38,7 @@
   end if
 
   activeUser = get_setting("active_user")
-  if activeUser = invalid
+  if not isValid(activeUser)
     print "No active user found in registry"
     user_select:
     SendPerformanceBeacon("AppDialogInitiate") ' Roku Performance monitoring - Dialog Starting
@@ -110,13 +110,13 @@
         ' try to login with token from registry
         myToken = get_user_setting("token")
         myPrimaryImageTag = get_user_setting("primaryimagetag")
-        if myToken &lt;> invalid
+        if isValid(myToken)
           ' check if token is valid
           print "Auth token found in registry for selected user"
           session.user.Update("authToken", myToken)
           print "Attempting to use API with auth token"
           currentUser = AboutMe()
-          if currentUser = invalid
+          if not isValid(currentUser)
             print "Auth token is no longer valid - deleting token"
             unset_user_setting("token")
             unset_user_setting("username")
@@ -176,7 +176,7 @@
 
       print "Attempting to use API with auth token"
       currentUser = AboutMe()
-      if currentUser = invalid
+      if not isValid(currentUser)
         print "Auth token is no longer valid"
         'Try to login without password. If the token is valid, we're done
         print "Attempting to login with no password"
@@ -205,7 +205,7 @@
     end if
   end if
 
-  if m.global.session.user.id = invalid or m.global.session.user.authToken = invalid
+  if not isValid(m.global.session.user.id) or not isValid(m.global.session.user.authToken)
     print "Login failed, restart flow"
     unset_setting("active_user")
     session.user.Logout()
@@ -333,7 +333,7 @@ function CreateServerGroup()
         end if
         m.scene.isLoading = false
 
-        if isConnected = false or serverInfoResult = invalid
+        if isConnected = false or not isValid(serverInfoResult)
           ' Maybe don't unset setting, but offer as a prompt
           ' Server not found, is it online? New values / Retry
           print "Server not found, is it online? New values / Retry"
@@ -434,7 +434,7 @@ function CreateSigninGroup(user = "")
   username_field.label = tr("Username")
   username_field.field = "username"
   username_field.type = "string"
-  if user = "" and get_setting("username") &lt;> invalid
+  if user = "" and isValid(get_setting("username"))
     username_field.value = get_setting("username")
   else
     username_field.value = user
@@ -514,7 +514,7 @@ function CreateSigninGroup(user = "")
         group.findNode("alert").text = tr("Login attempt failed.")
       else if node = "quickConnect"
         json = initQuickConnect()
-        if json = invalid
+        if not isValid(json)
           group.findNode("alert").text = tr("Quick Connect not available.")
         else
           ' Server user is talking to is at least 10.8 and has quick connect enabled...
@@ -679,7 +679,7 @@ function CreateSeriesDetailsGroup(seriesID as string) as dynamic
   ' Get season data early in the function so we can check number of seasons.
   seasonData = TVSeasons(seriesID)
   ' Divert to season details if user setting goStraightToEpisodeListing is enabled and only one season exists.
-  if seasonData &lt;> invalid and m.global.session.user.settings["ui.tvshows.goStraightToEpisodeListing"] and seasonData.Items.Count() = 1
+  if isValid(seasonData) and m.global.session.user.settings["ui.tvshows.goStraightToEpisodeListing"] and seasonData.Items.Count() = 1
     stopLoadingSpinner()
     return CreateSeasonDetailsGroupByID(seriesID, seasonData.Items[0].id)
   end if
@@ -710,7 +710,7 @@ function CreateArtistView(artist as object) as dynamic
   musicData = MusicAlbumList(artist.id)
   appearsOnData = AppearsOnList(artist.id)
 
-  if (musicData = invalid or musicData.Items.Count() = 0) and (appearsOnData = invalid or appearsOnData.Items.Count() = 0)
+  if (not isValid(musicData) or musicData.Items.Count() = 0) and (not isValid(appearsOnData) or appearsOnData.Items.Count() = 0)
     ' Just songs under artists...
     group = CreateObject("roSGNode", "AlbumView")
     group.pageContent = ItemMetaData(artist.id)
@@ -914,7 +914,7 @@ function CreateVideoPlayerGroup(video_id as string, mediaSourceId = invalid as d
   ' Video is Playing
   video = VideoPlayer(video_id, mediaSourceId, audio_stream_idx, defaultSubtitleTrackFromVid(video_id), forceTranscoding, showIntro, allowResumeDialog)
 
-  if video = invalid then return invalid
+  if not isValid(video) then return invalid
 
   video.allowCaptions = true
 

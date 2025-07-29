@@ -10,7 +10,7 @@
     return video
   end if
 
-  if video.content = invalid
+  if not isValid(video.content)
     stopLoadingSpinner()
     return invalid
   end if
@@ -26,7 +26,7 @@ end function
 sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx = 1 as integer, subtitle_idx = -1 as integer, playbackPosition = -1 as integer, forceTranscoding = false as boolean, showIntro = true as boolean, allowResumeDialog = true as boolean)
   video.content = createObject("RoSGNode", "ContentNode")
   meta = ItemMetaData(video.id)
-  if meta = invalid
+  if not isValid(meta)
     video.content = invalid
     return
   end if
@@ -179,7 +179,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
   video.content.PlayStart = int(playbackPosition / 10000000)
 
   ' Call PlayInfo from server
-  if mediaSourceId = invalid
+  if not isValid(mediaSourceId)
     mediaSourceId = video.id
   end if
 
@@ -199,7 +199,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
   video.mediaSourceId = mediaSourceId
   video.audioIndex = audio_stream_idx
 
-  if m.playbackInfo = invalid
+  if not isValid(m.playbackInfo)
     video.content = invalid
     return
   end if
@@ -294,7 +294,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
     end if
     video.isTranscoded = false
   else
-    if m.playbackInfo.MediaSources[0].TranscodingUrl = invalid
+    if not isValid(m.playbackInfo.MediaSources[0].TranscodingUrl)
       ' If server does not provide a transcode URL, display a message to the user
       m.global.sceneManager.callFunc("userMessage", tr("Error Getting Playback Information"), tr("An error was encountered while playing this item.  Server did not provide required transcoding data."))
       video.content = invalid
@@ -324,7 +324,7 @@ function PlayIntroVideo(video_id, audio_stream_idx) as boolean
     ' Check if server has intro videos setup and available
     introVideos = GetIntroVideos(video_id)
 
-    if introVideos = invalid then return true
+    if not isValid(introVideos) then return true
 
     if introVideos.TotalRecordCount > 0
       ' Bypass joke pre-roll
@@ -409,10 +409,10 @@ end function
 
 function getContainerType(meta as object) as string
   ' Determine the file type of the video file source
-  if not IsValid(meta.json) or not isValid(meta.json.mediaSources) then return ""
+  if not isValid(meta.json) or not isValid(meta.json.mediaSources) then return ""
 
   container = meta.json.mediaSources[0].container
-  if container = invalid
+  if not isValid(container)
     container = ""
   else if container = "m4v" or container = "mov"
     container = "mp4"
@@ -423,10 +423,10 @@ end function
 
 function getAudioFormat(meta as object) as string
   ' Determine the codec of the audio file source
-  if meta.json.mediaSources = invalid then return ""
+  if not isValid(meta.json.mediaSources) then return ""
 
   audioInfo = getAudioInfo(meta)
-  if audioInfo.count() = 0 or audioInfo[0].codec = invalid then return ""
+  if audioInfo.count() = 0 or not isValid(audioInfo[0].codec) then return ""
   return audioInfo[0].codec
 end function
 

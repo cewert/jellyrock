@@ -51,7 +51,7 @@ sub init()
 
   if userSettings["ui.design.hideclock"] = true
     clockNode = findNodeBySubtype(m.top, "clock")
-    if clockNode[0] &lt;> invalid then clockNode[0].parent.removeChild(clockNode[0].node)
+    if isValid(clockNode[0]) then clockNode[0].parent.removeChild(clockNode[0].node)
   end if
 
   'Play Next Episode button
@@ -676,7 +676,7 @@ end sub
 '
 ' Report playback to server
 sub ReportPlayback(state = "update" as string)
-  if m.top.position = invalid then return
+  if not isValid(m.top.position) then return
 
   m.log.debug("start ReportPlayback()", state, int(m.top.position))
 
@@ -694,7 +694,7 @@ sub ReportPlayback(state = "update" as string)
     m.bufferCheckTimer.duration = 30
   end if
 
-  if (state = "stop" or state = "finished") and m.originalClosedCaptionState &lt;> invalid
+  if (state = "stop" or state = "finished") and isValid(m.originalClosedCaptionState)
     m.log.debug("ReportPlayback() setting", m.top.globalCaptionMode, "back to", m.originalClosedCaptionState)
     m.top.globalCaptionMode = m.originalClosedCaptionState
     m.originalClosedCaptionState = invalid
@@ -718,7 +718,7 @@ sub bufferCheck(msg)
     m.bufferCheckTimer.unobserveField("fire")
     return
   end if
-  if m.top.bufferingStatus &lt;> invalid
+  if isValid(m.top.bufferingStatus)
 
     ' Check that the buffering percentage is increasing
     if m.top.bufferingStatus["percentage"] > m.bufferPercentage

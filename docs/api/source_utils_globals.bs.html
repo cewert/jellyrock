@@ -145,7 +145,7 @@ sub SaveDeviceToGlobal()
     print "ERROR parsing deviceInfo.GetVideoMode()"
   end if
   videoWidth = heightToWidth[videoHeight]
-  if extraData &lt;> invalid and extraData = "b10" then bitDepth = 10
+  if isValid(extraData) and extraData = "b10" then bitDepth = 10
   if videoHeight = "4320" then bitDepth = 12
 
   m.global.addFields({

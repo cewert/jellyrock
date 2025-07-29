@@ -58,7 +58,7 @@ sub onAdditionalPartsLoaded()
 
   data = CreateObject("roSGNode", "ContentNode") ' The row Node
   m.top.content = data
-  if parts &lt;> invalid and parts.count() > 0
+  if isValid(parts) and parts.count() > 0
     row = buildRow(tr("Additional Parts"), parts, 464)
     addRowSize([464, 291])
     m.top.content.appendChild(row)
@@ -75,11 +75,11 @@ end sub
 sub onPeopleLoaded()
   people = m.LoadPeopleTask.content
   m.loadPeopleTask.unobserveField("content")
-  if people &lt;> invalid and people.count() > 0
+  if isValid(people) and people.count() > 0
     row = m.top.content.createChild("ContentNode")
     row.Title = tr("Cast &amp; Crew")
     for each person in people
-      if person.json.type = "Actor" and person.json.Role &lt;> invalid and person.json.Role.ToStr().Trim() &lt;> ""
+      if person.json.type = "Actor" and isValid(person.json.Role) and person.json.Role.ToStr().Trim() &lt;> ""
         person.subTitle = "as " + person.json.Role
       else
         person.subTitle = person.json.Type
@@ -95,15 +95,15 @@ end sub
 sub onLikeThisLoaded()
   data = m.LikeThisTask.content
   m.LikeThisTask.unobserveField("content")
-  if data &lt;> invalid and data.count() > 0
+  if isValid(data) and data.count() > 0
     row = m.top.content.createChild("ContentNode")
     row.Title = tr("More Like This")
     for each item in data
       item.Id = item.json.Id
       item.labelText = item.json.Name
-      if item.json.ProductionYear &lt;> invalid
+      if isValid(item.json.ProductionYear)
         item.subTitle = stri(item.json.ProductionYear)
-      else if item.json.PremiereDate &lt;> invalid
+      else if isValid(item.json.PremiereDate)
         premierYear = CreateObject("roDateTime")
         premierYear.FromISO8601String(item.json.PremiereDate)
         item.subTitle = stri(premierYear.GetYear())
@@ -121,7 +121,7 @@ end sub
 function onSpecialFeaturesLoaded()
   data = m.SpecialFeaturesTask.content
   m.SpecialFeaturesTask.unobserveField("content")
-  if data &lt;> invalid and data.count() > 0
+  if isValid(data) and data.count() > 0
     row = m.top.content.createChild("ContentNode")
     row.Title = tr("Special Features")
     for each item in data
@@ -143,7 +143,7 @@ sub onMoviesLoaded()
   data = m.LoadMoviesTask.content
   m.LoadMoviesTask.unobserveField("content")
   rlContent = CreateObject("roSGNode", "ContentNode")
-  if data &lt;> invalid and data.count() > 0
+  if isValid(data) and data.count() > 0
     row = rlContent.createChild("ContentNode")
     row.title = tr("Movies")
     for each mov in data
@@ -164,7 +164,7 @@ end sub
 sub onShowsLoaded()
   data = m.LoadShowsTask.content
   m.LoadShowsTask.unobserveField("content")
-  if data &lt;> invalid and data.count() > 0
+  if isValid(data) and data.count() > 0
     row = buildRow("TV Shows", data, 502)
     addRowSize([502, 396])
     m.top.content.appendChild(row)
@@ -177,7 +177,7 @@ end sub
 sub onSeriesLoaded()
   data = m.LoadSeriesTask.content
   m.LoadSeriesTask.unobserveField("content")
-  if data &lt;> invalid and data.count() > 0
+  if isValid(data) and data.count() > 0
     row = buildRow("Series", data)
     addRowSize([234, 396])
     m.top.content.appendChild(row)

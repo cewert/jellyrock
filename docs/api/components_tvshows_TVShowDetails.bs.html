@@ -96,7 +96,7 @@ end sub
 
 sub setFieldText(field, value)
   node = m.top.findNode(field)
-  if node = invalid or value = invalid then return
+  if not isValid(node) or not isValid(value) then return
 
   ' Handle non strings... Which _shouldn't_ happen, but hey
   if type(value) = "roInt" or type(value) = "Integer"
@@ -151,7 +151,7 @@ function getHistory() as string
     studio = itemData.studios[0].name
   end if
 
-  if studio = invalid and airwords = invalid
+  if not isValid(studio) and not isValid(airwords)
     m.top.findNode("main_group").removeChild(m.top.findNode("history"))
     return ""
   end if
@@ -250,7 +250,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
   else if key = "play" and m.extrasSlider.isInFocusChain()
     print "play was pressed from the extras grid"
     extrasGrid = m.top.findNode("extrasGrid")
-    if extrasGrid.focusedItem &lt;> invalid
+    if isValid(extrasGrid.focusedItem)
       m.top.quickPlayNode = extrasGrid.focusedItem
       return true
     end if

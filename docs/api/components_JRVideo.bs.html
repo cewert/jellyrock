@@ -18,7 +18,7 @@ sub init()
   userSettings = m.global.session.user.settings
   if userSettings["ui.design.hideclock"]
     clockNode = findNodeBySubtype(m.top, "clock")
-    if clockNode[0] &lt;> invalid then clockNode[0].parent.removeChild(clockNode[0].node)
+    if isValid(clockNode[0]) then clockNode[0].parent.removeChild(clockNode[0].node)
   end if
 
   'Play Next Episode button
@@ -168,7 +168,7 @@ sub onState(msg)
     m.captionTask.playerState = m.top.state + m.top.globalCaptionMode
   end if
   ' When buffering, start timer to monitor buffering process
-  if m.top.state = "buffering" and m.bufferCheckTimer &lt;> invalid
+  if m.top.state = "buffering" and isValid(m.bufferCheckTimer)
 
     ' start timer
     m.bufferCheckTimer.control = "start"
@@ -220,7 +220,7 @@ end sub
 ' Report playback to server
 sub ReportPlayback(state = "update" as string)
 
-  if m.top.position = invalid then return
+  if not isValid(m.top.position) then return
 
   params = {
     "ItemId": m.top.id,
@@ -252,7 +252,7 @@ sub bufferCheck(msg)
     m.bufferCheckTimer.unobserveField("fire")
     return
   end if
-  if m.top.bufferingStatus &lt;> invalid
+  if isValid(m.top.bufferingStatus)
 
     ' Check that the buffering percentage is increasing
     if m.top.bufferingStatus["percentage"] > m.bufferPercentage

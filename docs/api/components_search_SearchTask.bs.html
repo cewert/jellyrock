@@ -5,13 +5,14 @@ import "pkg:/source/api/Image.bs"
 import "pkg:/source/api/Items.bs"
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/deviceCapabilities.bs"
+import "pkg:/source/utils/misc.bs"
 
 sub init()
   m.top.functionName = "search"
 end sub
 
 sub search()
-  if m.top.query &lt;> invalid and m.top.query &lt;> ""
+  if isValid(m.top.query) and m.top.query &lt;> ""
     m.top.results = searchMedia(m.top.query)
   end if
 end sub

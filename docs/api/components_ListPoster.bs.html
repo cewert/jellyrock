@@ -20,7 +20,7 @@ sub updateSize()
     image = m.top.itemContent.image
   end if
 
-  if image = invalid
+  if not isValid(image)
     m.backdrop.visible = true
   else
     m.backdrop.visible = false
@@ -49,7 +49,7 @@ end sub
 
 sub itemContentChanged() as void
   itemData = m.top.itemContent
-  if itemData = invalid then return
+  if not isValid(itemData) then return
 
   print "ListPoster: itemContentChanged()"
   print "ListPoster: itemData =", itemData

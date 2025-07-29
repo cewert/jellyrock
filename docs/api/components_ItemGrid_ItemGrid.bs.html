@@ -95,7 +95,7 @@ sub loadInitialItems()
     m.top.HomeLibraryItem = m.top.parentItem.Id
   end if
 
-  if m.top.parentItem.backdropUrl &lt;> invalid
+  if isValid(m.top.parentItem.backdropUrl)
     SetBackground(m.top.parentItem.backdropUrl)
   end if
 
@@ -123,7 +123,7 @@ sub loadInitialItems()
     m.view = userSettings["display." + m.top.parentItem.Id + ".landing"]
   end if
 
-  if m.sortField = invalid
+  if not isValid(m.sortField)
     ' Set the default order for boxsets to the Release Date - API calls it PremiereDate
     if LCase(m.top.parentItem.json.Type) = "boxset"
       m.sortField = "PremiereDate"
@@ -132,9 +132,9 @@ sub loadInitialItems()
     end if
   end if
 
-  if m.filter = invalid then m.filter = "All"
+  if not isValid(m.filter) then m.filter = "All"
 
-  if sortAscendingStr = invalid or sortAscendingStr = true
+  if not isValid(sortAscendingStr) or sortAscendingStr = true
     m.sortAscending = true
   else
     m.sortAscending = false
@@ -387,7 +387,7 @@ end sub
 
 ' Return parent collection type
 function getCollectionType() as string
-  if m.top.parentItem.collectionType = invalid
+  if not isValid(m.top.parentItem.collectionType)
     return m.top.parentItem.Type
   else
     return m.top.parentItem.CollectionType
@@ -460,7 +460,7 @@ sub ItemDataLoaded(msg)
   m.loadItemsTask.unobserveField("content")
   m.loadItemsTask.content = []
 
-  if itemData = invalid
+  if not isValid(itemData)
     m.Loading = false
     stopLoadingSpinner()
     return
@@ -658,7 +658,7 @@ sub optionsClosed()
       m.view = "livetv"
       set_user_setting("display.livetv.landing", "channels")
 
-      if m.tvGuide &lt;> invalid
+      if isValid(m.tvGuide)
         ' Try to hide the TV Guide
         m.top.removeChild(m.tvGuide)
       end if
@@ -739,14 +739,14 @@ sub optionsClosed()
   m.itemGrid.setFocus(m.itemGrid.opacity = 1)
   m.genreList.setFocus(m.genreList.opacity = 1)
 
-  if m.tvGuide &lt;> invalid
+  if isValid(m.tvGuide)
     m.tvGuide.lastFocus.setFocus(true)
   end if
 
 end sub
 
 sub showTVGuide()
-  if m.tvGuide = invalid
+  if not isValid(m.tvGuide)
     m.tvGuide = createObject("roSGNode", "Schedule")
     m.top.signalBeacon("EPGLaunchInitiate") ' Required Roku Performance monitoring
     m.tvGuide.observeField("watchChannel", "onChannelSelected")
@@ -762,7 +762,7 @@ end sub
 sub onChannelSelected(msg)
   node = msg.getRoSGNode()
   m.top.lastFocus = lastFocusedChild(node)
-  if node.watchChannel &lt;> invalid
+  if isValid(node.watchChannel)
     ' Clone the node when it's reused/update in the TimeGrid it doesn't automatically start playing
     m.top.selectedItem = node.watchChannel.clone(false)
     ' Make sure to set watchChanel to invalid in case the user hits back and then selects
@@ -825,10 +825,10 @@ function onKeyEvent(key as string, press as boolean) as boolean
     else
       channelSelected = m.channelFocused
       itemSelected = m.selectedFavoriteItem
-      if itemSelected &lt;> invalid
+      if isValid(itemSelected)
         m.options.selectedFavoriteItem = itemSelected
       end if
-      if channelSelected &lt;> invalid
+      if isValid(channelSelected)
         if channelSelected.type = "TvChannel"
           m.options.selectedFavoriteItem = channelSelected
         end if
@@ -852,7 +852,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
     markupGrid = m.top.findNode("itemGrid")
     itemToPlay = getItemFocused()
 
-    if itemToPlay &lt;> invalid and itemToPlay.type = "Photo"
+    if isValid(itemToPlay) and itemToPlay.type = "Photo"
       ' Spawn photo player task
       photoPlayer = CreateObject("roSgNode", "PhotoDetails")
       photoPlayer.itemsNode = markupGrid
@@ -863,7 +863,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
   else if key = "play"
     itemToPlay = getItemFocused()
 
-    if itemToPlay &lt;> invalid
+    if isValid(itemToPlay)
       m.top.quickPlayNode = itemToPlay
       return true
     end if

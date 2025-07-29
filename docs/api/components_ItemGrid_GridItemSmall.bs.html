@@ -20,7 +20,7 @@ sub init()
   m.title.visible = false
 
   'Get the imageDisplayMode for these grid items
-  if m.topParent.imageDisplayMode &lt;> invalid
+  if isValid(m.topParent.imageDisplayMode)
     m.itemPoster.loadDisplayMode = m.topParent.imageDisplayMode
   end if
 end sub

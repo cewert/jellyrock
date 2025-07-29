@@ -20,7 +20,7 @@ end function
 
 function getButton(msg, subnode = "buttons" as string) as object
   buttons = msg.getRoSGNode().findNode(subnode)
-  if buttons = invalid then return invalid
+  if not isValid(buttons) then return invalid
   active_button = buttons.focusedChild
   return active_button
 end function
@@ -159,7 +159,7 @@ end function
 
 'Returns the item selected or -1 on backpress or other unhandled closure of dialog.
 function get_dialog_result(dialog, port)
-  while dialog &lt;> invalid
+  while isValid(dialog)
     msg = wait(0, port)
     if isNodeEvent(msg, "backPressed")
       return -1
@@ -291,12 +291,12 @@ end function
 function urlCandidates(input as string)
   if input.endswith("/") then input = input.Left(len(input) - 1)
   url = parseUrl(input)
-  if url[1] = invalid
+  if not isValid(url[1])
     ' a proto wasn't declared
     url = parseUrl("none://" + input)
   end if
   ' if the proto is still invalid then the string is not valid
-  if url[1] = invalid then return []
+  if not isValid(url[1]) then return []
   proto = url[1]
   host = url[2]
   port = url[3]
@@ -333,7 +333,7 @@ end function
 
 sub setFieldTextValue(field, value)
   node = m.top.findNode(field)
-  if node = invalid or value = invalid then return
+  if not isValid(node) or not isValid(value) then return
 
   ' Handle non strings... Which _shouldn't_ happen, but hey
   if type(value) = "roInt" or type(value) = "Integer"
@@ -402,7 +402,7 @@ function isValidAndNotEmpty(input as dynamic) as boolean
     return trimmedInput &lt;> ""
   else if inputType = "rosgnode"
     inputId = input.id
-    return inputId &lt;> invalid
+    return isValid(inputId)
   else if countableTypes.doesExist(inputType)
     return input.count() > 0
   else
@@ -637,7 +637,7 @@ end function
 
 ' convert value to boolean and return value
 function toBoolean(value as dynamic) as dynamic
-  if value = invalid then return invalid
+  if not isValid(value) then return invalid
   if Type(value) = "Boolean" then return value
   if Type(value) &lt;> "String" then return value
 

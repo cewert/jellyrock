@@ -68,7 +68,7 @@ sub itemContentChanged()
 
   if userSettings["ui.tvshows.disableCommunityRating"] = false
     if isValid(itemData.communityRating)
-      if m.communityRating = invalid
+      if not isValid(m.communityRating)
         m.communityRating = CreateObject("roSGNode", "CommunityRating")
         m.communityRating.id = "communityRating"
       end if
@@ -76,12 +76,12 @@ sub itemContentChanged()
       m.communityRating.rating = itemData.communityRating
       m.infoBar.insertChild(m.communityRating, 1)
     else
-      if m.communityRating &lt;> invalid
+      if isValid(m.communityRating)
         m.infoBar.removeChild(m.communityRating)
       end if
     end if
   else
-    if m.communityRating &lt;> invalid
+    if isValid(m.communityRating)
       m.infoBar.removeChild(m.communityRating)
     end if
   end if
@@ -121,7 +121,7 @@ sub SetupAudioDisplay(mediaStreams as object, selectedAudioStreamIndex as intege
   audioIdx = invalid
   if isValid(mediaStreams)
     for i = 0 to mediaStreams.Count() - 1
-      if LCase(mediaStreams[i].Type) = "audio" and audioIdx = invalid
+      if LCase(mediaStreams[i].Type) = "audio" and not isValid(audioIdx)
         if selectedAudioStreamIndex > 0 and selectedAudioStreamIndex &lt; mediaStreams.Count()
           audioIdx = selectedAudioStreamIndex
         else

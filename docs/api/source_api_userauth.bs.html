@@ -10,7 +10,7 @@ function get_token(user as string, password as string)
 
   json = postJson(req, FormatJson({ "Username": user, "Pw": password }))
 
-  if json = invalid then return invalid
+  if not isValid(json) then return invalid
 
   userdata = CreateObject("roSGNode", "UserData")
   userdata.json = json
@@ -21,7 +21,7 @@ end function
 
 function AboutMe(id = "" as string)
   if id = ""
-    if m.global.session.user.id &lt;> invalid
+    if isValid(m.global.session.user.id)
       id = m.global.session.user.id
     else
       return invalid
@@ -67,7 +67,7 @@ function ServerInfo()
 
   ' check for a location redirect header in the response
   headers = resp.GetResponseHeaders()
-  if headers &lt;> invalid and headers.location &lt;> invalid
+  if isValid(headers) and isValid(headers.location)
 
     ' only follow redirect if it the API Endpoint path is the same (/System/Info/Public)
     ' set the server to new location and try again
@@ -92,9 +92,9 @@ function ServerInfo()
 
   ' return the parsed response string
   responseString = resp.GetString()
-  if responseString &lt;> invalid and responseString &lt;> ""
+  if isValid(responseString) and responseString &lt;> ""
     result = ParseJson(responseString)
-    if result &lt;> invalid
+    if isValid(result)
       result.Error = false
       return result
     end if
@@ -127,11 +127,11 @@ end sub
 function initQuickConnect()
   resp = APIRequest("QuickConnect/Initiate")
   jsonResponse = getJson(resp)
-  if jsonResponse = invalid
+  if not isValid(jsonResponse)
     return invalid
   end if
 
-  if jsonResponse.Secret = invalid
+  if not isValid(jsonResponse.Secret)
     return invalid
   end if
 
@@ -142,11 +142,11 @@ function checkQuickConnect(secret)
   url = Substitute("QuickConnect/Connect?secret={0}", secret)
   resp = APIRequest(url)
   jsonResponse = getJson(resp)
-  if jsonResponse = invalid
+  if not isValid(jsonResponse)
     return false
   end if
 
-  if jsonResponse.Authenticated &lt;> invalid and jsonResponse.Authenticated = true
+  if isValid(jsonResponse.Authenticated) and jsonResponse.Authenticated = true
     return true
   end if
 
@@ -159,7 +159,7 @@ function AuthenticateViaQuickConnect(secret)
   }
   req = APIRequest("Users/AuthenticateWithQuickConnect")
   jsonResponse = postJson(req, FormatJson(params))
-  if jsonResponse &lt;> invalid and jsonResponse.AccessToken &lt;> invalid and jsonResponse.User &lt;> invalid
+  if isValid(jsonResponse) and isValid(jsonResponse.AccessToken) and isValid(jsonResponse.User)
     userdata = CreateObject("roSGNode", "UserData")
     userdata.json = jsonResponse
     session.user.Update("id", jsonResponse.User.Id)

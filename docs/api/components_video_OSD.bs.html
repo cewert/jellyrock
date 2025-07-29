@@ -40,68 +40,68 @@ sub setFields()
   mediaStreams = videoData.MediaStreams
   m.top.json = ""
 
-  if videoData.Type &lt;> invalid
+  if isValid(videoData.Type)
     m.top.type = videoData.Type
   end if
 
-  if videoData.logoImage &lt;> invalid and videoData.logoImage &lt;> ""
+  if isValid(videoData.logoImage) and videoData.logoImage &lt;> ""
     m.top.videoLogo = videoData.logoImage
   end if
 
-  if videoData.Name &lt;> invalid
+  if isValid(videoData.Name)
     m.top.videoTitle = videoData.Name
   end if
 
-  if videoData.Overview &lt;> invalid
+  if isValid(videoData.Overview)
     m.top.overview = videoData.Overview
   end if
 
-  if videoData.SeriesStudio &lt;> invalid
+  if isValid(videoData.SeriesStudio)
     m.top.seriesStudio = videoData.SeriesStudio
   end if
 
-  if videoData.HasSubtitles &lt;> invalid
+  if isValid(videoData.HasSubtitles)
     m.top.hasSubtitles = videoData.HasSubtitles
   end if
 
-  if videoData.Chapters &lt;> invalid and videoData.Chapters.Count() > 0
+  if isValid(videoData.Chapters) and videoData.Chapters.Count() > 0
     m.top.hasChapters = true
   end if
 
-  if videoData.SeriesName &lt;> invalid
+  if isValid(videoData.SeriesName)
     m.top.seriesName = videoData.SeriesName
   end if
 
-  if videoData.ParentIndexNumber &lt;> invalid
+  if isValid(videoData.ParentIndexNumber)
     m.top.seasonNumber = videoData.ParentIndexNumber
   end if
 
-  if videoData.IndexNumber &lt;> invalid
+  if isValid(videoData.IndexNumber)
     m.top.episodeNumber = videoData.IndexNumber
   end if
 
-  if videoData.IndexNumberEnd &lt;> invalid
+  if isValid(videoData.IndexNumberEnd)
     m.top.episodeNumberEnd = videoData.IndexNumberEnd
   end if
 
-  if videoData.CommunityRating &lt;> invalid
+  if isValid(videoData.CommunityRating)
     m.top.communityRating = videoData.CommunityRating
   end if
 
-  if videoData.OfficialRating &lt;> invalid
+  if isValid(videoData.OfficialRating)
     m.top.officialRating = videoData.OfficialRating
   end if
 
-  if videoData.PremiereDate &lt;> invalid
+  if isValid(videoData.PremiereDate)
     m.top.premiereDate = videoData.PremiereDate
   end if
 
-  if videoData.RunTimeTicks &lt;> invalid
+  if isValid(videoData.RunTimeTicks)
     m.top.runTimeTicks = videoData.RunTimeTicks
     m.top.runTimeMinutes = ticksToMinutes(m.top.runTimeTicks)
   end if
 
-  if videoData.ProductionYear &lt;> invalid
+  if isValid(videoData.ProductionYear)
     m.top.productionYear = videoData.ProductionYear
   end if
 
@@ -175,7 +175,7 @@ end sub
 sub setVideoLogoGroup()
   m.videoLogo.uri = m.top.videoLogo
 
-  ' if m.top.officialRating &lt;> invalid and m.top.officialRating &lt;> ""
+  ' if isValid(m.top.officialRating) and m.top.officialRating &lt;> ""
   '     m.videoOfficialRating.text = m.top.officialRating
   ' end if
 end sub
@@ -191,7 +191,7 @@ sub setVideoSubTitle()
   airDateNodeCreated = false
 
   ' EPISODE
-  if m.top.type &lt;> invalid
+  if isValid(m.top.type)
     if m.top.Type = "Episode" or m.top.Type = "Recording"
       ' Title
       if m.top.seriesName &lt;> ""
@@ -202,26 +202,26 @@ sub setVideoSubTitle()
       episodeInfoText = ""
       '
       ' Season number
-      if m.top.seasonNumber &lt;> invalid
+      if isValid(m.top.seasonNumber)
         episodeInfoText = episodeInfoText + `${tr("S")}${m.top.seasonNumber}`
       else
         episodeInfoText = episodeInfoText + `${tr("S")}?`
       end if
       ' Episode number
-      if m.top.episodeNumber &lt;> invalid
+      if isValid(m.top.episodeNumber)
         episodeInfoText = episodeInfoText + `:${tr("E")}${m.top.episodeNumber}`
       else
         episodeInfoText = episodeInfoText + `:${tr("E")}??`
       end if
       ' Episode number end
-      if m.top.episodeNumberEnd &lt;> invalid and m.top.episodeNumberEnd &lt;> 0 and m.top.episodeNumberEnd > m.top.episodeNumber
+      if isValid(m.top.episodeNumberEnd) and m.top.episodeNumberEnd &lt;> 0 and m.top.episodeNumberEnd > m.top.episodeNumber
         ' add entry for every episode eg. S6:E1E2
         for i = m.top.episodeNumber + 1 to m.top.episodeNumberEnd
           episodeInfoText = episodeInfoText + `${tr("E")}${m.top.episodeNumberEnd}`
         end for
       end if
       ' Episode name
-      if m.top.videoTitle &lt;> invalid and m.top.videoTitle &lt;> ""
+      if isValid(m.top.videoTitle) and m.top.videoTitle &lt;> ""
         episodeInfoText = episodeInfoText + ` - ${m.top.videoTitle}`
       end if
 
@@ -232,7 +232,7 @@ sub setVideoSubTitle()
       end if
     else if m.top.type = "Movie"
       ' videoAirDate
-      if m.top.premiereDate &lt;> invalid and m.top.premiereDate &lt;> ""
+      if isValid(m.top.premiereDate) and m.top.premiereDate &lt;> ""
         airDateNodeCreated = true
 
         premiereDateNode = createSubtitleLabelNode("videoAirDate")
@@ -246,14 +246,14 @@ sub setVideoSubTitle()
   ' append these to all video types
   '
   ' videoAirDate if needed
-  if not airDateNodeCreated and m.top.premiereDate &lt;> invalid and m.top.premiereDate &lt;> ""
+  if not airDateNodeCreated and isValid(m.top.premiereDate) and m.top.premiereDate &lt;> ""
     premiereDateNode = createSubtitleLabelNode("videoAirDate")
     premiereDateNode.text = formatIsoDateVideo(m.top.premiereDate)
     displaySubtitleNode(premiereDateNode)
   end if
 
   ' videoRunTime
-  if m.top.runTimeMinutes &lt;> invalid and m.top.runTimeMinutes &lt;> 0
+  if isValid(m.top.runTimeMinutes) and m.top.runTimeMinutes &lt;> 0
     runTimeNode = createSubtitleLabelNode("videoRunTime")
 
     if m.top.runTimeMinutes &lt; 2
