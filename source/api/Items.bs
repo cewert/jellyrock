@@ -511,8 +511,8 @@ function TVSeasonExtras(seasonId as string) as dynamic
   return { Items: results }
 end function
 
-function TVEpisodeShuffleList(show_id as string)
-  url = Substitute("Shows/{0}/Episodes", show_id)
+function TVEpisodeShuffleList(showId as string)
+  url = Substitute("Shows/{0}/Episodes", showId)
   resp = APIRequest(url, {
     "UserId": m.global.session.user.id,
     "Limit": 200,

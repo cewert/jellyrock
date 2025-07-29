@@ -38,7 +38,7 @@ end sub
 
 sub onKeyGridSubmit()
   selectedSetting = m.userLocation.peek().children[m.settingsMenu.itemFocused]
-  set_user_setting(selectedSetting.settingName, m.integerSetting.text)
+  setUserSetting(selectedSetting.settingName, m.integerSetting.text)
   m.settingsMenu.setFocus(true)
 end sub
 
@@ -172,30 +172,30 @@ sub boolSettingChanged()
     if Left(selectedSetting.settingName, 7) = "global."
       ' global user setting
       ' save to main registry block
-      set_setting(selectedSetting.settingName, "true")
+      setSetting(selectedSetting.settingName, "true")
       ' setting specific triggers
       if selectedSetting.settingName = "global.rememberme"
-        set_setting("active_user", m.global.session.user.id)
+        setSetting("active_user", m.global.session.user.id)
       end if
     else
       ' regular user setting
       ' save to user specific registry block
-      set_user_setting(selectedSetting.settingName, "true")
+      setUserSetting(selectedSetting.settingName, "true")
     end if
   else
     session.user.settings.Save(selectedSetting.settingName, "false")
     if Left(selectedSetting.settingName, 7) = "global."
       ' global user setting
       ' save to main registry block
-      set_setting(selectedSetting.settingName, "false")
+      setSetting(selectedSetting.settingName, "false")
       ' setting specific triggers
       if selectedSetting.settingName = "global.rememberme"
-        unset_setting("active_user")
+        unsetSetting("active_user")
       end if
     else
       ' regular user setting
       ' save to user specific registry block
-      set_user_setting(selectedSetting.settingName, "false")
+      setUserSetting(selectedSetting.settingName, "false")
     end if
   end if
 end sub
@@ -203,7 +203,7 @@ end sub
 sub radioSettingChanged()
   if not isValid(m.radioSetting.focusedChild) then return
   selectedSetting = m.userLocation.peek().children[m.settingsMenu.itemFocused]
-  set_user_setting(selectedSetting.settingName, m.radioSetting.content.getChild(m.radioSetting.checkedItem).id)
+  setUserSetting(selectedSetting.settingName, m.radioSetting.content.getChild(m.radioSetting.checkedItem).id)
 end sub
 
 ' JRScreen hook that gets ran as needed.

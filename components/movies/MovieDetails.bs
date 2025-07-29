@@ -130,9 +130,9 @@ sub itemContentChanged()
       if isValid(itemData.CriticRating)
         setFieldText("criticRatingLabel", itemData.criticRating)
         if itemData.CriticRating > 60
-          tomato = m.global.constants.icons.tomato_fresh
+          tomato = m.global.constants.icons.tomatoFresh
         else
-          tomato = m.global.constants.icons.tomato_rotten
+          tomato = m.global.constants.icons.tomatoRotten
         end if
         criticRatingIcon = m.top.findNode("criticRatingIcon")
         if isValid(criticRatingIcon) then criticRatingIcon.uri = tomato
@@ -310,8 +310,8 @@ function getEndTime() as string
   itemData = m.top.itemContent.json
 
   date = CreateObject("roDateTime")
-  duration_s = int(itemData.RunTimeTicks / 10000000.0)
-  date.fromSeconds(date.asSeconds() + duration_s)
+  durationS = int(itemData.RunTimeTicks / 10000000.0)
+  date.fromSeconds(date.asSeconds() + durationS)
   date.toLocalTime()
 
   return formatTime(date)
@@ -319,29 +319,29 @@ end function
 
 sub setFavoriteColor()
   fave = m.top.itemContent.favorite
-  fave_button = m.top.findNode("favorite-button")
+  faveButton = m.top.findNode("favorite-button")
   if isValid(fave) and fave
-    fave_button.textColor = "#00ff00ff"
-    fave_button.focusedTextColor = "#269926ff"
-    fave_button.text = tr("Favorite")
+    faveButton.textColor = "#00ff00ff"
+    faveButton.focusedTextColor = "#269926ff"
+    faveButton.text = tr("Favorite")
   else
-    fave_button.textColor = "0xddddddff"
-    fave_button.focusedTextColor = "#262626ff"
-    fave_button.text = tr("Set Favorite")
+    faveButton.textColor = "0xddddddff"
+    faveButton.focusedTextColor = "#262626ff"
+    faveButton.text = tr("Set Favorite")
   end if
 end sub
 
 sub setWatchedColor()
   watched = m.top.itemContent.watched
-  watched_button = m.top.findNode("watched-button")
+  watchedButton = m.top.findNode("watched-button")
   if watched
-    watched_button.textColor = "#ff0000ff"
-    watched_button.focusedTextColor = "#992626ff"
-    watched_button.text = tr("Watched")
+    watchedButton.textColor = "#ff0000ff"
+    watchedButton.focusedTextColor = "#992626ff"
+    watchedButton.text = tr("Watched")
   else
-    watched_button.textColor = "0xddddddff"
-    watched_button.focusedTextColor = "#262626ff"
-    watched_button.text = tr("Set Watched")
+    watchedButton.textColor = "0xddddddff"
+    watchedButton.focusedTextColor = "#262626ff"
+    watchedButton.text = tr("Set Watched")
   end if
 end sub
 
@@ -374,7 +374,7 @@ end sub
 sub videoOptionsClosed()
   if m.options.videoStreamId <> m.top.selectedVideoStreamId
     m.top.selectedVideoStreamId = m.options.videoStreamId
-    setFieldText("video_codec", tr("Video") + ": " + m.options.video_codec)
+    setFieldText("video_codec", tr("Video") + ": " + m.options.videoCodec)
     ' Because the video stream has changed (i.e. the actual video)... we need to reload the audio stream choices for that video
     m.top.unobservefield("itemContent")
     itemData = m.top.itemContent.json

@@ -218,12 +218,12 @@ sub standardDialog(title, message)
   dialog = createObject("roSGNode", "StandardDialog")
   dlgPalette = createObject("roSGNode", "RSGPalette")
   dlgPalette.colors = {
-    DialogBackgroundColor: colorConstants.background_primary,
+    DialogBackgroundColor: colorConstants.backgroundPrimary,
     DialogFocusColor: colorConstants.primary,
-    DialogFocusItemColor: colorConstants.text_primary,
-    DialogSecondaryTextColor: colorConstants.text_secondary,
+    DialogFocusItemColor: colorConstants.textPrimary,
+    DialogSecondaryTextColor: colorConstants.textSecondary,
     DialogSecondaryItemColor: colorConstants.secondary,
-    DialogTextColor: colorConstants.text_primary
+    DialogTextColor: colorConstants.textPrimary
   }
   dialog.palette = dlgPalette
   dialog.observeField("buttonSelected", "dismissDialog")
@@ -241,12 +241,12 @@ sub radioDialog(title, message)
   dialog = createObject("roSGNode", "RadioDialog")
   dlgPalette = createObject("roSGNode", "RSGPalette")
   dlgPalette.colors = {
-    DialogBackgroundColor: colorConstants.background_primary,
+    DialogBackgroundColor: colorConstants.backgroundPrimary,
     DialogFocusColor: colorConstants.primary,
-    DialogFocusItemColor: colorConstants.text_primary,
-    DialogSecondaryTextColor: colorConstants.text_secondary,
+    DialogFocusItemColor: colorConstants.textPrimary,
+    DialogSecondaryTextColor: colorConstants.textSecondary,
     DialogSecondaryItemColor: colorConstants.secondary,
-    DialogTextColor: colorConstants.text_primary
+    DialogTextColor: colorConstants.textPrimary
   }
   dialog.palette = dlgPalette
   dialog.observeField("buttonSelected", "dismissDialog")
@@ -258,7 +258,7 @@ sub radioDialog(title, message)
 end sub
 
 ' Display dialog to user with an OK button
-sub optionDialog(title, message, buttons)
+sub showOptionDialog(title, message, buttons)
   colorConstants = m.global.constants.colors
   m.top.dataReturned = false
   m.top.returnData = invalid
@@ -267,12 +267,12 @@ sub optionDialog(title, message, buttons)
   dialog = createObject("roSGNode", "StandardMessageDialog")
   dlgPalette = createObject("roSGNode", "RSGPalette")
   dlgPalette.colors = {
-    DialogBackgroundColor: colorConstants.background_primary,
+    DialogBackgroundColor: colorConstants.backgroundPrimary,
     DialogFocusColor: colorConstants.primary,
-    DialogFocusItemColor: colorConstants.text_primary,
-    DialogSecondaryTextColor: colorConstants.text_secondary,
+    DialogFocusItemColor: colorConstants.textPrimary,
+    DialogSecondaryTextColor: colorConstants.textSecondary,
     DialogSecondaryItemColor: colorConstants.secondary,
-    DialogTextColor: colorConstants.text_primary
+    DialogTextColor: colorConstants.textPrimary
   }
   dialog.palette = dlgPalette
   dialog.observeField("buttonSelected", "optionSelected")

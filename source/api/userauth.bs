@@ -2,7 +2,7 @@
 import "pkg:/source/utils/misc.bs"
 import "pkg:/source/utils/session.bs"
 
-function get_token(user as string, password as string)
+function getToken(user as string, password as string)
   url = "Users/AuthenticateByName?format=json"
   req = APIRequest(url)
 
@@ -33,10 +33,10 @@ end function
 
 sub SignOut(deleteSavedEntry = true as boolean)
   if deleteSavedEntry
-    unset_user_setting("token")
-    unset_user_setting("username")
+    unsetUserSetting("token")
+    unsetUserSetting("username")
   end if
-  unset_setting("active_user")
+  unsetSetting("active_user")
   session.user.Logout()
   m.global.sceneManager.currentUser = ""
   group = m.global.sceneManager.callFunc("getActiveScene")
@@ -44,7 +44,7 @@ sub SignOut(deleteSavedEntry = true as boolean)
 end sub
 
 function AvailableUsers()
-  users = parseJson(get_setting("available_users", "[]"))
+  users = parseJson(getSetting("available_users", "[]"))
   return users
 end function
 
@@ -70,7 +70,7 @@ function ServerInfo()
     ' only follow redirect if it the API Endpoint path is the same (/System/Info/Public)
     ' set the server to new location and try again
     if right(headers.location, 19) = "/System/Info/Public"
-      set_setting("server", left(headers.location, len(headers.location) - 19))
+      setSetting("server", left(headers.location, len(headers.location) - 19))
       isConnected = session.server.UpdateURL(left(headers.location, len(headers.location) - 19))
       if isConnected
         info = ServerInfo()
@@ -111,14 +111,14 @@ end function
 
 sub LoadUserAbilities()
   if m.global.session.user.Policy.EnableLiveTvManagement = true
-    set_user_setting("livetv.canrecord", "true")
+    setUserSetting("livetv.canrecord", "true")
   else
-    set_user_setting("livetv.canrecord", "false")
+    setUserSetting("livetv.canrecord", "false")
   end if
   if m.global.session.user.Policy.EnableContentDeletion = true
-    set_user_setting("content.candelete", "true")
+    setUserSetting("content.candelete", "true")
   else
-    set_user_setting("content.candelete", "false")
+    setUserSetting("content.candelete", "false")
   end if
 end sub
 

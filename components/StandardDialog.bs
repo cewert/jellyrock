@@ -13,12 +13,12 @@ sub init()
     "default": {
       "fontSize": 27,
       "fontUri": "font:BoldSystemFontFile",
-      "color": colorConstants.text_primary
+      "color": colorConstants.textPrimary
     },
     "b": {
       "fontSize": 27,
       "fontUri": "font:SystemFontFile",
-      "color": colorConstants.text_secondary
+      "color": colorConstants.textSecondary
     },
     "header": {
       "fontSize": 35,
@@ -28,7 +28,7 @@ sub init()
     "p": {
       "fontSize": 27,
       "fontUri": "font:SystemFontFile",
-      "color": colorConstants.text_primary
+      "color": colorConstants.textPrimary
     }
   }
 

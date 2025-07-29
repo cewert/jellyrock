@@ -24,8 +24,8 @@ sub init()
 end sub
 
 sub searchMedias()
-  m.top.search_values = m.searchText.text
-  if m.top.search_values.len() > 1
+  m.top.searchValues = m.searchText.text
+  if m.top.searchValues.len() > 1
     m.searchText.textEditBox.leadingEllipsis = true
   else
     m.searchText.textEditBox.leadingEllipsis = false

@@ -1,8 +1,8 @@
-function VideoPlayer(id as string, mediaSourceId = invalid as dynamic, audio_stream_idx = 1 as integer, subtitle_idx = -1 as integer, forceTranscoding = false as boolean, showIntro = true as boolean, allowResumeDialog = true as boolean) as dynamic
+function VideoPlayer(id as string, mediaSourceId = invalid as dynamic, audioStreamIdx = 1 as integer, subtitleIdx = -1 as integer, forceTranscoding = false as boolean, showIntro = true as boolean, allowResumeDialog = true as boolean) as dynamic
   ' Get video controls and UI
   video = CreateObject("roSGNode", "JRVideo")
   video.id = id
-  AddVideoContent(video, mediaSourceId, audio_stream_idx, subtitle_idx, -1, forceTranscoding, showIntro, allowResumeDialog)
+  AddVideoContent(video, mediaSourceId, audioStreamIdx, subtitleIdx, -1, forceTranscoding, showIntro, allowResumeDialog)
 
   if video.errorMsg = "introaborted"
     return video
@@ -21,7 +21,7 @@ function VideoPlayer(id as string, mediaSourceId = invalid as dynamic, audio_str
   return video
 end function
 
-sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx = 1 as integer, subtitle_idx = -1 as integer, playbackPosition = -1 as integer, forceTranscoding = false as boolean, showIntro = true as boolean, allowResumeDialog = true as boolean)
+sub AddVideoContent(video as object, mediaSourceId as dynamic, audioStreamIdx = 1 as integer, subtitleIdx = -1 as integer, playbackPosition = -1 as integer, forceTranscoding = false as boolean, showIntro = true as boolean, allowResumeDialog = true as boolean)
   video.content = createObject("RoSGNode", "ContentNode")
   meta = ItemMetaData(video.id)
   if not isValid(meta)
@@ -86,11 +86,11 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
           resp = APIRequest(url, params)
           data = getJson(resp)
           for each item in data.Items
-            m.series_id = item.SeriesId
+            m.seriesId = item.SeriesId
           end for
           'Get series json data
           params = {
-            ids: m.series_id
+            ids: m.seriesId
           }
           url = Substitute("Users/{0}/Items/", m.global.session.user.id)
           resp = APIRequest(url, params)
@@ -113,32 +113,32 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
           resp = APIRequest(url, params)
           data = getJson(resp)
           for each item in data.Items
-            m.season_id = item.SeasonId
-            m.series_id = item.SeriesId
+            m.seasonId = item.SeasonId
+            m.seriesId = item.SeriesId
           end for
           'Get Series json data
           params = {
-            ids: m.season_id
+            ids: m.seasonId
           }
           url = Substitute("Users/{0}/Items/", m.global.session.user.id)
           resp = APIRequest(url, params)
           data = getJson(resp)
           for each item in data.Items
-            m.Season_tmp = item
+            m.SeasonTmp = item
           end for
           'Get Season json data
           params = {
-            ids: m.series_id
+            ids: m.seriesId
           }
           url = Substitute("Users/{0}/Items/", m.global.session.user.id)
           resp = APIRequest(url, params)
           data = getJson(resp)
           for each item in data.Items
-            m.Series_tmp = item
+            m.SeriesTmp = item
           end for
           stopLoadingSpinner()
           'Create Season Scene
-          CreateSeasonDetailsGroup(m.Series_tmp, m.Season_tmp)
+          CreateSeasonDetailsGroup(m.SeriesTmp, m.SeasonTmp)
           video.content = invalid
           return
 
@@ -151,11 +151,11 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
           resp = APIRequest(url, params)
           data = getJson(resp)
           for each item in data.Items
-            m.episode_id = item
+            m.episodeId = item
           end for
           stopLoadingSpinner()
           'Create Episode Scene
-          CreateMovieDetailsGroup(m.episode_id)
+          CreateMovieDetailsGroup(m.episodeId)
           video.content = invalid
           return
         end if
@@ -167,7 +167,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
   if showIntro
     ' Do not play intros when resuming playback
     if playbackPosition = 0
-      if not PlayIntroVideo(video.id, audio_stream_idx)
+      if not PlayIntroVideo(video.id, audioStreamIdx)
         video.errorMsg = "introaborted"
         return
       end if
@@ -192,10 +192,10 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
     end if
   end if
 
-  m.playbackInfo = ItemPostPlaybackInfo(video.id, mediaSourceId, audio_stream_idx, subtitle_idx, playbackPosition)
+  m.playbackInfo = ItemPostPlaybackInfo(video.id, mediaSourceId, audioStreamIdx, subtitleIdx, playbackPosition)
   video.videoId = video.id
   video.mediaSourceId = mediaSourceId
-  video.audioIndex = audio_stream_idx
+  video.audioIndex = audioStreamIdx
 
   if not isValid(m.playbackInfo)
     video.content = invalid
@@ -241,7 +241,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
 
   ' 'TODO: allow user selection of subtitle track before playback initiated, for now set to no subtitles
   video.directPlaySupported = m.playbackInfo.MediaSources[0].SupportsDirectPlay
-  fully_external = false
+  fullyExternal = false
 
   ' For h264/hevc video, Roku spec states that it supports specfic encoding levels
   ' The device can decode content with a Higher Encoding level but may play it back with certain
@@ -274,7 +274,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
           video.content.url = buildURL(uri[4])
         end if
       else
-        fully_external = true
+        fullyExternal = true
         video.content.url = m.playbackInfo.MediaSources[0].Path
       end if
     else
@@ -282,7 +282,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
         "Static": "true",
         "Container": video.container,
         "PlaySessionId": video.PlaySessionId,
-        "AudioStreamIndex": audio_stream_idx
+        "AudioStreamIndex": audioStreamIdx
       })
       if mediaSourceId <> ""
         params.MediaSourceId = mediaSourceId
@@ -305,22 +305,22 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
   end if
 
   setCertificateAuthority(video.content)
-  video.audioTrack = (audio_stream_idx + 1).ToStr() ' Roku's track indexes count from 1. Our index is zero based
+  video.audioTrack = (audioStreamIdx + 1).ToStr() ' Roku's track indexes count from 1. Our index is zero based
 
   ' Perform relevant setup work for selected subtitle, and return the index of the subtitle
   ' is enabled/will be enabled, indexed on the provided list of subtitles
-  video.SelectedSubtitle = setupSubtitle(video, video.Subtitles, subtitle_idx)
+  video.SelectedSubtitle = setupSubtitle(video, video.Subtitles, subtitleIdx)
 
-  if not fully_external
+  if not fullyExternal
     video.content = authRequest(video.content)
   end if
 end sub
 
-function PlayIntroVideo(video_id, audio_stream_idx) as boolean
+function PlayIntroVideo(videoId, audioStreamIdx) as boolean
   ' Intro videos only play if user has cinema mode setting enabled
   if m.global.session.user.settings["playback.cinemamode"] = true
     ' Check if server has intro videos setup and available
-    introVideos = GetIntroVideos(video_id)
+    introVideos = GetIntroVideos(videoId)
 
     if not isValid(introVideos) then return true
 
@@ -328,7 +328,7 @@ function PlayIntroVideo(video_id, audio_stream_idx) as boolean
       ' Bypass joke pre-roll
       if lcase(introVideos.items[0].name) = "rick roll'd" then return true
 
-      introVideo = VideoPlayer(introVideos.items[0].id, introVideos.items[0].id, audio_stream_idx, defaultSubtitleTrackFromVid(video_id), false, false)
+      introVideo = VideoPlayer(introVideos.items[0].id, introVideos.items[0].id, audioStreamIdx, defaultSubtitleTrackFromVid(videoId), false, false)
       if isValid(introVideo)
         introVideo.allowCaptions = false
       end if
@@ -373,9 +373,9 @@ end function
 'Opens dialog asking user if they want to resume video or start playback over only on the home screen
 function startPlayBackOver(time as longinteger) as integer
   if m.scene.focusedChild.focusedChild.overhangTitle = tr("Home") and (m.videotype = "Episode" or m.videotype = "Series")
-    return option_dialog([tr("Resume playing at ") + ticksToHuman(time) + ".", tr("Start over from the beginning."), tr("Watched"), tr("Go to series"), tr("Go to season"), tr("Go to episode")])
+    return optionDialog([tr("Resume playing at ") + ticksToHuman(time) + ".", tr("Start over from the beginning."), tr("Watched"), tr("Go to series"), tr("Go to season"), tr("Go to episode")])
   else
-    return option_dialog(["Resume playing at " + ticksToHuman(time) + ".", "Start over from the beginning."])
+    return optionDialog(["Resume playing at " + ticksToHuman(time) + ".", "Start over from the beginning."])
   end if
 end function
 

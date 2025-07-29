@@ -43,7 +43,7 @@ sub optionsSet()
       entry.title = view.Title
       entry.description = view.Description
       entry.streamId = view.streamId
-      entry.video_codec = view.video_codec
+      entry.videoCodec = view.videoCodec
       m.videoNames.push(view.Name)
       if isValid(view.Selected) and view.Selected
         selectedViewIndex = index

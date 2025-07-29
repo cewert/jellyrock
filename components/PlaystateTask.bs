@@ -22,7 +22,7 @@ sub PlaystateUpdate()
 end sub
 
 function PlaystateDefaults(params = {} as object)
-  new_params = {
+  newParams = {
     '"CanSeek": false
     '"Item": "{}", ' TODO!
     '"NowPlayingQueue": "[]", ' TODO!
@@ -48,7 +48,7 @@ function PlaystateDefaults(params = {} as object)
   paramsArray = params.items()
   for i = 0 to paramsArray.count() - 1
     item = paramsArray[i]
-    new_params[item.key] = item.value
+    newParams[item.key] = item.value
   end for
-  return FormatJson(new_params)
+  return FormatJson(newParams)
 end function

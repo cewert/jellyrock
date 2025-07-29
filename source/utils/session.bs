@@ -179,7 +179,7 @@ namespace session
       session.Update("user", tmpSession.user)
 
       ' grab lastRunVersion for this user
-      lastRunVersion = get_user_setting("LastRunVersion")
+      lastRunVersion = getUserSetting("LastRunVersion")
       if isValid(lastRunVersion)
         session.user.Update("LastRunVersion", lastRunVersion)
       end if
@@ -193,18 +193,18 @@ namespace session
         end if
       end for
 
-      set_user_setting("serverId", m.global.session.server.id)
+      setUserSetting("serverId", m.global.session.server.id)
 
       if saveCredentials
-        set_user_setting("token", tmpSession.user.authToken)
-        set_user_setting("username", tmpSession.user.name)
+        setUserSetting("token", tmpSession.user.authToken)
+        setUserSetting("username", tmpSession.user.name)
         if isValid(tmpSession.user.primaryImageTag)
-          set_user_setting("primaryimagetag", tmpSession.user.primaryImageTag)
+          setUserSetting("primaryimagetag", tmpSession.user.primaryImageTag)
         end if
       end if
 
       if m.global.session.user.settings["global.rememberme"]
-        set_setting("active_user", tmpSession.user.id)
+        setSetting("active_user", tmpSession.user.id)
       end if
 
       ' Save device id so we don't calculate it every time we need it
@@ -259,9 +259,9 @@ namespace session
         session.user.SaveUserHomeSections(jsonResponse.CustomPrefs)
 
         if isValid(jsonResponse.CustomPrefs["landing-livetv"])
-          set_user_setting("display.livetv.landing", jsonResponse.CustomPrefs["landing-livetv"])
+          setUserSetting("display.livetv.landing", jsonResponse.CustomPrefs["landing-livetv"])
         else
-          unset_user_setting("display.livetv.landing")
+          unsetUserSetting("display.livetv.landing")
         end if
       else
         ' User has no custom prefs. Save default home section values.
@@ -275,7 +275,7 @@ namespace session
           homesection6: "none"
         })
 
-        unset_user_setting("display.livetv.landing")
+        unsetUserSetting("display.livetv.landing")
       end if
     end sub
 
@@ -322,9 +322,9 @@ namespace session
         ' None is the only section type allowed to have duplicates
         ' For all other types, only accept the 1st entry
         if inArray(rowTypes, rowType)
-          set_user_setting(homeSectionKey, "none")
+          setUserSetting(homeSectionKey, "none")
         else
-          set_user_setting(homeSectionKey, rowType)
+          setUserSetting(homeSectionKey, rowType)
 
           if rowType <> "none"
             rowTypes.push(rowType)
@@ -421,7 +421,7 @@ namespace session
         jfRegistry = RegistryReadAll("JellyRock")
         for each item in jfRegistry
           if Left(item, 7) = "global."
-            session.user.settings.Save(item, get_setting(item))
+            session.user.settings.Save(item, getSetting(item))
           end if
         end for
       end sub

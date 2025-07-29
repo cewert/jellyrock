@@ -18,31 +18,31 @@ sub runGlobalMigrations()
 
     ' enable remember me global setting for all devices whos last run version is < 2.0.0
     ' NOTE: remember me will be disabled for new installs
-    rememberMe = registry_read("global.rememberme", "JellyRock")
+    rememberMe = registryRead("global.rememberme", "JellyRock")
     if not isValid(rememberMe)
       ' don't overwrite users current setting (dev installs)
-      set_setting("global.rememberme", "true")
+      setSetting("global.rememberme", "true")
     end if
     ' migrate saved credentials for "active_user" if found
-    savedUserId = get_setting("active_user")
+    savedUserId = getSetting("active_user")
     if isValid(savedUserId)
-      savedUsername = get_setting("username")
+      savedUsername = getSetting("username")
       if isValid(savedUsername)
-        registry_write("username", savedUsername, savedUserId)
+        registryWrite("username", savedUsername, savedUserId)
       end if
 
-      savedToken = get_setting("token")
+      savedToken = getSetting("token")
       if isValid(savedToken)
-        registry_write("token", savedToken, savedUserId)
+        registryWrite("token", savedToken, savedUserId)
       end if
     end if
     ' remove settings from global "JellyRock" registry block
-    unset_setting("port")
-    unset_setting("token")
-    unset_setting("username")
-    unset_setting("password")
+    unsetSetting("port")
+    unsetSetting("token")
+    unsetSetting("username")
+    unsetSetting("password")
     ' remove any saved credentials found in saved_servers assocArray
-    saved = get_setting("saved_servers")
+    saved = getSetting("saved_servers")
     if isValid(saved)
       savedServers = ParseJson(saved)
       if isValid(savedServers.serverList) and savedServers.serverList.Count() > 0
@@ -52,7 +52,7 @@ sub runGlobalMigrations()
           item.Delete("password")
           newServers.serverList.Push(item)
         end for
-        set_setting("saved_servers", FormatJson(newServers))
+        setSetting("saved_servers", FormatJson(newServers))
       end if
     end if
   end if
@@ -72,7 +72,7 @@ sub runRegistryUserMigrations()
         ' fall back to using the apps lastRunVersion
         lastRunVersion = m.global.app.lastRunVersion
         if isValid(lastRunVersion)
-          registry_write("LastRunVersion", lastRunVersion, section)
+          registryWrite("LastRunVersion", lastRunVersion, section)
         end if
       end if
 
@@ -85,13 +85,13 @@ sub runRegistryUserMigrations()
         ' This way the home view for upgrading users is not changed without them opting in
         if not hasUserVersion
           print "useWebSectionArrangement set to false"
-          registry_write("ui.home.useWebSectionArrangement", "false", section)
+          registryWrite("ui.home.useWebSectionArrangement", "false", section)
         end if
 
         ' no longer saving password to registry
-        registry_delete("password", section)
+        registryDelete("password", section)
         ' av1 playback no longer hidden behind user setting
-        registry_delete("playback.av1", section)
+        registryDelete("playback.av1", section)
       end if
     end if
   end for

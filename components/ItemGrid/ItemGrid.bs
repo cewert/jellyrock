@@ -649,12 +649,12 @@ sub optionsClosed()
   if m.top.parentItem.collectionType = "livetv" and m.options.view <> m.view
     if m.options.view = "tvGuide"
       m.view = "tvGuide"
-      set_user_setting("display.livetv.landing", "guide")
+      setUserSetting("display.livetv.landing", "guide")
       showTVGuide()
       return
     else
       m.view = "livetv"
-      set_user_setting("display.livetv.landing", "channels")
+      setUserSetting("display.livetv.landing", "channels")
 
       if isValid(m.tvGuide)
         ' Try to hide the TV Guide
@@ -666,14 +666,14 @@ sub optionsClosed()
   if m.top.parentItem.Type = "CollectionFolder" or m.top.parentItem.Type = "Folder" or m.top.parentItem.CollectionType = "CollectionFolder"
     ' Did the user just request "Random" on a PhotoAlbum?
     if m.options.view = "singlephoto"
-      set_user_setting("photos.slideshow", "false")
-      set_user_setting("photos.random", "false")
+      setUserSetting("photos.slideshow", "false")
+      setUserSetting("photos.random", "false")
     else if m.options.view = "slideshowphoto"
-      set_user_setting("photos.slideshow", "true")
-      set_user_setting("photos.random", "false")
+      setUserSetting("photos.slideshow", "true")
+      setUserSetting("photos.random", "false")
     else if m.options.view = "randomphoto"
-      set_user_setting("photos.random", "true")
-      set_user_setting("photos.slideshow", "false")
+      setUserSetting("photos.random", "true")
+      setUserSetting("photos.slideshow", "false")
     end if
   end if
 
@@ -682,7 +682,7 @@ sub optionsClosed()
   if m.top.parentItem.collectionType = "music"
     if m.options.view <> m.view
       m.view = m.options.view
-      set_user_setting("display.music.view", m.view)
+      setUserSetting("display.music.view", m.view)
       reload = true
     end if
   else
@@ -690,7 +690,7 @@ sub optionsClosed()
     if m.options.view <> m.view
       'reload and store new view setting
       m.view = m.options.view
-      set_user_setting("display." + m.top.parentItem.Id + ".landing", m.view)
+      setUserSetting("display." + m.top.parentItem.Id + ".landing", m.view)
       reload = true
     end if
   end if
@@ -708,11 +708,11 @@ sub optionsClosed()
     end if
 
     if m.top.parentItem.collectionType = "livetv"
-      set_user_setting("display.livetv.sortField", m.sortField)
-      set_user_setting("display.livetv.sortAscending", sortAscendingStr)
+      setUserSetting("display.livetv.sortField", m.sortField)
+      setUserSetting("display.livetv.sortAscending", sortAscendingStr)
     else
-      set_user_setting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
-      set_user_setting("display." + m.top.parentItem.Id + ".sortAscending", sortAscendingStr)
+      setUserSetting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
+      setUserSetting("display." + m.top.parentItem.Id + ".sortAscending", sortAscendingStr)
     end if
   end if
   if m.options.filter <> m.filter
@@ -721,9 +721,9 @@ sub optionsClosed()
     reload = true
     'Store filter setting
     if m.top.parentItem.collectionType = "livetv"
-      set_user_setting("display.livetv.filter", m.options.filter)
+      setUserSetting("display.livetv.filter", m.options.filter)
     else
-      set_user_setting("display." + m.top.parentItem.Id + ".filter", m.options.filter)
+      setUserSetting("display." + m.top.parentItem.Id + ".filter", m.options.filter)
     end if
   end if
   if reload

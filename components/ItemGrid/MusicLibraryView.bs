@@ -672,14 +672,14 @@ sub optionsClosed()
       sortAscendingStr = "false"
     end if
 
-    set_user_setting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
-    set_user_setting("display." + m.top.parentItem.Id + ".sortAscending", sortAscendingStr)
+    setUserSetting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
+    setUserSetting("display." + m.top.parentItem.Id + ".sortAscending", sortAscendingStr)
   end if
 
   if m.options.filter <> m.filter
     m.filter = m.options.filter
     reload = true
-    set_user_setting("display." + m.top.parentItem.Id + ".filter", m.options.filter)
+    setUserSetting("display." + m.top.parentItem.Id + ".filter", m.options.filter)
   end if
 
   m.view = m.global.session.user.settings["display." + m.top.parentItem.Id + ".landing"]
@@ -687,7 +687,7 @@ sub optionsClosed()
   if m.options.view <> m.view
     m.view = m.options.view
     m.top.view = m.view
-    set_user_setting("display." + m.top.parentItem.Id + ".landing", m.view)
+    setUserSetting("display." + m.top.parentItem.Id + ".landing", m.view)
 
     ' Reset any filtering or search terms
     m.top.alphaSelected = ""
@@ -698,9 +698,9 @@ sub optionsClosed()
     m.sortAscending = true
 
     ' Reset view to defaults
-    set_user_setting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
-    set_user_setting("display." + m.top.parentItem.Id + ".sortAscending", "true")
-    set_user_setting("display." + m.top.parentItem.Id + ".filter", m.filter)
+    setUserSetting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
+    setUserSetting("display." + m.top.parentItem.Id + ".sortAscending", "true")
+    setUserSetting("display." + m.top.parentItem.Id + ".filter", m.filter)
 
     reload = true
   end if

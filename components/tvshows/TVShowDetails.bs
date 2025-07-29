@@ -21,7 +21,7 @@ end sub
 sub applyTheme()
   colorConstants = m.global.constants.colors
 
-  m.extrasSlider.rowLabelColor = colorConstants.text_secondary
+  m.extrasSlider.rowLabelColor = colorConstants.textSecondary
   m.extrasSlider.focusBitmapBlendColor = colorConstants.primary
 
 end sub
@@ -120,8 +120,8 @@ function getEndTime() as string
   itemData = m.top.itemContent.json
 
   date = CreateObject("roDateTime")
-  duration_s = int(itemData.RunTimeTicks / 10000000.0)
-  date.fromSeconds(date.asSeconds() + duration_s)
+  durationS = int(itemData.RunTimeTicks / 10000000.0)
+  date.fromSeconds(date.asSeconds() + durationS)
   date.toLocalTime()
 
   return formatTime(date)

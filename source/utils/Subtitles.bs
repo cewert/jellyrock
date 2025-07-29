@@ -2,8 +2,8 @@
 ' Including ignoring tracks, if they are not understood, thus making indexing unpredictable.
 ' This function translates between our internel selected subtitle index
 ' and the corresponding index in availableSubtitleTracks.
-function availSubtitleTrackIdx(video, sub_idx) as integer
-  url = video.Subtitles[sub_idx].Track.TrackName
+function availSubtitleTrackIdx(video, subIdx) as integer
+  url = video.Subtitles[subIdx].Track.TrackName
   idx = 0
   for each availTrack in video.availableSubtitleTracks
     ' The TrackName must contain the URL we supplied originally, though
@@ -19,13 +19,13 @@ end function
 
 ' Identify the default subtitle track for a given video id
 ' returns the server-side track index for the appriate subtitle
-function defaultSubtitleTrackFromVid(video_id) as integer
-  meta = ItemMetaData(video_id)
+function defaultSubtitleTrackFromVid(videoId) as integer
+  meta = ItemMetaData(videoId)
   if isValid(meta) and isValid(meta.json) and isValid(meta.json.mediaSources)
     subtitles = sortSubtitles(meta.id, meta.json.MediaSources[0].MediaStreams)
-    default_text_subs = defaultSubtitleTrack(subtitles["all"], true) ' Find correct subtitle track (forced text)
-    if default_text_subs <> -1
-      return default_text_subs
+    defaultTextSubs = defaultSubtitleTrack(subtitles["all"], true) ' Find correct subtitle track (forced text)
+    if defaultTextSubs <> -1
+      return defaultTextSubs
     else
       if m.global.session.user.settings["playback.subs.onlytext"] = false
         return defaultSubtitleTrack(subtitles["all"]) ' if no appropriate text subs exist, allow non-text
@@ -43,16 +43,16 @@ end function
 ' if "requires_text" is true, only return a track if it is textual
 '     This allows forcing text subs, since roku requires transcoding of non-text subs
 ' returns the server-side track index for the appriate subtitle
-function defaultSubtitleTrack(sorted_subtitles, require_text = false) as integer
+function defaultSubtitleTrack(sortedSubtitles, requireText = false) as integer
   if m.global.session.user.configuration.SubtitleMode = "None"
     return -1 ' No subtitles desired: select none
   end if
 
-  for each item in sorted_subtitles
+  for each item in sortedSubtitles
     ' Only auto-select subtitle if language matches preference
     languageMatch = (m.global.session.user.configuration.SubtitleLanguagePreference = item.Track.Language)
     ' Ensure textuality of subtitle matches preferenced passed as arg
-    matchTextReq = ((require_text and item.IsTextSubtitleStream) or not require_text)
+    matchTextReq = ((requireText and item.IsTextSubtitleStream) or not requireText)
     if languageMatch and matchTextReq
       if m.global.session.user.configuration.SubtitleMode = "Default" and (item.isForced or item.IsDefault or item.IsExternal)
         return item.Index ' Finds first forced, or default, or external subs in sorted list
@@ -73,14 +73,14 @@ end function
 ' Given a set of subtitles, and a subtitle index (the index on the server, not in the list provided)
 ' this will set all relevant settings for roku (mainly closed captions) and return the index of the
 ' subtitle track specified, but indexed based on the provided list of subtitles
-function setupSubtitle(video, subtitles, subtitle_idx = -1) as integer
-  if subtitle_idx = -1
+function setupSubtitle(video, subtitles, subtitleIdx = -1) as integer
+  if subtitleIdx = -1
     ' If we are not using text-based subtitles, turn them off
     return -1
   end if
 
   ' Translate the raw index to one relative to the provided list
-  subtitleSelIdx = getSubtitleSelIdxFromSubIdx(subtitles, subtitle_idx)
+  subtitleSelIdx = getSubtitleSelIdxFromSubIdx(subtitles, subtitleIdx)
 
   selectedSubtitle = subtitles[subtitleSelIdx]
 
@@ -100,11 +100,11 @@ end function
 
 ' The subtitle index on the server differs from the index we track locally
 ' This function converts the former into the latter
-function getSubtitleSelIdxFromSubIdx(subtitles, sub_idx) as integer
+function getSubtitleSelIdxFromSubIdx(subtitles, subIdx) as integer
   selIdx = 0
-  if sub_idx = -1 then return -1
+  if subIdx = -1 then return -1
   for each item in subtitles
-    if item.Index = sub_idx
+    if item.Index = subIdx
       return selIdx
     end if
     selIdx = selIdx + 1
@@ -139,7 +139,7 @@ function selectSubtitleTrackDialog(tracks, currentTrack = -1)
     end if
     options.push(language + forced + default)
   end for
-  return option_dialog(options, "Select a subtitle track", currentTrack + 1)
+  return optionDialog(options, "Select a subtitle track", currentTrack + 1)
 end function
 
 sub changeSubtitleDuringPlayback(newid)
@@ -192,7 +192,7 @@ end sub
 function sortSubtitles(id as string, MediaStreams)
   tracks = { "forced": [], "default": [], "normal": [] }
   'Too many args for using substitute
-  prefered_lang = m.global.session.user.configuration.SubtitleLanguagePreference
+  preferedLang = m.global.session.user.configuration.SubtitleLanguagePreference
   for each stream in MediaStreams
     if stream.type = "Subtitle"
 
@@ -217,7 +217,7 @@ function sortSubtitles(id as string, MediaStreams)
       else
         trackType = "normal"
       end if
-      if prefered_lang <> "" and prefered_lang = stream.Track.Language
+      if preferedLang <> "" and preferedLang = stream.Track.Language
         tracks[trackType].unshift(stream)
       else
         tracks[trackType].push(stream)

@@ -20,7 +20,7 @@ sub Main (args as dynamic) as void
   runRegistryUserMigrations()
   ' update LastRunVersion now that migrations are finished
   if m.global.app.version <> m.global.app.lastRunVersion
-    set_setting("LastRunVersion", m.global.app.version)
+    setSetting("LastRunVersion", m.global.app.version)
   end if
   if m.wasMigrated then printRegistry()
 
@@ -31,7 +31,7 @@ sub Main (args as dynamic) as void
   ' setup global nodes now that the screen has been shown
   setGlobalNodes()
 
-  app_start:
+  appStart:
   ' First thing to do is validate the ability to use the API
   if not LoginFlow() then return
 
@@ -68,7 +68,7 @@ sub Main (args as dynamic) as void
     ' has the current user ran this version before?
     usersLastRunVersion = m.global.session.user.settings.lastRunVersion
     if not isValid(usersLastRunVersion) or not versionChecker(usersLastRunVersion, m.global.app.version)
-      set_user_setting("LastRunVersion", m.global.app.version)
+      setUserSetting("LastRunVersion", m.global.app.version)
     end if
   end if
 
@@ -284,12 +284,12 @@ sub Main (args as dynamic) as void
           m.global.sceneManager.callFunc("pushScene", group)
         else if selectedItemType = "Episode" or LCase(selectedItemType) = "recording"
           ' User has selected a TV episode or Recording they want us to play
-          audio_stream_idx = 0
+          audioStreamIdx = 0
           if isValid(selectedItem.selectedAudioStreamIndex) and selectedItem.selectedAudioStreamIndex > 0
-            audio_stream_idx = selectedItem.selectedAudioStreamIndex
+            audioStreamIdx = selectedItem.selectedAudioStreamIndex
           end if
 
-          selectedItem.selectedAudioStreamIndex = audio_stream_idx
+          selectedItem.selectedAudioStreamIndex = audioStreamIdx
           ' Display playback options dialog
           if selectedItem.json.userdata.PlaybackPositionTicks > 0
             m.global.queueManager.callFunc("hold", selectedItem)
@@ -307,7 +307,7 @@ sub Main (args as dynamic) as void
             group = CreateSeasonDetailsGroupByID(selectedItem.json.SeriesId, selectedItem.id)
           else
             stopLoadingSpinner()
-            message_dialog(tr("Error loading Season"))
+            messageDialog(tr("Error loading Season"))
           end if
         else if selectedItemType = "Movie"
           ' open movie detail page
@@ -380,7 +380,7 @@ sub Main (args as dynamic) as void
           group = CreateArtistView(selectedItem.json)
           if not isValid(group)
             stopLoadingSpinner()
-            message_dialog(tr("Unable to find any albums or songs belonging to this artist"))
+            messageDialog(tr("Unable to find any albums or songs belonging to this artist"))
           end if
         else if selectedItemType = "MusicAlbum"
           group = CreateAlbumView(selectedItem.json)
@@ -396,7 +396,7 @@ sub Main (args as dynamic) as void
         else
           ' TODO - switch on more node types
           stopLoadingSpinner()
-          message_dialog("This type is not yet supported: " + selectedItemType + ".")
+          messageDialog("This type is not yet supported: " + selectedItemType + ".")
         end if
       end if
     else if isNodeEvent(msg, "movieSelected")
@@ -509,7 +509,7 @@ sub Main (args as dynamic) as void
       end if
 
     else if isNodeEvent(msg, "search_value")
-      query = msg.getRoSGNode().search_value
+      query = msg.getRoSGNode().searchValue
       group.findNode("SearchBox").visible = false
       options = group.findNode("SearchSelect")
       options.visible = true
@@ -564,7 +564,7 @@ sub Main (args as dynamic) as void
       else
         ' TODO - switch on more node types
         stopLoadingSpinner()
-        message_dialog("This type is not yet supported: " + node.type + ".")
+        messageDialog("This type is not yet supported: " + node.type + ".")
       end if
     else if isNodeEvent(msg, "buttonSelected")
       ' If a button is selected, we have some determining to do
@@ -577,13 +577,13 @@ sub Main (args as dynamic) as void
         ' User chose Play button from movie detail view
         startLoadingSpinner()
         ' Check if a specific Audio Stream was selected
-        audio_stream_idx = 0
+        audioStreamIdx = 0
         if isValid(group.selectedAudioStreamIndex)
-          audio_stream_idx = group.selectedAudioStreamIndex
+          audioStreamIdx = group.selectedAudioStreamIndex
         end if
 
         if isValid(group.itemContent)
-          group.itemContent.selectedAudioStreamIndex = audio_stream_idx
+          group.itemContent.selectedAudioStreamIndex = audioStreamIdx
           group.itemContent.id = group.selectedVideoStreamId
 
           ' Display playback options dialog
@@ -673,21 +673,21 @@ sub Main (args as dynamic) as void
         group.findNode("SearchBox").findNode("search_Key").active = true
       else if button.id = "change_server"
         startLoadingSpinner()
-        unset_setting("server")
+        unsetSetting("server")
         session.server.Delete()
         SignOut(false)
         m.global.sceneManager.callFunc("clearScenes")
-        goto app_start
+        goto appStart
       else if button.id = "change_user"
         startLoadingSpinner()
         SignOut(false)
         m.global.sceneManager.callFunc("clearScenes")
-        goto app_start
+        goto appStart
       else if button.id = "sign_out"
         startLoadingSpinner()
         SignOut()
         m.global.sceneManager.callFunc("clearScenes")
-        goto app_start
+        goto appStart
       else if button.id = "settings"
         ' Exit out of the side panel
         panel = group.findNode("options")
@@ -711,7 +711,7 @@ sub Main (args as dynamic) as void
       node = m.scene.focusedChild
       if isValid(node.focusedChild) and node.focusedChild.isSubType("JRVideo")
         info = GetPlaybackInfo()
-        show_dialog(tr("Playback Information"), info)
+        showDialog(tr("Playback Information"), info)
       end if
     else if isNodeEvent(msg, "state")
       node = msg.getRoSGNode()
@@ -851,7 +851,7 @@ sub Main (args as dynamic) as void
               CreateSeasonDetailsGroupByID(selectedItem[0].json.SeriesId, selectedItem[0].json.seasonID)
             else
               stopLoadingSpinner()
-              message_dialog(tr("Error loading Season"))
+              messageDialog(tr("Error loading Season"))
             end if
 
           else if popupNode.returnData.indexselected = 4

@@ -22,10 +22,10 @@ sub applyTheme()
   colorConstants = m.global.constants.colors
 
   ' Set default colors
-  m.top.background = colorConstants.background_primary
-  m.top.iconBackground = colorConstants.text_secondary
-  m.top.focusBackground = colorConstants.background_secondary
-  m.top.iconFocusBackground = colorConstants.text_primary
+  m.top.background = colorConstants.backgroundPrimary
+  m.top.iconBackground = colorConstants.textSecondary
+  m.top.focusBackground = colorConstants.backgroundSecondary
+  m.top.iconFocusBackground = colorConstants.textPrimary
 end sub
 
 sub onFocusChanged()
@@ -142,11 +142,11 @@ sub onEnabledChanged()
   colorConstants = m.global.constants.colors
 
   if m.top.enabled
-    m.top.background = colorConstants.background_primary
-    m.top.iconBackground = colorConstants.text_secondary
+    m.top.background = colorConstants.backgroundPrimary
+    m.top.iconBackground = colorConstants.textSecondary
   else
-    m.top.background = colorConstants.background_secondary
-    m.top.iconBackground = colorConstants.text_disabled
+    m.top.background = colorConstants.backgroundSecondary
+    m.top.iconBackground = colorConstants.textDisabled
   end if
 end sub
 

@@ -7,7 +7,7 @@ sub init()
   m.leftGroup = m.top.findNode("overlayLeftGroup")
   m.rightGroup = m.top.findNode("overlayRightGroup")
   m.rightSeperator = m.top.findNode("overlayRightSeperator")
-  m.rightSeperator.color = m.global.constants.colors.text_secondary
+  m.rightSeperator.color = m.global.constants.colors.textSecondary
   m.optionText = m.top.findNode("overlayOptionsText")
   m.optionStar = m.top.findNode("overlayOptionsStar")
   ' save node references
