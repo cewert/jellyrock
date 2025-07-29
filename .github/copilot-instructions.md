@@ -32,7 +32,7 @@ This project is a Roku client application that connects to Jellyfin media server
 - Use 2 spaces for indentation.
 - Use camelCase for variable and function names.
 - Use PascalCase for class and component names.
-- Use `isValid()` for conditional invalid comparisons. For components, ensure the file containing isValid() is imported as needed. i.e. `import "pkg:/source/utils/misc.bs"`
+- Use `isValid()` for conditional invalid comparisons. For components, ensure the file containing `isValid()` is imported as needed. i.e. `import "pkg:/source/utils/misc.bs"`
 
 ## UI Guidelines
 
