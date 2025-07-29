@@ -1,3 +1,4 @@
+import "pkg:/source/utils/misc.bs"
 sub init()
   m.top.itemComponentName = "UserItem"
   m.top.content = SetData()
@@ -27,7 +28,7 @@ end sub
 
 
 function setData()
-  if m.top.itemContent = invalid
+  if not isValid(m.top.itemContent)
     data = CreateObject("roSGNode", "ContentNode")
     return data
   end if

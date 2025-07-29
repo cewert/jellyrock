@@ -7,7 +7,7 @@ end sub
 function getData()
 
   ' If we have no album data, return a blank node
-  if m.top.MusicArtistAlbumData = invalid
+  if not isValid(m.top.MusicArtistAlbumData)
     data = CreateObject("roSGNode", "ContentNode")
     return data
   end if

@@ -1,6 +1,7 @@
 import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/roku_modules/log/LogMixin.brs"
 import "pkg:/source/utils/config.bs"
+import "pkg:/source/utils/misc.bs"
 
 sub init()
   m.log = log.Logger("RecordProgramTask")
@@ -8,14 +9,14 @@ sub init()
 end sub
 
 sub RecordOrCancelProgram()
-  if m.top.programDetails <> invalid
+  if isValid(m.top.programDetails)
     ' Are we setting up a recording or canceling one?
     TimerId = invalid
-    if m.top.programDetails.json.TimerId <> invalid and m.top.programDetails.json.TimerId <> ""
+    if isValid(m.top.programDetails.json.TimerId) and m.top.programDetails.json.TimerId <> ""
       TimerId = m.top.programDetails.json.TimerId
     end if
 
-    if TimerId = invalid
+    if not isValid(TimerId)
       ' Setting up a recording...
       programId = m.top.programDetails.Id
 
@@ -28,7 +29,7 @@ sub RecordOrCancelProgram()
       resp = APIRequest(url, params)
       data = getJson(resp)
 
-      if data <> invalid
+      if isValid(data)
         ' Create recording timer...
         if m.top.recordSeries = true
           url = "LiveTv/SeriesTimers"

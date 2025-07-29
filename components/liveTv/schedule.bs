@@ -32,7 +32,7 @@ end sub
 
 sub channelFilterSet()
   m.scheduleGrid.jumpToChannel = 0
-  if m.top.filter <> invalid and m.LoadChannelsTask.filter <> m.top.filter
+  if isValid(m.top.filter) and m.LoadChannelsTask.filter <> m.top.filter
     if m.LoadChannelsTask.state = "run" then m.LoadChannelsTask.control = "stop"
 
     m.LoadChannelsTask.filter = m.top.filter
@@ -51,7 +51,7 @@ sub channelsearchTermSet()
     startLoadingSpinner()
     m.LoadChannelsTask.control = "RUN"
     'filter if the searterm is not invalid
-  else if m.top.searchTerm <> invalid and LCase(m.LoadChannelsTask.searchTerm) <> LCase(m.top.searchTerm)
+  else if isValid(m.top.searchTerm) and LCase(m.LoadChannelsTask.searchTerm) <> LCase(m.top.searchTerm)
     if m.LoadChannelsTask.state = "run" then m.LoadChannelsTask.control = "stop"
 
     m.LoadChannelsTask.searchTerm = m.top.searchTerm
@@ -143,7 +143,7 @@ sub onProgramFocused()
 
   ' Exit if Channels not yet loaded
 
-  if channel = invalid or channel.getChildCount() = 0
+  if not isValid(channel) or channel.getChildCount() = 0
 
     m.detailsPane.programDetails = invalid
     return
@@ -151,7 +151,7 @@ sub onProgramFocused()
 
   prog = channel.GetChild(m.scheduleGrid.programFocusedDetails.focusIndex)
 
-  if prog <> invalid and prog.fullyLoaded = false
+  if isValid(prog) and prog.fullyLoaded = false
     m.LoadProgramDetailsTask.programId = prog.Id
     m.LoadProgramDetailsTask.channelIndex = m.scheduleGrid.programFocusedDetails.focusChannelIndex
     m.LoadProgramDetailsTask.programIndex = m.scheduleGrid.programFocusedDetails.focusIndex
@@ -163,11 +163,11 @@ end sub
 
 ' Update the Program Details with full information
 sub onProgramDetailsLoaded()
-  if m.LoadProgramDetailsTask.programDetails = invalid then return
+  if not isValid(m.LoadProgramDetailsTask.programDetails) then return
   channel = m.scheduleGrid.content.GetChild(m.LoadProgramDetailsTask.programDetails.channelIndex)
 
   ' If TV Show does not have its own image, use the channel logo
-  if m.LoadProgramDetailsTask.programDetails.PosterUrl = invalid or m.LoadProgramDetailsTask.programDetails.PosterUrl = ""
+  if not isValid(m.LoadProgramDetailsTask.programDetails.PosterUrl) or m.LoadProgramDetailsTask.programDetails.PosterUrl = ""
     m.LoadProgramDetailsTask.programDetails.PosterUrl = channel.PosterUrl
   end if
 
@@ -179,7 +179,7 @@ end sub
 
 sub onProgramSelected()
   ' If there is no program data - view the channel
-  if m.detailsPane.programDetails = invalid
+  if not isValid(m.detailsPane.programDetails)
     m.top.watchChannel = m.scheduleGrid.content.GetChild(m.scheduleGrid.programFocusedDetails.focusChannelIndex)
     return
   end if

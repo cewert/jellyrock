@@ -13,10 +13,10 @@ end sub
 sub pushScene(newGroup)
 
   currentGroup = m.groups.peek()
-  if newGroup <> invalid
-    if currentGroup <> invalid
+  if isValid(newGroup)
+    if isValid(currentGroup)
       'Search through group and store off last focused item
-      if currentGroup.focusedChild <> invalid
+      if isValid(currentGroup.focusedChild)
         focused = currentGroup.focusedChild
         while focused.hasFocus() = false
           focused = focused.focusedChild
@@ -42,7 +42,7 @@ sub pushScene(newGroup)
 
     m.groups.push(newGroup)
 
-    if currentGroup <> invalid
+    if isValid(currentGroup)
       m.content.replaceChild(newGroup, 0)
     else
       m.content.appendChild(newGroup)
@@ -75,7 +75,7 @@ end sub
 ' Remove the current group and load the last group from the stack
 sub popScene()
   group = m.groups.pop()
-  if group <> invalid
+  if isValid(group)
     if group.isSubType("JRGroup")
       unregisterOverhangData(group)
     else if group.isSubType("JRVideo")
@@ -94,7 +94,7 @@ sub popScene()
   end if
 
   group = m.groups.peek()
-  if group <> invalid
+  if isValid(group)
     registerOverhangData(group)
 
     group.visible = true
@@ -105,10 +105,10 @@ sub popScene()
       group.callFunc("OnScreenShown")
     else
       ' Restore focus
-      if group.lastFocus <> invalid
+      if isValid(group.lastFocus)
         group.lastFocus.setFocus(true)
       else
-        if group.focusedChild <> invalid
+        if isValid(group.focusedChild)
           group.focusedChild.setFocus(true)
         else
           group.setFocus(true)
@@ -129,7 +129,7 @@ end function
 
 ' Clear all content from group stack
 sub clearScenes()
-  if m.content <> invalid then m.content.removeChildrenIndex(m.content.getChildCount(), 0)
+  if isValid(m.content) then m.content.removeChildrenIndex(m.content.getChildCount(), 0)
   for each group in m.groups
     if type(group) = "roSGNode" and group.isSubtype("JRScreen")
       group.callFunc("OnScreenHidden")
@@ -157,7 +157,7 @@ end sub
 ' Register observers for overhang data
 sub registerOverhangData(group)
   if group.isSubType("JRGroup")
-    if group.overhangTitle <> invalid then m.overhang.title = group.overhangTitle
+    if isValid(group.overhangTitle) then m.overhang.title = group.overhangTitle
 
     group.observeField("overhangTitle", "updateOverhangTitle")
 
@@ -192,7 +192,7 @@ end sub
 ' Update username in overhang
 sub updateUser()
   ' Passthrough to overhang
-  if m.overhang <> invalid then m.overhang.currentUser = m.top.currentUser
+  if isValid(m.overhang) then m.overhang.currentUser = m.top.currentUser
 end sub
 
 ' Reset time

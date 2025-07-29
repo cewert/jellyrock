@@ -1,5 +1,6 @@
 import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/utils/config.bs"
+import "pkg:/source/utils/misc.bs"
 
 sub init()
   m.top.functionName = "loadChannels"
@@ -48,7 +49,7 @@ sub loadChannels()
   resp = APIRequest(url, params)
   data = getJson(resp)
 
-  if data.TotalRecordCount = invalid
+  if not isValid(data.TotalRecordCount)
     m.top.channels = results
     return
   end if
@@ -57,7 +58,7 @@ sub loadChannels()
   for each item in data.Items
     channel = createObject("roSGNode", "ChannelData")
     channel.json = item
-    if item.UserData <> invalid and item.UserData.isFavorite <> invalid
+    if isValid(item.UserData) and isValid(item.UserData.isFavorite)
       channel.favorite = item.UserData.isFavorite
       if channel.favorite = true
         results.Unshift(channel)

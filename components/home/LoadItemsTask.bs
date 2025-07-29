@@ -195,7 +195,7 @@ sub loadItems()
     url = Substitute("Users/{0}/Items/{1}/SpecialFeatures", m.global.session.user.id, m.top.itemId)
     resp = APIRequest(url, params)
     data = getJson(resp)
-    if data <> invalid and data.count() > 0
+    if isValid(data) and data.count() > 0
       for each specfeat in data
         tmp = CreateObject("roSGNode", "ExtrasData")
         results.push(tmp)
@@ -257,7 +257,7 @@ sub getPersonVideos(videoType, dest, dimens)
   url = Substitute("Users/{0}/Items", m.global.session.user.id)
   resp = APIRequest(url, params)
   data = getJson(resp)
-  if data <> invalid and data.count() > 0
+  if isValid(data) and data.count() > 0
     for each item in data.items
       tmp = CreateObject("roSGNode", "ExtrasData")
       imgParms = { "Tags": item.ImageTags.Primary }

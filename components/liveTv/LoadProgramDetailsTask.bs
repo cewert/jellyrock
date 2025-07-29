@@ -1,5 +1,6 @@
 import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/utils/config.bs"
+import "pkg:/source/utils/misc.bs"
 
 sub init()
   m.top.functionName = "loadProgramDetails"
@@ -20,7 +21,7 @@ sub loadProgramDetails()
   resp = APIRequest(url, params)
   data = getJson(resp)
 
-  if data = invalid
+  if not isValid(data)
     m.top.programDetails = {}
     return
   end if
@@ -31,7 +32,7 @@ sub loadProgramDetails()
   program.programIndex = programIndex
   program.fullyLoaded = true
   ' Are we currently recording this program?
-  if program.json.TimerId <> invalid and program.json.TimerId <> ""
+  if isValid(program.json.TimerId) and program.json.TimerId <> ""
     ' This is needed here because the callee (onProgramDetailsLoaded) replaces the grid item with
     ' this newly created item from the server, without this, the red icon
     ' disappears when the user focuses on the program in question
