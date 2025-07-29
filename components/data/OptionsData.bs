@@ -1,4 +1,5 @@
 import "pkg:/source/utils/config.bs"
+import "pkg:/source/utils/misc.bs"
 
 sub init()
   m.top.value_index = 0
@@ -29,7 +30,7 @@ sub press()
   m.top.value_index = i
   m.top.value = m.top.choices[m.top.value_index].value
 
-  if m.top.config_key = "" or m.top.config_key = invalid
+  if m.top.config_key = "" or not isValid(m.top.config_key)
     return
   end if
   if m.top.global_setting

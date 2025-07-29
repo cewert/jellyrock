@@ -1,6 +1,7 @@
 import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/api/Image.bs"
 import "pkg:/source/utils/config.bs"
+import "pkg:/source/utils/misc.bs"
 
 sub setData()
   ' We keep json around just as a reference,
@@ -11,7 +12,7 @@ sub setData()
   m.top.name = datum.name
   m.top.type = datum.type
 
-  if datum.CollectionType = invalid
+  if not isValid(datum.CollectionType)
     m.top.CollectionType = datum.type
   else
     m.top.CollectionType = datum.CollectionType
@@ -40,7 +41,7 @@ sub setData()
     imgParams.Append({ "maxHeight": 261 })
     imgParams.Append({ "maxWidth": 464 })
 
-    if datum.ImageTags.Primary <> invalid
+    if isValid(datum.ImageTags.Primary)
       param = { "Tag": datum.ImageTags.Primary }
       imgParams.Append(param)
     end if
@@ -48,13 +49,13 @@ sub setData()
     m.top.thumbnailURL = ImageURL(datum.id, "Primary", imgParams)
 
     ' Add Wide Poster  (Series Backdrop)
-    if datum.ParentThumbImageTag <> invalid
+    if isValid(datum.ParentThumbImageTag)
       imgParams["Tag"] = datum.ParentThumbImageTag
       m.top.widePosterUrl = ImageURL(datum.ParentThumbItemId, "Thumb", imgParams)
-    else if datum.ParentBackdropImageTags <> invalid
+    else if isValid(datum.ParentBackdropImageTags)
       imgParams["Tag"] = datum.ParentBackdropImageTags[0]
       m.top.widePosterUrl = ImageURL(datum.ParentBackdropItemId, "Backdrop", imgParams)
-    else if datum.ImageTags.Primary <> invalid
+    else if isValid(datum.ImageTags.Primary)
       imgParams["Tag"] = datum.SeriesPrimaryImageTag
       m.top.widePosterUrl = ImageURL(datum.id, "Primary", imgParams)
     end if
@@ -67,10 +68,10 @@ sub setData()
     m.top.posterURL = ImageURL(datum.id, "Primary", imgParams)
 
     ' Add Wide Poster  (Series Backdrop)
-    if datum.ImageTags <> invalid and datum.imageTags.Thumb <> invalid
+    if isValid(datum.ImageTags) and isValid(datum.imageTags.Thumb)
       imgParams["Tag"] = datum.imageTags.Thumb
       m.top.widePosterUrl = ImageURL(datum.Id, "Thumb", imgParams)
-    else if datum.BackdropImageTags <> invalid
+    else if isValid(datum.BackdropImageTags)
       imgParams["Tag"] = datum.BackdropImageTags[0]
       m.top.widePosterUrl = ImageURL(datum.Id, "Backdrop", imgParams)
     end if
@@ -82,7 +83,7 @@ sub setData()
     imgParams.Append({ "maxHeight": 261 })
     imgParams.Append({ "maxWidth": 175 })
 
-    if datum.ImageTags.Primary <> invalid
+    if isValid(datum.ImageTags.Primary)
       param = { "Tag": datum.ImageTags.Primary }
       imgParams.Append(param)
     end if
@@ -92,10 +93,10 @@ sub setData()
     ' For wide image, use backdrop
     imgParams["maxWidth"] = 464
 
-    if datum.ImageTags <> invalid and datum.imageTags.Thumb <> invalid
+    if isValid(datum.ImageTags) and isValid(datum.imageTags.Thumb)
       imgParams["Tag"] = datum.imageTags.Thumb
       m.top.thumbnailUrl = ImageURL(datum.Id, "Thumb", imgParams)
-    else if datum.BackdropImageTags[0] <> invalid
+    else if isValid(datum.BackdropImageTags[0])
       imgParams["Tag"] = datum.BackdropImageTags[0]
       m.top.thumbnailUrl = ImageURL(datum.id, "Backdrop", imgParams)
     end if
@@ -107,7 +108,7 @@ sub setData()
       "maxWidth": 464
     }
 
-    if datum.ImageTags <> invalid and datum.ImageTags.Primary <> invalid
+    if isValid(datum.ImageTags) and isValid(datum.ImageTags.Primary)
       imgParams.Append({ "Tag": datum.ImageTags.Primary })
     end if
 

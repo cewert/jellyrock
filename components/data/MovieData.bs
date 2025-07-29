@@ -23,11 +23,11 @@ sub setFields()
     end if
   end if
 
-  if json.ProductionYear <> invalid
+  if isValid(json.ProductionYear)
     m.top.SubTitle = json.ProductionYear
   end if
 
-  if json.OfficialRating <> invalid and json.OfficialRating <> ""
+  if isValid(json.OfficialRating) and json.OfficialRating <> ""
     m.top.Rating = json.OfficialRating
     if m.top.SubTitle <> ""
       m.top.SubTitle = m.top.SubTitle + " - " + m.top.Rating
@@ -41,7 +41,7 @@ sub setFields()
 end sub
 
 sub setPoster()
-  if m.top.image <> invalid
+  if isValid(m.top.image)
     m.top.posterURL = m.top.image.url
   else
     if isValid(m.top.json)
@@ -68,12 +68,12 @@ end sub
 sub setContainer()
   json = m.top.json
 
-  if json.mediaSources = invalid then return
+  if not isValid(json.mediaSources) then return
   if json.mediaSources.count() = 0 then return
 
   m.top.container = json.mediaSources[0].container
 
-  if m.top.container = invalid then m.top.container = ""
+  if not isValid(m.top.container) then m.top.container = ""
 
   if m.top.container = "m4v" or m.top.container = "mov"
     m.top.container = "mp4"

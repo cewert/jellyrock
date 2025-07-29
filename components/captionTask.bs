@@ -1,6 +1,7 @@
 import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/roku_modules/log/LogMixin.brs"
 import "pkg:/source/utils/config.bs"
+import "pkg:/source/utils/misc.bs"
 
 sub init()
   m.log = log.Logger("captionTask")
@@ -48,7 +49,7 @@ sub fetchCaption()
   re = CreateObject("roRegex", "(http.*?\.vtt)", "s")
   url = re.match(m.top.url)[0]
 
-  if url <> invalid
+  if isValid(url)
     port = createObject("roMessagePort")
     m.reader.setUrl(url)
     m.reader.setMessagePort(port)

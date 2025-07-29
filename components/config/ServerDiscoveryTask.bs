@@ -1,4 +1,5 @@
 import "pkg:/source/roku_modules/log/LogMixin.brs"
+import "pkg:/source/utils/misc.bs"
 
 '
 ' Task used to discover jellyfin servers on the local network
@@ -27,12 +28,12 @@ sub execute()
     end if
 
     msg = Wait(100, m.ssdp.port)
-    if msg <> invalid
+    if isValid(msg)
       ProcessSSDPResponse(msg)
     end if
 
     msg = Wait(100, m.clientDiscovery.port)
-    if msg <> invalid
+    if isValid(msg)
       ProcessClientDiscoveryResponse(msg)
     end if
 
@@ -43,7 +44,7 @@ sub execute()
 end sub
 
 sub AddServer(server)
-  if m.serverUrlMap[server.baseUrl] = invalid
+  if not isValid(m.serverUrlMap[server.baseUrl])
     m.serverUrlMap[server.baseUrl] = true
     m.servers.push(server)
   end if
@@ -122,9 +123,9 @@ sub ProcessSSDPResponse(message)
     end if
   end if
 
-  if locationUrl = invalid
+  if not isValid(locationUrl)
     return
-  else if m.locationUrlMap[locationUrl] <> invalid
+  else if isValid(m.locationUrlMap[locationUrl])
     m.log.warn("Already discovered this location", locationUrl)
     return
   end if
@@ -160,7 +161,7 @@ sub ProcessSSDPResponse(message)
           iconWidth: iconNode.GetNamedElementsCi("width")[0].GetText().ToInt(),
           iconHeight: iconNode.GetNamedElementsCi("height")[0].GetText().ToInt()
         }
-        if baseUrl <> invalid and loopResult.iconWidth > width
+        if isValid(baseUrl) and loopResult.iconWidth > width
           width = loopResult.iconWidth
           server = loopResult
         end if
