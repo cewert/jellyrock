@@ -49,7 +49,7 @@ sub onKeyGridEscape()
 end sub
 
 sub LoadMenu(configSection)
-  if configSection.children = invalid
+  if not isValid(configSection.children)
     ' Load parent menu
     m.userLocation.pop()
     configSection = m.userLocation.peek()
@@ -69,14 +69,14 @@ sub LoadMenu(configSection)
 
   m.settingsMenu.content = result
 
-  if configSection.selectedIndex <> invalid and configSection.selectedIndex > -1
+  if isValid(configSection.selectedIndex) and configSection.selectedIndex > -1
     m.settingsMenu.jumpToItem = configSection.selectedIndex
   end if
 
   ' Set Path display
   m.path.text = tr("Settings")
   for each level in m.userLocation
-    if level.title <> invalid then m.path.text += " / " + tr(level.title)
+    if isValid(level.title) then m.path.text += " / " + tr(level.title)
   end for
 end sub
 
@@ -93,7 +93,7 @@ sub settingFocused()
 
   userSettings = m.global.session.user.settings
 
-  if selectedSetting.type = invalid
+  if not isValid(selectedSetting.type)
     return
   else if selectedSetting.type = "bool"
 
@@ -141,7 +141,7 @@ sub settingSelected()
 
   selectedItem = m.userLocation.peek().children[m.settingsMenu.itemFocused]
 
-  if selectedItem.type <> invalid ' Show setting
+  if isValid(selectedItem.type) ' Show setting
     if selectedItem.type = "bool"
       m.boolSetting.setFocus(true)
     end if
@@ -151,7 +151,7 @@ sub settingSelected()
     if (selectedItem.type) = "radio"
       m.radioSetting.setFocus(true)
     end if
-  else if selectedItem.children <> invalid and selectedItem.children.Count() > 0 ' Show sub menu
+  else if isValid(selectedItem.children) and selectedItem.children.Count() > 0 ' Show sub menu
     LoadMenu(selectedItem)
     m.settingsMenu.setFocus(true)
   else
@@ -164,7 +164,7 @@ end sub
 
 
 sub boolSettingChanged()
-  if m.boolSetting.focusedChild = invalid then return
+  if not isValid(m.boolSetting.focusedChild) then return
   selectedSetting = m.userLocation.peek().children[m.settingsMenu.itemFocused]
 
   if m.boolSetting.checkedItem
@@ -201,7 +201,7 @@ sub boolSettingChanged()
 end sub
 
 sub radioSettingChanged()
-  if m.radioSetting.focusedChild = invalid then return
+  if not isValid(m.radioSetting.focusedChild) then return
   selectedSetting = m.userLocation.peek().children[m.settingsMenu.itemFocused]
   set_user_setting(selectedSetting.settingName, m.radioSetting.content.getChild(m.radioSetting.checkedItem).id)
 end sub
@@ -234,7 +234,7 @@ end function
 function onKeyEvent(key as string, press as boolean) as boolean
   if not press then return false
 
-  if (key = "back" or key = "left") and m.settingsMenu.focusedChild <> invalid and m.userLocation.Count() > 1
+  if (key = "back" or key = "left") and isValid(m.settingsMenu.focusedChild) and m.userLocation.Count() > 1
     LoadMenu({})
     return true
   else if (key = "back" or key = "left") and isFormInFocus()
@@ -251,13 +251,13 @@ function onKeyEvent(key as string, press as boolean) as boolean
     settingSelected()
   end if
 
-  if key = "up" and m.settingsMenu.focusedChild <> invalid and m.settingsMenu.itemFocused = 0
+  if key = "up" and isValid(m.settingsMenu.focusedChild) and m.settingsMenu.itemFocused = 0
     m.settingsMenu.jumpToItem = m.settingsMenu.content.getChildCount() - 1
 
     return true
   end if
 
-  if key = "down" and m.settingsMenu.focusedChild <> invalid
+  if key = "down" and isValid(m.settingsMenu.focusedChild)
     if m.settingsMenu.itemFocused = m.settingsMenu.content.getChildCount() - 1
       m.settingsMenu.jumpToItem = 0
 

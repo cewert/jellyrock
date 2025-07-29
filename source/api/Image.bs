@@ -3,7 +3,7 @@ function ItemImages(id = "" as string, params = {} as object)
   ' if there is a conflict between on disk images, and library.db
   resp = APIRequest(Substitute("Items/{0}/Images", id))
   data = getJson(resp)
-  if data = invalid then return invalid
+  if not isValid(data) then return invalid
 
   results = []
   for each item in data
@@ -18,15 +18,15 @@ end function
 
 function PosterImage(id as string, params = {} as object)
   images = ItemImages(id, params)
-  if images = invalid then return invalid
+  if not isValid(images) then return invalid
   primary_image = invalid
 
   for each image in images
     if image.imagetype = "Primary"
       primary_image = image
-    else if image.imagetype = "Logo" and primary_image = invalid
+    else if image.imagetype = "Logo" and not isValid(primary_image)
       primary_image = image
-    else if image.imagetype = "Thumb" and primary_image = invalid
+    else if image.imagetype = "Thumb" and not isValid(primary_image)
       primary_image = image
       ' maybe find more fallback images
     end if
@@ -37,15 +37,15 @@ end function
 
 function ImageURL(id, version = "Primary", params = {})
   ' set defaults
-  if params.maxHeight = invalid
+  if not isValid(params.maxHeight)
     param = { "maxHeight": "384" }
     params.append(param)
   end if
-  if params.maxWidth = invalid
+  if not isValid(params.maxWidth)
     param = { "maxWidth": "196" }
     params.append(param)
   end if
-  if params.quality = invalid
+  if not isValid(params.quality)
     param = { "quality": "90" }
     params.append(param)
   end if
@@ -56,13 +56,13 @@ end function
 
 function UserImageURL(id, params = {})
   ' set defaults
-  if params.maxHeight = invalid
+  if not isValid(params.maxHeight)
     params.append({ "maxHeight": "300" })
   end if
-  if params.maxWidth = invalid
+  if not isValid(params.maxWidth)
     params.append({ "maxWidth": "300" })
   end if
-  if params.quality = invalid
+  if not isValid(params.quality)
     params.append({ "quality": "90" })
   end if
 

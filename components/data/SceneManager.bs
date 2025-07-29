@@ -314,5 +314,5 @@ end sub
 
 ' Returns bool indicating if dialog is currently displayed
 function isDialogOpen() as boolean
-  return m.scene.dialog <> invalid
+  return isValid(m.scene.dialog)
 end function

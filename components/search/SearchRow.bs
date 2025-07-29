@@ -3,6 +3,7 @@ import "pkg:/source/api/Image.bs"
 import "pkg:/source/api/Items.bs"
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/deviceCapabilities.bs"
+import "pkg:/source/utils/misc.bs"
 
 sub init()
   m.top.itemComponentName = "ListPoster"
@@ -42,7 +43,7 @@ sub updateSize()
 end sub
 
 function getData()
-  if m.top.itemData = invalid
+  if not isValid(m.top.itemData)
     data = CreateObject("roSGNode", "ContentNode")
     return data
   end if
@@ -66,7 +67,7 @@ function getData()
   }
 
   for each item in itemData.Items
-    if content_types[item.type] <> invalid
+    if isValid(content_types[item.type])
       content_types[item.type].count += 1
     end if
   end for

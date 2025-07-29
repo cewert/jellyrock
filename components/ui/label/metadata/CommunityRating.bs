@@ -1,9 +1,10 @@
+import "pkg:/source/utils/misc.bs"
 sub init()
   m.communityRating = m.top.findNode("communityRating")
 end sub
 
 sub onRatingChanged()
-  if m.top.rating = invalid or m.top.rating = 0 then return
+  if not isValid(m.top.rating) or m.top.rating = 0 then return
 
   m.communityRating.text = m.top.rating
 end sub

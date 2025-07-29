@@ -1,3 +1,4 @@
+import "pkg:/source/utils/misc.bs"
 sub init()
   m.top.itemComponentName = "ListPoster"
   m.top.content = getData()
@@ -21,7 +22,7 @@ sub updateSize()
 end sub
 
 function getData()
-  if m.top.TVSeasonData = invalid
+  if not isValid(m.top.TVSeasonData)
     data = CreateObject("roSGNode", "ContentNode")
     return data
   end if

@@ -1,3 +1,4 @@
+import "pkg:/source/utils/misc.bs"
 
 
 sub init()
@@ -67,7 +68,7 @@ end sub
 sub onPlayedPercentageChanged()
   progressBar = m.top.findNode("progressBar")
 
-  if progressBar = invalid
+  if not isValid(progressBar)
     if m.top.playedPercentage = 0
       return
     else
@@ -98,7 +99,7 @@ sub resetBadge()
   m.unplayedVideosCount.translation = [0, 0]
 
   progressBar = m.top.findNode("progressBar")
-  if progressBar <> invalid
+  if isValid(progressBar)
     m.top.removeChild(progressBar)
   end if
 
