@@ -486,7 +486,7 @@ sub onAudioStreamLoaded()
   stopLoadingSpinner()
   data = m.LoadAudioStreamTask.content[0]
   m.LoadAudioStreamTask.unobserveField("content")
-  if data <> invalid and data.count() > 0
+  if isValid(data) and data.count() > 0
     ' Reset buffer bar without animation
     m.bufferPosition.width = 0
 

@@ -41,7 +41,7 @@ end sub
 
 sub itemContentChanged()
   itemData = m.top.itemContent
-  if itemData = invalid then return
+  if not isValid(itemData) then return
 
   if isValid(itemData.watched)
     m.itemPoster.isWatched = itemData.watched

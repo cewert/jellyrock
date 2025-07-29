@@ -90,7 +90,7 @@ end sub
 sub OnScreenShown()
   m.overhang.isVisible = false
 
-  if m.top.lastFocus <> invalid
+  if isValid(m.top.lastFocus)
     m.top.lastFocus.setFocus(true)
   else
     m.top.setFocus(true)
@@ -108,7 +108,7 @@ sub loadInitialItems()
     m.top.HomeLibraryItem = m.top.parentItem.Id
   end if
 
-  if m.top.parentItem.backdropUrl <> invalid
+  if isValid(m.top.parentItem.backdropUrl)
     SetBackground(m.top.parentItem.backdropUrl)
   else
     SetBackground("")
@@ -252,7 +252,7 @@ end sub
 
 ' Return parent collection type
 function getCollectionType() as string
-  if m.top.parentItem.collectionType = invalid
+  if not isValid(m.top.parentItem.collectionType)
     return LCase(m.top.parentItem.Type)
   else
     return LCase(m.top.parentItem.CollectionType)
@@ -326,7 +326,7 @@ sub ItemDataLoaded(msg)
   m.loadItemsTask.unobserveField("content")
   m.loadItemsTask.content = []
 
-  if itemData = invalid
+  if not isValid(itemData)
     m.Loading = false
     stopLoadingSpinner()
     return
@@ -514,7 +514,7 @@ end sub
 
 sub setFieldText(field, value)
   node = m.top.findNode(field)
-  if node = invalid or value = invalid then return
+  if not isValid(node) or not isValid(value) then return
 
   ' Handle non strings... Which _shouldn't_ happen, but hey
   if type(value) = "roInt" or type(value) = "Integer"
@@ -722,7 +722,7 @@ end sub
 sub onChannelSelected(msg)
   node = msg.getRoSGNode()
   m.top.lastFocus = lastFocusedChild(node)
-  if node.watchChannel <> invalid
+  if isValid(node.watchChannel)
     ' Clone the node when it's reused/update in the TimeGrid it doesn't automatically start playing
     m.top.selectedItem = node.watchChannel.clone(false)
   end if
@@ -745,7 +745,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
     else
 
       itemSelected = m.selectedFavoriteItem
-      if itemSelected <> invalid
+      if isValid(itemSelected)
         m.options.selectedFavoriteItem = itemSelected
       end if
 
@@ -799,7 +799,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
     return true
   else if key = "play"
     itemToPlay = getItemFocused()
-    if itemToPlay <> invalid
+    if isValid(itemToPlay)
       m.top.quickPlayNode = itemToPlay
       return true
     end if

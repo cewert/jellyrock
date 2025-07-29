@@ -1,3 +1,4 @@
+import "pkg:/source/utils/misc.bs"
 sub init()
   m.buttonFocusBorder = m.top.findNode("buttonFocusBorder")
   m.buttonBackground = m.top.findNode("buttonBackground")
@@ -32,11 +33,11 @@ sub onFocusChanged()
 
   if m.top.focus
     ' Button background
-    if m.top.focusBackground <> invalid
+    if isValid(m.top.focusBackground)
       m.buttonBackground.blendColor = m.top.focusBackground
     end if
     ' Button icon
-    if m.top.iconFocusBackground <> invalid
+    if isValid(m.top.iconFocusBackground)
       m.buttonIcon.blendColor = m.top.iconFocusBackground
     end if
     ' Focus border
@@ -46,11 +47,11 @@ sub onFocusChanged()
     end if
   else
     ' Button background
-    if m.top.background <> invalid
+    if isValid(m.top.background)
       m.buttonBackground.blendColor = m.top.background
     end if
     ' Button icon
-    if m.top.iconBackground <> invalid
+    if isValid(m.top.iconBackground)
       m.buttonIcon.blendColor = m.top.iconBackground
     end if
     ' Focus border
@@ -79,7 +80,7 @@ end sub
 sub OnImageLoadStatusChanged(event as object)
   status = event.GetData()
 
-  if status <> invalid and status = "ready"
+  if isValid(status) and status = "ready"
     setIconSize()
     setFocusBorderSize()
   end if

@@ -1,4 +1,5 @@
 import "pkg:/source/roku_modules/log/LogMixin.brs"
+import "pkg:/source/utils/misc.bs"
 
 sub init()
   ' initialize the log manager. second param sets log output:
@@ -9,7 +10,7 @@ end sub
 ' It is expected that screens override this function to handle focus
 ' managmenet and any other actions required on screen shown
 sub OnScreenShown()
-  if m.top.lastFocus <> invalid
+  if isValid(m.top.lastFocus)
     m.top.lastFocus.setFocus(true)
   else
     m.top.setFocus(true)

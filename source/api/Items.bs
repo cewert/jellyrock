@@ -41,16 +41,16 @@ function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioT
 
   myGLobal = m.global
 
-  if audioTrackIndex > -1 and myGLobal.session.video.json.MediaStreams <> invalid
+  if audioTrackIndex > -1 and isValid(myGLobal.session.video.json.MediaStreams)
     selectedAudioStream = myGLobal.session.video.json.MediaStreams[audioTrackIndex]
 
-    if selectedAudioStream <> invalid
+    if isValid(selectedAudioStream)
       params.AudioStreamIndex = audioTrackIndex
 
       ' force the server to transcode AAC profiles we don't support to MP3 instead of the usual AAC
       ' TODO: Remove this after server adds support for transcoding AAC from one profile to another
-      if selectedAudioStream.Codec <> invalid and LCase(selectedAudioStream.Codec) = "aac"
-        if selectedAudioStream.Profile <> invalid and LCase(selectedAudioStream.Profile) = "main" or LCase(selectedAudioStream.Profile) = "he-aac"
+      if isValid(selectedAudioStream.Codec) and LCase(selectedAudioStream.Codec) = "aac"
+        if isValid(selectedAudioStream.Profile) and LCase(selectedAudioStream.Profile) = "main" or LCase(selectedAudioStream.Profile) = "he-aac"
           forceMp3 = true
         end if
       end if
@@ -82,7 +82,7 @@ function searchMedia(query as string)
       "limit": 100
     })
 
-    if data = invalid then return []
+    if not isValid(data) then return []
 
     results = []
     for each item in data.Items
@@ -102,11 +102,11 @@ function ItemMetaData(id as string)
   url = Substitute("Users/{0}/Items/{1}", m.global.session.user.id, id)
   resp = APIRequest(url, { "fields": "Chapters" })
   data = getJson(resp)
-  if data = invalid then return invalid
+  if not isValid(data) then return invalid
 
   imgParams = {}
   if data.type <> "Audio"
-    if data.UserData <> invalid and data.UserData.PlayedPercentage <> invalid
+    if isValid(data.UserData) and isValid(data.UserData.PlayedPercentage)
       param = { "PercentPlayed": data.UserData.PlayedPercentage }
       imgParams.Append(param)
     end if
@@ -181,7 +181,7 @@ function ItemMetaData(id as string)
     tmp.image = PosterImage(data.ParentId, { "MaxWidth": 500, "MaxHeight": 500 })
 
     ' Song's parent poster image is no good, try using the song's poster image
-    if tmp.image = invalid
+    if not isValid(tmp.image)
       tmp.image = PosterImage(data.id, { "MaxWidth": 500, "MaxHeight": 500 })
     end if
 
@@ -204,7 +204,7 @@ function ArtistOverview(name as string)
   url = Substitute("Artists/{0}", req.escape(name))
   resp = APIRequest(url)
   data = getJson(resp)
-  if data = invalid then return invalid
+  if not isValid(data) then return invalid
   return data.overview
 end function
 
@@ -272,8 +272,8 @@ function GetSongsByArtist(id as string, params = {} as object)
   data = getJson(resp)
   results = []
 
-  if data = invalid then return invalid
-  if data.Items = invalid then return invalid
+  if not isValid(data) then return invalid
+  if not isValid(data.Items) then return invalid
   if data.Items.Count() = 0 then return invalid
 
   for each item in data.Items
@@ -296,8 +296,8 @@ function PlaylistItemList(id as string)
   results = []
   data = getJson(resp)
 
-  if data = invalid then return invalid
-  if data.Items = invalid then return invalid
+  if not isValid(data) then return invalid
+  if not isValid(data.Items) then return invalid
   if data.Items.Count() = 0 then return invalid
 
   for each item in data.Items
@@ -323,8 +323,8 @@ function MusicSongList(id as string)
   results = []
   data = getJson(resp)
 
-  if data = invalid then return invalid
-  if data.Items = invalid then return invalid
+  if not isValid(data) then return invalid
+  if not isValid(data.Items) then return invalid
   if data.Items.Count() = 0 then return invalid
 
   for each item in data.Items
@@ -391,14 +391,14 @@ end function
 
 function AudioStream(id as string)
   songData = AudioItem(id)
-  if songData <> invalid
+  if isValid(songData)
     content = createObject("RoSGNode", "ContentNode")
-    if songData.title <> invalid
+    if isValid(songData.title)
       content.title = songData.title
     end if
 
     playbackInfo = ItemPostPlaybackInfo(songData.id, songData.mediaSources[0].id)
-    if playbackInfo <> invalid
+    if isValid(playbackInfo)
       content.id = playbackInfo.PlaySessionId
 
       if useTranscodeAudioStream(playbackInfo)
@@ -425,7 +425,7 @@ function AudioStream(id as string)
 end function
 
 function useTranscodeAudioStream(playbackInfo)
-  return playbackInfo.mediaSources[0] <> invalid and playbackInfo.mediaSources[0].TranscodingURL <> invalid
+  return isValid(playbackInfo.mediaSources[0]) and isValid(playbackInfo.mediaSources[0].TranscodingURL)
 end function
 
 function BackdropImage(id as string)
@@ -440,7 +440,7 @@ function TVSeasons(id as string) as dynamic
 
   data = getJson(resp)
   ' validate data
-  if data = invalid or data.Items = invalid then return invalid
+  if not isValid(data) or not isValid(data.Items) then return invalid
 
   results = []
   for each item in data.Items
@@ -458,7 +458,7 @@ end function
 function TVEpisodes(showId as string, seasonId as string) as dynamic
   ' Get and validate data
   data = api.shows.GetEpisodes(showId, { "seasonId": seasonId, "UserId": m.global.session.user.id, "fields": "MediaStreams,MediaSources" })
-  if data = invalid or data.Items = invalid then return invalid
+  if not isValid(data) or not isValid(data.Items) then return invalid
 
   results = []
   for each item in data.Items

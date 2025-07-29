@@ -1,6 +1,7 @@
 import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/api/Image.bs"
 import "pkg:/source/utils/config.bs"
+import "pkg:/source/utils/misc.bs"
 
 sub init()
   m.dscr = m.top.findNode("description")
@@ -21,7 +22,7 @@ sub loadPerson()
   name = m.top.findNode("Name")
   name.Text = itemData.Name
   name.font.size = 70
-  if itemData.PremiereDate <> invalid and itemData.PremiereDate <> ""
+  if isValid(itemData.PremiereDate) and itemData.PremiereDate <> ""
     lifeStringLabel = createObject("rosgnode", "Label")
     lifeStringLabel.id = "premierDate"
     lifeStringLabel.font = "font:SmallestBoldSystemFont"
@@ -35,7 +36,7 @@ sub loadPerson()
     deathDate = CreateObject("roDatetime")
     lifeString = tr("Born") + ": " + birthDate.AsDateString("short-month-no-weekday")
 
-    if itemData.EndDate <> invalid and itemData.EndDate <> ""
+    if isValid(itemData.EndDate) and itemData.EndDate <> ""
       deathDate.FromISO8601String(itemData.EndDate)
       lifeString = lifeString + " * " + tr("Died") + ": " + deathDate.AsDateString("short-month-no-weekday")
 
@@ -52,14 +53,14 @@ sub loadPerson()
     lifeString = lifeString + " * " + tr("Age") + ": " + stri(age)
     lifeStringLabel.Text = lifeString
   end if
-  if itemData.Overview <> invalid and itemData.Overview <> ""
+  if isValid(itemData.Overview) and itemData.Overview <> ""
     m.dscr.text = itemData.Overview
   else
     m.dscr.text = tr("Biographical information for this person is not currently available.")
     m.dscr.horizAlign = "center"
     m.dscr.vertAlign = "center"
   end if
-  if item.posterURL <> invalid and item.posterURL <> ""
+  if isValid(item.posterURL) and item.posterURL <> ""
     m.top.findnode("personImage").uri = item.posterURL
   else
     m.top.findnode("personImage").uri = "pkg:/images/icons/baseline_person_white_48dp.png"
@@ -129,7 +130,7 @@ end function
 sub setFavoriteColor()
   fave = m.top.itemContent.favorite
   fave_button = m.top.findNode("favorite-button")
-  if fave <> invalid and fave
+  if isValid(fave) and fave
     fave_button.textColor = "#00ff00ff"
     fave_button.focusedTextColor = "#269926ff"
     fave_button.text = tr("Favorite")

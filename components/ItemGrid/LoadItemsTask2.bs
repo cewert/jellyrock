@@ -14,7 +14,7 @@ sub init()
   m.top.limit = 60
   usersettingLimit = m.global.session.user.settings["itemgrid.Limit"]
 
-  if usersettingLimit <> invalid
+  if isValid(usersettingLimit)
     m.top.limit = usersettingLimit
   end if
 end sub
@@ -166,9 +166,9 @@ sub loadItems()
     end if
   end if
 
-  if data <> invalid
+  if isValid(data)
 
-    if data.TotalRecordCount <> invalid then m.top.totalRecordCount = data.TotalRecordCount
+    if isValid(data.TotalRecordCount) then m.top.totalRecordCount = data.TotalRecordCount
 
     for each item in data.Items
       tmp = invalid
@@ -280,11 +280,11 @@ sub loadItems()
         m.log.warn("Unknown Type", item.Type)
       end if
 
-      if tmp <> invalid
+      if isValid(tmp)
         if LCase(item.Type) <> "genre" and LCase(item.Type) <> "musicgenre"
           tmp.parentFolder = m.top.itemId
           tmp.json = item
-          if item.UserData <> invalid and item.UserData.isFavorite <> invalid
+          if isValid(item.UserData) and isValid(item.UserData.isFavorite)
             tmp.favorite = item.UserData.isFavorite
           end if
         end if

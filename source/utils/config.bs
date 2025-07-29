@@ -8,21 +8,21 @@ end function
 
 ' Generic registry accessors
 function registry_read(key, section = invalid)
-  if section = invalid then return invalid
+  if not isValid(section) then return invalid
   reg = CreateObject("roRegistrySection", section)
   if reg.exists(key) then return reg.read(key)
   return invalid
 end function
 
 sub registry_write(key, value, section = invalid)
-  if section = invalid then return
+  if not isValid(section) then return
   reg = CreateObject("roRegistrySection", section)
   reg.write(key, value)
   reg.flush()
 end sub
 
 sub registry_delete(key, section = invalid)
-  if section = invalid then return
+  if not isValid(section) then return
   reg = CreateObject("roRegistrySection", section)
   reg.delete(key)
   reg.flush()
@@ -53,7 +53,7 @@ end function
 ' "JellyRock" registry accessors for the default global settings
 function get_setting(key, defaultValue = invalid)
   value = registry_read(key, "JellyRock")
-  if value = invalid then return defaultValue
+  if not isValid(value) then return defaultValue
   return value
 end function
 
@@ -67,19 +67,19 @@ end sub
 
 ' User registry accessors for the currently active user
 function get_user_setting(key as string) as dynamic
-  if key = "" or m.global.session.user.id = invalid then return invalid
+  if key = "" or not isValid(m.global.session.user.id) then return invalid
   value = registry_read(key, m.global.session.user.id)
   return value
 end function
 
 sub set_user_setting(key as string, value as dynamic)
-  if m.global.session.user.id = invalid then return
+  if not isValid(m.global.session.user.id) then return
   session.user.settings.Save(key, value)
   registry_write(key, value, m.global.session.user.id)
 end sub
 
 sub unset_user_setting(key as string)
-  if m.global.session.user.id = invalid then return
+  if not isValid(m.global.session.user.id) then return
   session.user.settings.Delete(key)
   registry_delete(key, m.global.session.user.id)
 end sub
@@ -87,11 +87,11 @@ end sub
 ' Recursivly search the config tree for entry with settingname equal to key
 function findConfigTreeKey(key as string, tree)
   for each item in tree
-    if item.settingName <> invalid and item.settingName = key then return item
+    if isValid(item.settingName) and item.settingName = key then return item
 
-    if item.children <> invalid and item.children.Count() > 0
+    if isValid(item.children) and item.children.Count() > 0
       result = findConfigTreeKey(key, item.children)
-      if result <> invalid then return result
+      if isValid(result) then return result
     end if
   end for
 
@@ -118,22 +118,22 @@ function getSavedUsers() as object
     token = registry_read("token", userId)
 
     username = registry_read("username", userId)
-    if username <> invalid
+    if isValid(username)
       userArray["username"] = username
     end if
 
     serverId = registry_read("serverId", userId)
-    if serverId <> invalid
+    if isValid(serverId)
       userArray["serverId"] = serverId
     end if
 
     primaryImageTag = registry_read("primaryimagetag", userId)
-    if primaryImageTag <> invalid
+    if isValid(primaryImageTag)
       print "Found Saved Primary Image Tag: ", primaryImageTag, " for user: ", userId
       userArray["primaryImageTag"] = primaryImageTag
     end if
 
-    if username <> invalid and token <> invalid and serverId <> invalid and serverId = m.global.session.server.id
+    if isValid(username) and isValid(token) and isValid(serverId) and serverId = m.global.session.server.id
       savedServerUsers.push(userArray)
     end if
   end for

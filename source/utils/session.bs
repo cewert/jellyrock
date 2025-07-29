@@ -34,7 +34,7 @@ namespace session
   ' Update one value from the global session array (m.global.session)
   sub Update(key as string, value = {} as object)
     ' validate parameters
-    if key = "" or (key <> "user" and key <> "server" and key <> "video") or value = invalid
+    if key = "" or (key <> "user" and key <> "server" and key <> "video") or not isValid(value)
       print "Error in session.Update(): Invalid parameters provided"
       return
     end if
@@ -56,7 +56,7 @@ namespace session
     ' Add or update one value from the global server session array (m.global.session.server)
     sub Update(key as string, value as dynamic)
       ' validate parameters
-      if key = "" or value = invalid then return
+      if key = "" or not isValid(value) then return
       ' make copy of global server session array
       tmpSessionServer = m.global.session.server
       ' update the temp server array
@@ -84,11 +84,11 @@ namespace session
     ' Returns a boolean based on if a connection to the Jellyfin server was made
     function Populate() as boolean
       ' validate server url
-      if m.global.session.server.url = invalid or m.global.session.server.url = "" then return false
+      if not isValid(m.global.session.server.url) or m.global.session.server.url = "" then return false
       ' get server info using API
       myServerInfo = ServerInfo()
       ' validate data returned from API
-      if myServerInfo.id = invalid then return false
+      if not isValid(myServerInfo.id) then return false
       ' make copy of global server session
       tmpSessionServer = m.global.session.server
       ' update the temp array
@@ -104,7 +104,7 @@ namespace session
       if tmpSessionServer.url.left(8) = "https://" then isServerHTTPS = true
       tmpSessionServer.AddReplace("isHTTPS", isServerHTTPS)
       isLocalServerHTTPS = false
-      if myServerInfo.LocalAddress <> invalid and myServerInfo.LocalAddress.left(8) = "https://" then isLocalServerHTTPS = true
+      if isValid(myServerInfo.LocalAddress) and myServerInfo.LocalAddress.left(8) = "https://" then isLocalServerHTTPS = true
       tmpSessionServer.AddReplace("isLocalHTTPS", isLocalServerHTTPS)
       ' update global server session using the temp array
       session.Update("server", tmpSessionServer)
@@ -122,7 +122,7 @@ namespace session
     ' Add or update one value from the global user session array (m.global.session.user)
     sub Update(key as string, value as dynamic)
       ' validate parameters
-      if key = "" or value = invalid then return
+      if key = "" or not isValid(value) then return
 
       ' make copy of global user session
       tmpSessionUser = m.global.session.user
@@ -148,11 +148,11 @@ namespace session
     ' Accepts a UserData.xml object from get_token() or an assocArray from AboutMe()
     sub Login(userData as object, saveCredentials = false as boolean)
       ' validate parameters
-      if userData = invalid or userData.id = invalid then return
+      if not isValid(userData) or not isValid(userData.id) then return
       ' make copy of global user session array
       tmpSession = m.global.session
       oldUserSettings = tmpSession.user.settings
-      if userData.json = invalid
+      if not isValid(userData.json)
         ' we were passed data from AboutMe()
         myAuthToken = tmpSession.user.authToken
         myPrimaryImageTag = tmpSession.user.primaryImageTag
@@ -361,7 +361,7 @@ namespace session
         ' validate parameters
         if name = "" then return invalid
 
-        if m.global.session.user.settings[name] <> invalid
+        if isValid(m.global.session.user.settings[name])
           return m.global.session.user.settings[name]
         else
           return invalid
@@ -371,30 +371,30 @@ namespace session
       ' retrieve all default user settings from Config Tree
       sub SaveDefaults()
         configTree = GetConfigTree()
-        if configTree = invalid then return
+        if not isValid(configTree) then return
 
         for each item in configTree
-          if item.default <> invalid and item.settingName <> invalid
+          if isValid(item.default) and isValid(item.settingName)
             session.user.settings.Save(item.settingName, item.default)
-          else if item.children <> invalid and item.children.Count() > 0
+          else if isValid(item.children) and item.children.Count() > 0
             for each child in item.children
-              if child.default <> invalid and child.settingName <> invalid
+              if isValid(child.default) and isValid(child.settingName)
                 session.user.settings.Save(child.settingName, child.default)
-              else if child.children <> invalid and child.children.Count() > 0
+              else if isValid(child.children) and child.children.Count() > 0
                 for each child in child.children
-                  if child.default <> invalid and child.settingName <> invalid
+                  if isValid(child.default) and isValid(child.settingName)
                     session.user.settings.Save(child.settingName, child.default)
-                  else if child.children <> invalid and child.children.Count() > 0
+                  else if isValid(child.children) and child.children.Count() > 0
                     for each child in child.children
-                      if child.default <> invalid and child.settingName <> invalid
+                      if isValid(child.default) and isValid(child.settingName)
                         session.user.settings.Save(child.settingName, child.default)
-                      else if child.children <> invalid and child.children.Count() > 0
+                      else if isValid(child.children) and child.children.Count() > 0
                         for each child in child.children
-                          if child.default <> invalid and child.settingName <> invalid
+                          if isValid(child.default) and isValid(child.settingName)
                             session.user.settings.Save(child.settingName, child.default)
-                          else if child.children <> invalid and child.children.Count() > 0
+                          else if isValid(child.children) and child.children.Count() > 0
                             for each child in child.children
-                              if child.default <> invalid and child.settingName <> invalid
+                              if isValid(child.default) and isValid(child.settingName)
                                 session.user.settings.Save(child.settingName, child.default)
                               end if
                             end for
@@ -429,7 +429,7 @@ namespace session
       ' Saves the user setting to the global session.
       ' This also converts strings to boolean as necessary before saving to global session
       sub Save(name as string, value as string)
-        if name = invalid or value = invalid then return
+        if not isValid(name) or not isValid(value) then return
         tmpSettingArray = m.global.session.user.settings
 
         tmpSettingArray[name] = toBoolean(value)
@@ -447,7 +447,7 @@ namespace session
 
     ' Update the global video session array (m.global.session.video)
     sub Update(videoMetaData as object)
-      if videoMetaData = invalid then return
+      if not isValid(videoMetaData) then return
 
       session.video.Delete()
       session.Update("video", videoMetaData)

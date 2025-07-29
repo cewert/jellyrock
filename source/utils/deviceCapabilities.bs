@@ -948,20 +948,20 @@ end function
 ' Recieves and returns an assArray of supported profiles and levels for each video codec
 function updateProfileArray(profileArray as object, videoCodec as string, videoProfile as string, profileLevel = "" as string) as object
   ' validate params
-  if profileArray = invalid then return {}
+  if not isValid(profileArray) then return {}
   if videoCodec = "" or videoProfile = "" then return profileArray
 
-  if profileArray[videoCodec] = invalid
+  if not isValid(profileArray[videoCodec])
     profileArray[videoCodec] = {}
   end if
 
-  if profileArray[videoCodec][videoProfile] = invalid
+  if not isValid(profileArray[videoCodec][videoProfile])
     profileArray[videoCodec][videoProfile] = {}
   end if
 
   ' add profileLevel if a value was provided
   if profileLevel <> ""
-    if profileArray[videoCodec][videoProfile][profileLevel] = invalid
+    if not isValid(profileArray[videoCodec][videoProfile][profileLevel])
       profileArray[videoCodec][videoProfile].AddReplace(profileLevel, true)
     end if
   end if
@@ -1045,7 +1045,7 @@ function canPlay4k() as boolean
 
   ' Check if the output mode is 2160p or higher
   maxVideoHeight = m.global.device.videoHeight
-  if maxVideoHeight = invalid then return false
+  if not isValid(maxVideoHeight) then return false
   if maxVideoHeight.ToInt() < 2160
     print "maxVideoHeight is less than 2160p. Does the TV support 4K? If yes, then go to your Roku settings and set your display type to 4K"
     return false

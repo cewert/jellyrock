@@ -5,9 +5,9 @@ class VideoDefaults
     m.itemData = jsonMetaData
     m.mediaStreams = jsonMetaData.mediaStreams
 
-    if m.mediaStreams = invalid
+    if not isValid(m.mediaStreams)
       ' look for metadata attached to the node
-      if m.itemData.json <> invalid and m.itemData.json.MediaStreams <> invalid
+      if isValid(m.itemData.json) and isValid(m.itemData.json.MediaStreams)
         m.mediaStreams = m.itemData.json.MediaStreams
       else
         m.mediaStreams = []
@@ -155,7 +155,7 @@ class VideoDefaults
   function getDefaultAudioStreamIndex() as integer
     defaultStream = m.getDefaultAudioStream()
 
-    if defaultStream.index <> invalid then return defaultStream.index
+    if isValid(defaultStream.index) then return defaultStream.index
 
     return 0
   end function

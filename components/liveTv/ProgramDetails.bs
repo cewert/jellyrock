@@ -118,13 +118,13 @@ sub updateLabels(recordText = tr("Record"), recordSeriesText = tr("Record Series
 end sub
 
 sub channelUpdated()
-  if m.top.channel = invalid
+  if not isValid(m.top.channel)
     m.top.findNode("noInfoChannelName").text = ""
     m.channelName.text = ""
   else
     m.top.findNode("noInfoChannelName").text = m.top.channel.Title
     m.channelName.text = m.top.channel.Title
-    if m.top.programDetails = invalid
+    if not isValid(m.top.programDetails)
       m.image.uri = m.top.channel.posterURL
     end if
     m.favorite.visible = m.top.channel.favorite
@@ -140,7 +140,7 @@ sub programUpdated()
   prog = m.top.programDetails
 
   ' If no program selected, hide details view
-  if prog = invalid
+  if not isValid(prog)
     channelUpdated()
     m.detailsView.visible = "false"
     m.noInfoView.visible = "true"
@@ -165,7 +165,7 @@ sub programUpdated()
     m.episodeDetailsGroup.appendChild(m.episodeNumber)
   end if
 
-  if prog.episodeTitle <> invalid and prog.episodeTitle <> ""
+  if isValid(prog.episodeTitle) and prog.episodeTitle <> ""
     m.episodeTitle.text = prog.episodeTitle
     m.episodeTitle.visible = true
     m.episodeDetailsGroup.appendChild(m.episodeTitle)
@@ -210,8 +210,8 @@ sub programUpdated()
   m.image.uri = prog.PosterURL
 
   ' If currently being recorded, change button to "Stop Recording"
-  if prog.json.TimerId <> invalid
-    if prog.json.SeriesTimerId <> invalid
+  if isValid(prog.json.TimerId)
+    if isValid(prog.json.SeriesTimerId)
       updateLabels(tr("Cancel Recording"), tr("Cancel Series Recording"))
     else
       updateLabels(tr("Cancel Recording"), tr("Record Series"))

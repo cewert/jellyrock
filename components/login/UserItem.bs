@@ -1,9 +1,10 @@
+import "pkg:/source/utils/misc.bs"
 sub init()
 end sub
 
 sub itemContentChanged()
   itemData = m.top.itemContent
-  if itemData = invalid then return
+  if not isValid(itemData) then return
 
   profileImage = m.top.findNode("profileImage")
   profileName = m.top.findNode("profileName")

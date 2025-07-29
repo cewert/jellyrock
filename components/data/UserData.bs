@@ -1,4 +1,5 @@
 import "pkg:/source/utils/config.bs"
+import "pkg:/source/utils/misc.bs"
 
 sub setDataFromJSON()
   json = m.top.json
@@ -25,7 +26,7 @@ sub saveToRegistry()
   for each user in users
     if user.id = m.top.id then this_user = user
   end for
-  if this_user = invalid
+  if not isValid(this_user)
     users.push({
       id: m.top.id,
       username: m.top.username,
