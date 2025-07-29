@@ -89,8 +89,8 @@ sub loadInitialItems()
   startLoadingSpinner()
   userSettings = m.global.session.user.settings
 
-  if m.top.parentItem.json.type = "CollectionFolder" 'or m.top.parentItem.json.type = "Folder"
-    m.top.HomeLibraryItem = m.top.parentItem.id
+  if m.top.parentItem.json.Type = "CollectionFolder" 'or m.top.parentItem.json.Type = "Folder"
+    m.top.HomeLibraryItem = m.top.parentItem.Id
   end if
 
   if isValid(m.top.parentItem.backdropUrl)
@@ -111,19 +111,19 @@ sub loadInitialItems()
     m.filter = userSettings["display.livetv.filter"]
   else if m.top.parentItem.collectionType = "music"
     m.view = userSettings["display.music.view"]
-    m.sortField = userSettings["display." + m.top.parentItem.id + ".sortField"]
-    sortAscendingStr = userSettings["display." + m.top.parentItem.id + ".sortAscending"]
-    m.filter = userSettings["display." + m.top.parentItem.id + ".filter"]
+    m.sortField = userSettings["display." + m.top.parentItem.Id + ".sortField"]
+    sortAscendingStr = userSettings["display." + m.top.parentItem.Id + ".sortAscending"]
+    m.filter = userSettings["display." + m.top.parentItem.Id + ".filter"]
   else
-    m.sortField = userSettings["display." + m.top.parentItem.id + ".sortField"]
-    sortAscendingStr = userSettings["display." + m.top.parentItem.id + ".sortAscending"]
-    m.filter = userSettings["display." + m.top.parentItem.id + ".filter"]
-    m.view = userSettings["display." + m.top.parentItem.id + ".landing"]
+    m.sortField = userSettings["display." + m.top.parentItem.Id + ".sortField"]
+    sortAscendingStr = userSettings["display." + m.top.parentItem.Id + ".sortAscending"]
+    m.filter = userSettings["display." + m.top.parentItem.Id + ".filter"]
+    m.view = userSettings["display." + m.top.parentItem.Id + ".landing"]
   end if
 
   if not isValid(m.sortField)
     ' Set the default order for boxsets to the Release Date - API calls it PremiereDate
-    if LCase(m.top.parentItem.json.type) = "boxset"
+    if LCase(m.top.parentItem.json.Type) = "boxset"
       m.sortField = "PremiereDate"
     else
       m.sortField = "SortName"
@@ -198,7 +198,7 @@ sub loadInitialItems()
     if userSettings["display.livetv.landing"] = "guide" and m.options.view <> "livetv"
       showTvGuide()
     end if
-  else if m.top.parentItem.collectionType = "CollectionFolder" or m.top.parentItem.type = "CollectionFolder" or m.top.parentItem.collectionType = "boxsets" or m.top.parentItem.type = "Boxset" or m.top.parentItem.type = "Boxsets" or m.top.parentItem.type = "Folder" or m.top.parentItem.type = "Channel"
+  else if m.top.parentItem.collectionType = "CollectionFolder" or m.top.parentItem.Type = "CollectionFolder" or m.top.parentItem.collectionType = "boxsets" or m.top.parentItem.Type = "Boxset" or m.top.parentItem.Type = "Boxsets" or m.top.parentItem.Type = "Folder" or m.top.parentItem.Type = "Channel"
     if m.voiceBox.text <> ""
       m.loadItemsTask.recursive = true
     else
@@ -505,7 +505,7 @@ sub ItemDataLoaded(msg)
   m.loading = false
   'If there are no items to display, show message
   if m.loadedItems = 0
-    m.emptyText.text = tr("NO_ITEMS").Replace("%1", m.top.parentItem.type)
+    m.emptyText.text = tr("NO_ITEMS").Replace("%1", m.top.parentItem.Type)
     m.emptyText.visible = true
   end if
 
@@ -663,7 +663,7 @@ sub optionsClosed()
     end if
   end if
 
-  if m.top.parentItem.type = "CollectionFolder" or m.top.parentItem.type = "Folder" or m.top.parentItem.collectionType = "CollectionFolder"
+  if m.top.parentItem.Type = "CollectionFolder" or m.top.parentItem.Type = "Folder" or m.top.parentItem.collectionType = "CollectionFolder"
     ' Did the user just request "Random" on a PhotoAlbum?
     if m.options.view = "singlephoto"
       set_user_setting("photos.slideshow", "false")
@@ -686,11 +686,11 @@ sub optionsClosed()
       reload = true
     end if
   else
-    m.view = m.global.session.user.settings["display." + m.top.parentItem.id + ".landing"]
+    m.view = m.global.session.user.settings["display." + m.top.parentItem.Id + ".landing"]
     if m.options.view <> m.view
       'reload and store new view setting
       m.view = m.options.view
-      set_user_setting("display." + m.top.parentItem.id + ".landing", m.view)
+      set_user_setting("display." + m.top.parentItem.Id + ".landing", m.view)
       reload = true
     end if
   end if
@@ -711,8 +711,8 @@ sub optionsClosed()
       set_user_setting("display.livetv.sortField", m.sortField)
       set_user_setting("display.livetv.sortAscending", sortAscendingStr)
     else
-      set_user_setting("display." + m.top.parentItem.id + ".sortField", m.sortField)
-      set_user_setting("display." + m.top.parentItem.id + ".sortAscending", sortAscendingStr)
+      set_user_setting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
+      set_user_setting("display." + m.top.parentItem.Id + ".sortAscending", sortAscendingStr)
     end if
   end if
   if m.options.filter <> m.filter
@@ -723,7 +723,7 @@ sub optionsClosed()
     if m.top.parentItem.collectionType = "livetv"
       set_user_setting("display.livetv.filter", m.options.filter)
     else
-      set_user_setting("display." + m.top.parentItem.id + ".filter", m.options.filter)
+      set_user_setting("display." + m.top.parentItem.Id + ".filter", m.options.filter)
     end if
   end if
   if reload
