@@ -57,7 +57,7 @@ sub loadItems()
   m.top.forceMp3 = false
 end sub
 
-function LoadItems_VideoPlayer(id as string, not isValid(mediaSourceId) as dynamic, audio_stream_idx = 1 as integer, forceTranscoding = false as boolean) as dynamic
+function LoadItems_VideoPlayer(id as string, mediaSourceId as dynamic, audio_stream_idx = 1 as integer, forceTranscoding = false as boolean) as dynamic
 
   video = {}
   video.id = id
