@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           ref: ${{ github.head_ref }}
-          token: ${{ secrets.CEWERT_BOT_TOKEN }}
+          token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
       - name: Install NPM dependencies
         run: npm ci
       - name: Generate translation file
@@ -42,7 +42,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           ref: ${{ github.ref_name }}
-          token: ${{ secrets.CEWERT_BOT_TOKEN }}
+          token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
           fetch-depth: 0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -58,10 +58,10 @@ jobs:
       - name: Deploy to jellyrock-code-docs repo
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          token: ${{ secrets.CEWERT_BOT_TOKEN }}
+          token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
           repository-name: cewert/jellyrock-code-docs
           branch: main
           folder: code-docs
-          target-folder: /gh-pages
+          target-folder: /docs
           clean: true
 
