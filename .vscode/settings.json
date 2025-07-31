@@ -19,12 +19,10 @@
     "**/.git": true,
     "**/node_modules/**": true,
     "locale/**": true,
-    "docs/api/**": true,
     "build/**": true,
     "out/**": true,
     ".github/**": true,
     ".vscode/settings.json": true,
-    "package.json": true,
     "package-lock.json": true,
     "renovate.json": true
   },
