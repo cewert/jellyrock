@@ -59,7 +59,7 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           token: ${{ secrets.CEWERT_BOT_TOKEN }}
-          repository: cewert/jellyrock-code-docs
+          repository-name: cewert/jellyrock-code-docs
           branch: main
           folder: code-docs
           target-folder: /gh-pages
