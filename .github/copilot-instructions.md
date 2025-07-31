@@ -4,11 +4,10 @@ This project is a Roku client application that connects to Jellyfin media server
 
 ## Folder Structure
 
-- `/components`: Contains SceneGraph XML components and the .bs files that define the logic for each component.
-- `/docs`: Contains documentation for the project.
-- `/docs/api`: Contains documentation for the app's code base. Auto generated.
-- `/images`: Contains images used in the application, such as icons and backgrounds as well as the development version of the branding images used in the app store.
-- `/locale`: Contains localization files used for translating the application into different languages.
+- `/components`: Contains SceneGraph XML components and the .bs files, with the same file name, that define the logic for each XML component.
+- `/docs`: Contains documentation for the project in markdown format.
+- `/images`: Contains all local images used in the application as well as the development version of the branding images used in the app store.
+- `/locale`: Contains localization XML files used for translating the application.
 - `/resources`: Contains static resources used by the application but are not automatically packaged with the app.
 - `/resources/branding`: Contains branding images. The SVG files are used to generate image files for the app store.
 - `/resources/branding/release`: Contains the branding images used in the app store for the release version of the application.
