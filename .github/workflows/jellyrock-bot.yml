@@ -63,5 +63,6 @@ jobs:
           branch: main
           folder: code-docs
           target-folder: /docs
-          clean: true
+          git-config-name: jellyrock-bot
+          git-config-email: c.ewert@gmail.com
 
