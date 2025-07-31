@@ -61,7 +61,7 @@ jobs:
           token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
           repository-name: cewert/jellyrock-code-docs
           branch: main
-          folder: code-docs
+          folder: code-docs/gh-pages
           target-folder: /docs
           git-config-name: jellyrock-bot
           git-config-email: c.ewert@gmail.com
