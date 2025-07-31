@@ -14,8 +14,6 @@ jobs:
           cache: "npm"
       - name: NPM install
         run: npm ci
-      - name: Install roku module dependencies
-        run: npm run ropm
       - name: Build app for production
         run: npm run build-prod
       - name: Setup Java
