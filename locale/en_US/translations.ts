@@ -973,6 +973,10 @@
       <extracomment>Help text in search Box</extracomment>
     </message>
     <message>
+      <source>Seasons</source>
+      <translation>Seasons</translation>
+    </message>
+    <message>
       <source>Select Audio</source>
       <translation>Select Audio</translation>
     </message>
