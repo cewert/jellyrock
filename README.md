@@ -3,7 +3,7 @@
 
 <!-- [![Current Release](https://img.shields.io/github/release/cewert/jellyrock.svg?logo=github "Current Release")](https://github.com/cewert/jellyrock/releases) -->
 [![Build Status](https://img.shields.io/github/actions/workflow/status/cewert/jellyrock/build-prod.yml?logo=github&branch=main "Build Status")](https://github.com/cewert/jellyrock/actions/workflows/build-prod.yml)
-[![Code Documentation](https://img.shields.io/badge/Code%20Documentation-purple)](https://cewert.github.io/jellyrock/)
+[![Code Documentation](https://img.shields.io/badge/Code%20Documentation-purple)](https://cewert.github.io/jellyrock-code-docs/)
 [![License](https://img.shields.io/github/license/cewert/jellyrock.svg "GPL 2.0 License")](LICENSE)
 <!-- [![Translation Status](https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-roku/svg-badge.svg "Translation Status")](https://translate.jellyfin.org/projects/jellyfin/jellyfin-roku/?utm_source=widget) -->
 
