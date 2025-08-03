@@ -4,7 +4,7 @@
     <Poster id="buttonFocusBorder" uri="pkg:/images/white.9.png" visible="false" />
     <Poster id="buttonBackground" uri="pkg:/images/white.9.png" />
     <Poster id="buttonIcon" />
-    <LabelSmallest id="buttonText" color="#F5F5F5" horizAlign="center" />
+    <LabelPrimarySmallest id="buttonText" horizAlign="center" />
   </children>
   <interface>
     <field id="background" type="color" value="" />

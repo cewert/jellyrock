@@ -13,19 +13,19 @@
 
       <Group translation="[ 96, 160 ]">
         <LayoutGroup itemSpacings="[4,20, 20, 20, 40]">
-          <LabelLarge id="programName" bold="true" />
+          <LabelPrimaryLarge id="programName" bold="true" />
 
           <LayoutGroup id="episodeDetailsGroup" layoutDirection="horiz" itemSpacings="[10]">
             <Group id="isLive">
               <Poster id="isLiveBackground" uri="pkg:/images/white.9.png" blendColor="#FF0000" />
-              <LabelSmallest id="isLiveText" text="Live" translation="[8,4]" bold="true" />
+              <LabelPrimarySmallest id="isLiveText" text="Live" translation="[8,4]" bold="true" />
             </Group>
             <Group id="isRepeat">
               <Poster id="isRepeatBackground" uri="pkg:/images/white.9.png" blendColor="#009688" />
-              <LabelSmallest id="isRepeatText" text="Repeat" translation="[8,4]" bold="true" />
+              <LabelPrimarySmallest id="isRepeatText" text="Repeat" translation="[8,4]" bold="true" />
             </Group>
-            <LabelSmall id="episodeNumber" />
-            <LabelSmall id="episodeTitle" />
+            <LabelPrimarySmall id="episodeNumber" />
+            <LabelPrimarySmall id="episodeTitle" />
           </LayoutGroup>
 
           <LayoutGroup layoutDirection="horiz" itemSpacings="[30]">
@@ -34,7 +34,7 @@
             <LabelPrimaryMedium id="channelName" />
           </LayoutGroup>
 
-          <LabelSmallest id="overview" wrap="true" width="1210" />
+          <LabelPrimarySmallest id="overview" wrap="true" width="1210" />
 
           <LayoutGroup layoutDirection="horiz" itemSpacings="[30]">
             <!-- View Channel button -->
@@ -65,8 +65,8 @@
     </Group>
     <!-- When no schedule information to display  -->
     <LayoutGroup id="noInformation" translation="[96, 300]">
-      <LabelLarge id="noInfoChannelName" bold="true" />
-      <LabelSmall text="No schedule information" />
+      <LabelPrimaryLarge id="noInfoChannelName" bold="true" />
+      <LabelPrimarySmall text="No schedule information" />
     </LayoutGroup>
     <Animation id="focusAnimation" duration="0.66" repeat="false" easeFunction="linear">
       <FloatFieldInterpolator id="viewChannelFocusAnimationOpacity" key="[0.0, 1]" fieldToInterp="viewChannelButton.opacity" />

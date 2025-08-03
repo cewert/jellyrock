@@ -22,7 +22,7 @@ sub loadPerson()
   name = m.top.findNode("name")
   name.Text = itemData.Name
   if isValid(itemData.PremiereDate) and itemData.PremiereDate <> ""
-    lifeStringLabel = createObject("rosgnode", "LabelSmallest")
+    lifeStringLabel = createObject("rosgnode", "LabelPrimarySmallest")
     lifeStringLabel.id = "premierDate"
     lifeStringLabel.bold = true
     lifeStringLabel.height = "100"

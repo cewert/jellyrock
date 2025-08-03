@@ -21,13 +21,13 @@
 
       <Section id="albumsSlide" translation="[0, 950]" defaultFocusID="albums">
         <Rectangle id='albumRect' translation="[0, 0]" width="1920" height="1080" color="#000000" opacity=".75" />
-        <LabelLarge id="albumHeader" translation="[120, 50]" />
+        <LabelPrimaryLarge id="albumHeader" translation="[120, 50]" />
         <AlbumGrid id="albums" translation="[120, 150]" vertFocusAnimationStyle="fixedFocus" basePosterSize="[300, 300]" numColumns="5" numRows="99" caption1NumLines="1" itemSpacing="[50, 50]" />
       </Section>
 
       <Section id="appearsOnSlide" translation="[0, 1100]" defaultFocusID="appearsOn">
         <Rectangle id='appearsOnRect' translation="[0, 0]" width="1920" height="1080" color="#000000" opacity=".75" />
-        <LabelLarge id="appearsOnHeader" translation="[120, 50]" />
+        <LabelPrimaryLarge id="appearsOnHeader" translation="[120, 50]" />
         <AlbumGrid id="appearsOn" translation="[120, 150]" vertFocusAnimationStyle="fixedFocus" basePosterSize="[300, 300]" numColumns="5" numRows="99" caption1NumLines="1" itemSpacing="[50, 50]" />
       </Section>
 

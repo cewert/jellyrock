@@ -4,7 +4,7 @@
     <LayoutGroup id="main_group" layoutDirection="horiz" itemSpacings="[15]">
       <Poster id="tvshowPoster" width="400" height="600" />
       <LayoutGroup layoutDirection="vert" itemSpacings="[25]">
-        <LabelLarge id="title" bold="true" />
+        <LabelPrimaryLarge id="title" bold="true" />
         <LayoutGroup layoutDirection="horiz" itemSpacings="[150]">
           <LabelPrimaryMedium id="releaseYear" />
           <LabelPrimaryMedium id="officialRating" />

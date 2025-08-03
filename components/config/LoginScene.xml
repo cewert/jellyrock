@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="LoginScene" extends="JRScreen">
   <children>
-    <LabelLarge text="Enter Configuration"
+    <LabelPrimaryLarge text="Enter Configuration"
       id="prompt"
       translation="[150, 150]" bold="true" />
     <ConfigList
@@ -18,7 +18,7 @@
       id="quickConnect"
       translation="[550, 550]"
     />
-    <LabelMedium text=""
+    <LabelPrimaryMedium text=""
       id="alert"
       wrap="true"
       width="1620"

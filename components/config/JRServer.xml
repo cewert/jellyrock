@@ -9,11 +9,11 @@
   <children>
     <Poster id="poster" translation="[0,5]" width="90" height="90" />
     <Group id="labels" translation="[100,0]">
-      <LabelMedium text="Name:" horizAlign="left" width="130" height="65" translation="[0,5]" bold="true" />
-      <LabelMedium text="URL:" horizAlign="left" width="130" height="65" translation="[0,55]" bold="true" />
+      <LabelPrimaryMedium text="Name:" horizAlign="left" width="130" height="65" translation="[0,5]" bold="true" />
+      <LabelPrimaryMedium text="URL:" horizAlign="left" width="130" height="65" translation="[0,55]" bold="true" />
 
-      <LabelMedium id="name" horizAlign="left" height="65" translation="[125,5]" />
-      <LabelMedium id="baseUrl" horizAlign="left" height="65" translation="[125,55]" />
+      <LabelPrimaryMedium id="name" horizAlign="left" height="65" translation="[125,5]" />
+      <LabelPrimaryMedium id="baseUrl" horizAlign="left" height="65" translation="[125,55]" />
     </Group>
   </children>
 

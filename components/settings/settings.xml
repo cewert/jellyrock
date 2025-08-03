@@ -2,7 +2,7 @@
 <component name="Settings" extends="JRScreen">
   <children>
 
-    <LabelSmallest id="path" translation="[95,175]" bold="true" />
+    <LabelPrimarySmallest id="path" translation="[95,175]" bold="true" />
 
     <LabelList
       translation="[120,250]"
