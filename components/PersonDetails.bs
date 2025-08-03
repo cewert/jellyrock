@@ -19,17 +19,15 @@ sub loadPerson()
   item = m.top.itemContent
   itemData = item.json
   m.top.Id = itemData.id
-  name = m.top.findNode("Name")
+  name = m.top.findNode("name")
   name.Text = itemData.Name
-  name.font.size = 70
   if isValid(itemData.PremiereDate) and itemData.PremiereDate <> ""
-    lifeStringLabel = createObject("rosgnode", "Label")
+    lifeStringLabel = createObject("rosgnode", "LabelSmallest")
     lifeStringLabel.id = "premierDate"
-    lifeStringLabel.font = "font:SmallestBoldSystemFont"
+    lifeStringLabel.bold = true
     lifeStringLabel.height = "100"
     lifeStringLabel.vertAlign = "bottom"
     name.vertAlign = "top"
-    name.font.size = 60
     m.top.findNode("title_rectangle").appendChild(lifeStringLabel)
     birthDate = CreateObject("roDateTime")
     birthDate.FromISO8601String(itemData.PremiereDate)

@@ -5,8 +5,6 @@ sub init()
   m.itemPoster = m.top.findNode("itemPoster")
   m.posterText = m.top.findNode("posterText")
   initTitle()
-  m.posterText.font.size = 30
-  m.title.font.size = 25
   m.backdrop = m.top.findNode("backdrop")
   m.playedIndicator = m.top.findNode("playedIndicator")
 
