@@ -22,7 +22,7 @@
     },
     "theme_opts": {
       "default_theme": "fallback-dark",
-      "base_url": "https://cewert.github.io/jellyrock/",
+      "base_url": "https://cewert.github.io/jellyrock-code-docs/",
       "title": "JellyRock Code Documentation",
       "homepageTitle": "JellyRock Code Documentation",
       "displayModuleHeader": true,
