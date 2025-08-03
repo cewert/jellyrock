@@ -7,7 +7,7 @@
       blendColor="#000000"
       translation="[0, 0]"
     />
-    <Label id="messageText" horizAlign="center" wrap="true" />
+    <LabelPrimaryMedium id="messageText" horizAlign="center" wrap="true" />
     <LabelList id="optionList" vertFocusAnimationStyle="floatingFocus" textHorizAlign="center">
       <ContentNode id="content" role="content"></ContentNode>
     </LabelList>

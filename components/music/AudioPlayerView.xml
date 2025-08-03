@@ -10,8 +10,8 @@
     <LayoutGroup id="toplevel" layoutDirection="vert" horizAlignment="center" translation="[960,175]" itemSpacings="[40]">
       <LayoutGroup id="main_group" layoutDirection="vert" horizAlignment="center" itemSpacings="[15]">
         <Poster id="albumCover" width="500" height="500" />
-        <Label id="artist" width="900" height="25" horizAlign="center" />
-        <Label id="song" width="900" height="25" horizAlign="center" />
+        <LabelPrimaryMedium id="artist" width="900" height="25" horizAlign="center" />
+        <LabelPrimaryMedium id="song" width="900" height="25" horizAlign="center" />
         <LabelSmallest id="numberofsongs" width="500" height="25" horizAlign="center" color="#999999" />
       </LayoutGroup>
       <Rectangle id="seekBar" color="0x00000099" width="500" height="10">

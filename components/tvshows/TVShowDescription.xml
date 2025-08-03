@@ -6,19 +6,19 @@
       <LayoutGroup layoutDirection="vert" itemSpacings="[25]">
         <LabelLarge id="title" bold="true" />
         <LayoutGroup layoutDirection="horiz" itemSpacings="[150]">
-          <Label id="releaseYear" />
-          <Label id="officialRating" />
-          <Label id="communityRating" />
+          <LabelPrimaryMedium id="releaseYear" />
+          <LabelPrimaryMedium id="officialRating" />
+          <LabelPrimaryMedium id="communityRating" />
         </LayoutGroup>
-        <Label id="genres" />
+        <LabelPrimaryMedium id="genres" />
         <ButtonGroupHoriz id="buttons" itemSpacings="[10]">
           <Button text="Play" id="play-button" />
           <Button text="Shuffle" id="shuffle-button" />
           <Button text="Favorite" id="favorite-button" />
         </ButtonGroupHoriz>
-        <Label id="tagline" />
-        <Label id="overview" wrap="true" width="900" maxLines="4" />
-        <Label id="history" />
+        <LabelPrimaryMedium id="tagline" />
+        <LabelPrimaryMedium id="overview" wrap="true" width="900" maxLines="4" />
+        <LabelPrimaryMedium id="history" />
       </LayoutGroup>
     </LayoutGroup>
   </children>
