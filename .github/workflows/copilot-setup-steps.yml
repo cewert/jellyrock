@@ -11,9 +11,6 @@ on:
     paths:
       - .github/workflows/copilot-setup-steps.yml
 
-env:
-  GITHUB_TOKEN: ${{ secrets.JELLYROCK_BOT_TOKEN }}
-
 jobs:
   # The job MUST be called `copilot-setup-steps` or it will not be picked up by Copilot.
   copilot-setup-steps:
@@ -26,11 +23,12 @@ jobs:
       contents: read
       issues: write
       pull-requests: read
-
     # You can define any steps you want, and they will run before the agent starts.
     # If you do not check out your code, Copilot will do this for you.
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "lts/*"
