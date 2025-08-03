@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="PlayedCheckmark" extends="Rectangle">
   <children>
-    <Label id="checkmark" font="font:MediumBoldSystemFont" horizAlign="center" vertAlign="bottom" text="✓" />
+    <LabelLarger id="checkmark" horizAlign="center" vertAlign="bottom" text="✓" bold="true" />
   </children>
   <interface>
     <field id="color" type="string" onChange="onColorChanged" value="" />

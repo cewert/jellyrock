@@ -13,19 +13,19 @@
 
       <Group translation="[ 96, 160 ]">
         <LayoutGroup itemSpacings="[4,20, 20, 20, 40]">
-          <Label id="programName" font="font:LargeBoldSystemFont" />
+          <LabelLarge id="programName" / bold="true">
 
           <LayoutGroup id="episodeDetailsGroup" layoutDirection="horiz" itemSpacings="[10]">
             <Group id="isLive">
               <Poster id="isLiveBackground" uri="pkg:/images/white.9.png" blendColor="#FF0000" />
-              <Label id="isLiveText" text="Live" font="font:SmallestBoldSystemFont" translation="[8,4]" />
+              <LabelSmallest id="isLiveText" text="Live" translation="[8,4]" / bold="true">
             </Group>
             <Group id="isRepeat">
               <Poster id="isRepeatBackground" uri="pkg:/images/white.9.png" blendColor="#009688" />
-              <Label id="isRepeatText" text="Repeat" font="font:SmallestBoldSystemFont" translation="[8,4]" />
+              <LabelSmallest id="isRepeatText" text="Repeat" translation="[8,4]" / bold="true">
             </Group>
-            <Label id="episodeNumber" font="font:SmallSystemFont" />
-            <Label id="episodeTitle" font="font:SmallSystemFont" />
+            <LabelSmall id="episodeNumber" />
+            <LabelSmall id="episodeTitle" />
           </LayoutGroup>
 
           <LayoutGroup layoutDirection="horiz" itemSpacings="[30]">
@@ -65,8 +65,8 @@
     </Group>
     <!-- When no schedule information to display  -->
     <LayoutGroup id="noInformation" translation="[96, 300]">
-      <Label id="noInfoChannelName" font="font:LargeBoldSystemFont" />
-      <Label font="font:SmallSystemFont" text="No schedule information" />
+      <LabelLarge id="noInfoChannelName" / bold="true">
+      <LabelSmall text="No schedule information" />
     </LayoutGroup>
     <Animation id="focusAnimation" duration="0.66" repeat="false" easeFunction="linear">
       <FloatFieldInterpolator id="viewChannelFocusAnimationOpacity" key="[0.0, 1]" fieldToInterp="viewChannelButton.opacity" />
