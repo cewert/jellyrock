@@ -575,6 +575,14 @@ function CreateHomeGroup()
   new_options.push(o)
   o = invalid
 
+  ' Add settings option to menu
+  o = CreateObject("roSGNode", "OptionsButton")
+  o.title = tr("Settings")
+  o.id = "settings"
+  o.observeField("optionSelected", m.port)
+  new_options.push(o)
+  o = invalid
+
   o = CreateObject("roSGNode", "OptionsButton")
   o.title = tr("Change user")
   o.id = "change_user"
@@ -592,14 +600,6 @@ function CreateHomeGroup()
   o = CreateObject("roSGNode", "OptionsButton")
   o.title = tr("Sign out")
   o.id = "sign_out"
-  o.observeField("optionSelected", m.port)
-  new_options.push(o)
-  o = invalid
-
-  ' Add settings option to menu
-  o = CreateObject("roSGNode", "OptionsButton")
-  o.title = tr("Settings")
-  o.id = "settings"
   o.observeField("optionSelected", m.port)
   new_options.push(o)
 
