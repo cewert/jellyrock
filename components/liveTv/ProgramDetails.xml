@@ -34,7 +34,7 @@
             <Label id="channelName" />
           </LayoutGroup>
 
-          <label id="overview" wrap="true" width="1210" font="font:SmallestSystemFont" />
+          <LabelSmallest id="overview" wrap="true" width="1210" />
 
           <LayoutGroup layoutDirection="horiz" itemSpacings="[30]">
             <!-- View Channel button -->
