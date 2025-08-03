@@ -114,11 +114,15 @@ sub updateBadgeSize()
     dataWidth = m.checkmark.localBoundingRect().width
     m.checkmark.translation = [padding, 3]
   else
-    dataWidth = m.unplayedVideosCount.localBoundingRect().width
-    if dataWidth < 30
-      dataWidth = 30
-      m.unplayedVideosCount.width = dataWidth
-    end if
+    textLength = len(m.unplayedVideosCount.text)
+    fontSize = m.unplayedVideosCount.font.size
+
+    charWidth = fontSize * 0.6
+    dataWidth = textLength * charWidth
+
+    if dataWidth < 27 then dataWidth = 27
+
+    m.unplayedVideosCount.width = dataWidth
     m.unplayedVideosCount.translation = [padding, 3]
   end if
 
