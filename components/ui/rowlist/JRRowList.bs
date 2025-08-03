@@ -13,7 +13,7 @@ sub init()
   m.top.focusXOffset = [96] ' align item selector with edge of "action" safe zone
 
   m.top.rowLabelOffset = [96, 21] ' align row label with edge of "action" safe zone
-  m.top.rowLabelColor = colorConstants.text_secondary
+  m.top.rowLabelColor = colorConstants.text_primary
   m.top.rowLabelFont = "font:MediumBoldSystemFont"
   m.top.rowLabelFont.size = m.global.constants.font_sizes.medium
 

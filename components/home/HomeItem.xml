@@ -8,7 +8,7 @@
     <JRPoster id="itemPoster" />
 
     <LayoutGroup layoutDirection="vert" translation="[8, 273]" itemSpacings="[0]">
-      <ScrollingLabelSecondarySmaller id="itemText" bold="true" horizAlign="center" height="34" maxWidth="456" repeatCount="0" />
+      <ScrollingLabelPrimarySmaller id="itemText" bold="true" horizAlign="center" height="34" maxWidth="456" repeatCount="0" />
       <LabelSecondarySmaller id="itemTextExtra" bold="true" horizAlign="center" height="32" width="456" visible="false" />
     </LayoutGroup>
   </children>
