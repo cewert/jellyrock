@@ -1,0 +1,21 @@
+name: Build Code Documentation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**.bs'
+      - '**.brs'
+
+jobs:
+  notify-docs-repo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Documentation Workflow
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+          repository: cewert/jellyrock-code-docs
+          event-type: code-update
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
