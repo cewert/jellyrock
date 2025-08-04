@@ -36,6 +36,16 @@ sub saveToRegistry()
   end if
 end sub
 
+sub removeFromRegistry()
+  new_users = []
+  users = parseJson(get_setting("available_users", "[]"))
+  for each user in users
+    if m.top.id <> user.id then new_users.push(user)
+  end for
+
+  set_setting("available_users", formatJson(new_users))
+end sub
+
 function getPreference(key as string)
   return get_user_setting("pref-" + key)
 end function

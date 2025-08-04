@@ -5,6 +5,22 @@ sub init()
   m.top.functionName = "PlaystateUpdate"
 end sub
 
+sub PlaystateUpdate()
+  if m.top.status = "start"
+    url = "Sessions/Playing"
+  else if m.top.status = "stop" or m.top.status = "finished"
+    url = "Sessions/Playing/Stopped"
+  else if m.top.status = "update"
+    url = "Sessions/Playing/Progress"
+  else
+    ' Unknown State
+    return
+  end if
+  params = PlaystateDefaults(m.top.params)
+  resp = APIRequest(url)
+  postJson(resp, params)
+end sub
+
 function PlaystateDefaults(params = {} as object)
   new_params = {
     '"CanSeek": false

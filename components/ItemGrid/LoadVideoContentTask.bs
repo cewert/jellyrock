@@ -17,6 +17,46 @@ sub init()
   m.top.functionName = "loadItems"
 end sub
 
+sub loadItems()
+  queueManager = m.global.queueManager
+
+  ' Reset intro tracker in case task gets reused
+  m.top.isIntro = false
+
+  ' Only show preroll once per queue
+  if queueManager.callFunc("isPrerollActive")
+    ' Prerolls not allowed if we're resuming video
+    if queueManager.callFunc("getCurrentItem").startingPoint = 0
+      preRoll = GetIntroVideos(m.top.itemId)
+      if isValid(preRoll) and preRoll.TotalRecordCount > 0 and isValid(preRoll.items[0])
+        ' If an error is thrown in the Intros plugin, instead of passing the error they pass the entire rick roll music video.
+        ' Bypass the music video and treat it as an error message
+        if lcase(preRoll.items[0].name) <> "rick roll'd"
+          queueManager.callFunc("push", queueManager.callFunc("getCurrentItem"))
+          m.top.itemId = preRoll.items[0].id
+          queueManager.callFunc("setPrerollStatus", false)
+          m.top.isIntro = true
+        end if
+      end if
+    end if
+  end if
+
+  if m.top.selectedAudioStreamIndex = 0
+    currentItem = queueManager.callFunc("getCurrentItem")
+    if isValid(currentItem) and isValid(currentItem.json)
+      m.top.selectedAudioStreamIndex = FindPreferredAudioStream(currentItem.json.MediaStreams)
+    end if
+  end if
+
+  id = m.top.itemId
+  mediaSourceId = invalid
+  audio_stream_idx = m.top.selectedAudioStreamIndex
+  forceTranscoding = false
+
+  m.top.content = [LoadItems_VideoPlayer(id, mediaSourceId, audio_stream_idx, forceTranscoding)]
+  m.top.forceMp3 = false
+end sub
+
 function LoadItems_VideoPlayer(id as string, mediaSourceId as dynamic, audio_stream_idx = 1 as integer, forceTranscoding = false as boolean) as dynamic
 
   video = {}

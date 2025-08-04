@@ -605,10 +605,6 @@ function createLogoPoster()
   return logoPoster
 end function
 
-' Create and return a rectangle node used as a seperator in the overhang
-
-'
-
 ' convert value to boolean and return value
 function toBoolean(value as dynamic) as dynamic
   if not isValid(value) then return invalid
