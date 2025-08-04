@@ -2,10 +2,8 @@ name: lint-json
 on:
   pull_request:
     paths:
-      - "!docs/api/**"
       - "**/*.json"
 
 jobs:
   run:
-    if: "!contains(github.event.pull_request.labels.*.name, 'dependencies')"
     uses: ./.github/workflows/_lint-json.yml
