@@ -9,3 +9,8 @@ sub init()
   m.top.functionName = "search"
 end sub
 
+sub search()
+  if isValid(m.top.query) and m.top.query <> ""
+    m.top.results = searchMedia(m.top.query)
+  end if
+end sub
