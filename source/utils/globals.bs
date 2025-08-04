@@ -34,6 +34,7 @@ sub setConstants()
         text_primary: "0xf0f0f0FF",
         text_secondary: "0xa8a8a8FF",
         text_disabled: "0x4a4a4aFF",
+        text_error: "0xff0000FF",
         background_primary: "0x0d1117FF",
         background_secondary: "0x161b22FF",
 

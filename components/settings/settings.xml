@@ -2,7 +2,7 @@
 <component name="Settings" extends="JRScreen">
   <children>
 
-    <Label id="path" translation="[95,175]" font="font:SmallestBoldSystemFont" />
+    <LabelPrimarySmallest id="path" translation="[95,175]" bold="true" />
 
     <LabelList
       translation="[120,250]"
@@ -19,7 +19,7 @@
       blendColor="#3f3f3f" />
 
     <LayoutGroup translation="[1278,270]" id="settingDetail" vertAlignment="top" horizAlignment="center" itemSpacings="[50]">
-      <Label id="settingDesc"
+      <LabelPrimaryMedium id="settingDesc"
         width="1065"
         wrap="true"
         horizAlign="center"

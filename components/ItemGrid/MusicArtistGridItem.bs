@@ -5,7 +5,6 @@ sub init()
   m.itemPoster = m.top.findNode("itemPoster")
   m.postTextBackground = m.top.findNode("postTextBackground")
   m.posterText = m.top.findNode("posterText")
-  m.posterText.font.size = 30
   m.backdrop = m.top.findNode("backdrop")
 
   m.itemPoster.observeField("loadStatus", "onPosterLoadStatusChanged")

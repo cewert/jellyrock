@@ -5,7 +5,7 @@
       <Poster id="backdrop" width="290" height="425" loadDisplayMode="scaleToZoom" uri="pkg:/images/white.9.png" />
       <JRPoster id="itemPoster" width="290" height="425" loadDisplayMode="scaleToZoom" />
       <Poster id="itemIcon" width="50" height="50" translation="[230,10]" />
-      <Label id="posterText" width="280" height="415" translation="[5,5]" horizAlign="center" vertAlign="center" ellipsizeOnBoundary="true" wrap="true" />
+      <LabelPrimaryMedium id="posterText" width="280" height="415" translation="[5,5]" horizAlign="center" vertAlign="center" ellipsizeOnBoundary="true" wrap="true" />
     </maskGroup>
 
     <ScrollingLabelPrimarySmaller id="itemText" bold="true" horizAlign="center" maxWidth="290" repeatCount="0" visible="false" />

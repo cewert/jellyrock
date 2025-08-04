@@ -2,7 +2,7 @@
 <component name="ConfigItem" extends="Group">
   <children>
     <LayoutGroup layoutDirection="horiz">
-      <Label id="label" />
+      <LabelPrimaryMedium id="label" />
       <TextEditBox id="value" />
     </LayoutGroup>
   </children>
