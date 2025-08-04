@@ -2,7 +2,7 @@ import "pkg:/source/utils/misc.bs"
 sub init()
   m.top.itemComponentName = "UserItem"
   m.top.content = SetData()
-  m.top.observeField("itemSelected", "SetUser")
+  m.top.observeField("itemSelected", "setUser")
   m.top.showRowLabel = [false]
   updateSize()
   m.top.setFocus(true)
@@ -42,6 +42,10 @@ function setData()
   updateSize()
   return data
 end function
+
+sub setUser()
+  m.top.userSelected = m.top.itemContent[m.top.rowItemFocused[1]].Name
+end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
   if not press then return false

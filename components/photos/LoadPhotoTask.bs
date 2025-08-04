@@ -22,7 +22,4 @@ sub loadItems()
   else
     m.top.results = invalid
   end if
-
-
-
 end sub

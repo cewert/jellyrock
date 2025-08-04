@@ -1008,8 +1008,6 @@ sub printDeviceProfile(profile as object)
   print "profile.PlayableMediaTypes =", profile.PlayableMediaTypes
   print "profile.SupportedCommands =", profile.SupportedCommands
 end sub
-' Takes and returns a comma delimited string of codecs.
-' Moves the preferred codec to the front of the string
 
 ' does this roku device support playing 4k video?
 function canPlay4k() as boolean
