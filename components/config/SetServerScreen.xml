@@ -24,7 +24,7 @@
         <TextEditBox id="serverUrlTextbox" hintText="e.g. 192.168.1.100:8096 or https://example.com/jellyfin"></TextEditBox>
         <Poster id="serverUrlOutline" visible="false" uri="pkg:/images/hd_focus.9.png" />
       </Rectangle>
-      <LabelMedium id="errorMessage" text="" color="#ff0000FF" />
+      <LabelErrorMedium id="errorMessage" text="" />
       <LayoutGroup horizAlignment="center">
         <JRButton id="submit" minChars="30" text="Submit"></JRButton>
         <!--add a known width invisibile element to allow the button to be centered-->
