@@ -26,7 +26,6 @@ sub updateSize()
   m.top.focusXOffset = [0]
 end sub
 
-
 function setData()
   if not isValid(m.top.itemContent)
     data = CreateObject("roSGNode", "ContentNode")
@@ -43,10 +42,6 @@ function setData()
   updateSize()
   return data
 end function
-
-sub setUser()
-  m.top.userSelected = m.top.itemContent[m.top.rowItemFocused[1]].Name
-end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
   if not press then return false

@@ -4,7 +4,6 @@ function isNodeEvent(msg, field as string) as boolean
   return type(msg) = "roSGNodeEvent" and msg.getField() = field
 end function
 
-
 function getMsgPicker(msg, subnode = "" as string) as object
   node = msg.getRoSGNode()
   ' Subnode allows for handling alias messages
@@ -607,31 +606,8 @@ function createLogoPoster()
 end function
 
 ' Create and return a rectangle node used as a seperator in the overhang
-function createSeperator(id as string)
-  if not isValidAndNotEmpty(id) then return invalid
-
-  seperator = createObject("roSGNode", "Rectangle")
-  seperator.id = id
-  seperator.color = "#666666"
-  seperator.width = "2"
-  seperator.height = "64"
-  seperator.visible = true
-
-  return seperator
-end function
 
 '
-function createOverhangUser()
-  userLabel = createObject("roSGNode", "Label")
-  userLabel.id = "overlayCurrentUser"
-  userLabel.font = "font:MediumSystemFont"
-  userLabel.horizAlign = "right"
-  userLabel.vertAlign = "center"
-  userLabel.width = "300"
-  userLabel.height = "64"
-
-  return userLabel
-end function
 
 ' convert value to boolean and return value
 function toBoolean(value as dynamic) as dynamic

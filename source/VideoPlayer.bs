@@ -425,15 +425,6 @@ function getContainerType(meta as object) as string
   return container
 end function
 
-function getAudioFormat(meta as object) as string
-  ' Determine the codec of the audio file source
-  if not isValid(meta.json.mediaSources) then return ""
-
-  audioInfo = getAudioInfo(meta)
-  if audioInfo.count() = 0 or not isValid(audioInfo[0].codec) then return ""
-  return audioInfo[0].codec
-end function
-
 function getAudioInfo(meta as object) as object
   ' Return audio metadata for a given stream
   results = []

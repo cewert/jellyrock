@@ -1,10 +1,4 @@
 
-sub setfields()
-  datum = m.top.json
-  m.top.id = datum.id
-  m.top.subTitle = datum
-  m.top.labelText = datum.Name
-end sub
 
 sub setPoster()
 end sub

@@ -9,40 +9,6 @@ sub init()
   m.top.functionName = "execute"
 end sub
 
-sub execute()
-  m.servers = []
-  m.serverUrlMap = {}
-  m.locationUrlMap = {}
-  'send both requests at the same time
-  SendSSDPBroadcast()
-  SendClientDiscoveryBroadcast()
-
-  ts = CreateObject("roTimespan")
-  maxTimeMs = 1500
-
-  'monitor each port and collect messages
-  while True
-    elapsed = ts.TotalMilliseconds()
-    if elapsed >= maxTimeMs
-      exit while
-    end if
-
-    msg = Wait(100, m.ssdp.port)
-    if isValid(msg)
-      ProcessSSDPResponse(msg)
-    end if
-
-    msg = Wait(100, m.clientDiscovery.port)
-    if isValid(msg)
-      ProcessClientDiscoveryResponse(msg)
-    end if
-
-  end while
-
-  m.top.content = m.servers
-  m.log.debug("Jellyfin servers found", m.servers[0], m.servers[1], m.servers[2])
-end sub
-
 sub AddServer(server)
   if not isValid(m.serverUrlMap[server.baseUrl])
     m.serverUrlMap[server.baseUrl] = true

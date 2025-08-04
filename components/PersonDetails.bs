@@ -166,8 +166,3 @@ sub createDialogPallete()
   }
 end sub
 
-function shortDate(isoDate) as string
-  myDate = CreateObject("roDateTime")
-  myDate.FromISO8601String(isoDate)
-  return myDate.AsDateString("short-month-no-weekday")
-end function

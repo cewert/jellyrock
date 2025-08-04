@@ -9,29 +9,6 @@ end sub
 ' Posts either an array of data
 ' or a string of data to an API endpoint.
 ' Saves the response information
-sub postItems()
-  if m.top.apiUrl = ""
-    print "ERROR in PostTask. Invalid API URL provided"
-    return
-  end if
-  if m.top.arrayData.count() > 0 and m.top.stringData = ""
-    print "PostTask Started - Posting array to " + m.top.apiUrl
-    req = APIRequest(m.top.apiUrl)
-    req.SetRequest("POST")
-    httpResponse = asyncPost(req, FormatJson(m.top.arrayData))
-    m.top.responseCode = httpResponse
-    print "PostTask Finished. " + m.top.apiUrl + " Response = " + httpResponse.toStr()
-  else if m.top.arrayData.count() = 0 and m.top.stringData <> ""
-    print "PostTask Started - Posting string(" + m.top.stringData + ") to " + m.top.apiUrl
-    req = APIRequest(m.top.apiUrl)
-    req.SetRequest("POST")
-    httpResponse = asyncPost(req, m.top.stringData)
-    m.top.responseCode = httpResponse
-    print "PostTask Finished. " + m.top.apiUrl + " Response = " + httpResponse.toStr()
-  else
-    print "ERROR processing data for PostTask"
-  end if
-end sub
 
 ' Post data and wait for response code
 function asyncPost(req, data = "" as string) as integer
