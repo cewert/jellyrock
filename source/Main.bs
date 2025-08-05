@@ -16,8 +16,8 @@ sub Main (args as dynamic) as void
 
   ' migrate registry if needed
   m.wasMigrated = false
-  runGlobalMigrations()
-  runRegistryUserMigrations()
+  ' runGlobalMigrations()
+  ' runRegistryUserMigrations()
   ' update LastRunVersion now that migrations are finished
   if m.global.app.version <> m.global.app.lastRunVersion
     set_setting("LastRunVersion", m.global.app.version)
