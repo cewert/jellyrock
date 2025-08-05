@@ -603,19 +603,6 @@ function CreateHomeGroup()
   o.observeField("optionSelected", m.port)
   new_options.push(o)
 
-  ' And a profile button
-  user_node = CreateObject("roSGNode", "OptionsData")
-  user_node.id = "active_user"
-  user_node.title = tr("Profile")
-  user_node.base_title = tr("Profile")
-  user_options = []
-  for each user in AvailableUsers()
-    user_options.push({ display: user.username + "@" + user.server, value: user.id })
-  end for
-  user_node.choices = user_options
-  user_node.value = m.global.session.user.id
-  new_options.push(user_node)
-
   sidepanel.options = new_options
 
   return group
