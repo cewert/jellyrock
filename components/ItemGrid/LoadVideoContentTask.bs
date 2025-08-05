@@ -415,7 +415,6 @@ sub addVideoContentURL(video, mediaSourceId, audio_stream_idx, fully_external)
   end if
 end sub
 
-
 ' addAudioStreamsToVideo: Add audio stream data to video
 '
 ' @param {dynamic} video component to add fullAudioData to
@@ -454,7 +453,6 @@ sub addSubtitlesToVideo(video, meta)
   video.content.SubtitleTracks = subtitleTracks
   video.fullSubtitleData = safesubs
 end sub
-
 
 '
 ' Extract array of Transcode Reasons from the content URL

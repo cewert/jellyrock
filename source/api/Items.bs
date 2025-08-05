@@ -3,18 +3,6 @@ import "pkg:/source/api/sdk.bs"
 import "pkg:/source/utils/deviceCapabilities.bs"
 import "pkg:/source/utils/misc.bs"
 
-function ItemGetPlaybackInfo(id as string, startTimeTicks = 0 as longinteger)
-  params = {
-    "UserId": m.global.session.user.id,
-    "StartTimeTicks": startTimeTicks,
-    "IsPlayback": true,
-    "AutoOpenLiveStream": true,
-    "MaxStreamingBitrate": "140000000"
-  }
-  resp = APIRequest(Substitute("Items/{0}/PlaybackInfo", id), params)
-  return getJson(resp)
-end function
-
 function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioTrackIndex = -1 as integer, subtitleTrackIndex = -1 as integer, startTimeTicks = 0 as longinteger, forceMp3 = false as boolean)
   params = {
     "UserId": m.global.session.user.id,
@@ -509,26 +497,6 @@ function TVSeasonExtras(seasonId as string) as dynamic
 
   ' Build that data format that the TVEpisodeRow expects
   return { Items: results }
-end function
-
-function TVEpisodeShuffleList(show_id as string)
-  url = Substitute("Shows/{0}/Episodes", show_id)
-  resp = APIRequest(url, {
-    "UserId": m.global.session.user.id,
-    "Limit": 200,
-    "sortBy": "Random"
-  })
-
-  data = getJson(resp)
-  results = []
-  for each item in data.Items
-    tmp = CreateObject("roSGNode", "TVEpisodeData")
-    tmp.json = item
-    results.push(tmp)
-  end for
-  data.Items = results
-
-  return data
 end function
 
 ' updates the device profile we send the server to force mp3 audio transcoding instead of the default aac
