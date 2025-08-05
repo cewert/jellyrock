@@ -13,9 +13,9 @@
           </LayoutGroup>
           <LabelSecondarySmall id="overview" bold="true" wrap="true" height="130" width="932" maxLines="3" ellipsizeOnBoundary="true" />
           <LayoutGroup layoutDirection="horiz" itemSpacings="[15]">
-            <LabelSecondarySmaller id="video_codec" bold="true" maxWidth="382" />
+            <LabelSecondarySmaller id="video_codec" bold="true" width="382" />
             <LabelSecondarySmaller id="video_codec_count" bold="true" vertAlign="top" />
-            <LabelSecondarySmaller id="audio_codec" bold="true" maxWidth="382" />
+            <LabelSecondarySmaller id="audio_codec" bold="true" width="382" />
             <LabelSecondarySmaller id="audio_codec_count" bold="true" vertAlign="top" />
           </LayoutGroup>
         </LayoutGroup>
