@@ -49,10 +49,6 @@ sub itemContentChanged() as void
   itemData = m.top.itemContent
   if not isValid(itemData) then return
 
-  print "ListPoster: itemContentChanged()"
-  print "ListPoster: itemData =", itemData
-  print "ListPoster: itemData.image =", itemData.image
-  print "ListPoster: itemData.json =", itemData.json
   m.title.text = itemData.title
   userSettings = m.global.session.user.settings
 
