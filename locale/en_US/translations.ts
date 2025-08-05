@@ -857,10 +857,6 @@
       <translation>Press &apos;Back&apos; to Close</translation>
     </message>
     <message>
-      <source>Profile</source>
-      <translation>Profile</translation>
-    </message>
-    <message>
       <source>Quick Connect</source>
       <translation>Quick Connect</translation>
     </message>
