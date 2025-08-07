@@ -5,7 +5,6 @@ sub init()
   m.top.showRowCounter = [true]
   m.top.rowFocusAnimationStyle = "fixedFocusWrap"
   m.top.vertFocusAnimationStyle = "fixedFocusWrap"
-  m.top.horizFocusAnimationStyle = "fixedFocusWrap"
   m.top.focusBitmapBlendColor = colorConstants.primary ' color of the item selector
   m.top.itemSpacing = [0, 105] ' spacing between rows
   m.top.rowItemSpacing = [27, 0] ' spacing between items in a row
@@ -14,7 +13,7 @@ sub init()
 
   m.top.rowLabelOffset = [96, 21] ' align row label with edge of "action" safe zone
   m.top.rowLabelColor = colorConstants.text_primary
-  m.top.rowLabelFont = "font:MediumBoldSystemFont"
+  m.top.rowLabelFont = "font:MediumSystemFont"
   m.top.rowLabelFont.size = m.global.constants.font_sizes.medium
 
 end sub

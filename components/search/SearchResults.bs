@@ -10,9 +10,7 @@ sub init()
   m.searchSelect = m.top.findnode("searchSelect")
   m.searchTask = CreateObject("roSGNode", "SearchTask")
 
-  'set label text
   m.searchHelpText = m.top.findNode("SearchHelpText")
-  m.searchHelpText.text = tr("You can search for Titles, People, Live TV Channels and more")
 
 end sub
 
@@ -25,6 +23,7 @@ sub searchMedias()
   'if search task is running and user selectes another letter stop the search and load the next letter
   m.searchTask.control = "stop"
   if isValid(query) and query <> ""
+    m.searchHelpText.visible = false
     startLoadingSpinner(false)
   end if
   m.searchTask.observeField("results", "loadResults")
@@ -40,7 +39,7 @@ sub loadResults()
   stopLoadingSpinner()
   m.searchSelect.itemdata = m.searchTask.results
   m.searchSelect.query = m.top.SearchAlpha
-  m.searchHelpText.visible = false
+
   if m.searchTask.results.TotalRecordCount = 0
     ' make sure focus is on the keyboard
     if m.searchSelect.isinFocusChain()
@@ -48,8 +47,6 @@ sub loadResults()
     end if
     return
   end if
-  m.searchAlphabox = m.top.findnode("searchResults")
-  m.searchAlphabox.translation = "[470, 85]"
 end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
