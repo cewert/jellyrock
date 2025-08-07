@@ -16,8 +16,8 @@
     <LabelPrimarySmallest id="selectedArtistAlbumCount" translation="[120, 310]" wrap="true" width="850" height="30" horizAlign="left" />
     <LabelPrimarySmallest id="selectedArtistGenres" translation="[120, 350]" wrap="true" width="850" height="30" horizAlign="left" />
 
-    <MarkupGrid id="itemGrid" itemComponentName="MusicArtistGridItem" numColumns="6" numRows="2" vertFocusAnimationStyle="fixed" itemSize="[280, 280]" itemSpacing="[20, 20]" />
-    <MarkupGrid id="genrelist" itemComponentName="MusicArtistGridItem" numColumns="6" numRows="4" vertFocusAnimationStyle="fixed" translation="[96, 60]" itemSize="[280, 280]" itemSpacing="[20, 20]" opacity="0" />
+    <JRMarkupGrid id="itemGrid" itemComponentName="MusicArtistGridItem" numColumns="6" numRows="2" vertFocusAnimationStyle="fixed" itemSize="[280, 280]" itemSpacing="[20, 20]" />
+    <JRMarkupGrid id="genrelist" itemComponentName="MusicArtistGridItem" numColumns="6" numRows="4" vertFocusAnimationStyle="fixed" translation="[96, 60]" itemSize="[280, 280]" itemSpacing="[20, 20]" opacity="0" />
 
     <LabelPrimaryLarge translation="[0,540]" id="emptyText" width="1910" horizAlign="center" vertAlign="center" height="64" visible="false" />
     <ItemGridOptions id="options" visible="false" />

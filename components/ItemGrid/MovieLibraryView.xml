@@ -31,7 +31,7 @@
 
     <LabelPrimarySmallest id="selectedMovieOverview" translation="[120, 360]" wrap="true" lineSpacing="20" maxLines="5" width="850" ellipsisText="..." />
 
-    <MarkupGrid id="itemGrid" itemComponentName="GridItemSmall" numColumns="7" numRows="2" vertFocusAnimationStyle="fixed" itemSize="[230, 310]" itemSpacing="[20, 20]" />
+    <JRMarkupGrid id="itemGrid" itemComponentName="GridItemSmall" numColumns="7" numRows="2" vertFocusAnimationStyle="fixed" itemSize="[230, 310]" itemSpacing="[20, 20]" />
     <JRRowList opacity="0" id="genrelist" translation="[120, 60]" showRowLabel="true" itemComponentName="GridItemSmall" numColumns="1" numRows="3" vertFocusAnimationStyle="fixed" itemSize="[1900, 360]" rowItemSize="[ [230, 320] ]" rowItemSpacing="[ [20, 0] ]" itemSpacing="[0, 60]" />
 
     <LabelPrimaryLarge translation="[0,540]" id="emptyText" width="1910" horizAlign="center" vertAlign="center" height="64" visible="false" />
