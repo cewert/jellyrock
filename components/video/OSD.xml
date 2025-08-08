@@ -45,7 +45,6 @@
     </OSDButtonGroup>
 
     <Timer id="inactivityTimer" duration="1" repeat="true" />
-    <Timer id="endsAtTimer" duration="60" repeat="true" />
   </children>
   <interface>
     <field id="type" type="string" value="" />
