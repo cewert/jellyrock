@@ -8,7 +8,7 @@
     "settings/**/*.*",
     {
       "src": "resources/branding/release/*.*",
-      "dest": "images"
+      "dest": "images/branding"
     }
   ],
   "plugins": [
