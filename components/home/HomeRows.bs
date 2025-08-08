@@ -51,7 +51,7 @@ sub updateSize()
 
   if isValid(uiRowLayout)
     if uiRowLayout = "fullwidth"
-      m.top.translation = [0, 170]
+      m.top.translation = [0, 150]
       ' rows take up full width of the screen
       m.top.itemSize = [1920, 330]
       ' align with edge of "action" safe zone
@@ -59,7 +59,7 @@ sub updateSize()
       m.top.rowLabelOffset = [96, 30]
     else
       ' original layout
-      m.top.translation = [111, 170]
+      m.top.translation = [111, 150]
       m.top.itemSize = [1703, 330]
       ' reset to defaults
       m.top.focusXOffset = []

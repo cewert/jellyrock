@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="OSD" extends="Group">
+<component name="OSD" extends="JRScreen">
   <children>
     <!-- Background overlay so we can see UI -->
     <Poster uri="pkg:/images/osd/background-top.png" width="1920" height="300" translation="[0,0]" />
@@ -12,7 +12,7 @@
     </LayoutGroup>
 
     <!-- HEADER RIGHT -->
-    <Clock id="clock" translation="[1624, 98]" />
+    <Clock />
 
     <!-- MAIN -->
     <!-- Video information - title, season/episode number etc. -->

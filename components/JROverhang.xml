@@ -1,22 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="JROverhang" extends="Group">
   <children>
-    <LayoutGroup id="overlayLeftGroup" layoutDirection="horiz" translation="[54, 54]" itemSpacings="90">
-      <Poster id="overlayLogo" uri="pkg:/images/branding/logo.png" height="39" width="180" />
-      <ScrollingLabelPrimaryLarge id="overlayTitle" vertAlign="center" height="64" maxWidth="1100" repeatCount="0" />
-    </LayoutGroup>
+    <Poster id="logo" translation="[96, 54]" uri="pkg:/images/branding/logo.png" height="39" width="180" />
 
-    <LayoutGroup id="overlayRightGroup" layoutDirection="horiz" itemSpacings="30" translation="[1766, 53]" horizAlignment="right">
-      <LabelSecondaryMedium id="overlayCurrentUser" bold="true" width="300" horizAlign="right" vertAlign="center" height="64" />
-      <Rectangle id="overlayRightSeperator" width="2" height="64" visible="false" />
-      <LayoutGroup id="overlayTimeGroup" layoutDirection="horiz" horizAlignment="right" itemSpacings="3">
-        <LabelSecondaryLarger id="overlayHours" vertAlign="center" height="64" />
-        <LabelSecondaryLarge id="overlayTimeSeperator" text=":" vertAlign="center" height="64" />
-        <LabelSecondaryLarger id="overlayMinutes" vertAlign="center" height="64" />
-      </LayoutGroup>
-    </LayoutGroup>
+    <ScrollingLabelPrimaryLarge translation="[450, 51]" id="title" vertAlign="center" maxWidth="300" repeatCount="0" />
 
-    <Timer id="currentTimeTimer" repeat="true" duration="60" />
+    <LabelSecondaryMedium id="username" translation="[1450, 54]" width="219" horizAlign="center" vertAlign="center" />
+
+    <Clock />
 
     <Animation id="slideUp" duration=".5" repeat="false">
       <Vector2DFieldInterpolator key="[0.0, .5]" keyValue="[[0, 0], [0, -200]]" fieldToInterp="overhang.translation" />
@@ -28,10 +19,10 @@
   </children>
   <interface>
     <field id="id" type="string" />
-    <field id="currentUser" type="string" onChange="updateUser" />
-    <field id="title" type="string" onChange="updateTitle" />
-    <field id="isVisible" value="true" type="boolean" onChange="onVisibleChange" />
+    <field id="currentUser" type="string" onChange="currentUserChanged" />
+    <field id="title" type="string" onChange="titleChanged" />
+    <field id="isVisible" value="true" type="boolean" onChange="isVisibleChanged" />
     <field id="disableMoveAnimation" value="false" type="boolean" />
-    <field id="isLogoVisible" value="true" type="boolean" onChange="isLogoVisibleChange" />
+    <field id="isLogoVisible" value="true" type="boolean" onChange="isLogoVisibleChanged" />
   </interface>
 </component>

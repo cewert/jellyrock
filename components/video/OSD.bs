@@ -13,6 +13,8 @@ sub init()
   m.videoRemainingTime = m.top.findNode("videoRemainingTime")
   m.progressBar = m.top.findNode("progressBar")
   m.progressBarBackground = m.top.findNode("progressBarBackground")
+  m.clock = m.top.findNode("clock")
+  m.isFirstRun = true
 
   m.top.observeField("json", "setFields")
   m.top.observeField("visible", "onVisibleChanged")
@@ -394,6 +396,14 @@ sub displaySubtitleNode(node as object)
   end if
 
   m.videoSubtitleGroup.appendChild(node)
+end sub
+
+sub OnScreenShown()
+  if m.isFirstRun
+    m.isFirstRun = false
+  else
+    m.clock.callFunc("resetTime")
+  end if
 end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean

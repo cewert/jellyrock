@@ -2,36 +2,17 @@ import "pkg:/source/utils/config.bs"
 
 sub init()
   m.top.id = "overhang"
-  m.top.translation = [54, 0]
-
-  m.leftGroup = m.top.findNode("overlayLeftGroup")
-  m.rightGroup = m.top.findNode("overlayRightGroup")
-  m.rightSeperator = m.top.findNode("overlayRightSeperator")
-  m.rightSeperator.color = m.global.constants.colors.text_secondary
-  m.optionText = m.top.findNode("overlayOptionsText")
-  m.optionStar = m.top.findNode("overlayOptionsStar")
   ' save node references
-  m.title = m.top.findNode("overlayTitle")
-  m.user = m.top.findNode("overlayCurrentUser")
-  m.overlayRightGroup = m.top.findNode("overlayRightGroup")
-  m.overlayTimeGroup = m.top.findNode("overlayTimeGroup")
+  m.logo = m.top.findNode("logo")
+  m.logoPoster = createLogoPoster() ' save node to memory for faster load time
+  m.title = m.top.findNode("title")
+  m.user = m.top.findNode("username")
+  m.clock = m.top.findNode("clock")
   m.slideDownAnimation = m.top.findNode("slideDown")
   m.slideUpAnimation = m.top.findNode("slideUp")
-  ' show clock based on user setting
-  m.hideClock = m.global.session.user.settings["ui.design.hideclock"]
-  if not m.hideClock
-    ' save node references
-    m.overlayHours = m.top.findNode("overlayHours")
-    m.overlayMinutes = m.top.findNode("overlayMinutes")
-    m.overlayTimeSeperator = m.top.findNode("overlayTimeSeperator")
-
-    m.currentTimeTimer = m.top.findNode("currentTimeTimer")
-  end if
-
-  setClockVisibility()
 end sub
 
-sub onVisibleChange()
+sub isVisibleChanged()
   if m.top.disableMoveAnimation
     m.top.translation = [54, 0]
     return
@@ -44,104 +25,47 @@ sub onVisibleChange()
   m.slideUpAnimation.control = "start"
 end sub
 
-sub updateTitle()
+sub titleChanged()
   m.title.text = m.top.title
 end sub
 
-sub setClockVisibility()
-  if m.hideClock
-    m.overlayRightGroup.removeChild(m.overlayTimeGroup)
-    return
-  end if
-
-  ' display current time
-  updateTime()
-  ' start timer to update clock every minute
-  m.currentTimeTimer.control = "start"
-  m.currentTimeTimer.ObserveField("fire", "updateTime")
-end sub
-
-sub setRightSeperatorVisibility()
-  if m.hideClock
-    m.top.removeChild(m.rightSeperator)
-    return
-  end if
-
-  if m.top.currentUser <> ""
-    m.rightSeperator.visible = "true"
-  else
-    m.rightSeperator.visible = "false"
-  end if
-end sub
-
-sub updateUser()
-  setRightSeperatorVisibility()
-
+sub currentUserChanged()
   m.user.text = m.top.currentUser
 end sub
 
-sub updateTime()
-  currentTime = CreateObject("roDateTime")
-  currentTime.ToLocalTime()
-  m.currentTimeTimer.duration = 60 - currentTime.GetSeconds()
-  m.currentHours = currentTime.GetHours()
-  m.currentMinutes = currentTime.GetMinutes()
-  updateTimeDisplay()
-end sub
+' component boolean field isVisible has changed value
+sub isLogoVisibleChanged()
+  if m.top.isLogoVisible
+    if not isValid(m.logo)
+      m.logo = m.logoPoster
+      m.top.appendChild(m.logoPoster)
 
-sub resetTime()
-  if m.hideClock then return
-  m.currentTimeTimer.control = "stop"
-  m.currentTimeTimer.control = "start"
-  updateTime()
-end sub
-
-sub updateTimeDisplay()
-  if m.global.device.clockFormat = "24h"
-    if m.currentHours < 10
-      m.overlayHours.text = "0" + StrI(m.currentHours).trim()
-    else
-      m.overlayHours.text = m.currentHours
-    end if
-  else
-    if m.currentHours < 12
-      if m.currentHours = 0
-        m.overlayHours.text = "12"
-      else
-        m.overlayHours.text = m.currentHours
-      end if
-    else
-      if m.currentHours = 12
-        m.overlayHours.text = "12"
-      else
-        m.overlayHours.text = m.currentHours - 12
-      end if
-    end if
-  end if
-
-  if m.currentMinutes < 10
-    m.overlayMinutes.text = "0" + StrI(m.currentMinutes).trim()
-  else
-    m.overlayMinutes.text = m.currentMinutes
-  end if
-end sub
-
-' component boolean field isLogoVisibleChange has changed value
-sub isLogoVisibleChange()
-  isLogoVisible = m.top.isLogoVisible
-
-  scene = m.top.getScene()
-  logo = scene.findNode("overlayLogo")
-
-  if isLogoVisible
-    if not isValid(logo)
-      posterLogo = createLogoPoster()
-      m.leftGroup.insertChild(posterLogo, 0)
+      m.title.translation = [420, 51]
+      m.title.maxWidth = 300
     end if
   else
     ' remove the logo
-    if isValid(logo)
-      m.leftGroup.removeChild(logo)
+    if isValid(m.logo)
+      m.top.removeChild(m.logo)
+      m.logo = invalid
+      m.title.translation = [96, 51]
+      m.title.maxWidth = 1560
     end if
   end if
+end sub
+
+' Create and return a logo poster node
+function createLogoPoster()
+  logoPoster = createObject("roSGNode", "Poster")
+  logoPoster.id = "logo"
+  logoPoster.uri = "pkg:/images/branding/logo.png"
+  logoPoster.translation = "[96, 54]"
+  logoPoster.width = "180"
+  logoPoster.height = "39"
+
+  return logoPoster
+end function
+
+sub resetTime()
+  m.clock.callFunc("resetTime")
 end sub

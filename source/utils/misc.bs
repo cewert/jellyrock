@@ -593,18 +593,6 @@ function shuffleArray(array as object) as object
   return array
 end function
 
-' Create and return a logo poster node
-function createLogoPoster()
-  logoPoster = createObject("roSGNode", "Poster")
-  logoPoster.id = "overlayLogo"
-  logoPoster.uri = "pkg:/images/branding/logo.png"
-  logoPoster.translation = "[70, 53]"
-  logoPoster.width = "180"
-  logoPoster.height = "39"
-
-  return logoPoster
-end function
-
 ' convert value to boolean and return value
 function toBoolean(value as dynamic) as dynamic
   if not isValid(value) then return invalid

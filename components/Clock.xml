@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="Clock" extends="Group">
   <children>
-    <LabelPrimaryLargest id="clockTime" horizAlign="right" vertAlign="center" height="100" width="200" />
+    <LayoutGroup id="clockGroup" translation="[1824,39]" layoutDirection="horiz" horizAlignment="right" itemSpacings="3">
+      <LabelSecondaryLarger id="hours" vertAlign="center" height="64" />
+      <LabelSecondaryLarge id="timeSeperator" text=":" vertAlign="center" height="64" />
+      <LabelSecondaryLarger id="minutes" vertAlign="center" height="64" />
+    </LayoutGroup>
+
     <Timer id="currentTimeTimer" repeat="true" duration="1" />
   </children>
   <interface>
+    <field id="hours" type="integer" value="" />
+    <field id="minutes" type="integer" value="" />
+    <function name="resetTime" />
   </interface>
 </component>
