@@ -31,6 +31,28 @@ sub initBackdrop()
   m.backdrop = m.top.findNode("backdrop")
 end sub
 
+sub initBackdropText()
+  m.top.appendChild(createBackdropText())
+end sub
+
+function createBackdropText() as object
+  backdropText = m.top.findNode("backdropText")
+  if isValid(backdropText) then return backdropText
+
+  backdropText = CreateObject("roSGNode", "LabelPrimaryLarger")
+  backdropText.id = "backdropText"
+  backdropText.bold = true
+  backdropText.width = 446
+  backdropText.height = 231
+  backdropText.translation = [9, 9]
+  backdropText.horizAlign = "center"
+  backdropText.vertAlign = "center"
+  backdropText.ellipsizeOnBoundary = true
+  backdropText.wrap = true
+
+  return backdropText
+end function
+
 sub initItemIcon()
   m.itemIcon = m.top.findNode("itemIcon")
 end sub
@@ -62,7 +84,6 @@ sub itemContentChanged()
   m.itemTextExtra.text = ""
   m.backdrop.width = itemData.imageWidth
 
-
   if isValid(itemData.iconUrl)
     m.itemIcon.uri = itemData.iconUrl
   end if
@@ -84,6 +105,10 @@ sub itemContentChanged()
 
   ' Format the Data based on the type of Home Data
   if itemData.type = "CollectionFolder" or itemData.type = "UserView" or itemData.type = "Channel"
+    initBackdropText()
+    backdropText = m.top.findNode("backdropText")
+    backdropText.width = m.backdrop.width - 18
+    backdropText.text = itemData.name
     m.itemPoster.uri = itemData.widePosterURL
     return
   end if
@@ -328,8 +353,16 @@ sub onPosterLoadStatusChanged()
   if m.itemPoster.loadStatus = "ready" and m.itemPoster.uri <> ""
     m.backdrop.visible = false
     m.itemIcon.visible = false
+    backdropText = m.top.findNode("backdropText")
+    if isValid(backdropText)
+      backdropText.visible = false
+    end if
   else
     m.backdrop.visible = true
     m.itemIcon.visible = true
+    backdropText = m.top.findNode("backdropText")
+    if isValid(backdropText)
+      backdropText.visible = true
+    end if
   end if
 end sub
