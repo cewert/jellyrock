@@ -2,7 +2,7 @@ import "pkg:/source/utils/misc.bs"
 
 sub init()
   m.inactivityTimer = m.top.findNode("inactivityTimer")
-  m.endsAt = m.top.findNode("endsAt")
+  m.endsAtTime = m.top.findNode("endsAtTime")
   m.videoLogo = m.top.findNode("videoLogo")
   m.videoOfficialRating = m.top.findNode("videoOfficialRating")
   m.videoTitle = m.top.findNode("videoTitle")
@@ -169,7 +169,7 @@ sub setEndsAtText()
   date.fromSeconds(date.asSeconds() + endTime)
   date.toLocalTime()
 
-  m.endsAt.text = tr("Ends at") + " " + formatTime(date)
+  m.endsAtTime.text = formatTime(date)
 end sub
 
 sub setVideoLogoGroup()

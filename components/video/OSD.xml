@@ -7,7 +7,7 @@
     <Rectangle color="0x000000FF" width="1920" height="90" translation="[0,990]" />
 
     <!-- HEADER LEFT -->
-    <LayoutGroup id="videoLogoGroup" itemSpacings="[15]" layoutDirection="vert" translation="[103,54]">
+    <LayoutGroup id="videoLogoGroup" itemSpacings="[15]" layoutDirection="vert" translation="[96,54]">
       <Poster id="videoLogo" />
     </LayoutGroup>
 
@@ -16,22 +16,27 @@
 
     <!-- MAIN -->
     <!-- Video information - title, season/episode number etc. -->
-    <LayoutGroup id="videoInfoGroup" itemSpacings="[9]" layoutDirection="vert" translation="[103,740]">
-      <LabelSecondaryLargest id="videoTitle" bold="true" />
+    <LayoutGroup id="videoInfoGroup" itemSpacings="[9]" layoutDirection="vert" translation="[96,740]">
+      <LabelSecondaryLargest id="videoTitle" bold="true" width="1400" />
       <LayoutGroup id="videoSubtitleGroup" itemSpacings="[9]" layoutDirection="horiz" />
     </LayoutGroup>
+
     <!-- Ends at time -->
-    <LabelSecondaryMedium id="endsAt" bold="true" horizAlign="right" translation="[1624,759]" />
+    <LayoutGroup id="endsAtGroup" itemSpacings="[12]" layoutDirection="horiz" horizAlignment="right" translation="[1824,759]">
+      <LabelSecondaryMedium id="endsAtText" text="Ends at" />
+      <LabelSecondaryMedium id="endsAtTime" />
+    </LayoutGroup>
+
 
     <!-- Progress bar -->
-    <LabelSecondaryMedium id="videoPositionTime" bold="true" translation="[103,868]" />
+    <LabelSecondaryMedium id="videoPositionTime" bold="true" translation="[96,868]" />
     <RectangleBackgroundSecondary id="progressBarBackground" width="1350" height="9" translation="[270,880]">
       <RectangleSecondary id="progressBar" width="0" height="9" />
     </RectangleBackgroundSecondary>
-    <LabelSecondaryMedium id="videoRemainingTime" bold="true" horizAlign="right" width="200" translation="[1622,868]" />
+    <LabelSecondaryMedium id="videoRemainingTime" bold="true" horizAlign="right" width="200" translation="[1624,868]" />
 
     <!-- FOOTER -->
-    <OSDButtonGroup id="buttonMenuLeft" itemSpacings="[36]" layoutDirection="horiz" horizAlignment="left" translation="[97,936]">
+    <OSDButtonGroup id="buttonMenuLeft" itemSpacings="[36]" layoutDirection="horiz" horizAlignment="left" translation="[90,936]">
       <IconButton id="itemBack" padding="15" icon="pkg:/images/icons/itemPrevious.png" />
       <IconButton id="videoPlayPause" padding="15" icon="pkg:/images/icons/play.png" />
       <IconButton id="itemNext" padding="15" icon="pkg:/images/icons/itemNext.png" />
@@ -40,7 +45,7 @@
       <IconButton id="chapterList" padding="15" icon="pkg:/images/icons/chapters.png" />
     </OSDButtonGroup>
     <!-- Video info popup is right aligned-->
-    <OSDButtonGroup id="buttonMenuRight" itemSpacings="[36]" layoutDirection="horiz" horizAlignment="left" translation="[1716,936]">
+    <OSDButtonGroup id="buttonMenuRight" itemSpacings="[36]" layoutDirection="horiz" horizAlignment="left" translation="[1724,936]">
       <IconButton id="showVideoInfoPopup" padding="15" icon="pkg:/images/icons/fileInfo.png" />
     </OSDButtonGroup>
 
