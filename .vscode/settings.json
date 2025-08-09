@@ -1,12 +1,21 @@
 {
   "files.associations": {
-    "*.ts": "xml"
+    "*.brs": "brightscript",
+    "*.bs": "brighterscript",
+    "*.ts": "xml",
+    "manifest": "plaintext"
   },
   "[xml]": {
     "editor.defaultFormatter": "redhat.vscode-xml"
   },
   "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
   },
   "xml.format.maxLineWidth": 0,
   "editor.detectIndentation": false,
@@ -25,5 +34,6 @@
     "package-lock.json": true,
     "renovate.json": true
   },
-  "brightscriptcomment.addExtraAtStartAndEnd": false
+  "brightscriptcomment.addExtraAtStartAndEnd": false,
+  "debug.onTaskErrors": "showErrors"
 }
