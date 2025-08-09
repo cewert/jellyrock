@@ -13,15 +13,17 @@ sub init()
   m.progressBar = m.top.findNode("progressBar")
   m.progressBarBackground = m.top.findNode("progressBarBackground")
   m.clock = m.top.findNode("clock")
-  m.isFirstRun = true
 
-  m.clock.observeField("minutes", "setEndsAtText")
+  if isValid(m.clock)
+    m.clock.observeField("minutes", "setEndsAtText")
+  end if
   m.top.observeField("json", "setFields")
   m.top.observeField("visible", "onVisibleChanged")
   m.top.observeField("hasFocus", "onFocusChanged")
   m.top.observeField("progressPercentage", "onProgressPercentageChanged")
   m.top.observeField("playbackState", "onPlaybackStateChanged")
 
+  m.isFirstRun = true
   m.defaultButtonIndex = 1
   m.focusedButtonIndex = 1
   m.subtitleDividerCount = 0
@@ -164,6 +166,13 @@ sub setButtonStates()
 end sub
 
 sub setEndsAtText()
+  if m.global.session.user.settings["ui.design.hideclock"]
+    endsAtText = m.top.findNode("endsAtText")
+    endsAtText.visible = false
+    m.endsAtTime.text = ""
+    return
+  end if
+
   date = CreateObject("roDateTime")
   endTime = int(m.top.remainingPositionTime)
   date.fromSeconds(date.asSeconds() + endTime)

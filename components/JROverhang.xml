@@ -11,7 +11,7 @@
       <LabelSecondaryMedium id="username" width="219" horizAlign="left" vertAlign="center" />
     </LayoutGroup>
     <!-- Clock -->
-    <Clock />
+    <Clock visible="false" />
 
     <!-- Animations -->
     <Animation id="slideUp" duration=".5" repeat="false">

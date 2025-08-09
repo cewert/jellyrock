@@ -27,6 +27,8 @@ end sub
 ' onCurrentTimeTimerFire: Code that runs every time the currentTimeTimer fires
 '
 sub updateTime()
+  if m.hideClock then return
+
   currentTime = CreateObject("roDateTime")
   currentTime.ToLocalTime()
   m.currentTimeTimer.duration = 60 - currentTime.GetSeconds()

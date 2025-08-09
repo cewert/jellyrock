@@ -33,6 +33,11 @@ sub OnScreenShown()
     overhang.isLogoVisible = true
     overhang.currentUser = m.global.session.user.name
     overhang.title = tr("Home")
+
+    if not m.global.session.user.settings["ui.design.hideclock"]
+      clock = overhang.findNode("clock")
+      clock.visible = true
+    end if
   end if
 
   if isValid(m.top.lastFocus)
