@@ -33,7 +33,9 @@ end sub
 sub currentUserChanged()
   m.user.text = m.top.currentUser
 
-  if m.top.currentUser <> ""
+  if m.top.currentUser = ""
+    m.userImage.uri = ""
+  else
     imgParams = {
       maxHeight: 36,
       maxWidth: 36,
