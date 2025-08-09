@@ -7,6 +7,7 @@ sub init()
   m.logoPoster = createLogoPoster() ' save node to memory for faster load time
   m.title = m.top.findNode("title")
   m.user = m.top.findNode("username")
+  m.userImage = m.top.findNode("userImage")
   m.clock = m.top.findNode("clock")
   m.slideDownAnimation = m.top.findNode("slideDown")
   m.slideUpAnimation = m.top.findNode("slideUp")
@@ -31,6 +32,20 @@ end sub
 
 sub currentUserChanged()
   m.user.text = m.top.currentUser
+
+  if m.top.currentUser <> ""
+    imgParams = {
+      maxHeight: 36,
+      maxWidth: 36,
+      quality: 90
+    }
+    imgTag = m.global.session.user.primaryImageTag
+    if isValid(imgTag) and imgTag <> ""
+      imgParams.tag = imgTag
+    end if
+    m.userImage.uri = buildURL(Substitute("/Users/{0}/Images/Primary", m.global.session.user.id), imgParams)
+
+  end if
 end sub
 
 ' component boolean field isVisible has changed value

@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="JROverhang" extends="Group">
   <children>
+    <!-- Logo -->
     <Poster id="logo" translation="[96, 54]" uri="pkg:/images/branding/logo.png" height="39" width="180" />
-
+    <!-- Title -->
     <ScrollingLabelPrimaryLarge translation="[450, 51]" id="title" vertAlign="center" maxWidth="300" repeatCount="0" />
-
-    <LabelSecondaryMedium id="username" translation="[1450, 54]" width="219" horizAlign="center" vertAlign="center" />
-
+    <!-- User -->
+    <LayoutGroup id="overhang" layoutDirection="horz" itemSpacings="[15]" translation="[1450, 54]">
+      <Poster id="userImage" width="36" height="36" />
+      <LabelSecondaryMedium id="username" width="219" horizAlign="left" vertAlign="center" />
+    </LayoutGroup>
+    <!-- Clock -->
     <Clock />
 
+    <!-- Animations -->
     <Animation id="slideUp" duration=".5" repeat="false">
       <Vector2DFieldInterpolator key="[0.0, .5]" keyValue="[[0, 0], [0, -200]]" fieldToInterp="overhang.translation" />
     </Animation>
