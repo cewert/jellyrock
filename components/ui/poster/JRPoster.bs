@@ -117,7 +117,7 @@ sub updateBadgeSize()
     textLength = len(m.unplayedVideosCount.text)
     fontSize = m.unplayedVideosCount.font.size
 
-    charWidth = fontSize * 0.6
+    charWidth = fontSize * 0.64
     dataWidth = textLength * charWidth
 
     if dataWidth < 27 then dataWidth = 27
