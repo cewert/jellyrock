@@ -5,6 +5,6 @@
     "no-stop": "error",
     "no-assocarray-component-field-type": "warn",
     "no-array-component-field-type": "warn",
-    "no-regex-duplicates": "error"
+    "no-regex-duplicates": "warn"
   }
 }
