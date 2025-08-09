@@ -14,7 +14,7 @@ end sub
 
 sub isVisibleChanged()
   if m.top.disableMoveAnimation
-    m.top.translation = [54, 0]
+    m.top.translation = [0, 0]
     return
   end if
   if m.top.isVisible
