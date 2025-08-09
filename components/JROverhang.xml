@@ -6,8 +6,7 @@
     <!-- Title -->
     <ScrollingLabelPrimaryLarge translation="[450, 51]" id="title" vertAlign="center" maxWidth="300" repeatCount="0" />
     <!-- User -->
-    <LayoutGroup id="overhang" layoutDirection="horz" itemSpacings="[15]" translation="[1450, 54]">
-      <Poster id="userImage" width="36" height="36" />
+    <LayoutGroup id="userGroup" layoutDirection="horz" itemSpacings="[15]" translation="[1450, 54]">
       <LabelSecondaryMedium id="username" width="219" horizAlign="left" vertAlign="center" />
     </LayoutGroup>
     <!-- Clock -->

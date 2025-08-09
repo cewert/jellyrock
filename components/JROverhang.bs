@@ -7,7 +7,7 @@ sub init()
   m.logoPoster = createLogoPoster() ' save node to memory for faster load time
   m.title = m.top.findNode("title")
   m.user = m.top.findNode("username")
-  m.userImage = m.top.findNode("userImage")
+  m.userGroup = m.top.findNode("userGroup")
   m.clock = m.top.findNode("clock")
   m.slideDownAnimation = m.top.findNode("slideDown")
   m.slideUpAnimation = m.top.findNode("slideUp")
@@ -33,22 +33,40 @@ end sub
 sub currentUserChanged()
   m.user.text = m.top.currentUser
 
-  if m.top.currentUser = ""
-    m.userImage.uri = ""
-  else
-    imgParams = {
-      maxHeight: 36,
-      maxWidth: 36,
-      quality: 90
-    }
-    imgTag = m.global.session.user.primaryImageTag
-    if isValid(imgTag) and imgTag <> ""
-      imgParams.tag = imgTag
-    end if
-    m.userImage.uri = buildURL(Substitute("/Users/{0}/Images/Primary", m.global.session.user.id), imgParams)
+  if not isValid(m.userImagePoster)
+    m.userImagePoster = createUserImage()
+  end if
 
+  if m.top.currentUser = ""
+    userImage = m.userGroup.findNode("userImage")
+    if isValid(userImage)
+      m.userGroup.removeChild(userImage)
+    end if
+  else
+    m.userGroup.insertChild(m.userImagePoster, 0)
   end if
 end sub
+
+function createUserImage() as object
+  imgParams = {
+    maxHeight: 36,
+    maxWidth: 36,
+    quality: 90
+  }
+  imgTag = m.global.session.user.primaryImageTag
+  if isValid(imgTag) and imgTag <> ""
+    imgParams.tag = imgTag
+  end if
+
+  userImage = createObject("roSGNode", "Poster")
+  userImage.id = "userImage"
+  userImage.uri = buildURL(Substitute("/Users/{0}/Images/Primary", m.global.session.user.id))
+  userImage.width = "36"
+  userImage.height = "36"
+  userImage.translation = "[0, -2]"
+
+  return userImage
+end function
 
 ' component boolean field isVisible has changed value
 sub isLogoVisibleChanged()
