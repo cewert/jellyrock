@@ -13,8 +13,6 @@
     <field id="iconFocusBackground" type="color" value="" />
     <field id="text" type="string" value="" />
     <field id="padding" type="integer" value="-1" />
-    <field id="height" type="integer" value="0" />
-    <field id="width" type="integer" value="0" />
     <field id="icon" type="string" value="" />
     <field id="selected" type="boolean" value="false" />
     <field id="focus" type="boolean" />

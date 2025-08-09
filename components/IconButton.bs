@@ -23,7 +23,7 @@ sub applyTheme()
 
   ' Set default colors
   m.top.background = colorConstants.background_primary
-  m.top.iconBackground = colorConstants.text_secondary
+  m.top.iconBackground = colorConstants.text_primary
   m.top.focusBackground = colorConstants.background_secondary
   m.top.iconFocusBackground = colorConstants.text_primary
 end sub
@@ -87,51 +87,24 @@ sub OnImageLoadStatusChanged(event as object)
 end sub
 
 sub setIconSize()
-  height = m.top.height
-  width = m.top.width
-  if height > 0 and width > 0
-    ' TODO: Use smallest number between them
-    m.buttonIcon.height = m.top.height
+  ' determine size of icon
+  if m.buttonIcon.bitmapWidth > 0 and m.buttonIcon.bitmapHeight > 0
+    iconWidth = m.buttonIcon.bitmapWidth
+    iconHeight = m.buttonIcon.bitmapHeight
 
+    ' set buttonBackground width and height to size of poster + padding
     if m.top.padding > 0
-      m.buttonIcon.height = m.buttonIcon.height - m.top.padding
+      m.buttonBackground.width = iconWidth + (m.top.padding * 2)
+      m.buttonBackground.height = iconHeight + (m.top.padding * 2)
+    else
+      m.buttonBackground.width = iconWidth
+      m.buttonBackground.height = iconHeight
     end if
 
-    m.buttonIcon.width = m.buttonIcon.height
-
-    m.buttonIcon.translation = [((width - m.buttonIcon.width) / 2), ((height - m.buttonIcon.height) / 2)]
-    m.buttonText.translation = [0, height + 10]
-    m.buttonText.width = width
-  else if height = 0 and width = 0
-    ' determine size of icon
-    if m.buttonIcon.bitmapWidth > 0 and m.buttonIcon.bitmapHeight > 0
-      iconWidth = m.buttonIcon.bitmapWidth
-      iconHeight = m.buttonIcon.bitmapHeight
-
-      ' set buttonBackground width and height to size of poster + padding
-      if m.top.padding > 0
-        m.buttonBackground.width = iconWidth + (m.top.padding * 2)
-        m.buttonBackground.height = iconHeight + (m.top.padding * 2)
-      else
-        m.buttonBackground.width = iconWidth
-        m.buttonBackground.height = iconHeight
-      end if
-
-      m.buttonIcon.translation = [((m.buttonBackground.width - iconWidth) / 2), ((m.buttonBackground.height - iconHeight) / 2)]
-      m.buttonText.translation = [0, m.buttonBackground.height + 10]
-      m.buttonText.width = width
-    end if
+    m.buttonIcon.translation = [((m.buttonBackground.width - iconWidth) / 2), ((m.buttonBackground.height - iconHeight) / 2)]
+    m.buttonText.translation = [0, m.buttonBackground.height + 12]
+    m.buttonText.width = m.buttonBackground.width
   end if
-end sub
-
-sub onHeightChanged()
-  m.buttonBackground.height = m.top.height
-  setIconSize()
-end sub
-
-sub onWidthChanged()
-  m.buttonBackground.width = m.top.width
-  setIconSize()
 end sub
 
 sub onPaddingChanged()
@@ -160,6 +133,9 @@ sub setFocusBorderSize()
   ' translate the button so the focus border is visible
   m.buttonBackground.translation = [m.top.borderSize, m.top.borderSize]
   m.buttonIcon.translation = [m.top.padding + m.top.borderSize, m.top.padding + m.top.borderSize]
+
+  m.buttonText.translation = [0, m.buttonBackground.height + 12 + m.top.borderSize]
+  m.buttonText.width = m.buttonFocusBorder.width
 end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
