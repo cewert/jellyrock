@@ -6,7 +6,6 @@ sub init()
   m.posterText = m.top.findNode("posterText")
   initTitle()
   m.backdrop = m.top.findNode("backdrop")
-  m.playedIndicator = m.top.findNode("playedIndicator")
 
   m.itemPoster.observeField("loadStatus", "onPosterLoadStatusChanged")
 
@@ -39,9 +38,18 @@ sub itemContentChanged()
   itemData = m.top.itemContent
 
   if not isValid(itemData) then return
+  userSettings = m.global.session.user.settings
 
-  if isValid(itemData.json) and isValid(itemData.json.UserData) and isValid(itemData.json.UserData.Played) and itemData.json.UserData.Played
-    m.playedIndicator.visible = true
+  if isValid(itemData.json)
+    if not userSettings["ui.tvshows.disableUnwatchedEpisodeCount"]
+      if isValid(itemData.json.UserData)
+        if isValid(itemData.json.UserData.Played) and itemData.json.UserData.Played = true
+          m.itemPoster.isWatched = true
+        else if isValid(itemData.json.UserData.UnplayedItemCount) and itemData.json.UserData.UnplayedItemCount > 0
+          m.itemPoster.unplayedCount = itemData.json.UserData.UnplayedItemCount
+        end if
+      end if
+    end if
   end if
 
   m.itemPoster.uri = itemData.PosterUrl
