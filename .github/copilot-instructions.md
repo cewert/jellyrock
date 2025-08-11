@@ -1,3 +1,4 @@
+<!-- markdownlint-disable -->
 # JellyRock
 
 A Jellyfin client for Roku devices built with BrighterScript and the SceneGraph framework. This is NOT a typical web app - it's a Roku application with unique architectural patterns.
@@ -14,7 +15,7 @@ A Jellyfin client for Roku devices built with BrighterScript and the SceneGraph 
 ### Scene Management System
 The app uses a central `SceneManager` (`components/data/SceneManager.bs`) that manages all screen navigation:
 - **Stack-based navigation**: `pushScene()`, `popScene()`, `clearScenes()`
-- **Lifecycle hooks**: `OnScreenShown()`, `OnScreenHidden()` called automatically
+- **Life cycle hooks**: `OnScreenShown()`, `OnScreenHidden()` called automatically
 - **Focus management**: Preserves `lastFocus` when switching screens, use `setFocus(true)` and check `hasFocus()`
 - All screens extend either `JRScreen` or `JRGroup` base classes
 
@@ -83,4 +84,4 @@ end function
 ## UI Guidelines
 
 - Never hardcode color values - Use global theme colors from the `source/utils/globals.bs` file.
-- Use themed ui components when possible. `/components/ui/`
+- Use themed UI components when possible. `/components/ui/`

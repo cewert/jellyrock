@@ -35,5 +35,6 @@ camelCase
 PascalCase
 Rooibos
 bslint
+Linter
 linter
 linters
