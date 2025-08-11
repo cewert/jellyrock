@@ -1,20 +1,6 @@
-# Project Overview
+# JellyRock
 
-This project is a Roku client application that connects to Jellyfin media servers using the Jellyfin API. Users can navigate and consume their Jellyfin media (only videos, movies, TV shows, music, live TV, TV show recordings, and pictures are supported). It is built using [BrighterScript](https://github.com/rokucommunity/brighterscript)
-
-## Folder Structure
-
-- `/components`: Contains SceneGraph XML components and the .bs files, with the same file name, that define the logic for each XML component.
-- `/docs`: Contains documentation for the project in markdown format.
-- `/images`: Contains all local images used in the application as well as the development version of the branding images used in the app store.
-- `/locale`: Contains localization XML files used for translating the application.
-- `/resources`: Contains static resources used by the application but are not automatically packaged with the app.
-- `/resources/branding`: Contains branding images. The SVG files are used to generate image files for the app store.
-- `/resources/branding/release`: Contains the branding images used in the app store for the release version of the application.
-- `/scripts`: Contains JavaScript code used by some NPM scripts.
-- `/settings`: Contains user settings and preferences for the application saved in JSON format. The data from this file is imported by the app to see available settings and apply defaults.
-- `/source`: Contains all other BrighterScript source code. Components must import these files to use them.
-- `/unit-tests`: Contains Roku [Rooibos](https://github.com/rokucommunity/rooibos) unit tests for the application. These tests can only be run on a Roku device.
+A Jellyfin client for Roku devices built with BrighterScript and the SceneGraph framework. This is NOT a typical web app - it's a Roku application with unique architectural patterns.
 
 ## Libraries and Frameworks
 
@@ -23,19 +9,78 @@ This project is a Roku client application that connects to Jellyfin media server
 - [Rooibos](https://github.com/rokucommunity/rooibos) for unit testing.
 - [Jellyfin API](https://api.jellyfin.org/) for media server interaction.
 
+## Core Architecture
+
+### Scene Management System
+The app uses a central `SceneManager` (`components/data/SceneManager.bs`) that manages all screen navigation:
+- **Stack-based navigation**: `pushScene()`, `popScene()`, `clearScenes()`
+- **Lifecycle hooks**: `OnScreenShown()`, `OnScreenHidden()` called automatically
+- **Focus management**: Preserves `lastFocus` when switching screens, use `setFocus(true)` and check `hasFocus()`
+- All screens extend either `JRScreen` or `JRGroup` base classes
+
+### Component Inheritance Pattern
+```
+JRScene (root scene)
+├── JRScreen (full-screen views like Home, Settings)
+└── JRGroup (sub-components and dialogs)
+```
+
+### Application Flow
+1. `source/Main.bs` → Entry point, initializes global state
+2. `source/ShowScenes.bs` → Creates and manages different screen types
+3. Scene navigation via `m.global.sceneManager.callFunc("pushScene", group)`
+
+## Development Workflow
+
+### Testing Commands (AI Agent Priority)
+- **Code validation**: `npm run lint-bs` (ALWAYS run first - BrighterScript linter)
+- **Build validation**: `npm run validate` (faster than full build with same validation - syntax, imports etc.)
+- **Unit tests**: `npm run build-tests` (builds ALL Rooibos tests - requires physical Roku device to be deployed and actually run the tests)
+
+### Runtime Error Limitations
+⚠️ **CRITICAL**: Linter and build validation catch syntax/import errors but NOT runtime crashes. Code can build successfully but crash instantly when run. AI agents cannot detect runtime errors automatically - they require:
+- Deployment to actual Roku device 
+- Manual testing and navigation
+- Monitoring VSCode output tab for debug output and crash logs
+- Human verification of app functionality
+
+## Coding Patterns
+
+### Component Structure
+Every SceneGraph component needs:
+```brighterscript
+' ComponentName.xml - defines UI structure and interface
+' ComponentName.bs - implements logic and event handlers
+
+sub init()
+  ' Initialize component
+end sub
+
+function onKeyEvent(key as string, press as boolean) as boolean
+  ' Handle remote control input
+  if not press then return false
+  ' Return true if handled, false to bubble up
+end function
+```
+
+### API Integration
+- **All Jellyfin API functions** are in `source/api/sdk.bs` - use these for server communication
+- **CRITICAL**: All API calls SHOULD use Task components to avoid blocking the render thread
+- **Data passing**: Avoid using `array` and `assocarray` field types when passing data back from tasks
+- URL building via `buildURL()` in `source/api/baserequest.bs`
+
+### Global State
+- `m.global` contains app-wide state (session, constants, managers)
+- Theme colors in `m.global.constants.colors` (see `source/utils/globals.bs`)
+- Import utilities with `import "pkg:/source/utils/misc.bs"`
+
 ## Coding Standards
 
-- Use `BrighterScript` for application logic and interaction with the Roku platform.
-- We use the default values for [bslint](https://github.com/rokucommunity/bslint), except for any settings saved in the `bslint.json` file. All code must pass the linter before it can be merged into the main branch.
+- Use the default values for [bslint](https://github.com/rokucommunity/bslint), except for any settings saved in the `bslint.json` file. All code must pass the linter before it can be merged into the main branch.
 - Use `Rooibos` for unit tests. You won't be able to test these but make sure they pass linters and are ready to be manually tested.
-- Use 2 spaces for indentation.
-- Use camelCase for variable and function names.
-- Use PascalCase for class and component names.
 - Use `isValid()` for conditional invalid comparisons. For components, ensure the file containing `isValid()` is imported as needed. i.e. `import "pkg:/source/utils/misc.bs"`
 
 ## UI Guidelines
 
-- All theme colors are defined in the `sourcel/utils/globals.bs` file.
-- Use themed labels for text elements. `/components/ui/label/colors`
-- Use the primary color for active focus elements.
-- Use the secondary color to highlight elements that can't be focused.
+- Never hardcode color values - Use global theme colors from the `source/utils/globals.bs` file.
+- Use themed ui components when possible. `/components/ui/`
