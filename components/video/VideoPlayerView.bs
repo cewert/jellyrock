@@ -54,7 +54,6 @@ sub init()
 
   'Play Next Episode button
   m.nextEpisodeButton = m.top.findNode("nextEpisode")
-  m.nextEpisodeButton.text = tr("Next Episode")
   m.nextEpisodeButton.setFocus(false)
   m.nextupbuttonseconds = userSettings["playback.nextupbuttonseconds"].ToInt()
 
@@ -532,7 +531,7 @@ sub updateCount()
   if nextEpisodeCountdown < 0
     nextEpisodeCountdown = 0
   end if
-  m.nextEpisodeButton.text = tr("Next Episode") + " " + nextEpisodeCountdown.toStr()
+  m.nextEpisodeButton.text = tr("Next Episode") + " " + nextEpisodeCountdown.toStr().trim()
 end sub
 
 '

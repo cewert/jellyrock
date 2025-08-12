@@ -278,12 +278,11 @@ function CreateServerGroup()
   screen.optionsAvailable = true
   m.global.sceneManager.callFunc("pushScene", screen)
   port = CreateObject("roMessagePort")
-  m.colors = {}
 
   if isValid(m.global.session.server.url)
     screen.serverUrl = m.global.session.server.url
   end if
-  m.viewModel = {}
+
   button = screen.findNode("submit")
   button.observeField("buttonSelected", port)
   'create delete saved server option
@@ -396,7 +395,7 @@ function CreateUserSelectGroup(users = [])
 
   group.itemContent = users
   group.findNode("userRow").observeField("userSelected", port)
-  group.findNode("alternateOptions").observeField("itemSelected", port)
+  group.findNode("manualLoginButton").observeField("buttonSelected", port)
   group.observeField("backPressed", port)
   while true
     msg = wait(0, port)
@@ -407,8 +406,8 @@ function CreateUserSelectGroup(users = [])
       return "backPressed"
     else if type(msg) = "roSGNodeEvent" and msg.getField() = "userSelected"
       return msg.GetData()
-    else if type(msg) = "roSGNodeEvent" and msg.getField() = "itemSelected"
-      if msg.getData() = 0
+    else if type(msg) = "roSGNodeEvent" and msg.getField() = "buttonSelected"
+      if msg.getData() = true
         return ""
       end if
     end if

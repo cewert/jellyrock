@@ -2,6 +2,9 @@ import "pkg:/source/utils/misc.bs"
 
 sub init()
   m.top.optionsAvailable = false
+  m.manualLoginButton = m.top.findNode("manualLoginButton")
+
+  m.manualLoginButton.translation = [(1920 - m.manualLoginButton.width) / 2, m.manualLoginButton.translation[1]]
 end sub
 
 sub itemContentChanged()
@@ -40,13 +43,13 @@ function onKeyEvent(key as string, press as boolean) as boolean
   if key = "back"
     m.top.backPressed = true
   else if key = "up"
-    if m.top.focusedChild.isSubType("LabelList")
+    if m.top.focusedChild.isSubType("TextButton")
       m.top.findNode("UserRow").setFocus(true)
       return true
     end if
   else if key = "down"
     if m.top.focusedChild.isSubType("UserRow")
-      m.top.findNode("alternateOptions").setFocus(true)
+      m.manualLoginButton.setFocus(true)
       return true
     end if
   end if

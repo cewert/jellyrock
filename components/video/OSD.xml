@@ -37,16 +37,16 @@
 
     <!-- FOOTER -->
     <OSDButtonGroup id="buttonMenuLeft" itemSpacings="[36]" layoutDirection="horiz" horizAlignment="left" translation="[90,936]">
-      <IconButton id="itemBack" padding="15" icon="pkg:/images/icons/itemPrevious.png" />
-      <IconButton id="videoPlayPause" padding="15" icon="pkg:/images/icons/play.png" />
-      <IconButton id="itemNext" padding="15" icon="pkg:/images/icons/itemNext.png" />
-      <IconButton id="showAudioMenu" padding="15" icon="pkg:/images/icons/musicNote.png" />
-      <IconButton id="showSubtitleMenu" padding="15" icon="pkg:/images/icons/closedCaptions.png" />
-      <IconButton id="chapterList" padding="15" icon="pkg:/images/icons/chapters.png" />
+      <IconButton id="itemBack" icon="pkg:/images/icons/itemPrevious.png" />
+      <IconButton id="videoPlayPause" icon="pkg:/images/icons/play.png" />
+      <IconButton id="itemNext" icon="pkg:/images/icons/itemNext.png" />
+      <IconButton id="showAudioMenu" icon="pkg:/images/icons/musicNote.png" />
+      <IconButton id="showSubtitleMenu" icon="pkg:/images/icons/closedCaptions.png" />
+      <IconButton id="chapterList" icon="pkg:/images/icons/chapters.png" />
     </OSDButtonGroup>
     <!-- Video info popup is right aligned-->
     <OSDButtonGroup id="buttonMenuRight" itemSpacings="[36]" layoutDirection="horiz" horizAlignment="left" translation="[1724,936]">
-      <IconButton id="showVideoInfoPopup" padding="15" icon="pkg:/images/icons/fileInfo.png" />
+      <IconButton id="showVideoInfoPopup" icon="pkg:/images/icons/fileInfo.png" />
     </OSDButtonGroup>
 
     <Timer id="inactivityTimer" duration="1" repeat="true" />

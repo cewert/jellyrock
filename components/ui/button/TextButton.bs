@@ -1,0 +1,199 @@
+import "pkg:/source/utils/misc.bs"
+
+sub init()
+  m.buttonFocusBorder = m.top.findNode("buttonFocusBorder")
+  m.buttonBackground = m.top.findNode("buttonBackground")
+  m.buttonText = m.top.findNode("buttonText")
+
+  m.top.observeField("background", "onBackgroundChanged")
+  m.top.observeField("textColor", "onTextColorChanged")
+  m.top.observeField("text", "onTextChanged")
+  m.top.observeField("height", "onHeightChanged")
+  m.top.observeField("width", "onWidthChanged")
+  m.top.observeField("padding", "onPaddingChanged")
+  m.top.observeField("focusedChild", "onFocusChanged")
+  m.top.observeField("minWidth", "onSizeChanged")
+  m.top.observeField("minHeight", "onSizeChanged")
+
+  applyTheme()
+end sub
+
+sub applyTheme()
+  colorConstants = m.global.constants.colors
+
+  ' Set default colors
+  m.top.background = colorConstants.background_secondary
+  m.top.textColor = colorConstants.text_primary
+  m.top.focusBackground = colorConstants.background_secondary
+  m.top.textFocusColor = colorConstants.text_primary
+end sub
+
+sub onFocusChanged()
+  colorConstants = m.global.constants.colors
+
+  if m.top.hasFocus()
+    ' Button background
+    if isValid(m.top.focusBackground)
+      m.buttonBackground.blendColor = m.top.focusBackground
+    end if
+    ' Button text
+    if isValid(m.top.textFocusColor)
+      m.buttonText.color = m.top.textFocusColor
+    end if
+    ' Focus border
+    if m.top.enableBorder
+      m.buttonFocusBorder.blendColor = colorConstants.primary
+      m.buttonFocusBorder.visible = true
+    end if
+  else
+    ' Button background
+    if isValid(m.top.background)
+      m.buttonBackground.blendColor = m.top.background
+    end if
+    ' Button text
+    if isValid(m.top.textColor)
+      m.buttonText.color = m.top.textColor
+    end if
+    ' Focus border
+    m.buttonFocusBorder.visible = false
+  end if
+end sub
+
+sub onBackgroundChanged()
+  m.buttonBackground.blendColor = m.top.background
+end sub
+
+sub onTextColorChanged()
+  m.buttonText.color = m.top.textColor
+end sub
+
+sub onTextChanged()
+  m.buttonText.text = m.top.text
+  setSizeAndCenterText()
+end sub
+
+sub setSizeAndCenterText()
+  if not isValid(m.buttonText) then return
+  if m.buttonText.text.Len() = 0 then return
+
+  textWidth = m.buttonText.localBoundingRect().width
+  textHeight = m.buttonText.localBoundingRect().height
+  print "[TextButton] text boundingRect: width="; textWidth; ", height="; textHeight
+  if textWidth = 0
+    addSpaceAfter = true
+    minWidth = m.top.minWidth
+
+    textLength = m.top.text.Len()
+    fontSize = m.buttonText.font.size
+    charWidth = fontSize * 0.64
+    textWidth = textLength * charWidth
+    minChars = int(minWidth / charWidth)
+
+    while m.top.text.Len() < minChars
+      if addSpaceAfter
+        m.top.text = m.top.text + Chr(160)
+      else
+        m.top.text = Chr(160) + m.top.text
+      end if
+      addSpaceAfter = addSpaceAfter = false
+    end while
+  end if
+
+  ' Calculate button dimensions with padding
+  buttonWidth = textWidth + (m.top.padding * 2)
+  buttonHeight = textHeight + (m.top.padding * 2)
+  print "[TextButton] calculated size: width=", buttonWidth, ", height=", buttonHeight
+
+  ' Ensure minimum dimensions
+  if buttonWidth < m.top.minWidth
+    buttonWidth = m.top.minWidth
+  end if
+  if buttonHeight < m.top.minHeight
+    buttonHeight = m.top.minHeight
+  end if
+
+  m.top.width = buttonWidth
+
+  ' Set background size
+  m.buttonBackground.width = buttonWidth
+  m.buttonBackground.height = buttonHeight
+
+  ' Center the text in the button
+  m.buttonText.width = buttonWidth
+  m.buttonText.height = buttonHeight
+  m.buttonText.translation = [0, 0]
+
+  setFocusBorderSize()
+end sub
+
+sub onPaddingChanged()
+  setSizeAndCenterText()
+end sub
+
+sub onSizeChanged()
+  setSizeAndCenterText()
+end sub
+
+sub onHeightChanged()
+  setSizeAndCenterText()
+end sub
+
+sub onWidthChanged()
+  setSizeAndCenterText()
+end sub
+
+sub onEnabledChanged()
+  colorConstants = m.global.constants.colors
+
+  if m.top.enabled
+    m.top.background = colorConstants.background_secondary
+    m.top.textColor = colorConstants.text_primary
+  else
+    m.top.background = colorConstants.background_primary
+    m.top.textColor = colorConstants.text_disabled
+  end if
+end sub
+
+sub setFocusBorderSize()
+  if not m.top.enableBorder then return
+  if m.buttonBackground.width < 1 then return
+
+  m.buttonFocusBorder.width = m.buttonBackground.width + (m.top.borderSize * 2)
+  m.buttonFocusBorder.height = m.buttonBackground.height + (m.top.borderSize * 2)
+
+  ' translate the button so the focus border is visible
+  m.buttonBackground.translation = [m.top.borderSize, m.top.borderSize]
+  m.buttonText.translation = [m.top.borderSize, m.top.borderSize]
+end sub
+
+function onKeyEvent(key as string, press as boolean) as boolean
+  if not press then return false
+
+  if key = "OK"
+    if m.top.enabled
+      m.top.buttonSelected = true
+      return true
+    end if
+  end if
+
+  return false
+end function
+
+' sub onTextChanged()
+'   m.buttonText.text = m.top.text
+'   ' Wait for boundingRect to be valid (blocking loop)
+'   tries = 0
+'   maxTries = 1000 ' Prevent infinite loop
+'   while tries < maxTries
+'     textRect = m.buttonText.boundingRect()
+'     print "[TextButton] boundingRect: width=", textRect.width, ", height=", textRect.height
+'     if textRect.width > 0 and textRect.height > 0
+'       exit while
+'     end if
+'     tries = tries + 1
+'   end while
+'   if tries = maxTries
+'     print "[TextButton] WARNING: boundingRect never became valid after "; maxTries; " tries."
+'   end if
+'   setSizeAndCenterText()
+' end sub

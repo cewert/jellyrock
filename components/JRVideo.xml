@@ -29,6 +29,7 @@
     <timer id="playbackTimer" repeat="true" duration="30" />
     <timer id="bufferCheckTimer" repeat="true" />
     <JRButton id="nextEpisode"
+      text="Next Episode"
       opacity="0"
       textColor="#f0f0f0"
       focusedTextColor="#202020"

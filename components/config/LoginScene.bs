@@ -3,6 +3,11 @@ import "pkg:/source/utils/misc.bs"
 sub init()
   m.top.setFocus(true)
   m.top.optionsAvailable = false
+
+  m.list = m.top.findNode("configOptions")
+  m.checkbox = m.top.findNode("onOff")
+  m.submit = m.top.findNode("submit")
+  m.quickConnect = m.top.findNode("quickConnect")
 end sub
 
 ' JRScreen hook.
@@ -19,39 +24,35 @@ function onKeyEvent(key as string, press as boolean) as boolean
   ' Returns true if user navigates to a new focusable element
   if not press then return false
 
-  list = m.top.findNode("configOptions")
-  checkbox = m.top.findNode("onOff")
-  submit = m.top.findNode("submit")
-  quickConnect = m.top.findNode("quickConnect")
   if key = "back"
     m.top.backPressed = true
-  else if key = "down" and not isValid(checkbox.focusedChild) and not isValid(submit.focusedChild)
-    limit = list.content.getChildren(-1, 0).count() - 1
+  else if key = "down" and not isValid(m.checkbox.focusedChild) and not isValid(m.submit.focusedChild)
+    limit = m.list.content.getChildren(-1, 0).count() - 1
 
-    if limit = list.itemFocused
-      checkbox.setFocus(true)
+    if limit = m.list.itemFocused
+      m.checkbox.setFocus(true)
       return true
     end if
-  else if key = "down" and not isValid(submit.focusedChild)
-    submit.setFocus(true)
+  else if key = "down" and not isValid(m.submit.focusedChild)
+    m.submit.setFocus(true)
     return true
-  else if key = "up" and isValid(submit.focusedChild)
-    checkbox.setFocus(true)
+  else if key = "up" and isValid(m.submit.focusedChild)
+    m.checkbox.setFocus(true)
     return true
-  else if key = "up" and isValid(quickConnect.focusedChild)
-    checkbox.setFocus(true)
+  else if key = "up" and isValid(m.quickConnect.focusedChild)
+    m.checkbox.setFocus(true)
     return true
-  else if key = "up" and isValid(checkbox.focusedChild)
-    list.setFocus(true)
+  else if key = "up" and isValid(m.checkbox.focusedChild)
+    m.list.setFocus(true)
     return true
-  else if key = "right" and isValid(checkbox.focusedChild)
-    quickConnect.setFocus(true)
+  else if key = "right" and isValid(m.checkbox.focusedChild)
+    m.quickConnect.setFocus(true)
     return true
-  else if key = "right" and isValid(submit.focusedChild)
-    quickConnect.setFocus(true)
+  else if key = "right" and isValid(m.submit.focusedChild)
+    m.quickConnect.setFocus(true)
     return true
-  else if key = "left" and isValid(quickConnect.focusedChild)
-    submit.setFocus(true)
+  else if key = "left" and isValid(m.quickConnect.focusedChild)
+    m.submit.setFocus(true)
     return true
   end if
   return false

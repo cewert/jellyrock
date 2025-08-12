@@ -21,7 +21,6 @@ sub init()
 
   'Play Next Episode button
   m.nextEpisodeButton = m.top.findNode("nextEpisode")
-  m.nextEpisodeButton.text = tr("Next Episode")
   m.nextEpisodeButton.setFocus(false)
   m.nextupbuttonseconds = userSettings["playback.nextupbuttonseconds"].ToInt()
 

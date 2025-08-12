@@ -22,9 +22,9 @@ sub applyTheme()
   colorConstants = m.global.constants.colors
 
   ' Set default colors
-  m.top.background = colorConstants.background_primary
+  m.top.background = colorConstants.background_secondary
   m.top.iconBackground = colorConstants.text_primary
-  m.top.focusBackground = colorConstants.background_secondary
+  m.top.focusBackground = colorConstants.background_primary
   m.top.iconFocusBackground = colorConstants.text_primary
 end sub
 
@@ -61,12 +61,10 @@ end sub
 
 sub onBackgroundChanged()
   m.buttonBackground.blendColor = m.top.background
-  m.top.unobserveField("background")
 end sub
 
 sub onIconBackgroundChanged()
   m.buttonIcon.blendColor = m.top.iconBackground
-  m.top.unobserveField("background")
 end sub
 
 sub onIconChanged()
@@ -115,10 +113,10 @@ sub onEnabledChanged()
   colorConstants = m.global.constants.colors
 
   if m.top.enabled
-    m.top.background = colorConstants.background_primary
-    m.top.iconBackground = colorConstants.text_secondary
-  else
     m.top.background = colorConstants.background_secondary
+    m.top.iconBackground = colorConstants.text_primary
+  else
+    m.top.background = colorConstants.background_primary
     m.top.iconBackground = colorConstants.text_disabled
   end if
 end sub

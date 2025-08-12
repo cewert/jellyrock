@@ -8,7 +8,7 @@
   </interface>
 
   <children>
-    <LayoutGroup translation="[150,150]" itemSpacings="40">
+    <LayoutGroup translation="[150,150]" itemSpacings="39">
       <LayoutGroup>
         <LabelPrimaryLarge text="Connect to Server" id="prompt" bold="true" />
         <LabelPrimaryMedium text="Pick a Jellyfin server from the local network" />
@@ -25,12 +25,9 @@
         <Poster id="serverUrlOutline" visible="false" uri="pkg:/images/hd_focus.9.png" />
       </Rectangle>
       <LabelErrorMedium id="errorMessage" text="" />
-      <LayoutGroup horizAlignment="center">
-        <JRButton id="submit" minChars="30" text="Submit"></JRButton>
-        <!--add a known width invisibile element to allow the button to be centered-->
-        <Rectangle id="submitSizer" width="1620" height="0" color="#00000000" />
-      </LayoutGroup>
     </LayoutGroup>
+
+    <TextButton id="submit" minWidth="300" text="Submit" translation="[0,885]" />
 
     <OptionsSlider id="options" />
   </children>
