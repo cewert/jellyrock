@@ -17,7 +17,7 @@
           <LabelPrimaryMedium id="tagline" />
           <LabelSecondaryMedium id="overview" wrap="true" width="1400" maxLines="4" />
           <LabelSecondaryMedium id="history" />
-          <JRButton id="Shuffle" minChars="15" text="Shuffle" translation="[90, 640]" visible="false"></JRButton>
+          <TextButton id="shuffle" text="Shuffle" translation="[90, 640]" visible="false" />
         </LayoutGroup>
       </LayoutGroup>
     </LayoutGroup>
