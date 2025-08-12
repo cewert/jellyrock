@@ -1,19 +1,29 @@
-name: roku-analysis
+name: Roku static analysis
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - '.github/**'
-      - '.vscode/**'
-      - 'docs/**'
-      - 'locale/**'
-      - 'scripts/**'
-      - 'unit-tests/**'
+  workflow_dispatch:
 
 jobs:
   static:
-    # don't run job on forks
-    if: github.repository == 'cewert/jellyrock'
-    uses: ./.github/workflows/_roku-analysis.yml
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "lts/*"
+          cache: "npm"
+      - name: NPM install
+        run: npm ci
+      - name: Build app for production
+        run: npm run build-prod
+      - name: Setup Java
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+      - name: Download the Static Channel Analysis CLI
+        run: |
+          curl -sSL "https://devtools.web.roku.com/static-channel-analysis/sca-cmd.zip" -o sca-cmd.zip
+          unzip sca-cmd.zip
+      - name: Run Roku Static Analysis
+        run: ./sca-cmd/bin/sca-cmd ${{ github.workspace }}/build/staging --exit error
