@@ -639,6 +639,10 @@
       <translation>Make the arrangement of the Roku home view sections match the web client&apos;s home screen. JellyRock will need to be closed and reopened for change to take effect.</translation>
     </message>
     <message>
+      <source>Manual Login</source>
+      <translation>Manual Login</translation>
+    </message>
+    <message>
       <source>Max Days Next Up</source>
       <translation>Max Days Next Up</translation>
       <extracomment>Option Title in user setting screen</extracomment>
@@ -844,10 +848,6 @@
       <translation>Played</translation>
     </message>
     <message>
-      <source>Please sign in</source>
-      <translation>Please sign in</translation>
-    </message>
-    <message>
       <source>Preferred Audio Codec</source>
       <translation>Preferred Audio Codec</translation>
       <extracomment>Settings Menu - Title of option</extracomment>
@@ -971,6 +971,10 @@
     <message>
       <source>Seasons</source>
       <translation>Seasons</translation>
+    </message>
+    <message>
+      <source>Select a User</source>
+      <translation>Select a User</translation>
     </message>
     <message>
       <source>Select Audio</source>
