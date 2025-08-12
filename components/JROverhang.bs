@@ -60,7 +60,7 @@ function createUserImage() as object
 
   userImage = createObject("roSGNode", "Poster")
   userImage.id = "userImage"
-  userImage.uri = buildURL(Substitute("/Users/{0}/Images/Primary", m.global.session.user.id))
+  userImage.uri = buildURL(Substitute("/Users/{0}/Images/Primary", m.global.session.user.id), imgParams)
   userImage.width = "36"
   userImage.height = "36"
   userImage.translation = "[0, -2]"
