@@ -34,8 +34,7 @@ JRScene (root scene)
 ## Development Workflow
 
 ### Testing Commands (AI Agent Priority)
-- **Code validation**: `npm run lint-bs` (ALWAYS run first - BrighterScript linter)
-- **Build validation**: `npm run validate` (faster than full build with same validation - syntax, imports etc.)
+- **Code validation**: `npm run lint-bs` (lint and validate code)
 - **Unit tests**: `npm run build-tests` (builds ALL Rooibos tests - requires physical Roku device to be deployed and actually run the tests)
 
 ### Runtime Error Limitations

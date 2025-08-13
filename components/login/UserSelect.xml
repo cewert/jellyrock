@@ -5,7 +5,9 @@
 
     <UserRow id="userRow" translation="[130, 360]" />
 
-    <TextButton id="manualLoginButton" minWidth="300" text="Manual Login" translation="[0,850]" />
+    <JRButtonGroup id="buttons" translation="[0,850]">
+      <TextButton id="manualLoginButton" minWidth="300" text="Manual Login" />
+    </JRButtonGroup>
   </children>
   <interface>
     <field id="itemSelected" type="string" alwaysNotify="true" />

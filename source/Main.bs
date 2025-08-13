@@ -567,11 +567,18 @@ sub Main (args as dynamic) as void
         message_dialog("This type is not yet supported: " + node.type + ".")
       end if
     else if isNodeEvent(msg, "buttonSelected")
+      print "buttonSelected event received"
+      print "msg=", msg
       ' If a button is selected, we have some determining to do
       btn = getButton(msg)
+      print "btn=", btn
+      if not isValid(btn)
+        print "No button found in message"
+        return
+      end if
       group = m.global.sceneManager.callFunc("getActiveScene")
 
-      if isValid(btn) and btn.id = "play-button"
+      if btn.id = "playButton"
         if not isValid(group) then return
 
         ' User chose Play button from movie detail view
@@ -608,7 +615,8 @@ sub Main (args as dynamic) as void
           group.lastFocus.setFocus(true)
         end if
 
-      else if isValid(btn) and btn.id = "trailer-button"
+      else if btn.id = "trailerButton"
+        print "trailerButton pressed"
         ' User chose to play a trailer from the movie detail view
         startLoadingSpinner()
         dialog = createObject("roSGNode", "ProgressDialog")
@@ -629,7 +637,8 @@ sub Main (args as dynamic) as void
         if isValid(group) and isValid(group.lastFocus)
           group.lastFocus.setFocus(true)
         end if
-      else if isValid(btn) and btn.id = "watched-button"
+      else if btn.id = "watchedButton"
+        print "watchedButton pressed"
         movie = group.itemContent
         if isValid(movie) and isValid(movie.watched) and isValid(movie.id)
           if movie.watched
@@ -639,7 +648,8 @@ sub Main (args as dynamic) as void
           end if
           movie.watched = not movie.watched
         end if
-      else if isValid(btn) and btn.id = "favorite-button"
+      else if btn.id = "favoriteButton"
+        print "favoriteButton pressed"
         movie = group.itemContent
         if movie.favorite
           UnmarkItemFavorite(movie.id)
@@ -647,13 +657,64 @@ sub Main (args as dynamic) as void
           MarkItemFavorite(movie.id)
         end if
         movie.favorite = not movie.favorite
+      else if btn.id = "playAll"
+        print "playAll button pressed"
+        ' User has selected playlist of of audio they want us to play
+        startLoadingSpinner()
+        node = msg.getRoSGNode()
+
+        if isValid(group) and isValid(group.albumData) and isValid(group.albumData.items)
+          m.global.queueManager.callFunc("clear")
+          m.global.queueManager.callFunc("resetShuffle")
+          m.global.queueManager.callFunc("set", group.albumData.items)
+          m.global.queueManager.callFunc("playQueue")
+        else
+          stopLoadingSpinner()
+        end if
+      else if btn.id = "instantMix"
+        print "instantMix button pressed"
+        ' User has selected instant mix
+        ' User has selected playlist of of audio they want us to play
+        startLoadingSpinner()
+        node = msg.getRoSGNode()
+        viewHandled = false
+
+        ' Create instant mix based on selected album
+        if isValid(group) and isValid(group.albumData)
+          if isValid(group.albumData.items)
+            if group.albumData.items.count() > 0
+              m.global.queueManager.callFunc("clear")
+              m.global.queueManager.callFunc("resetShuffle")
+              m.global.queueManager.callFunc("set", CreateInstantMix(group.albumData.items[0].id).Items)
+              m.global.queueManager.callFunc("playQueue")
+
+              viewHandled = true
+            end if
+          end if
+        end if
+
+        if not viewHandled
+          ' Create instant mix based on selected artist - fallback to pageContent
+          parentWithPageContent = findParentWithField(node, "pageContent")
+          if isValid(parentWithPageContent) and isValid(parentWithPageContent.pageContent) and isValid(parentWithPageContent.pageContent.id)
+            m.global.queueManager.callFunc("clear")
+            m.global.queueManager.callFunc("resetShuffle")
+            m.global.queueManager.callFunc("set", CreateInstantMix(parentWithPageContent.pageContent.id).Items)
+            m.global.queueManager.callFunc("playQueue")
+          else
+            stopLoadingSpinner()
+          end if
+        end if
       else
         ' If there are no other button matches, check if this is a simple "OK" Dialog & Close if so
         dialog = msg.getRoSGNode()
         if dialog.id = "OKDialog"
           dialog.unobserveField("buttonSelected")
           dialog.close = true
+          return
         end if
+
+        print "ERROR: Unhandled button id: " + btn.id
       end if
     else if isNodeEvent(msg, "optionSelected")
       button = msg.getRoSGNode()

@@ -19,7 +19,7 @@ sub init()
   m.tagline = m.top.findNode("tagline")
 
   m.buttonGrp = m.top.findNode("buttons")
-  m.buttonGrp.setFocus(true)
+  m.buttonGrp.callFunc("focus")
   m.top.lastFocus = m.buttonGrp
 
   m.isFirstRun = true
@@ -80,17 +80,16 @@ end sub
 sub trailerAvailableChanged()
   if m.top.trailerAvailable
     ' add trailor button to button group
-    trailerButton = CreateObject("roSGNode", "Button")
-    trailerButton.id = "trailer-button"
+    trailerButton = CreateObject("roSGNode", "TextButton")
+    trailerButton.id = "trailerButton"
     trailerButton.text = tr("Play Trailer")
-    trailerButton.iconUri = ""
-    trailerButton.focusedIconUri = ""
-    trailerButton.maxWidth = "300"
-    trailerButton.minWidth = "280"
     m.buttonGrp.appendChild(trailerButton)
   else
     ' remove trailor button from button group
-    m.buttonGrp.removeChild(m.top.findNode("trailer-button"))
+    trailerButton = m.top.findNode("trailerButton")
+    if isValid(trailerButton)
+      m.buttonGrp.removeChild(trailerButton)
+    end if
   end if
 end sub
 
@@ -200,9 +199,7 @@ sub itemContentChanged()
   stopLoadingSpinner()
 end sub
 
-
 sub SetUpVideoOptions(streams)
-
   videos = []
   codecDetailsSet = false
 
@@ -243,9 +240,7 @@ sub SetUpVideoOptions(streams)
   options = {}
   options.videos = videos
   m.options.options = options
-
 end sub
-
 
 sub SetUpAudioOptions(streams)
   tracks = []
@@ -266,9 +261,7 @@ sub SetUpAudioOptions(streams)
   end if
   options.audios = tracks
   m.options.options = options
-
 end sub
-
 
 sub SetDefaultAudioTrack(itemData)
 
@@ -278,7 +271,6 @@ sub SetDefaultAudioTrack(itemData)
 
   m.top.selectedAudioStreamIndex = defaultAudioStream.index
   setFieldText("audio_codec", tr("Audio") + ": " + defaultAudioStream.displayTitle)
-
 end sub
 
 sub setFieldText(field, value)
@@ -319,29 +311,23 @@ end function
 
 sub setFavoriteColor()
   fave = m.top.itemContent.favorite
-  fave_button = m.top.findNode("favorite-button")
+  favoriteButton = m.top.findNode("favoriteButton")
   if isValid(fave) and fave
-    fave_button.textColor = "#00ff00ff"
-    fave_button.focusedTextColor = "#269926ff"
-    fave_button.text = tr("Favorite")
+    favoriteButton.textColor = "#269926ff"
+    favoriteButton.text = tr("Favorite")
   else
-    fave_button.textColor = "0xddddddff"
-    fave_button.focusedTextColor = "#262626ff"
-    fave_button.text = tr("Set Favorite")
+    favoriteButton.text = tr("Set Favorite")
   end if
 end sub
 
 sub setWatchedColor()
   watched = m.top.itemContent.watched
-  watched_button = m.top.findNode("watched-button")
+  watchedButton = m.top.findNode("watchedButton")
   if watched
-    watched_button.textColor = "#ff0000ff"
-    watched_button.focusedTextColor = "#992626ff"
-    watched_button.text = tr("Watched")
+    watchedButton.textColor = "#992626ff"
+    watchedButton.text = tr("Watched")
   else
-    watched_button.textColor = "0xddddddff"
-    watched_button.focusedTextColor = "#262626ff"
-    watched_button.text = tr("Set Watched")
+    watchedButton.text = tr("Set Watched")
   end if
 end sub
 
@@ -359,17 +345,16 @@ function round(f as float) as integer
   end if
 end function
 
-'
 'Check if options updated and any reloading required
 sub audioOptionsClosed()
   if m.options.audioStreamIndex <> m.top.selectedAudioStreamIndex
     m.top.selectedAudioStreamIndex = m.options.audioStreamIndex
     setFieldText("audio_codec", tr("Audio") + ": " + m.top.itemContent.json.mediaStreams[m.top.selectedAudioStreamIndex].displayTitle)
   end if
-  m.top.findNode("buttons").setFocus(true)
+
+  m.buttonGrp.callFunc("focus")
 end sub
 
-'
 ' Check if options were updated and if any reloding is needed...
 sub videoOptionsClosed()
   if m.options.videoStreamId <> m.top.selectedVideoStreamId
@@ -392,14 +377,14 @@ sub videoOptionsClosed()
     m.top.itemContent.json = itemData
     m.top.observeField("itemContent", "itemContentChanged")
   end if
-  m.top.findNode("buttons").setFocus(true)
+
+  m.buttonGrp.callFunc("focus")
 end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
-
   ' Due to the way the button pressed event works, need to catch the release for the button as the press is being sent
   ' directly to the main loop.  Will get this sorted in the layout update for Movie Details
-  if key = "OK" and m.top.findNode("options-button").isInFocusChain()
+  if key = "OK" and m.top.findNode("optionsButton").isInFocusChain()
     m.options.visible = true
     m.options.setFocus(true)
   end if
@@ -417,7 +402,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
       m.top.lastFocus = m.buttonGrp
       m.top.findNode("VertSlider").reverse = true
       m.top.findNode("pplAnime").control = "start"
-      m.buttonGrp.setFocus(true)
+      m.buttonGrp.callFunc("focus")
       return true
     end if
   end if
@@ -438,5 +423,6 @@ function onKeyEvent(key as string, press as boolean) as boolean
       return true
     end if
   end if
+
   return false
 end function

@@ -9,8 +9,10 @@
           <LabelPrimaryMedium id="genres" width="450" height="25" />
           <LabelPrimaryMedium id="runtime" width="450" height="25" />
           <LabelPrimaryMedium id="released" width="450" height="25" />
-          <JRButton id="playAlbum" minChars="8" text="Play Album"></JRButton>
-          <JRButton id="instantMix" minChars="8" text="Instant Mix"></JRButton>
+          <VertButtonGroup id="buttons">
+            <TextButton id="playAll" minWidth="300" text="Play Album"></TextButton>
+            <TextButton id="instantMix" minWidth="300" text="Instant Mix"></TextButton>
+          </VertButtonGroup>
         </LayoutGroup>
         <LayoutGroup id="infoGroup" layoutDirection="vert" itemSpacings="[15]">
           <LabelPrimaryMedium id="overview" wrap="true" height="310" width="1250" />
@@ -25,7 +27,5 @@
     <field id="pageContent" type="node" onChange="pageContentChanged" />
     <field id="albumData" type="assocarray" alias="songList.MusicArtistAlbumData" />
     <field id="playSong" alias="songList.itemSelected" />
-    <field id="playAllSelected" alias="playAlbum.buttonSelected" />
-    <field id="instantMixSelected" alias="instantMix.buttonSelected" />
   </interface>
 </component>

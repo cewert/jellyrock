@@ -11,11 +11,11 @@
           <LabelPrimaryMedium id="communityRating" />
         </LayoutGroup>
         <LabelPrimaryMedium id="genres" />
-        <ButtonGroupHoriz id="buttons" itemSpacings="[10]">
-          <Button text="Play" id="play-button" />
-          <Button text="Shuffle" id="shuffle-button" />
-          <Button text="Favorite" id="favorite-button" />
-        </ButtonGroupHoriz>
+        <JRButtonGroup id="buttons">
+          <TextButton text="Play" id="playButton" />
+          <TextButton text="Shuffle" id="shuffleButton" />
+          <TextButton text="Favorite" id="favoriteButton" />
+        </JRButtonGroup>
         <LabelPrimaryMedium id="tagline" />
         <LabelPrimaryMedium id="overview" wrap="true" width="900" maxLines="4" />
         <LabelPrimaryMedium id="history" />

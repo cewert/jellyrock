@@ -10,33 +10,40 @@
           <LabelPrimaryMedium id="releaseYear" />
           <LabelPrimaryMedium id="runtime" />
           <LabelPrimaryMedium id="officialRating" />
+
           <LayoutGroup id="communityRatingGroup" layoutDirection="horiz" itemSpacings="[-5]">
             <Poster id="star" uri="pkg:/images/icons/sharp_star_white_18dp.png" height="32" width="32" blendColor="#cb272a" />
             <LabelPrimaryMedium id="communityRating" />
           </LayoutGroup>
+
           <LayoutGroup id="criticRatingGroup" layoutDirection="horiz" itemSpacings="[-5]">
             <Poster id="criticRatingIcon" height="32" width="32" />
             <LabelPrimaryMedium id="criticRatingLabel" />
           </LayoutGroup>
+
           <LabelPrimaryMedium id="ends-at" />
           <LabelPrimaryMedium id="aired" />
         </LayoutGroup>
         <LabelPrimaryMedium id="genres" />
         <LabelPrimaryMedium id="director" />
+
         <LayoutGroup layoutDirection="horiz">
           <LabelPrimaryMedium id="video_codec" vertAlign="bottom" height="39" />
           <LabelPrimarySmallest id="video_codec_count" vertAlign="top" />
         </LayoutGroup>
+
         <LayoutGroup layoutDirection="horiz">
           <LabelPrimaryMedium id="audio_codec" vertAlign="bottom" height="39" />
           <LabelPrimarySmallest id="audio_codec_count" vertAlign="top" />
         </LayoutGroup>
-        <ButtonGroupHoriz id="buttons" itemSpacings="[10]" visible="false">
-          <Button text="Play" id="play-button" iconUri="" focusedIconUri="" maxWidth="175" minWidth="175" />
-          <Button text="Options" id="options-button" iconUri="" focusedIconUri="" maxWidth="250" minWidth="250" />
-          <Button text="Watched" id="watched-button" iconUri="" focusedIconUri="" maxWidth="350" minWidth="300" />
-          <Button text="Favorite" id="favorite-button" iconUri="" focusedIconUri="" maxWidth="300" minWidth="300" />
-        </ButtonGroupHoriz>
+
+        <JRButtonGroup id="buttons">
+          <TextButton id="playButton" text="Play" />
+          <TextButton id="optionsButton" text="Options" />
+          <TextButton id="watchedButton" text="Watched" />
+          <TextButton id="favoriteButton" text="Favorite" />
+        </JRButtonGroup>
+
         <LabelPrimaryMedium id="tagline" />
         <LabelPrimaryMedium id="overview" wrap="true" maxLines="8" />
       </LayoutGroup>
