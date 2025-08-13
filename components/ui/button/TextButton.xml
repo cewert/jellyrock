@@ -11,15 +11,14 @@
     <field id="textColor" type="color" value="" />
     <field id="textFocusColor" type="color" value="" />
     <field id="text" type="string" value="" />
-    <field id="padding" type="integer" value="27" />
+    <field id="padding" type="integer" value="30" />
     <field id="selected" type="boolean" value="false" />
     <field id="escape" type="string" value="" />
     <field id="enableBorder" type="boolean" value="true" />
     <field id="borderSize" type="integer" value="6" />
+    <field id="focus" type="boolean" />
     <field id="enabled" type="boolean" value="true" onChange="onEnabledChanged" />
-    <field id="width" type="integer" value="0" />
     <field id="minWidth" type="integer" value="60" />
     <field id="minHeight" type="integer" value="0" />
-    <field id="buttonSelected" type="boolean" value="false" alwaysNotify="true" />
   </interface>
 </component>

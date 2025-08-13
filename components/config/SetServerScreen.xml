@@ -27,7 +27,9 @@
       <LabelErrorMedium id="errorMessage" text="" />
     </LayoutGroup>
 
-    <TextButton id="submit" minWidth="300" text="Submit" translation="[0,885]" />
+    <JRButtonGroup id="buttons" translation="[0,885]">
+      <TextButton id="submit" minWidth="300" text="Submit" />
+    </JRButtonGroup>
 
     <OptionsSlider id="options" />
   </children>

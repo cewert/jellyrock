@@ -283,8 +283,8 @@ function CreateServerGroup()
     screen.serverUrl = m.global.session.server.url
   end if
 
-  button = screen.findNode("submit")
-  button.observeField("buttonSelected", port)
+  buttons = screen.findNode("buttons")
+  buttons.observeField("buttonSelected", port)
   'create delete saved server option
   new_options = []
   sidepanel = screen.findNode("options")
@@ -310,63 +310,75 @@ function CreateServerGroup()
       serverPicker = screen.findNode("serverPicker")
       serverPicker.setFocus(true)
     else if type(msg) = "roSGNodeEvent"
-      node = msg.getNode()
-      if node = "submit"
-        m.scene.isLoading = true
+      nodeName = msg.getNode()
 
-        serverUrl = inferServerUrl(screen.serverUrl)
+      ' print "roSGNodeEvent: msg.getNode() =", msg.getNode()
+      ' print "roSGNodeEvent: msg.getData() =", msg.getData()
+      ' print "roSGNodeEvent: msg.getField() =", msg.getField()
+      ' print "roSGNodeEvent: msg.getRoSGNode() =", msg.getRoSGNode()
+      ' print "roSGNodeEvent: msg.getInfo() =", msg.getInfo()
+      if nodeName = "buttons"
+        buttonIndex = msg.getData()
+        buttonGroup = msg.getRoSGNode()
+        buttonSelected = buttonGroup.getChild(buttonIndex)
 
-        isConnected = session.server.UpdateURL(serverUrl)
-        serverInfoResult = invalid
-        if isConnected
-          set_setting("server", serverUrl)
-          serverInfoResult = ServerInfo()
-          'If this is a different server from what we know, reset username/password setting
-          if m.global.session.server.url <> serverUrl
-            set_setting("username", "")
-            set_setting("password", "")
+        if buttonSelected.id = "submit"
+          m.scene.isLoading = true
+
+          serverUrl = inferServerUrl(screen.serverUrl)
+
+          isConnected = session.server.UpdateURL(serverUrl)
+          serverInfoResult = invalid
+          if isConnected
+            set_setting("server", serverUrl)
+            serverInfoResult = ServerInfo()
+            'If this is a different server from what we know, reset username/password setting
+            if m.global.session.server.url <> serverUrl
+              set_setting("username", "")
+              set_setting("password", "")
+            end if
+            set_setting("server", serverUrl)
           end if
-          set_setting("server", serverUrl)
-        end if
-        m.scene.isLoading = false
+          m.scene.isLoading = false
 
-        if isConnected = false or not isValid(serverInfoResult)
-          ' Maybe don't unset setting, but offer as a prompt
-          ' Server not found, is it online? New values / Retry
-          print "Server not found, is it online? New values / Retry"
-          screen.errorMessage = tr("Server not found, is it online?")
-          SignOut(false)
-        else
-
-          if isValid(serverInfoResult.Error) and serverInfoResult.Error
-            ' If server redirected received, update the URL
-            if isValid(serverInfoResult.UpdatedUrl)
-              serverUrl = serverInfoResult.UpdatedUrl
-
-              isConnected = session.server.UpdateURL(serverUrl)
-              if isConnected
-                set_setting("server", serverUrl)
-                screen.visible = false
-                return ""
-              end if
-            end if
-            ' Display Error Message to user
-            message = tr("Error: ")
-            if isValid(serverInfoResult.ErrorCode)
-              message = message + "[" + serverInfoResult.ErrorCode.toStr() + "] "
-            end if
-            screen.errorMessage = message + tr(serverInfoResult.ErrorMessage)
+          if isConnected = false or not isValid(serverInfoResult)
+            ' Maybe don't unset setting, but offer as a prompt
+            ' Server not found, is it online? New values / Retry
+            print "Server not found, is it online? New values / Retry"
+            screen.errorMessage = tr("Server not found, is it online?")
             SignOut(false)
           else
-            screen.visible = false
-            if isValid(serverInfoResult.serverName)
-              return serverInfoResult.ServerName + " (Saved)"
+
+            if isValid(serverInfoResult.Error) and serverInfoResult.Error
+              ' If server redirected received, update the URL
+              if isValid(serverInfoResult.UpdatedUrl)
+                serverUrl = serverInfoResult.UpdatedUrl
+
+                isConnected = session.server.UpdateURL(serverUrl)
+                if isConnected
+                  set_setting("server", serverUrl)
+                  screen.visible = false
+                  return ""
+                end if
+              end if
+              ' Display Error Message to user
+              message = tr("Error: ")
+              if isValid(serverInfoResult.ErrorCode)
+                message = message + "[" + serverInfoResult.ErrorCode.toStr() + "] "
+              end if
+              screen.errorMessage = message + tr(serverInfoResult.ErrorMessage)
+              SignOut(false)
             else
-              return "Saved"
+              screen.visible = false
+              if isValid(serverInfoResult.serverName)
+                return serverInfoResult.ServerName + " (Saved)"
+              else
+                return "Saved"
+              end if
             end if
           end if
         end if
-      else if node = "delete_saved"
+      else if nodeName = "delete_saved"
         serverPicker = screen.findNode("serverPicker")
         itemToDelete = serverPicker.content.getChild(serverPicker.itemFocused)
         urlToDelete = itemToDelete.baseUrl
@@ -395,10 +407,15 @@ function CreateUserSelectGroup(users = [])
 
   group.itemContent = users
   group.findNode("userRow").observeField("userSelected", port)
-  group.findNode("manualLoginButton").observeField("buttonSelected", port)
+  group.findNode("buttons").observeField("buttonSelected", port)
   group.observeField("backPressed", port)
   while true
     msg = wait(0, port)
+    ' print "roSGNodeEvent: msg.getNode() =", msg.getNode()
+    ' print "roSGNodeEvent: msg.getData() =", msg.getData()
+    ' print "roSGNodeEvent: msg.getField() =", msg.getField()
+    ' print "roSGNodeEvent: msg.getRoSGNode() =", msg.getRoSGNode()
+    ' print "roSGNodeEvent: msg.getInfo() =", msg.getInfo()
     if type(msg) = "roSGScreenEvent" and msg.isScreenClosed()
       group.visible = false
       return -1
@@ -407,7 +424,8 @@ function CreateUserSelectGroup(users = [])
     else if type(msg) = "roSGNodeEvent" and msg.getField() = "userSelected"
       return msg.GetData()
     else if type(msg) = "roSGNodeEvent" and msg.getField() = "buttonSelected"
-      if msg.getData() = true
+      ' Manual Login button pressed
+      if msg.getData() = 0 ' button index
         return ""
       end if
     end if
@@ -466,8 +484,8 @@ function CreateSigninGroup(user = "")
   items = [username_field, password_field]
   config.configItems = items
 
-  button = group.findNode("submit")
-  button.observeField("buttonSelected", port)
+  buttons = group.findNode("buttons")
+  buttons.observeField("buttonSelected", port)
 
   config = group.findNode("configOptions")
 
@@ -478,6 +496,11 @@ function CreateSigninGroup(user = "")
 
   while true
     msg = wait(0, port)
+    ' print "roSGNodeEvent: msg.getNode() =", msg.getNode()
+    ' print "roSGNodeEvent: msg.getData() =", msg.getData()
+    ' print "roSGNodeEvent: msg.getField() =", msg.getField()
+    ' print "roSGNodeEvent: msg.getRoSGNode() =", msg.getRoSGNode()
+    ' print "roSGNodeEvent: msg.getInfo() =", msg.getInfo()
     if type(msg) = "roSGScreenEvent" and msg.isScreenClosed()
       group.visible = false
       return "false"
@@ -486,64 +509,72 @@ function CreateSigninGroup(user = "")
       group.backPressed = false
       return "backPressed"
     else if type(msg) = "roSGNodeEvent"
-      node = msg.getNode()
-      if node = "submit"
-        startLoadingSpinner()
-        ' Validate credentials
-        activeUser = get_token(username.value, password.value)
-        if isValid(activeUser)
-          print "activeUser=", activeUser
-          if checkbox.checkedState[0] = true
-            ' save credentials
-            session.user.Login(activeUser, true)
-            set_user_setting("token", activeUser.token)
-            set_user_setting("username", username.value)
-            if isValid(activeUser.json.PrimaryImageTag)
-              set_user_setting("primaryimagetag", activeUser.json.PrimaryImageTag)
+      nodeName = msg.getNode()
+      if nodeName = "buttons"
+        buttonIndex = msg.getData()
+        buttonGroup = msg.getRoSGNode()
+        buttonSelected = buttonGroup.getChild(buttonIndex)
+
+        if buttonSelected.id = "submit"
+          startLoadingSpinner()
+          ' Validate credentials
+          activeUser = get_token(username.value, password.value)
+          if isValid(activeUser)
+            print "activeUser=", activeUser
+            if checkbox.checkedState[0] = true
+              ' save credentials
+              session.user.Login(activeUser, true)
+              set_user_setting("token", activeUser.token)
+              set_user_setting("username", username.value)
+              if isValid(activeUser.json.PrimaryImageTag)
+                set_user_setting("primaryimagetag", activeUser.json.PrimaryImageTag)
+              end if
+            else
+              session.user.Login(activeUser)
             end if
-          else
-            session.user.Login(activeUser)
+            return "true"
           end if
-          return "true"
+          stopLoadingSpinner()
+          print "Login attempt failed..."
+          group.findNode("alert").text = tr("Login attempt failed.")
+        else if buttonSelected.id = "quickConnect"
+          json = initQuickConnect()
+          if not isValid(json)
+            group.findNode("alert").text = tr("Quick Connect not available.")
+          else
+            ' Server user is talking to is at least 10.8 and has quick connect enabled...
+            m.quickConnectDialog = createObject("roSGNode", "QuickConnectDialog")
+            m.quickConnectDialog.saveCredentials = checkbox.checkedState[0]
+            m.quickConnectDialog.quickConnectJson = json
+            m.quickConnectDialog.title = tr("Quick Connect")
+            m.quickConnectDialog.message = [tr("Here is your Quick Connect code: ") + json.Code, tr("(Dialog will close automatically)")]
+            m.quickConnectDialog.buttons = [tr("Cancel")]
+            m.quickConnectDialog.observeField("authenticated", port)
+            m.scene.dialog = m.quickConnectDialog
+          end if
         end if
-        stopLoadingSpinner()
-        print "Login attempt failed..."
-        group.findNode("alert").text = tr("Login attempt failed.")
-      else if node = "quickConnect"
-        json = initQuickConnect()
-        if not isValid(json)
-          group.findNode("alert").text = tr("Quick Connect not available.")
+
+        if msg.getField() = "authenticated"
+          authenticated = msg.getData()
+          if authenticated = true
+            ' Quick connect authentication was successful...
+            return "true"
+          else
+            dialog = createObject("roSGNode", "Dialog")
+            dialog.id = "QuickConnectError"
+            dialog.title = tr("Quick Connect")
+            dialog.buttons = [tr("OK")]
+            dialog.message = tr("There was an error authenticating via Quick Connect.")
+            m.scene.dialog = dialog
+            m.scene.dialog.observeField("buttonSelected", port)
+          end if
         else
-          ' Server user is talking to is at least 10.8 and has quick connect enabled...
-          m.quickConnectDialog = createObject("roSGNode", "QuickConnectDialog")
-          m.quickConnectDialog.saveCredentials = checkbox.checkedState[0]
-          m.quickConnectDialog.quickConnectJson = json
-          m.quickConnectDialog.title = tr("Quick Connect")
-          m.quickConnectDialog.message = [tr("Here is your Quick Connect code: ") + json.Code, tr("(Dialog will close automatically)")]
-          m.quickConnectDialog.buttons = [tr("Cancel")]
-          m.quickConnectDialog.observeField("authenticated", port)
-          m.scene.dialog = m.quickConnectDialog
-        end if
-      else if msg.getField() = "authenticated"
-        authenticated = msg.getData()
-        if authenticated = true
-          ' Quick connect authentication was successful...
-          return "true"
-        else
-          dialog = createObject("roSGNode", "Dialog")
-          dialog.id = "QuickConnectError"
-          dialog.title = tr("Quick Connect")
-          dialog.buttons = [tr("OK")]
-          dialog.message = tr("There was an error authenticating via Quick Connect.")
-          m.scene.dialog = dialog
-          m.scene.dialog.observeField("buttonSelected", port)
-        end if
-      else
-        ' If there are no other button matches, check if this is a simple "OK" Dialog & Close if so
-        dialog = msg.getRoSGNode()
-        if dialog.id = "QuickConnectError"
-          dialog.unobserveField("buttonSelected")
-          dialog.close = true
+          ' If there are no other button matches, check if this is a simple "OK" Dialog & Close if so
+          dialog = msg.getRoSGNode()
+          if dialog.id = "QuickConnectError"
+            dialog.unobserveField("buttonSelected")
+            dialog.close = true
+          end if
         end if
       end if
     end if
@@ -636,9 +667,7 @@ function CreateMovieDetailsGroup(movie as object) as dynamic
   end if
   ' watch for button presses
   buttons = group.findNode("buttons")
-  for each b in buttons.getChildren(-1, 0)
-    b.observeField("buttonSelected", m.port)
-  end for
+  buttons.observeField("buttonSelected", m.port)
   ' setup and load movie extras
   extras = group.findNode("extrasGrid")
   extras.observeField("selectedItem", m.port)
@@ -749,11 +778,8 @@ function CreateAlbumView(album as object) as dynamic
   ' Watch for user clicking on a song
   group.observeField("playSong", m.port)
 
-  ' Watch for user click on Play button on album
-  group.observeField("playAllSelected", m.port)
-
-  ' Watch for user click on Instant Mix button on album
-  group.observeField("instantMixSelected", m.port)
+  buttons = group.findNode("buttons")
+  buttons.observeField("buttonSelected", m.port)
 
   return group
 end function
@@ -772,8 +798,8 @@ function CreatePlaylistView(playlist as object) as dynamic
   ' Watch for user clicking on an item
   group.observeField("playItem", m.port)
 
-  ' Watch for user click on Play button
-  group.observeField("playAllSelected", m.port)
+  buttons = group.findNode("buttons")
+  buttons.observeField("buttonSelected", m.port)
 
   return group
 end function
@@ -930,7 +956,7 @@ function CreatePersonView(personData as object) as dynamic
   person.setFocus(true)
   ' watch for button presses
   person.observeField("selectedItem", m.port)
-  person.findNode("favorite-button").observeField("buttonSelected", m.port)
+  person.findNode("buttons").observeField("buttonSelected", m.port)
   ' finished building Person View
   stopLoadingSpinner()
   return person

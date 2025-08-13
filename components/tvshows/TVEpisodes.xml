@@ -2,8 +2,10 @@
 <component name="TVEpisodes" extends="JRScreen">
   <children>
     <JRPoster id="seasonPoster" width="300" height="450" translation="[95,175]" />
-    <JRButton id="shuffle" minChars="10" text="Shuffle" translation="[90, 640]" visible="false"></JRButton>
-    <JRButton id="extras" minChars="10" text="Extras" translation="[90, 740]" visible="false"></JRButton>
+    <LayoutGroup id="buttonGroup" itemSpacings="18" layoutDirection="vert" translation="[90, 640]">
+      <TextButton id="shuffle" minWidth="300" text="Shuffle" visible="false"></TextButton>
+      <TextButton id="extras" minWidth="300" text="Extras" visible="false"></TextButton>
+    </LayoutGroup>
     <TVEpisodeRowWithOptions id="picker" visible="true" />
   </children>
   <interface>

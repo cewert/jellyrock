@@ -1,4 +1,9 @@
 
+sub init()
+  m.top.itemSpacings = 36
+  m.top.layoutDirection = "horiz"
+end sub
+
 function onKeyEvent(key as string, press as boolean) as boolean
   if not press then return false
 
@@ -10,7 +15,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
       ' Move right, skipping disabled buttons
       for i = currentFocus + 1 to m.top.getChildCount() - 1
         button = m.top.getChild(i)
-        print "button =", button
+
         if button.enabled
           currentFocusButton.focus = false
           m.top.buttonFocused = i
@@ -22,7 +27,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
       buttonMenuRight = m.top.getParent().findNode("buttonMenuRight")
       for i = 0 to buttonMenuRight.getChildCount() - 1
         button = buttonMenuRight.getChild(i)
-        print "button =", button
+
         if button.enabled
           currentFocusButton.focus = false
           buttonMenuRight.buttonFocused = i
@@ -35,7 +40,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
       ' Move left, skipping disabled buttons
       for i = currentFocus - 1 to 0 step -1
         button = m.top.getChild(i)
-        print "button =", button
+
         if button.enabled
           currentFocusButton.focus = false
           m.top.buttonFocused = i
@@ -47,7 +52,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
       buttonMenuRight = m.top.getParent().findNode("buttonMenuRight")
       for i = buttonMenuRight.getChildCount() - 1 to 0 step -1
         button = buttonMenuRight.getChild(i)
-        print "button =", button
+
         if button.enabled
           currentFocusButton.focus = false
           buttonMenuRight.buttonFocused = i
@@ -60,7 +65,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
       ' Move right, skipping disabled buttons
       for i = currentFocus + 1 to m.top.getChildCount() - 1
         button = m.top.getChild(i)
-        print "button =", button
+
         if button.enabled
           currentFocusButton.focus = false
           m.top.buttonFocused = i
@@ -72,7 +77,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
       buttonMenuLeft = m.top.getParent().findNode("buttonMenuLeft")
       for i = 0 to buttonMenuLeft.getChildCount() - 1
         button = buttonMenuLeft.getChild(i)
-        print "button =", button
+
         if button.enabled
           currentFocusButton.focus = false
           buttonMenuLeft.buttonFocused = i
@@ -86,7 +91,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
       ' if currentFocus > 0
       for i = currentFocus - 1 to 0 step -1
         button = m.top.getChild(i)
-        print "button =", button
+
         if button.enabled
           currentFocusButton.focus = false
           m.top.buttonFocused = i
@@ -99,7 +104,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
       buttonMenuLeft = m.top.getParent().findNode("buttonMenuLeft")
       for i = buttonMenuLeft.getChildCount() - 1 to 0 step -1
         button = buttonMenuLeft.getChild(i)
-        print "button =", button
+
         if button.enabled
           currentFocusButton.focus = false
           buttonMenuLeft.buttonFocused = i

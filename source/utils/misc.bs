@@ -607,3 +607,31 @@ function toBoolean(value as dynamic) as dynamic
     return value
   end if
 end function
+
+' Traverses up the node hierarchy to find a parent node that has a specific field
+' This is useful for finding the main component when handling button events
+function findParentWithField(node as object, fieldName as string) as object
+  if not isValid(node) or not isValid(fieldName) then return invalid
+
+  currentNode = node
+  while isValid(currentNode)
+    if isValid(currentNode[fieldName]) then return currentNode
+    currentNode = currentNode.getParent()
+  end while
+
+  return invalid
+end function
+
+' Traverses up the node hierarchy to find a parent node of a specific type
+' This is useful for finding the main component when handling button events
+function findParentOfType(node as object, typeName as string) as object
+  if not isValid(node) or not isValid(typeName) then return invalid
+
+  currentNode = node
+  while isValid(currentNode)
+    if isValid(currentNode.subType) and currentNode.subType() = typeName then return currentNode
+    currentNode = currentNode.getParent()
+  end while
+
+  return invalid
+end function

@@ -8,8 +8,6 @@ sub init()
   m.top.observeField("background", "onBackgroundChanged")
   m.top.observeField("textColor", "onTextColorChanged")
   m.top.observeField("text", "onTextChanged")
-  m.top.observeField("height", "onHeightChanged")
-  m.top.observeField("width", "onWidthChanged")
   m.top.observeField("padding", "onPaddingChanged")
   m.top.observeField("focusedChild", "onFocusChanged")
   m.top.observeField("minWidth", "onSizeChanged")
@@ -76,35 +74,33 @@ sub setSizeAndCenterText()
   if not isValid(m.buttonText) then return
   if m.buttonText.text.Len() = 0 then return
 
-  textWidth = m.buttonText.localBoundingRect().width
-  textHeight = m.buttonText.localBoundingRect().height
-  print "[TextButton] text boundingRect: width="; textWidth; ", height="; textHeight
-  if textWidth = 0
-    addSpaceAfter = true
-    minWidth = m.top.minWidth
-
-    textLength = m.top.text.Len()
-    fontSize = m.buttonText.font.size
-    charWidth = fontSize * 0.64
-    textWidth = textLength * charWidth
-    minChars = int(minWidth / charWidth)
-
-    while m.top.text.Len() < minChars
-      if addSpaceAfter
-        m.top.text = m.top.text + Chr(160)
-      else
-        m.top.text = Chr(160) + m.top.text
-      end if
-      addSpaceAfter = addSpaceAfter = false
-    end while
+  ' Store the current text to detect if we've already sized for this text
+  if not isValid(m.lastSizedText) then m.lastSizedText = ""
+  if m.lastSizedText = m.buttonText.text and isValid(m.top.width) and m.top.width > 0
+    ' We've already sized this text, just update the focus border and return
+    setFocusBorderSize()
+    return
   end if
+  m.lastSizedText = m.buttonText.text
+
+  ' Always use font-based calculation to avoid stale localBoundingRect() issues
+  textLength = m.buttonText.text.Len()
+  fontSize = m.buttonText.font.size
+  charWidth = fontSize * 0.64
+  textWidth = textLength * charWidth
+
+  ' Use font size for height to avoid stale localBoundingRect() issues
+  textHeight = fontSize
+
+  print "[TextButton] text='"; m.buttonText.text; "', length="; textLength; ", charWidth="; charWidth; ", textWidth="; textWidth; ", textHeight="; textHeight
 
   ' Calculate button dimensions with padding
   buttonWidth = textWidth + (m.top.padding * 2)
   buttonHeight = textHeight + (m.top.padding * 2)
-  print "[TextButton] calculated size: width=", buttonWidth, ", height=", buttonHeight
 
-  ' Ensure minimum dimensions
+  print "[TextButton] size with padding: width=", buttonWidth, ", height=", buttonHeight
+
+  ' Ensure minimum dimensions (this is the ONLY place minWidth should be enforced)
   if buttonWidth < m.top.minWidth
     buttonWidth = m.top.minWidth
   end if
@@ -112,7 +108,7 @@ sub setSizeAndCenterText()
     buttonHeight = m.top.minHeight
   end if
 
-  m.top.width = buttonWidth
+  print "[TextButton] ACTUAL size (using minWidth): width=", buttonWidth, ", height=", buttonHeight
 
   ' Set background size
   m.buttonBackground.width = buttonWidth
@@ -165,35 +161,3 @@ sub setFocusBorderSize()
   m.buttonBackground.translation = [m.top.borderSize, m.top.borderSize]
   m.buttonText.translation = [m.top.borderSize, m.top.borderSize]
 end sub
-
-function onKeyEvent(key as string, press as boolean) as boolean
-  if not press then return false
-
-  if key = "OK"
-    if m.top.enabled
-      m.top.buttonSelected = true
-      return true
-    end if
-  end if
-
-  return false
-end function
-
-' sub onTextChanged()
-'   m.buttonText.text = m.top.text
-'   ' Wait for boundingRect to be valid (blocking loop)
-'   tries = 0
-'   maxTries = 1000 ' Prevent infinite loop
-'   while tries < maxTries
-'     textRect = m.buttonText.boundingRect()
-'     print "[TextButton] boundingRect: width=", textRect.width, ", height=", textRect.height
-'     if textRect.width > 0 and textRect.height > 0
-'       exit while
-'     end if
-'     tries = tries + 1
-'   end while
-'   if tries = maxTries
-'     print "[TextButton] WARNING: boundingRect never became valid after "; maxTries; " tries."
-'   end if
-'   setSizeAndCenterText()
-' end sub
