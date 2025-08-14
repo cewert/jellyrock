@@ -103,11 +103,6 @@
       <translation>All</translation>
     </message>
     <message>
-      <source>All files</source>
-      <translation>All files</translation>
-      <extracomment>User Setting - Setting title</extracomment>
-    </message>
-    <message>
       <source>Always Hide</source>
       <translation>Always Hide</translation>
     </message>
@@ -132,11 +127,6 @@
     <message>
       <source>AppearsOn</source>
       <translation>AppearsOn</translation>
-    </message>
-    <message>
-      <source>Apply max resolution to all files or only transcoded files.</source>
-      <translation>Apply max resolution to all files or only transcoded files.</translation>
-      <extracomment>User Setting - Description</extracomment>
     </message>
     <message>
       <source>Artists</source>
@@ -274,9 +264,8 @@
       <translation>Configure the maximum playback bitrate.</translation>
     </message>
     <message>
-      <source>Configure the maximum resolution when playing video files on this device.</source>
-      <translation>Configure the maximum resolution when playing video files on this device.</translation>
-      <extracomment>User Setting - Description</extracomment>
+      <source>Configure the maximum resolution when transcoding video files to this device.</source>
+      <translation>Configure the maximum resolution when transcoding video files to this device.</translation>
     </message>
     <message>
       <source>Connect to Server</source>
@@ -665,11 +654,6 @@
       <translation>mins</translation>
     </message>
     <message>
-      <source>Mode</source>
-      <translation>Mode</translation>
-      <extracomment>User Setting - Setting title</extracomment>
-    </message>
-    <message>
       <source>Monday</source>
       <translation>Monday</translation>
       <extracomment>Day of Week</extracomment>
@@ -747,9 +731,8 @@
       <extracomment>Message displayed in Item Grid when no item to display. %1 is container type (e.g. Boxset, Collection, Folder, etc)</extracomment>
     </message>
     <message>
-      <source>Off - Attempt to play all resolutions</source>
-      <translation>Off - Attempt to play all resolutions</translation>
-      <extracomment>User Setting - Option title</extracomment>
+      <source>Off - Attempt to direct play all resolutions</source>
+      <translation>Off - Attempt to direct play all resolutions</translation>
     </message>
     <message>
       <source>OFFICIAL_RATING</source>
@@ -767,11 +750,6 @@
       <source>Only display text subtitles to minimize transcoding.</source>
       <translation>Only display text subtitles to minimize transcoding.</translation>
       <extracomment>Description of a setting - should we hide subtitles that might transcode</extracomment>
-    </message>
-    <message>
-      <source>Only transcoded files</source>
-      <translation>Only transcoded files</translation>
-      <extracomment>User Setting - Setting title</extracomment>
     </message>
     <message>
       <source>Options</source>
@@ -1011,11 +989,6 @@
     <message>
       <source>Set the maximum bitrate in Mbps. Set to 0 to use Roku&apos;s specifications. This setting must be enabled to take effect.</source>
       <translation>Set the maximum bitrate in Mbps. Set to 0 to use Roku&apos;s specifications. This setting must be enabled to take effect.</translation>
-    </message>
-    <message>
-      <source>Set the maximum resolution when playing video files on this device.</source>
-      <translation>Set the maximum resolution when playing video files on this device.</translation>
-      <extracomment>User Setting - Description</extracomment>
     </message>
     <message>
       <source>Set Watched</source>
@@ -1330,11 +1303,6 @@
     <message>
       <source>Username</source>
       <translation>Username</translation>
-    </message>
-    <message>
-      <source>Value</source>
-      <translation>Value</translation>
-      <extracomment>User Setting - Setting title</extracomment>
     </message>
     <message>
       <source>Video</source>
