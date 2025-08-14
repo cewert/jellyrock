@@ -342,6 +342,8 @@ namespace session
       })
       ' reload default user settings
       session.user.settings.SaveDefaults()
+      ' update overhang
+      m.global.sceneManager.currentUser = ""
     end sub
 
     namespace settings

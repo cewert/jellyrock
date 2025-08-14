@@ -33,17 +33,21 @@ end sub
 sub currentUserChanged()
   m.user.text = m.top.currentUser
 
-  if not isValid(m.userImagePoster)
-    m.userImagePoster = createUserImage()
-  end if
-
   if m.top.currentUser = ""
+    ' remove the user image node if it exists
     userImage = m.userGroup.findNode("userImage")
     if isValid(userImage)
       m.userGroup.removeChild(userImage)
     end if
+    ' remove cached user image if it exists
+    m.userImage = invalid
   else
-    m.userGroup.insertChild(m.userImagePoster, 0)
+    ' cache the user image node if needed
+    if not isValid(m.userImage)
+      m.userImage = createUserImage()
+    end if
+    ' add the user image node to the overhang
+    m.userGroup.insertChild(m.userImage, 0)
   end if
 end sub
 
@@ -60,10 +64,26 @@ function createUserImage() as object
 
   userImage = createObject("roSGNode", "Poster")
   userImage.id = "userImage"
-  userImage.uri = buildURL(Substitute("/Users/{0}/Images/Primary", m.global.session.user.id), imgParams)
   userImage.width = "36"
   userImage.height = "36"
-  userImage.translation = "[0, -2]"
+
+  if isValid(imgTag) and imgTag <> ""
+    ' reset defaults
+    m.userGroup.itemSpacings = 15
+    userImage.blendColor = "0xFFFFFFFF"
+
+    if m.global.session.server.url <> ""
+      userImage.uri = buildURL(Substitute("/Users/{0}/Images/Primary", m.global.session.user.id), imgParams)
+    else
+      print "ERROR: No server URL set, cannot load user image"
+    end if
+
+  else
+    m.userGroup.itemSpacings = 9 ' account for default image padding
+    userImage.blendColor = m.global.constants.colors.text_secondary
+
+    userImage.uri = "pkg:/images/icons/person_36px.png"
+  end if
 
   return userImage
 end function
