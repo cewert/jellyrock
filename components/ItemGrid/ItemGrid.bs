@@ -22,6 +22,8 @@ sub init()
   m.emptyText = m.top.findNode("emptyText")
 
   m.genreList = m.top.findNode("genrelist")
+  m.genreList.focusXOffset = 0
+  m.genreList.rowLabelOffset = [0, 21]
   m.genreList.observeField("itemSelected", "onGenreItemSelected")
   m.genreData = CreateObject("roSGNode", "ContentNode")
   m.genreList.content = m.genreData
