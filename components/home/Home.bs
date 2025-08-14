@@ -34,9 +34,9 @@ sub OnScreenShown()
     overhang.currentUser = m.global.session.user.name
     overhang.title = tr("Home")
 
-    if not m.global.session.user.settings["ui.design.hideclock"]
+    if m.global.session.user.settings["ui.design.hideclock"]
       clock = overhang.findNode("clock")
-      clock.visible = true
+      overhang.removeChild(clock)
     end if
   end if
 

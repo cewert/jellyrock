@@ -102,5 +102,7 @@ function createLogoPoster()
 end function
 
 sub resetTime()
-  m.clock.callFunc("resetTime")
+  if isValid(m.clock)
+    m.clock.callFunc("resetTime")
+  end if
 end sub
