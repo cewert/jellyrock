@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="QueueManager" extends="Group">
+<component name="QueueManager" extends="ContentNode">
   <interface>
     <function name="clear" />
     <function name="clearHold" />
