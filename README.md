@@ -12,10 +12,10 @@ JellyRock is a Jellyfin client for Roku devices.
 ## Screenshots
 
   <a href="docs/screenshots/home.png" target="_blank" title="Home">
-    <img src="docs/screenshots/home.png" width="450" alt="Home" />
+    <img src="docs/screenshots/home.png" width="400" alt="Home" />
   </a>
   <a href="docs/screenshots/osd.png" target="_blank" title="On-Screen Display(OSD)">
-    <img src="docs/screenshots/osd.png" width="450" alt="On-Screen Display(OSD)" />
+    <img src="docs/screenshots/osd.png" width="400" alt="On-Screen Display(OSD)" />
   </a>
 
 ## Install / Sideload
