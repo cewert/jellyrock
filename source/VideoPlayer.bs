@@ -20,7 +20,7 @@ function VideoPlayer(id as string, mediaSourceId = invalid as dynamic, audio_str
   video.bufferingBar.filledBarBlendColor = globalColors.secondary
 
   video.trickPlayBar.filledBarBlendColor = globalColors.secondary
-  video.trickPlayBar.thumbBlendColor = globalColors.primary
+  video.trickPlayBar.thumbBlendColor = globalColors.text_primary
   video.trickPlayBar.textColor = globalColors.text_primary
   video.trickPlayBar.currentTimeMarkerBlendColor = globalColors.text_primary
 

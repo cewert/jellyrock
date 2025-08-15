@@ -71,7 +71,7 @@ sub init()
   m.top.bufferingBar.filledBarBlendColor = globalColors.secondary
 
   m.top.trickPlayBar.filledBarBlendColor = globalColors.secondary
-  m.top.trickPlayBar.thumbBlendColor = globalColors.primary
+  m.top.trickPlayBar.thumbBlendColor = globalColors.text_primary
   m.top.trickPlayBar.textColor = globalColors.text_primary
   m.top.trickPlayBar.currentTimeMarkerBlendColor = globalColors.text_primary
 end sub
