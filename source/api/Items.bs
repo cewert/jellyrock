@@ -131,7 +131,6 @@ function ItemMetaData(id as string)
     return tmp
   else if data.type = "Video"
     tmp = CreateObject("roSGNode", "VideoData")
-    tmp.image = PosterImage(data.id)
     tmp.json = data
     return tmp
   else if data.type = "Trailer"
