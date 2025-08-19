@@ -22,7 +22,7 @@ sub applyTheme()
   ' Set default colors
   m.top.background = colorConstants.background_secondary
   m.top.textColor = colorConstants.text_primary
-  m.top.focusBackground = colorConstants.background_secondary
+  m.top.focusBackground = colorConstants.background_primary
   m.top.textFocusColor = colorConstants.text_primary
 end sub
 
