@@ -365,6 +365,7 @@ sub onPlaybackErrorDialogClosed(msg)
   sourceNode.unobserveField("buttonSelected")
   sourceNode.unobserveField("wasClosed")
 
+  session.video.Delete()
   m.global.sceneManager.callFunc("popScene")
 end sub
 
@@ -373,13 +374,14 @@ sub onPlaybackErrorButtonSelected(msg)
   sourceNode.close = true
 end sub
 
-sub showPlaybackErrorDialog(errorMessage as string)
+sub showPlaybackErrorDialog(errorMessage = "" as string)
   dialog = createObject("roSGNode", "Dialog")
   dialog.title = tr("Error During Playback")
   dialog.buttons = [tr("OK")]
   dialog.message = errorMessage
   dialog.observeField("buttonSelected", "onPlaybackErrorButtonSelected")
   dialog.observeField("wasClosed", "onPlaybackErrorDialogClosed")
+
   m.top.getScene().dialog = dialog
 end sub
 
@@ -645,13 +647,10 @@ sub onState()
       m.global.sceneManager.callfunc("popScene")
     else
       ' If an error was encountered, Display dialog
+      m.top.unobserveField("state")
       showPlaybackErrorDialog(tr("Error During Playback"))
-      session.video.Delete()
     end if
-
-
   else if m.top.state = "playing"
-
     ' Check if next episode is available
     if isValid(m.top.showID)
       if m.top.showID <> "" and not m.checkedForNextEpisode and m.top.content.contenttype = 4
@@ -675,7 +674,6 @@ sub onState()
     m.playbackTimer.control = "stop"
     ReportPlayback("stop")
     m.playReported = false
-    session.video.Delete()
   else if m.top.state = "finished"
     m.playbackTimer.control = "stop"
     ReportPlayback("finished")
@@ -744,7 +742,6 @@ sub bufferCheck()
 
       ' Stop playback and exit player
       m.top.control = "stop"
-      session.video.Delete()
     end if
   end if
 
