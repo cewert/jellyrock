@@ -53,6 +53,7 @@ sub init()
   end if
 
   'Play Next Episode button
+  m.notifyButtons = m.top.findNode("notifyButtons")
   m.nextEpisodeButton = m.top.findNode("nextEpisode")
   m.nextEpisodeButton.setFocus(false)
   m.nextupbuttonseconds = userSettings["playback.nextupbuttonseconds"].ToInt()
@@ -518,6 +519,15 @@ sub showNextEpisodeButton()
   userSettings = m.global.session.user.settings
   if userSettings["playback.playnextepisode"] = "disabled" then return
   if userSettings["playback.playnextepisode"] = "webclient" and not m.global.session.user.Configuration.EnableNextEpisodeAutoPlay then return
+
+  ' align button with bottom right edge with 5% padding
+  boundingRect = m.notifyButtons.localBoundingRect()
+  print "boundingRect =", boundingRect
+
+  m.notifyButtons.translation = [
+    1920 - (1920 * 0.05),
+    1080 - (1080 * 0.05) - boundingRect.height
+  ]
 
   m.nextEpisodeButton.visible = true
   m.showNextEpisodeButtonAnimation.control = "start"
