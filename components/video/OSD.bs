@@ -430,5 +430,11 @@ function onKeyEvent(key as string, press as boolean) as boolean
     return true
   end if
 
+  if (key = "rewind" or key = "fastforward") and m.top.visible
+    m.top.action = "hide"
+
+    return false
+  end if
+
   return false
 end function
