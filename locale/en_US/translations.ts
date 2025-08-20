@@ -69,6 +69,10 @@
       <extracomment>Additional parts of a video</extracomment>
     </message>
     <message>
+      <source>Ag</source>
+      <translation>Ag</translation>
+    </message>
+    <message>
       <source>Age</source>
       <translation>Age</translation>
     </message>
@@ -153,6 +157,10 @@
     <message>
       <source>Attempt Direct Play of potentially unsupported profile levels</source>
       <translation>Attempt Direct Play of potentially unsupported profile levels</translation>
+    </message>
+    <message>
+      <source>Attempt to replace Roku&apos;s default subtitle font with the fallback font provided by the server. Fallback fonts must be configured and enabled by the server admin for this to work.</source>
+      <translation>Attempt to replace Roku&apos;s default subtitle font with the fallback font provided by the server. Fallback fonts must be configured and enabled by the server admin for this to work.</translation>
     </message>
     <message>
       <source>Audio</source>
@@ -366,6 +374,10 @@
       <translation>Disabled</translation>
     </message>
     <message>
+      <source>Downloading Fallback Font</source>
+      <translation>Downloading Fallback Font</translation>
+    </message>
+    <message>
       <source>DTS</source>
       <translation>DTS</translation>
     </message>
@@ -457,6 +469,10 @@
     <message>
       <source>Extras</source>
       <translation>Extras</translation>
+    </message>
+    <message>
+      <source>Fallback Fonts</source>
+      <translation>Fallback Fonts</translation>
     </message>
     <message>
       <source>Favorite</source>
@@ -894,9 +910,8 @@
       <extracomment>If TV Shows has previously been broadcasted</extracomment>
     </message>
     <message>
-      <source>Replace Roku&apos;s default subtitle functions with custom functions that support CJK fonts. Fallback fonts must be configured and enabled on the server for CJK rendering to work.</source>
-      <translation>Replace Roku&apos;s default subtitle functions with custom functions that support CJK fonts. Fallback fonts must be configured and enabled on the server for CJK rendering to work.</translation>
-      <extracomment>Description of a setting - custom subtitles that support CJK fonts</extracomment>
+      <source>Replace Roku&apos;s system font with the fallback font provided by the Jellyfin server. Fallback fonts must be configured and enabled by the server admin for this to work. JellyRock will need to be restarted.</source>
+      <translation>Replace Roku&apos;s system font with the fallback font provided by the Jellyfin server. Fallback fonts must be configured and enabled by the server admin for this to work. JellyRock will need to be restarted.</translation>
     </message>
     <message>
       <source>Resumable</source>
