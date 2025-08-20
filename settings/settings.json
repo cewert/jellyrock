@@ -45,10 +45,10 @@
       },
       {
         "title": "Custom Subtitles",
-        "description": "Replace Roku's default subtitle functions with custom functions that support CJK fonts. Fallback fonts must be configured and enabled on the server for CJK rendering to work.",
+        "description": "Attempt to replace Roku's default subtitle font with the fallback font provided by the server. Fallback fonts must be configured and enabled by the server admin for this to work.",
         "settingName": "playback.subs.custom",
         "type": "bool",
-        "default": "false"
+        "default": "true"
       },
       {
         "title": "Maximum Resolution",
@@ -225,6 +225,13 @@
                 "id": "show"
               }
             ]
+          },
+          {
+            "title": "Fallback Fonts",
+            "description": "Replace Roku's system font with the fallback font provided by the Jellyfin server. Fallback fonts must be configured and enabled by the server admin for this to work. JellyRock will need to be restarted.",
+            "settingName": "ui.font.fallback",
+            "type": "bool",
+            "default": "false"
           },
           {
             "title": "Hide Clock",

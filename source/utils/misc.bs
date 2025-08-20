@@ -544,13 +544,14 @@ end function
 ' Displays an invisible ProgressDialog node by default to disable keypresses while loading.
 '
 ' @param {boolean} [disableRemote=true]
-sub startLoadingSpinner(disableRemote = true as boolean)
+sub startLoadingSpinner(disableRemote = true as boolean, loadingText = "" as string)
   if not isValid(m.scene)
     m.scene = m.top.getScene()
   end if
 
-  ' disableRemote must be set first
+  ' disableRemote and loadingText must be set first
   m.scene.disableRemote = disableRemote
+  m.scene.loadingText = loadingText
   m.scene.isLoading = true
 end sub
 
@@ -559,6 +560,7 @@ sub stopLoadingSpinner()
     m.scene = m.top.getScene()
   end if
 
+  m.scene.loadingText = ""
   m.scene.disableRemote = false
   m.scene.isLoading = false
 end sub

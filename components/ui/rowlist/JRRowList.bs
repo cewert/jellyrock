@@ -1,3 +1,5 @@
+import "pkg:/source/utils/misc.bs"
+
 sub init()
   colorConstants = m.global.constants.colors
 
@@ -16,4 +18,28 @@ sub init()
   m.top.rowLabelFont = "font:MediumSystemFont"
   m.top.rowLabelFont.size = m.global.constants.font_sizes.medium
 
+  if m.global.session.user.settings["ui.font.fallback"] = true
+    m.top.rowLabelFont.uri = "tmp:/font"
+    applyFallbackFontScale()
+  end if
+
+end sub
+
+sub applyFallbackFontScale()
+  ' Get the current font size if one is set, or use a default
+  currentSize = m.top.rowLabelFont.size
+  if currentSize <= 0
+    print "ERROR - JRRowList applyFallbackFontScale: Invalid font size"
+    return
+  end if
+
+  ' Apply the global scale factor
+  fontScaleFactor = m.global.session.user.fontScaleFactor
+  if isValid(fontScaleFactor) and fontScaleFactor > 0
+    scaledSize = currentSize * fontScaleFactor
+    m.top.rowLabelFont.size = scaledSize
+  else
+    print "ERROR - JRRowList applyFallbackFontScale: Invalid font scale factor"
+    return
+  end if
 end sub

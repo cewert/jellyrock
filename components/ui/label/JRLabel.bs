@@ -1,8 +1,38 @@
+import "pkg:/source/utils/misc.bs"
+
 sub init()
   m.top.color = m.global.constants.colors.text_primary
+
+  if m.global.session.user.settings["ui.font.fallback"] = true
+    m.top.font.uri = "tmp:/font"
+    ' Apply global font scale factor to font size
+    applyFallbackFontScale()
+  end if
+end sub
+
+sub applyFallbackFontScale()
+  ' Get the current font size if one is set, or use a default
+  currentSize = m.top.font.size
+  if currentSize <= 0
+    print "ERROR - applyFallbackFontScale: Invalid font size"
+    return
+  end if
+
+  ' Apply the global scale factor
+  fontScaleFactor = m.global.session.user.fontScaleFactor
+  if isValid(fontScaleFactor) and fontScaleFactor > 0
+    scaledSize = currentSize * fontScaleFactor
+    m.top.font.size = scaledSize
+  else
+    print "ERROR - applyFallbackFontScale: Invalid font scale factor"
+    return
+  end if
 end sub
 
 sub onBoldChanged()
+  ' ignore bold field when using fallback font
+  if m.global.session.user.settings["ui.font.fallback"] = true then return
+
   oldFontSize = m.top.font.size
 
   if m.top.bold

@@ -3,11 +3,16 @@
   <children>
     <Group id="content" />
     <JROverhang id="overhang" />
+    <LabelPrimaryLarge id="loadingText" height="225" width="1266" horizAlign="center" vertAlign="bottom" wrap="true" translation="[327, 210]" visible="false" />
     <Spinner id="spinner" translation="[897, 477]" />
+    <!-- Used to calculate m.global.session.user.fontScaleFactor -->
+    <Label id="defaultFont" text="Ag" visible="false" />
+    <Label id="fallbackFont" text="Ag" visible="false" />
   </children>
   <interface>
     <field id="disableRemote" type="boolean" value="true" />
-    <field id="isLoading" type="boolean" value="true" onchange="isLoadingChanged" />
+    <field id="loadingText" type="string" value="" alwaysNotify="true" onchange="loadingTextChanged" />
+    <field id="isLoading" type="boolean" alwaysNotify="true" value="true" onchange="isLoadingChanged" />
     <field id="exit" type="boolean" alwaysNotify="true" />
   </interface>
 </component>

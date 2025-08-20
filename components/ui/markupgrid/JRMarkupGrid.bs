@@ -1,5 +1,27 @@
+import "pkg:/source/utils/misc.bs"
+
 sub init()
   m.top.vertFocusAnimationStyle = "fixed"
   m.top.focusBitmapBlendColor = m.global.constants.colors.primary ' color of the item selector
   m.top.itemSpacing = "[0, 45]"
+
+  ' Apply fallback font scaling to section divider if fallback font is enabled
+  if m.global.session.user.settings["ui.font.fallback"] = true
+    m.top.sectionDividerFont.uri = "tmp:/font"
+    applySectionDividerFontScale()
+  end if
+end sub
+
+sub applySectionDividerFontScale()
+  if not isValid(m.top.sectionDividerFont) then return
+
+  ' Get the current font size if one is set
+  currentSize = m.top.sectionDividerFont.size
+  if currentSize <= 0 then return
+
+  ' Apply the global scale factor
+  if isValid(m.global.session.user.fontScaleFactor) and m.global.session.user.fontScaleFactor > 0
+    scaledSize = currentSize * m.global.session.user.fontScaleFactor
+    m.top.sectionDividerFont.size = scaledSize
+  end if
 end sub

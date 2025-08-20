@@ -39,36 +39,52 @@ sub Main (args as dynamic) as void
   ' remove login scenes from the stack
   m.global.sceneManager.callFunc("clearScenes")
 
-  ' load home page
-  group = CreateHomeGroup()
-  group.callFunc("loadLibraries")
-  stopLoadingSpinner()
-  m.global.sceneManager.callFunc("pushScene", group)
+  ' Downloads and stores a fallback font to tmp:/ if user has fallback fonts enabled
+  if m.global.session.user.settings["playback.subs.custom"] = true or m.global.session.user.settings["ui.font.fallback"] = true
+    startLoadingSpinner(true, tr("Downloading Fallback Font"))
+    configEncoding = api.system.GetConfigurationByName("encoding")
 
-  m.scene.observeField("exit", m.port)
+    if isValid(configEncoding) and isValid(configEncoding.EnableFallbackFont)
+      if configEncoding.EnableFallbackFont
+        re = CreateObject("roRegex", "Name.:.(.*?).,.Size", "s")
+        fontReq = APIRequest("FallbackFont/Fonts")
+        if isValid(fontReq)
+          filename = fontReq.GetToString()
+          if isValid(filename)
+            filename = re.match(filename)
+            if isValid(filename) and filename.count() > 0
+              filename = filename[1]
+              fontFileReq = APIRequest("FallbackFont/Fonts/" + filename)
+              if isValid(fontFileReq)
+                fontFileReq.gettofile("tmp:/font")
 
-  ' Downloads and stores a fallback font to tmp:/
-  configEncoding = api.system.GetConfigurationByName("encoding")
+                ' Wait a moment for file to be fully written
+                sleep(100)
 
-  if isValid(configEncoding) and isValid(configEncoding.EnableFallbackFont)
-    if configEncoding.EnableFallbackFont
-      re = CreateObject("roRegex", "Name.:.(.*?).,.Size", "s")
-      fontReq = APIRequest("FallbackFont/Fonts")
-      if isValid(fontReq)
-        filename = fontReq.GetToString()
-        if isValid(filename)
-          filename = re.match(filename)
-          if isValid(filename) and filename.count() > 0
-            filename = filename[1]
-            fontFileReq = APIRequest("FallbackFont/Fonts/" + filename)
-            if isValid(fontFileReq)
-              fontFileReq.gettofile("tmp:/font")
+                ' Verify the file was written successfully
+                fs = CreateObject("roFileSystem")
+                if fs.Exists("tmp:/font") and m.global.session.user.settings["ui.font.fallback"] = true
+                  ' Calculate font scale factor once for all UI components
+                  calculateFontScaleFactor()
+                else
+                  print "WARNING - Main: Fallback font file was not created successfully"
+                end if
+              end if
             end if
           end if
         end if
       end if
     end if
   end if
+
+
+  ' load home page
+  group = CreateHomeGroup()
+  group.callFunc("loadLibraries")
+  m.global.sceneManager.callFunc("pushScene", group)
+  stopLoadingSpinner()
+
+  m.scene.observeField("exit", m.port)
 
   ' update lastRunVersion but only on prod
   if not m.global.app.isDev
@@ -936,3 +952,33 @@ sub Main (args as dynamic) as void
 
 end sub
 
+' Calculate global font scale factor for fallback font
+sub calculateFontScaleFactor()
+  ' Verify the fallback font file exists
+  fs = CreateObject("roFileSystem")
+  if not fs.Exists("tmp:/font")
+    print "ERROR - calculateFontScaleFactor: Fallback font file does not exist"
+    return
+  end if
+
+  ' Create and run global font scaling task
+  fontTask = CreateObject("roSGNode", "FontScalingTask")
+  fontTask.control = "RUN"
+
+  ' Wait for the task to complete (with timeout) - don't use observeField
+  timeout = CreateObject("roTimespan")
+  timeout.mark()
+
+  while fontTask.scaleFactor = 0 and timeout.TotalMilliseconds() < 10000
+    sleep(10)
+  end while
+
+  if fontTask.scaleFactor > 0
+    ' Update font scale factor in global user session
+    session.user.Update("fontScaleFactor", fontTask.scaleFactor)
+    print "INFO - calculateFontScaleFactor: Set global font scale factor to " + fontTask.scaleFactor.toStr()
+  else
+    print "WARNING - calculateFontScaleFactor: Failed to calculate scale factor, using default"
+  end if
+
+end sub

@@ -15,7 +15,8 @@ namespace session
           Configuration: {},
           Policy: {},
           settings: {},
-          lastRunVersion: invalid
+          lastRunVersion: invalid,
+          fontScaleFactor: 1.0
         },
         video: {
           json: {}
@@ -338,7 +339,9 @@ namespace session
       session.Update("user", {
         Configuration: {},
         Policy: {},
-        settings: {}
+        settings: {},
+        lastRunVersion: invalid,
+        fontScaleFactor: 1.0
       })
       ' reload default user settings
       session.user.settings.SaveDefaults()

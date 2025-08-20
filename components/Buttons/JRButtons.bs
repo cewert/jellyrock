@@ -1,3 +1,5 @@
+import "pkg:/source/utils/misc.bs"
+
 sub init()
 
   m.top.focusable = true
@@ -58,6 +60,13 @@ sub showButtons()
     l = m.buttonGroup.createChild("Label")
     l.text = m.top.buttons[i]
     l.font.size = 40
+
+    ' Apply fallback font scaling if enabled
+    if m.global.session.user.settings["ui.font.fallback"] = true
+      l.font.uri = "tmp:/font"
+      applyFallbackFontScale(l)
+    end if
+
     l.translation = [0, 10]
     l.height = m.textSizeTask.height
     l.width = m.textSizeTask.width[i] + 50
@@ -69,6 +78,24 @@ sub showButtons()
   m.menubg.width = totalWidth
   m.menubg.height = m.textSizeTask.height + 40
 
+end sub
+
+sub applyFallbackFontScale(labelNode as object)
+  currentSize = labelNode.font.size
+  if currentSize <= 0
+    print "ERROR - JRButtons applyFallbackFontScale: Invalid font size"
+    return
+  end if
+
+  ' Apply the global scale factor
+  fontScaleFactor = m.global.session.user.fontScaleFactor
+  if isValid(fontScaleFactor) and fontScaleFactor > 0
+    scaledSize = currentSize * fontScaleFactor
+    labelNode.font.size = scaledSize
+  else
+    print "ERROR - JRButtons applyFallbackFontScale: Invalid font scale factor"
+    return
+  end if
 end sub
 
 ' Highlight selected menu option

@@ -3,7 +3,12 @@ import "pkg:/source/utils/misc.bs"
 sub init()
   m.top.backgroundColor = m.global.constants.colors.background_primary
   m.top.backgroundURI = ""
+  m.loadingText = m.top.findNode("loadingText")
   m.spinner = m.top.findNode("spinner")
+end sub
+
+sub loadingTextChanged()
+  m.loadingText.text = m.top.loadingText
 end sub
 
 ' Triggered when the isLoading boolean component field is changed
@@ -16,6 +21,8 @@ sub isLoadingChanged()
 
   ' toggle visibility of loading spinner
   m.spinner.visible = m.top.isLoading
+  ' toggle visibility of loading text
+  m.loadingText.visible = m.top.isLoading
 end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean

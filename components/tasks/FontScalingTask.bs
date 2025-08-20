@@ -1,0 +1,60 @@
+import "pkg:/source/utils/misc.bs"
+
+sub init()
+  m.top.functionName = "calculateGlobalFontScale"
+end sub
+
+sub calculateGlobalFontScale()
+  ' Verify fallback font file exists before trying to load it
+  fs = CreateObject("roFileSystem")
+  if not fs.Exists(m.top.fallbackFontUri)
+    print "ERROR - calculateGlobalFontScale: Fallback font file does not exist: " + m.top.fallbackFontUri
+    m.top.scaleFactor = 1.0
+    return
+  end if
+
+  ' Get reference to main scene for adding temporary measurement labels
+  scene = m.top.getScene()
+  if not isValid(scene)
+    print "ERROR - calculateGlobalFontScale: Could not get scene reference"
+    m.top.scaleFactor = 1.0
+    return
+  end if
+
+  defaultFont = scene.findNode("defaultFont")
+
+  ' Get system font height using localBoundingRect()
+  systemBounds = defaultFont.localBoundingRect()
+  systemHeight = systemBounds.height
+
+  ' validate localBoundingRect() results
+  if systemHeight <= 0
+    print "ERROR - calculateFontScale: Could not measure system font height"
+    m.top.scaleFactor = 1.0
+    return
+  end if
+
+  fallbackFont = scene.findNode("fallbackFont")
+  fallbackFont.font.uri = m.top.fallbackFontUri
+
+  ' Get fallback font height using localBoundingRect()
+  fallbackBounds = fallbackFont.localBoundingRect()
+  fallbackHeight = fallbackBounds.height
+
+  ' validate localBoundingRect() results
+  if fallbackHeight <= 0
+    print "ERROR - calculateFontScale: Could not measure fallback font height"
+    m.top.scaledSize = 1.0
+    return
+  end if
+
+  ' Calculate scaling factor to make fallback font match system font height
+  if fallbackHeight > 0 and systemHeight > 0
+    scaleFactor = systemHeight / fallbackHeight
+    m.top.scaleFactor = scaleFactor
+  else
+    print "ERROR - calculateGlobalFontScale: Could not measure font heights"
+    print "ERROR - calculateGlobalFontScale: systemHeight=" + systemHeight.toStr() + ", fallbackHeight=" + fallbackHeight.toStr()
+    m.top.scaleFactor = 1.0
+  end if
+end sub

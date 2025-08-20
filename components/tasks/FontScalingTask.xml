@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<component name="FontScalingTask" extends="Task">
+  <interface>
+    <field id="fallbackFontUri" type="string" value="tmp:/font" />
+    <field id="scaleFactor" type="float" />
+  </interface>
+</component>

@@ -119,7 +119,6 @@ sub popScene()
     ' Exit app if the stack is empty after removing group
     m.scene.exit = true
   end if
-  stopLoadingSpinner()
 end sub
 
 ' Return group at top of stack without removing
