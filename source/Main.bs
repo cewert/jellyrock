@@ -63,9 +63,11 @@ sub Main (args as dynamic) as void
 
                 ' Verify the file was written successfully
                 fs = CreateObject("roFileSystem")
-                if fs.Exists("tmp:/font") and m.global.session.user.settings["ui.font.fallback"] = true
-                  ' Calculate font scale factor once for all UI components
-                  calculateFontScaleFactor()
+                if fs.Exists("tmp:/font")
+                  if m.global.session.user.settings["ui.font.fallback"] = true
+                    ' Calculate font scale factor once for all UI components
+                    calculateFontScaleFactor()
+                  end if
                 else
                   print "WARNING - Main: Fallback font file was not created successfully"
                 end if
