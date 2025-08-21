@@ -107,6 +107,13 @@ sub setFields()
     m.top.productionYear = videoData.ProductionYear
   end if
 
+  if isValid(videoData.CurrentProgram)
+    m.top.runTimeTicks = videoData.CurrentProgram.RunTimeTicks
+    m.top.runTimeMinutes = ticksToMinutes(m.top.runTimeTicks)
+
+    m.top.currentProgram = FormatJson(videoData.CurrentProgram)
+  end if
+
   numVideoStreams = 0
   numAudioStreams = 0
 
@@ -173,6 +180,20 @@ sub setEndsAtText()
     return
   end if
 
+  ' if type is tvchannel, set endsAtTime to current program enddate
+  if m.top.type = "TvChannel" and m.top.currentProgram <> ""
+    currentProgram = ParseJson(m.top.currentProgram)
+    if isValid(currentProgram.EndDate) and currentProgram.EndDate <> ""
+      ' Parse the EndDate and format as time only
+      endDateTime = CreateObject("roDateTime")
+      endDateTime.fromISO8601String(currentProgram.EndDate)
+      endDateTime.toLocalTime()
+      m.endsAtTime.text = formatTime(endDateTime)
+      return
+    end if
+  end if
+
+  ' for all other types, calculate endsAtTime based on remainingPositionTime
   date = CreateObject("roDateTime")
   endTime = int(m.top.remainingPositionTime)
   date.fromSeconds(date.asSeconds() + endTime)
@@ -183,6 +204,21 @@ end sub
 
 sub setVideoLogoGroup()
   m.videoLogo.uri = m.top.videoLogo
+  currentProgram = ParseJson(m.top.currentProgram)
+
+  if isValidAndNotEmpty(currentProgram) and m.top.type = "TvChannel"
+    ' set video title to current program name
+    if isValid(currentProgram.ImageTags) and isValid(currentProgram.ImageTags.Primary)
+      imgParams = {
+        maxHeight: 300,
+        maxWidth: 500,
+        quality: 90,
+        tag: currentProgram.ImageTags.Primary
+      }
+
+      m.videoLogo.uri = buildURL(Substitute("/items/{0}/images/Primary/0", currentProgram.id), imgParams)
+    end if
+  end if
 
   ' if isValid(m.top.officialRating) and m.top.officialRating <> ""
   '     m.videoOfficialRating.text = m.top.officialRating
@@ -191,6 +227,13 @@ end sub
 
 sub setVideoTitle()
   m.videoTitle.text = m.top.videoTitle
+  currentProgram = ParseJson(m.top.currentProgram)
+
+  if isValidAndNotEmpty(currentProgram) and m.top.type = "TvChannel"
+    if isValid(currentProgram.Name)
+      m.videoTitle.text = currentProgram.Name
+    end if
+  end if
 end sub
 
 sub setVideoSubTitle()
@@ -200,54 +243,71 @@ sub setVideoSubTitle()
   airDateNodeCreated = false
 
   ' EPISODE
-  if isValid(m.top.type)
-    if m.top.Type = "Episode" or m.top.Type = "Recording"
-      ' Title
-      if m.top.seriesName <> ""
-        m.videoTitle.text = m.top.seriesName
-      end if
+  if m.top.type = "Episode" or m.top.type = "Recording"
+    ' Title
+    if m.top.seriesName <> ""
+      m.videoTitle.text = m.top.seriesName
+    end if
 
-      ' episodeInfo
-      episodeInfoText = ""
-      '
-      ' Season number
-      if isValid(m.top.seasonNumber)
-        episodeInfoText = episodeInfoText + `${tr("S")}${m.top.seasonNumber}`
-      else
-        episodeInfoText = episodeInfoText + `${tr("S")}?`
-      end if
-      ' Episode number
-      if isValid(m.top.episodeNumber)
-        episodeInfoText = episodeInfoText + `:${tr("E")}${m.top.episodeNumber}`
-      else
-        episodeInfoText = episodeInfoText + `:${tr("E")}??`
-      end if
-      ' Episode number end
-      if isValid(m.top.episodeNumberEnd) and m.top.episodeNumberEnd <> 0 and m.top.episodeNumberEnd > m.top.episodeNumber
-        ' add entry for every episode eg. S6:E1E2
-        for i = m.top.episodeNumber + 1 to m.top.episodeNumberEnd
-          episodeInfoText = episodeInfoText + `${tr("E")}${m.top.episodeNumberEnd}`
-        end for
-      end if
-      ' Episode name
-      if isValid(m.top.videoTitle) and m.top.videoTitle <> ""
-        episodeInfoText = episodeInfoText + ` - ${m.top.videoTitle}`
-      end if
+    ' episodeInfo
+    episodeInfoText = ""
+    '
+    ' Season number
+    if isValid(m.top.seasonNumber)
+      episodeInfoText = episodeInfoText + `${tr("S")}${m.top.seasonNumber}`
+    else
+      episodeInfoText = episodeInfoText + `${tr("S")}?`
+    end if
+    ' Episode number
+    if isValid(m.top.episodeNumber)
+      episodeInfoText = episodeInfoText + `:${tr("E")}${m.top.episodeNumber}`
+    else
+      episodeInfoText = episodeInfoText + `:${tr("E")}??`
+    end if
+    ' Episode number end
+    if isValid(m.top.episodeNumberEnd) and m.top.episodeNumberEnd <> 0 and m.top.episodeNumberEnd > m.top.episodeNumber
+      ' add entry for every episode eg. S6:E1E2
+      for i = m.top.episodeNumber + 1 to m.top.episodeNumberEnd
+        episodeInfoText = episodeInfoText + `${tr("E")}${m.top.episodeNumberEnd}`
+      end for
+    end if
+    ' Episode name
+    if isValid(m.top.videoTitle) and m.top.videoTitle <> ""
+      episodeInfoText = episodeInfoText + ` - ${m.top.videoTitle}`
+    end if
 
-      if episodeInfoText <> ""
-        episodeInfoNode = createSubtitleLabelNode("episodeInfo")
-        episodeInfoNode.text = episodeInfoText
-        displaySubtitleNode(episodeInfoNode)
-      end if
-    else if m.top.type = "Movie"
-      ' videoAirDate
-      if isValid(m.top.premiereDate) and m.top.premiereDate <> ""
-        airDateNodeCreated = true
+    if episodeInfoText <> ""
+      episodeInfoNode = createSubtitleLabelNode("episodeInfo")
+      episodeInfoNode.text = episodeInfoText
+      displaySubtitleNode(episodeInfoNode)
+    end if
+  else if m.top.type = "Movie"
+    ' videoAirDate
+    if isValid(m.top.premiereDate) and m.top.premiereDate <> ""
+      airDateNodeCreated = true
 
-        premiereDateNode = createSubtitleLabelNode("videoAirDate")
-        premiereDateNode.text = formatIsoDateVideo(m.top.premiereDate)
+      premiereDateNode = createSubtitleLabelNode("videoAirDate")
+      premiereDateNode.text = formatIsoDateVideo(m.top.premiereDate)
 
-        displaySubtitleNode(premiereDateNode)
+      displaySubtitleNode(premiereDateNode)
+    end if
+  else if m.top.type = "TvChannel"
+    ' TvChannel
+    if isValid(m.top.currentProgram) and m.top.currentProgram <> ""
+      currentProgram = ParseJson(m.top.currentProgram)
+
+      if isValidAndNotEmpty(currentProgram)
+        ' set video title to current program name
+        if isValid(currentProgram.Name)
+          currentChannel = createSubtitleLabelNode("currentChannel")
+          currentChannel.text = currentProgram.ChannelName
+
+          if isValid(currentProgram.ChannelNumber) and currentProgram.ChannelNumber <> ""
+            currentChannel.text = `${currentChannel.text} (${currentProgram.ChannelNumber})`
+          end if
+
+          displaySubtitleNode(currentChannel)
+        end if
       end if
     end if
   end if
@@ -278,9 +338,17 @@ sub setVideoSubTitle()
 end sub
 
 sub onProgressPercentageChanged()
-  m.videoPositionTime.text = secondsToTimestamp(m.top.positionTime, true)
-  m.videoRemainingTime.text = "-" + secondsToTimestamp(m.top.remainingPositionTime, true)
-  m.progressBar.width = m.progressBarBackground.width * m.top.progressPercentage
+  ' change progress bar for live tv
+  if m.top.type = "TvChannel"
+    m.videoPositionTime.text = secondsToTimestamp(m.top.positionTime, true)
+    m.videoRemainingTime.text = tr("LIVE")
+    m.progressBar.width = m.progressBarBackground.width ' set to full width
+  else
+    m.videoPositionTime.text = secondsToTimestamp(m.top.positionTime, true)
+    m.videoRemainingTime.text = "-" + secondsToTimestamp(m.top.remainingPositionTime, true)
+    m.progressBar.width = m.progressBarBackground.width * m.top.progressPercentage
+  end if
+
   setEndsAtText()
 end sub
 

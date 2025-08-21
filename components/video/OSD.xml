@@ -78,6 +78,7 @@
     <field id="remainingPositionTime" type="float" />
     <field id="numVideoStreams" type="integer" />
     <field id="numAudioStreams" type="integer" />
+    <field id="currentProgram" type="string" />
     <field id="playbackState" type="string" value="" alwaysNotify="true" />
     <field id="action" type="string" alwaysNotify="true" />
     <field id="showChapterList" type="boolean" alwaysNotify="true" />
