@@ -1,7 +1,0 @@
-sub init()
-  m.top.font.size = m.global.constants.font_sizes.smaller
-
-  if m.global.session.user.settings["ui.font.fallback"] = true
-    applyFallbackFontScale()
-  end if
-end sub

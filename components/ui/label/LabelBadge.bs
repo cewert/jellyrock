@@ -1,3 +1,0 @@
-sub init()
-  m.top.font = "font:BadgeSystemFont"
-end sub

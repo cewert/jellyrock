@@ -1,3 +1,0 @@
-sub init()
-  m.top.color = m.global.constants.colors.text_primary
-end sub
