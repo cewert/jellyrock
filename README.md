@@ -18,7 +18,7 @@ JellyRock is a Jellyfin client for Roku devices.
     <img src="docs/screenshots/osd.png" width="400" alt="On-Screen Display(OSD)" />
   </a>
 
-## Install / Sideload
+## Sideload
 
 1. Put your Roku device in [developer mode](https://blog.roku.com/developer/2016/02/04/developer-setup-guide). Write down your Roku device IP and the password you created - you will need these!
 2. Download the [latest build](https://github.com/cewert/jellyrock/actions/workflows/build-prod.yml) created by GitHub Actions. Select the first item listed then click the link at the bottom of the page i.e. `JellyRock-v1.0.0-d3352495c579f6adeca085cdbc137ac36e70d558`. This will download a zip file to your computer.
@@ -27,6 +27,16 @@ JellyRock is a Jellyfin client for Roku devices.
 5. Upload and install the zip file downloaded in step 2.
 
 > NOTE: The app will always be at the bottom of your Roku's channel list and it will *not* automatically update.
+
+## Build
+
+```bash
+git clone https://github.com/cewert/jellyrock.git
+cd jellyrock
+# NOTE: no-optional flag is needed on linux to prevent NPM postinstall failure
+npm install --no-optional 
+npm run build # OR npm run build-prod to use prod images and remove debug logging
+```
 
 ## Advanced
 
