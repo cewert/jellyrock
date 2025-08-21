@@ -619,6 +619,10 @@
       <extracomment>If TV Show is being broadcast live (not pre-recorded)</extracomment>
     </message>
     <message>
+      <source>LIVE</source>
+      <translation>LIVE</translation>
+    </message>
+    <message>
       <source>Loading Channel Data</source>
       <translation>Loading Channel Data</translation>
     </message>
