@@ -9,6 +9,7 @@
   ],
   "plugins": [
     "@rokucommunity/bslint",
+    "brighterscript-xml-plugin",
     "roku-log-bsc-plugin"
   ],
   "rokuLog": {
