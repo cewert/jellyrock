@@ -24,7 +24,7 @@ jobs:
             .ropm
           key: ropm-${{ hashFiles('package.json', 'package-lock.json') }}
           restore-keys: ropm-
-      - name: Cache BrighterScript build artifacts
+      - name: Cache BrighterScript build artifact
         uses: actions/cache@v4
         with:
           path: |
