@@ -163,6 +163,7 @@ jobs:
           git config user.email "c.ewert@gmail.com"
           git add package.json manifest Makefile
           git commit -m "chore: bump version to ${{ needs.validate-and-build.outputs.version }}" || echo "No changes to commit"
+          git pull origin ${{ needs.validate-and-build.outputs.branch_name }} --rebase || echo "No remote changes to pull"
           git push origin ${{ needs.validate-and-build.outputs.branch_name }}
 
   build-and-release:

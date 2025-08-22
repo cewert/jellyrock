@@ -154,7 +154,6 @@ jobs:
             ## Release Schedule
 
             JellyRock ${{ steps.context.outputs.branch_name }} is scheduled for release on the Roku App Store **DATE_TIME**.
-
           draft: true
           prerelease: false
           generate_release_notes: true
