@@ -1,0 +1,175 @@
+name: Release Management
+
+on:
+  create:
+    branches:
+      - "v*.*.*" # e.g. v1.0.0, v2.1.3
+  push:
+    branches:
+      - "v*.*.*"
+
+jobs:
+  validate-and-build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.extract_version.outputs.version }}
+      branch_name: ${{ steps.extract_version.outputs.branch_name }}
+      major: ${{ steps.extract_version_components.outputs.major }}
+      minor: ${{ steps.extract_version_components.outputs.minor }}
+      build_version: ${{ steps.extract_version_components.outputs.build_version }}
+    steps:
+      - name: Debug Info
+        run: |
+          echo "🔍 Workflow Debug Information:"
+          echo "Branch: ${GITHUB_REF#refs/heads/}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Event: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "SHA: ${{ github.sha }}"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+
+      - name: Extract version from branch name
+        id: extract_version
+        run: |
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          VERSION=${BRANCH_NAME#v}  # Remove 'v' prefix
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Branch: $BRANCH_NAME"
+          echo "Version: $VERSION"
+
+      - name: Extract version components
+        id: extract_version_components
+        run: |
+          VERSION="${{ steps.extract_version.outputs.version }}"
+          IFS='.' read -r MAJOR MINOR BUILD_VERSION <<< "$VERSION"
+          echo "🔍 Debug: Extracted version components:"
+          echo "  MAJOR: $MAJOR"
+          echo "  MINOR: $MINOR"
+          echo "  BUILD_VERSION: $BUILD_VERSION"
+          echo "major=$MAJOR" >> $GITHUB_OUTPUT
+          echo "minor=$MINOR" >> $GITHUB_OUTPUT
+          echo "build_version=$BUILD_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Validate version components
+        run: |
+          MAJOR="${{ steps.extract_version_components.outputs.major }}"
+          MINOR="${{ steps.extract_version_components.outputs.minor }}"
+          BUILD_VERSION="${{ steps.extract_version_components.outputs.build_version }}"
+
+          if [[ ! "$MAJOR" =~ ^[0-9]+$ ]] || [[ ! "$MINOR" =~ ^[0-9]+$ ]] || [[ ! "$BUILD_VERSION" =~ ^[0-9]+$ ]]; then
+            echo "::error::Invalid version components. MAJOR: $MAJOR, MINOR: $MINOR, BUILD_VERSION: $BUILD_VERSION"
+            echo "Expected format: x.y.z where x, y, z are integers"
+            exit 1
+          fi
+          echo "✅ Valid version components: $MAJOR.$MINOR.$BUILD_VERSION"
+
+      - name: Validate version format
+        id: validate_version
+        run: |
+          VERSION="${{ steps.extract_version.outputs.version }}"
+          if [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "valid=true" >> $GITHUB_OUTPUT
+            echo "✅ Valid semantic version: $VERSION"
+          else
+            echo "valid=false" >> $GITHUB_OUTPUT
+            echo "❌ Invalid version format: $VERSION"
+            echo "Expected format: x.y.z (e.g., 1.0.0)"
+          fi
+
+      - name: Notify on invalid version
+        if: steps.validate_version.outputs.valid == 'false'
+        run: |
+          echo "::error::Invalid version branch format. Expected pattern: v1.0.0"
+          exit 1
+
+      - name: Validate new version is greater than previous
+        id: validate_new_version
+        run: |
+          PREVIOUS_VERSION=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1 | sed 's/^v//')
+          CURRENT_VERSION="${{ steps.extract_version.outputs.version }}"
+          if [[ -z "$PREVIOUS_VERSION" ]]; then
+            echo "No previous version found. This is the first version."
+            echo "is_greater=true" >> $GITHUB_OUTPUT
+          elif [[ $(printf '%s\n' "$CURRENT_VERSION" "$PREVIOUS_VERSION" | sort -V | head -n 1) == "$PREVIOUS_VERSION" ]]; then
+            echo "is_greater=false" >> $GITHUB_OUTPUT
+            echo "::error::New version $CURRENT_VERSION is not greater than previous version $PREVIOUS_VERSION"
+          else
+            echo "is_greater=true" >> $GITHUB_OUTPUT
+            echo "New version $CURRENT_VERSION is greater than previous version $PREVIOUS_VERSION"
+          fi
+
+      - name: Notify on invalid new version
+        if: steps.validate_new_version.outputs.is_greater == 'false'
+        run: |
+          echo "::error::New version must be greater than the previous version."
+          exit 1
+
+  update-version-files:
+    needs: validate-and-build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+
+      - name: Install required packages
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: jq
+
+      - name: Update version in package.json
+        run: |
+          VERSION="${{ needs.validate-and-build.outputs.version }}"
+          echo "Updating package.json with version: $VERSION"
+          jq --arg ver "$VERSION" '.version = $ver' package.json > package.json.tmp && mv package.json.tmp package.json
+          echo "Updated package.json successfully"
+
+      - name: Update version in manifest
+        run: |
+          MAJOR="${{ needs.validate-and-build.outputs.major }}"
+          MINOR="${{ needs.validate-and-build.outputs.minor }}"
+          BUILD_VERSION="${{ needs.validate-and-build.outputs.build_version }}"
+          echo "Updating manifest with version components:"
+          echo "  MAJOR: $MAJOR"
+          echo "  MINOR: $MINOR"
+          echo "  BUILD_VERSION: $BUILD_VERSION"
+          echo "📄 Current manifest before update:"
+          grep -E "^(major_version|minor_version|build_version)=" manifest || echo "No version fields found in manifest"
+          sed -i "s/^major_version=.*/major_version=$MAJOR/" manifest
+          sed -i "s/^minor_version=.*/minor_version=$MINOR/" manifest
+          sed -i "s/^build_version=.*/build_version=$BUILD_VERSION/" manifest
+          echo "📄 Updated manifest after changes:"
+          grep -E "^(major_version|minor_version|build_version)=" manifest
+          echo "Updated manifest successfully"
+
+      - name: Update version in Makefile
+        run: |
+          VERSION="${{ needs.validate-and-build.outputs.version }}"
+          echo "Updating Makefile with version: $VERSION"
+          sed -i "s/^VERSION := .*/VERSION := $VERSION/" Makefile
+          echo "Updated Makefile successfully"
+
+      - name: Commit version updates
+        run: |
+          git config user.name "JellyRock-bot"
+          git config user.email "c.ewert@gmail.com"
+          git add package.json manifest Makefile
+          git commit -m "chore: bump version to ${{ needs.validate-and-build.outputs.version }}" || echo "No changes to commit"
+          git push origin ${{ needs.validate-and-build.outputs.branch_name }}
+
+  build-and-release:
+    needs: [validate-and-build, update-version-files]
+    uses: ./.github/workflows/_build-app.yml
+    with:
+      build_type: "prod"
+      upload_zip: true
+      create_github_release: true
+    secrets: inherit

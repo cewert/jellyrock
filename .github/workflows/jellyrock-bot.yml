@@ -5,7 +5,7 @@ on:
     branches:
       - main
   pull_request:
-      types: [opened, synchronize]
+    types: [opened, synchronize]
 
 jobs:
   build-translation:
@@ -18,6 +18,19 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "lts/*"
+          cache: "npm"
+      - name: Cache ropm dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            source/roku_modules
+            components/roku_modules
+            .ropm
+          key: ropm-${{ hashFiles('package.json', 'package-lock.json') }}
+          restore-keys: ropm-
       - name: Install NPM dependencies
         run: npm ci
       - name: Generate translation file
@@ -31,4 +44,3 @@ jobs:
           commit_user_email: c.ewert@gmail.com
           # use JellyRock-bot to author the changes instead of the default author of the merge commit
           commit_author: JellyRock-bot <c.ewert@gmail.com>
-

@@ -12,6 +12,15 @@ jobs:
         with:
           node-version: "lts/*"
           cache: "npm"
+      - name: Cache ropm dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            source/roku_modules
+            components/roku_modules
+            .ropm
+          key: ropm-${{ hashFiles('package.json', 'package-lock.json') }}
+          restore-keys: ropm-
       - run: npm ci
       - run: npm run validate
       - run: npm run check-formatting

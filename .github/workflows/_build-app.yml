@@ -1,0 +1,163 @@
+# Universal JellyRock Build Workflow
+name: Build JellyRock App
+
+on:
+  workflow_call:
+    inputs:
+      build_type:
+        description: "dev or prod?"
+        required: false
+        type: string
+        default: "dev"
+      upload_zip:
+        description: "Upload release zip artifact?"
+        required: false
+        type: boolean
+        default: false
+      create_github_release:
+        description: "Bump version and create draft GitHub release"
+        required: false
+        type: boolean
+        default: false
+    outputs:
+      version:
+        description: "Extracted version from manifest"
+        value: ${{ jobs.build.outputs.version }}
+      artifact_name:
+        description: "Name of the uploaded artifact"
+        value: ${{ jobs.build.outputs.artifact_name }}
+      zip_name:
+        description: "Name of the created zip file"
+        value: ${{ jobs.build.outputs.zip_name }}
+      branch_name:
+        description: "Current branch name"
+        value: ${{ jobs.build.outputs.branch_name }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.context.outputs.version }}
+      artifact_name: ${{ steps.context.outputs.artifact_name }}
+      zip_name: ${{ steps.context.outputs.zip_name }}
+      branch_name: ${{ steps.context.outputs.branch_name }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.JELLYROCK_BOT_TOKEN || github.token }}
+
+      - name: Determine build context
+        id: context
+        run: |
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+
+          # Extract version from manifest using sed (consistent with existing pattern)
+          MAJOR=$(sed -n 's/^major_version=//p' manifest)
+          MINOR=$(sed -n 's/^minor_version=//p' manifest)  
+          BUILD_VERSION=$(sed -n 's/^build_version=//p' manifest)
+          VERSION="${MAJOR}.${MINOR}.${BUILD_VERSION}"
+          if [[ $BRANCH_NAME =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            BUILD_CONTEXT="version_branch"
+            ARTIFACT_NAME="JellyRock-${BRANCH_NAME}-${{ github.sha }}"
+            ZIP_NAME="JellyRock-${BRANCH_NAME}.zip"
+          elif [[ $BRANCH_NAME == "main" ]]; then
+            BUILD_CONTEXT="main_branch"
+            ARTIFACT_NAME="JellyRock-${{ inputs.build_type }}-main-${{ github.sha }}"
+            ZIP_NAME="JellyRock-${{ inputs.build_type }}-main-${{ github.sha }}.zip"
+          else 
+            BUILD_CONTEXT="feature_branch"
+            SAFE_BRANCH=$(echo $BRANCH_NAME | sed 's/[^a-zA-Z0-9-]/-/g' | cut -c1-50)
+            ARTIFACT_NAME="JellyRock-${{ inputs.build_type }}-${SAFE_BRANCH}-${{ github.sha }}"
+            ZIP_NAME="JellyRock-${{ inputs.build_type }}-${SAFE_BRANCH}-${{ github.sha }}.zip"
+          fi
+
+          echo "🔍 Build Context Information:"
+          echo "  Branch: $BRANCH_NAME"
+          echo "  Version: $VERSION" 
+          echo "  Build Context: $BUILD_CONTEXT"
+          echo "  Artifact Name: $ARTIFACT_NAME"
+          echo "  ZIP Name: $ZIP_NAME"
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "build_context=$BUILD_CONTEXT" >> $GITHUB_OUTPUT
+          echo "artifact_name=$ARTIFACT_NAME" >> $GITHUB_OUTPUT
+          echo "zip_name=$ZIP_NAME" >> $GITHUB_OUTPUT
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "major=$MAJOR" >> $GITHUB_OUTPUT
+          echo "minor=$MINOR" >> $GITHUB_OUTPUT
+          echo "build_version=$BUILD_VERSION" >> $GITHUB_OUTPUT
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "lts/*"
+          cache: "npm"
+
+      - name: Cache ropm dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            source/roku_modules
+            components/roku_modules
+            .ropm
+          key: ropm-${{ hashFiles('package.json', 'package-lock.json') }}
+          restore-keys: ropm-
+
+      - name: NPM install
+        run: npm ci
+
+      - name: Build application
+        run: |
+          if [[ "${{ inputs.build_type }}" == "prod" ]] || [[ "${{ steps.context.outputs.build_context }}" == "version_branch" ]]; then
+            echo "🏗️ Building production version..."
+            npm run build-prod
+          else
+            echo "🏗️ Building development version..."
+            npm run build
+          fi
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ${{ steps.context.outputs.artifact_name }}
+          path: ${{ github.workspace }}/build/staging
+          if-no-files-found: error
+
+      - name: Rename and prepare ZIP for release
+        if: ${{ inputs.upload_zip == 'true' || steps.context.outputs.build_context == 'version_branch' }}
+        run: |
+          echo "📦 Preparing ZIP file for release..."
+          if [[ -f "${{ github.workspace }}/out/jellyrock.zip" ]]; then
+            cp "${{ github.workspace }}/out/jellyrock.zip" "${{ github.workspace }}/out/${{ steps.context.outputs.zip_name }}"
+            echo "✅ ZIP renamed to: ${{ steps.context.outputs.zip_name }}"
+          else
+            echo "❌ Expected ZIP file not found at ./out/jellyrock.zip"
+            ls -la ${{ github.workspace }}/out/ || echo "out directory not found"
+            exit 1
+          fi
+
+      - name: Upload ZIP artifact
+        if: ${{ inputs.upload_zip == 'true' || steps.context.outputs.build_context == 'version_branch' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ${{ steps.context.outputs.zip_name }}
+          path: ${{ github.workspace }}/out/${{ steps.context.outputs.zip_name }}
+          if-no-files-found: error
+
+      - name: Create or Update GitHub Release
+        if: ${{ inputs.create_github_release == 'true' && steps.context.outputs.build_context == 'version_branch' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.context.outputs.branch_name }}
+          name: ${{ steps.context.outputs.branch_name }}
+          body: |
+            ## Release Schedule
+
+            JellyRock ${{ steps.context.outputs.branch_name }} is scheduled for release on the Roku App Store **DATE_TIME**.
+
+          draft: true
+          prerelease: false
+          generate_release_notes: true
+          discussion_category_name: announcements
+          token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+          files: ${{ github.workspace }}/out/${{ steps.context.outputs.zip_name }}
