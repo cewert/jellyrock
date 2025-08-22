@@ -56,7 +56,7 @@ jobs:
           MAJOR=$(sed -n 's/^major_version=//p' manifest)
           MINOR=$(sed -n 's/^minor_version=//p' manifest)  
           BUILD_VERSION=$(sed -n 's/^build_version=//p' manifest)
-          VERSION="${MAJOR}.${MINOR}.${BUILD_VERSION}"          # Determine build context and artifact naming
+          VERSION="${MAJOR}.${MINOR}.${BUILD_VERSION}"
           if [[ $BRANCH_NAME =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             BUILD_CONTEXT="version_branch"
             ARTIFACT_NAME="JellyRock-${BRANCH_NAME}-${{ github.sha }}"
