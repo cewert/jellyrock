@@ -5,7 +5,7 @@ on:
     branches-ignore:
       - "v*.*.*" # Version branches handled by release workflow
   pull_request:
-    types: [opened, synchronize]
+    types: [opened]
 
 jobs:
   build-dev:
