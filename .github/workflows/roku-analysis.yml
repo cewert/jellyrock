@@ -33,7 +33,6 @@ jobs:
         with:
           distribution: "temurin"
           java-version: "21"
-          cache: "gradle" # Cache Gradle dependencies if any
       - name: Cache Static Channel Analysis CLI
         uses: actions/cache@v4
         id: cache-sca
