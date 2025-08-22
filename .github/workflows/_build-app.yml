@@ -168,8 +168,9 @@ jobs:
 
             JellyRock ${{ steps.context.outputs.branch_name }} is scheduled for release on the Roku App Store **DATE_TIME**.
           draft: true
+          append_body: true
           prerelease: false
           generate_release_notes: true
-          discussion_category_name: announcements
+          discussion_category_name: Announcements
           token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
           files: ${{ github.workspace }}/out/${{ steps.context.outputs.zip_name }}
