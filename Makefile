@@ -109,7 +109,7 @@ clean_images:
 # Image generation rules with force rebuild
 images/branding/logo.png: $(LOGO_DEV_SECONDARY) | clean_images ; $(CONVERT_CMD) -background none -resize 180x39 $< $@
 images/branding/channel-poster_fhd.png: $(LOGO_DEV) | clean_images ; $(CONVERT_BLUEBG_CMD) -resize 432x324 -extent 540x405 $< $@
-images/branding/channel-poster_hd.png: $(LOGO_DEV) | clean_images ; $(CONVERT_BLUEBG_CMD) -resize 269x168 -extent 336x210 $< $@
+images/branding/channel-poster_hd.png: $(LOGO_DEV) | clean_images ; $(CONVERT_BLUEBG_CMD) -resize 232x174 -extent 290x218 $< $@
 images/branding/channel-poster_sd.png: $(LOGO_DEV) | clean_images ; $(CONVERT_BLUEBG_CMD) -resize 197x112 -extent 246x140 $< $@
 images/branding/splash-screen_fhd.png: $(LOGO_DEV) | clean_images ; $(CONVERT_BLUEBG_CMD) -resize 540x540 -extent 1920x1080 $< $@
 images/branding/splash-screen_hd.png: $(LOGO_DEV) | clean_images ; $(CONVERT_BLUEBG_CMD) -resize 360x360 -extent 1280x720 $< $@
@@ -117,7 +117,7 @@ images/branding/splash-screen_sd.png: $(LOGO_DEV) | clean_images ; $(CONVERT_BLU
 
 resources/branding/release/logo.png: $(LOGO_SECONDARY) | clean_images ; $(CONVERT_CMD) -background none -resize 180x39 $< $@
 resources/branding/release/channel-poster_fhd.png: $(LOGO) | clean_images ; $(CONVERT_BLUEBG_CMD) -resize 432x324 -extent 540x405 $< $@
-resources/branding/release/channel-poster_hd.png: $(LOGO) | clean_images ; $(CONVERT_BLUEBG_CMD) -resize 269x168 -extent 336x210 $< $@
+resources/branding/release/channel-poster_hd.png: $(LOGO) | clean_images ; $(CONVERT_BLUEBG_CMD) -resize 232x174 -extent 290x218 $< $@
 resources/branding/release/channel-poster_sd.png: $(LOGO) | clean_images ; $(CONVERT_BLUEBG_CMD) -resize 197x112 -extent 246x140 $< $@
 resources/branding/release/splash-screen_fhd.png: $(LOGO) | clean_images ; $(CONVERT_BLUEBG_CMD) -resize 540x540 -extent 1920x1080 $< $@
 resources/branding/release/splash-screen_hd.png: $(LOGO) | clean_images ; $(CONVERT_BLUEBG_CMD) -resize 360x360 -extent 1280x720 $< $@
