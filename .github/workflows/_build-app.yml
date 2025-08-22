@@ -157,7 +157,25 @@ jobs:
           echo "  steps.context.outputs.build_context == 'version_branch': ${{ steps.context.outputs.build_context == 'version_branch' }}"
           echo "  Overall condition: ${{ inputs.create_github_release == true && steps.context.outputs.build_context == 'version_branch' }}"
 
-      - name: Create or Update GitHub Release
+      - name: Check and Delete Existing Release
+        if: ${{ inputs.create_github_release == true && steps.context.outputs.build_context == 'version_branch' }}
+        run: |
+          echo "🔍 Checking for existing release: ${{ steps.context.outputs.branch_name }}"
+
+          # Check if release exists
+          RELEASE_ID=$(gh release view "${{ steps.context.outputs.branch_name }}" --json id --jq '.id' 2>/dev/null || echo "")
+
+          if [[ -n "$RELEASE_ID" ]]; then
+            echo "🗑️ Deleting existing release: ${{ steps.context.outputs.branch_name }} (ID: $RELEASE_ID)"
+            gh release delete "${{ steps.context.outputs.branch_name }}" --yes
+            echo "✅ Existing release deleted"
+          else
+            echo "ℹ️ No existing release found for tag: ${{ steps.context.outputs.branch_name }}"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+
+      - name: Create GitHub Release
         if: ${{ inputs.create_github_release == true && steps.context.outputs.build_context == 'version_branch' }}
         uses: softprops/action-gh-release@v2
         with:
@@ -168,7 +186,6 @@ jobs:
 
             JellyRock ${{ steps.context.outputs.branch_name }} is scheduled for release on the Roku App Store **DATE_TIME**.
           draft: true
-          append_body: true
           prerelease: false
           generate_release_notes: true
           discussion_category_name: Announcements
