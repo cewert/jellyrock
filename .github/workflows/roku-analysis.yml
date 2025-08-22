@@ -24,19 +24,6 @@ jobs:
             .ropm
           key: ropm-${{ hashFiles('package.json', 'package-lock.json') }}
           restore-keys: ropm-
-      - name: Cache BrighterScript build artifact
-        uses: actions/cache@v4
-        with:
-          path: |
-            .brighterscript
-            node_modules/.cache
-          key: brighterscript-prod-${{ hashFiles('bsconfig-prod.json', 'manifest', 'source/**/*.*', 'components/**/*.*', 'images/**/*.*', 'locale/**/*.*', 'settings/**/*.*') }}
-          restore-keys: |
-            brighterscript-prod-${{ hashFiles('bsconfig-prod.json', 'bsconfig.json') }}-
-            brighterscript-prod-
-            brighterscript-dev-${{ hashFiles('bsconfig.json') }}-
-            brighterscript-dev-
-            brighterscript-
       - name: NPM install
         run: npm ci
       - name: Build app for production

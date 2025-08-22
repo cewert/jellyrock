@@ -12,19 +12,6 @@ jobs:
         with:
           node-version: "lts/*"
           cache: "npm"
-      - name: Cache BrighterScript lint cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            .brighterscript
-            node_modules/.cache
-          key: brighterscript-lint-${{ hashFiles('bsconfig*.json', 'bslint.json', 'manifest', 'source/**/*.*', 'components/**/*.*', 'images/**/*.*', 'locale/**/*.*', 'settings/**/*.*') }}
-          restore-keys: |
-            brighterscript-lint-${{ hashFiles('bsconfig*.json', 'bslint.json') }}-
-            brighterscript-lint-
-            brighterscript-dev-${{ hashFiles('bsconfig*.json') }}-
-            brighterscript-dev-
-            brighterscript-
       - name: Cache ropm dependencies
         uses: actions/cache@v4
         with:
