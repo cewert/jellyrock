@@ -46,10 +46,13 @@
     "url": "https://github.com/cewert/jellyrock.git"
   },
   "keywords": [
+    "jellyrock",
     "jellyfin",
-    "roku"
+    "roku",
+    "roku-client",
+    "brighterscript"
   ],
-  "author": "jellyfin",
+  "author": "Charles Ewert",
   "license": "GPL-2.0",
   "bugs": {
     "url": "https://github.com/cewert/jellyrock/issues"
