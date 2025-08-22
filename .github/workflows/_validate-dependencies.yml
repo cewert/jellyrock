@@ -14,9 +14,3 @@ jobs:
     uses: ./.github/workflows/_lint-spelling.yml
   lint-translation-files:
     uses: ./.github/workflows/_lint-translation-files.yml
-  build-prod:
-    uses: ./.github/workflows/_build-app.yml
-    with:
-      build_type: "dev"
-      upload_zip: true
-      create_github_release: false
