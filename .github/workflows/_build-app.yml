@@ -63,12 +63,12 @@ jobs:
             ZIP_NAME="JellyRock-${BRANCH_NAME}.zip"
           elif [[ $BRANCH_NAME == "main" ]]; then
             BUILD_CONTEXT="main_branch"
-            ARTIFACT_NAME="JellyRock-main-${{ github.sha }}"
+            ARTIFACT_NAME="JellyRock-${{ inputs.build_type }}-main-${{ github.sha }}"
             ZIP_NAME="JellyRock-${{ inputs.build_type }}-main-${{ github.sha }}.zip"
           else 
             BUILD_CONTEXT="feature_branch"
             SAFE_BRANCH=$(echo $BRANCH_NAME | sed 's/[^a-zA-Z0-9-]/-/g' | cut -c1-50)
-            ARTIFACT_NAME="JellyRock-${SAFE_BRANCH}-${{ github.sha }}"
+            ARTIFACT_NAME="JellyRock-${{ inputs.build_type }}-${SAFE_BRANCH}-${{ github.sha }}"
             ZIP_NAME="JellyRock-${{ inputs.build_type }}-${SAFE_BRANCH}-${{ github.sha }}.zip"
           fi
 
