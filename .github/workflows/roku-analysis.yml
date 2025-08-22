@@ -15,6 +15,28 @@ jobs:
         with:
           node-version: "lts/*"
           cache: "npm"
+      - name: Cache ropm dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            source/roku_modules
+            components/roku_modules
+            .ropm
+          key: ropm-${{ hashFiles('package.json', 'package-lock.json') }}
+          restore-keys: ropm-
+      - name: Cache BrighterScript build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            .brighterscript
+            node_modules/.cache
+          key: brighterscript-prod-${{ hashFiles('bsconfig-prod.json', 'manifest', 'source/**/*.*', 'components/**/*.*', 'images/**/*.*', 'locale/**/*.*', 'settings/**/*.*') }}
+          restore-keys: |
+            brighterscript-prod-${{ hashFiles('bsconfig-prod.json', 'bsconfig.json') }}-
+            brighterscript-prod-
+            brighterscript-dev-${{ hashFiles('bsconfig.json') }}-
+            brighterscript-dev-
+            brighterscript-
       - name: NPM install
         run: npm ci
       - name: Build app for production
@@ -24,7 +46,16 @@ jobs:
         with:
           distribution: "temurin"
           java-version: "21"
+          cache: "gradle" # Cache Gradle dependencies if any
+      - name: Cache Static Channel Analysis CLI
+        uses: actions/cache@v4
+        id: cache-sca
+        with:
+          path: sca-cmd
+          key: sca-cmd-${{ hashFiles('sca-cmd/bin/sca-cmd') }}
+          restore-keys: sca-cmd-
       - name: Download the Static Channel Analysis CLI
+        if: steps.cache-sca.outputs.cache-hit != 'true'
         run: |
           curl -sSL "https://devtools.web.roku.com/static-channel-analysis/sca-cmd.zip" -o sca-cmd.zip
           unzip sca-cmd.zip

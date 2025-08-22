@@ -93,6 +93,32 @@ jobs:
           node-version: "lts/*"
           cache: "npm"
 
+      - name: Cache BrighterScript build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            .brighterscript
+            node_modules/.cache
+          key: brighterscript-${{ inputs.build_type }}-${{ hashFiles('bsconfig*.json', 'manifest', 'source/**/*.*', 'components/**/*.*', 'images/**/*.*', 'locale/**/*.*', 'settings/**/*.*') }}
+          restore-keys: |
+            brighterscript-${{ inputs.build_type }}-${{ hashFiles('bsconfig*.json') }}-
+            brighterscript-${{ inputs.build_type }}-
+            brighterscript-dev-${{ hashFiles('bsconfig*.json') }}-
+            brighterscript-prod-${{ hashFiles('bsconfig*.json') }}-
+            brighterscript-dev-
+            brighterscript-prod-
+            brighterscript-
+
+      - name: Cache ropm dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            source/roku_modules
+            components/roku_modules
+            .ropm
+          key: ropm-${{ hashFiles('package.json', 'package-lock.json') }}
+          restore-keys: ropm-
+
       - name: NPM install
         run: npm ci
 
