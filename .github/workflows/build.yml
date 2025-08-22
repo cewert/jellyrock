@@ -1,4 +1,4 @@
-name: Universal Build
+name: Build
 
 on:
   push:
@@ -8,14 +8,14 @@ on:
     types: [opened]
 
 jobs:
-  build-dev:
+  dev:
     uses: ./.github/workflows/_build-app.yml
     with:
       build_type: dev
       upload_zip: true # Always upload ZIP artifacts for download
       create_github_release: false
     secrets: inherit
-  build-prod:
+  prod:
     uses: ./.github/workflows/_build-app.yml
     with:
       build_type: prod
