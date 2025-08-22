@@ -148,8 +148,17 @@ jobs:
           path: ${{ github.workspace }}/out/${{ steps.context.outputs.zip_name }}
           if-no-files-found: error
 
+      - name: Debug Release Condition
+        run: |
+          echo "🔧 Debug Release Condition:"
+          echo "  inputs.create_github_release: '${{ inputs.create_github_release }}'"
+          echo "  steps.context.outputs.build_context: '${{ steps.context.outputs.build_context }}'"
+          echo "  inputs.create_github_release == true: ${{ inputs.create_github_release == true }}"
+          echo "  steps.context.outputs.build_context == 'version_branch': ${{ steps.context.outputs.build_context == 'version_branch' }}"
+          echo "  Overall condition: ${{ inputs.create_github_release == true && steps.context.outputs.build_context == 'version_branch' }}"
+
       - name: Create or Update GitHub Release
-        if: ${{ inputs.create_github_release == 'true' && steps.context.outputs.build_context == 'version_branch' }}
+        if: ${{ inputs.create_github_release == true && steps.context.outputs.build_context == 'version_branch' }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.context.outputs.branch_name }}
