@@ -136,7 +136,7 @@ jobs:
 
       - name: Create or Update GitHub Release
         if: ${{ inputs.create_github_release == 'true' && steps.context.outputs.build_context == 'version_branch' }}
-        uses: softprops/action-gh-release@master
+        uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.context.outputs.branch_name }}
           name: ${{ steps.context.outputs.branch_name }}
