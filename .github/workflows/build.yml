@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches-ignore:
-      - "v*.*.*" # Version branches handled by release workflow
+      - "release-*.*.*" # Version branches handled by release workflow
   pull_request:
     types: [opened]
 

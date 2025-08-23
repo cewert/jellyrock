@@ -3,10 +3,10 @@ name: Release Management
 on:
   create:
     branches:
-      - "v*.*.*" # e.g. v1.0.0, v2.1.3
+      - "release-*.*.*" # e.g. release-1.0.0, release-2.1.3
   push:
     branches:
-      - "v*.*.*"
+      - "release-*.*.*"
 
 jobs:
   validate-and-build:
@@ -37,7 +37,7 @@ jobs:
         id: extract_version
         run: |
           BRANCH_NAME=${GITHUB_REF#refs/heads/}
-          VERSION=${BRANCH_NAME#v}  # Remove 'v' prefix
+          VERSION=${BRANCH_NAME#release-}  # Remove 'release-' prefix
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Branch: $BRANCH_NAME"
@@ -85,7 +85,7 @@ jobs:
       - name: Notify on invalid version
         if: steps.validate_version.outputs.valid == 'false'
         run: |
-          echo "::error::Invalid version branch format. Expected pattern: v1.0.0"
+          echo "::error::Invalid version branch format. Expected pattern: release-1.0.0"
           exit 1
 
       - name: Validate new version is greater than previous
