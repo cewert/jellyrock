@@ -56,27 +56,39 @@ jobs:
         run: |
           BRANCH_NAME=${GITHUB_REF#refs/heads/}
 
-          # Extract version from manifest using sed (consistent with existing pattern)
           MAJOR=$(sed -n 's/^major_version=//p' manifest)
           MINOR=$(sed -n 's/^minor_version=//p' manifest)  
           BUILD_VERSION=$(sed -n 's/^build_version=//p' manifest)
           VERSION="${MAJOR}.${MINOR}.${BUILD_VERSION}"
-          if [[ $BRANCH_NAME =~ ^release-[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            BUILD_CONTEXT="version_branch"
-            VERSION_TAG="v${BRANCH_NAME#release-}"  # Convert release-1.0.1 to v1.0.1
-            ARTIFACT_NAME="JellyRock-${VERSION_TAG}-${{ github.sha }}"
-            ZIP_NAME="JellyRock-${VERSION_TAG}.zip"
-          elif [[ $BRANCH_NAME == "main" ]]; then
-            BUILD_CONTEXT="main_branch"
-            VERSION_TAG="v${VERSION}"  # Use manifest version for main branch
-            TAG_NAME="v${VERSION}"
-            ARTIFACT_NAME="JellyRock-${VERSION_TAG}-${{ github.sha }}"
-            ZIP_NAME="JellyRock-${VERSION_TAG}.zip"
-          else 
-            BUILD_CONTEXT="feature_branch"
+
+          # Determine artifact naming based on context and whether this is a release build
+          if [[ "${{ inputs.create_github_release }}" == "true" ]]; then
+            # Release builds use version-based naming
+            if [[ $BRANCH_NAME =~ ^release-[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              BUILD_CONTEXT="version_branch"
+              VERSION_TAG="v${BRANCH_NAME#release-}"  # Convert release-1.0.1 to v1.0.1
+              ARTIFACT_NAME="JellyRock-${VERSION_TAG}-${{ github.sha }}"
+              ZIP_NAME="JellyRock-${VERSION_TAG}.zip"
+            elif [[ $BRANCH_NAME == "main" ]]; then
+              BUILD_CONTEXT="main_branch"
+              VERSION_TAG="v${VERSION}"  # Use manifest version for main branch
+              TAG_NAME="v${VERSION}"
+              ARTIFACT_NAME="JellyRock-${VERSION_TAG}-${{ github.sha }}"
+              ZIP_NAME="JellyRock-${VERSION_TAG}.zip"
+            fi
+          else
+            # Regular dev/prod builds use build_type-branch naming
             SAFE_BRANCH=$(echo $BRANCH_NAME | sed 's/[^a-zA-Z0-9-]/-/g' | cut -c1-50)
             ARTIFACT_NAME="JellyRock-${{ inputs.build_type }}-${SAFE_BRANCH}-${{ github.sha }}"
             ZIP_NAME="JellyRock-${{ inputs.build_type }}-${SAFE_BRANCH}-${{ github.sha }}.zip"
+            
+            if [[ $BRANCH_NAME =~ ^release-[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              BUILD_CONTEXT="version_branch"
+            elif [[ $BRANCH_NAME == "main" ]]; then
+              BUILD_CONTEXT="main_branch"
+            else 
+              BUILD_CONTEXT="feature_branch"
+            fi
           fi
 
           echo "🔍 Build Context Information:"
@@ -95,11 +107,11 @@ jobs:
           echo "minor=$MINOR" >> $GITHUB_OUTPUT
           echo "build_version=$BUILD_VERSION" >> $GITHUB_OUTPUT
 
-          # For version branches and main branch (for releases), set the tag name
-          if [[ $BUILD_CONTEXT == "version_branch" ]] || [[ $BUILD_CONTEXT == "main_branch" && "${{ inputs.create_github_release }}" == "true" ]]; then
+          # Set tag name for releases
+          if [[ "${{ inputs.create_github_release }}" == "true" ]]; then
             if [[ $BUILD_CONTEXT == "version_branch" ]]; then
               TAG_NAME="v${BRANCH_NAME#release-}"  # Convert release-1.0.1 to v1.0.1
-            else
+            elif [[ $BUILD_CONTEXT == "main_branch" ]]; then
               TAG_NAME="v${VERSION}"  # Use manifest version for main branch releases
             fi
             echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
