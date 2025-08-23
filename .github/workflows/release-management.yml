@@ -1,4 +1,4 @@
-name: Release Management
+name: Release Preparation
 
 on:
   create:
@@ -9,7 +9,7 @@ on:
       - "release-*.*.*"
 
 jobs:
-  validate-and-build:
+  validate-and-prepare:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.extract_version.outputs.version }}
@@ -17,6 +17,8 @@ jobs:
       major: ${{ steps.extract_version_components.outputs.major }}
       minor: ${{ steps.extract_version_components.outputs.minor }}
       build_version: ${{ steps.extract_version_components.outputs.build_version }}
+      pr_exists: ${{ steps.check_pr.outputs.pr_exists }}
+      pr_number: ${{ steps.check_pr.outputs.pr_number }}
     steps:
       - name: Debug Info
         run: |
@@ -110,8 +112,28 @@ jobs:
           echo "::error::New version must be greater than the previous version."
           exit 1
 
+      - name: Check if PR already exists
+        id: check_pr
+        env:
+          GH_TOKEN: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+        run: |
+          BRANCH_NAME="${{ steps.extract_version.outputs.branch_name }}"
+          PR_INFO=$(gh pr list --head "$BRANCH_NAME" --base main --json number,state | jq -r '.[0]')
+
+          if [[ "$PR_INFO" != "null" ]]; then
+            PR_NUMBER=$(echo "$PR_INFO" | jq -r '.number')
+            PR_STATE=$(echo "$PR_INFO" | jq -r '.state')
+            echo "pr_exists=true" >> $GITHUB_OUTPUT
+            echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+            echo "✅ Found existing PR #$PR_NUMBER with state: $PR_STATE"
+          else
+            echo "pr_exists=false" >> $GITHUB_OUTPUT
+            echo "pr_number=" >> $GITHUB_OUTPUT
+            echo "ℹ️ No existing PR found for branch: $BRANCH_NAME"
+          fi
+
   update-version-files:
-    needs: validate-and-build
+    needs: validate-and-prepare
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -127,16 +149,16 @@ jobs:
 
       - name: Update version in package.json
         run: |
-          VERSION="${{ needs.validate-and-build.outputs.version }}"
+          VERSION="${{ needs.validate-and-prepare.outputs.version }}"
           echo "Updating package.json with version: $VERSION"
           jq --arg ver "$VERSION" '.version = $ver' package.json > package.json.tmp && mv package.json.tmp package.json
           echo "Updated package.json successfully"
 
       - name: Update version in manifest
         run: |
-          MAJOR="${{ needs.validate-and-build.outputs.major }}"
-          MINOR="${{ needs.validate-and-build.outputs.minor }}"
-          BUILD_VERSION="${{ needs.validate-and-build.outputs.build_version }}"
+          MAJOR="${{ needs.validate-and-prepare.outputs.major }}"
+          MINOR="${{ needs.validate-and-prepare.outputs.minor }}"
+          BUILD_VERSION="${{ needs.validate-and-prepare.outputs.build_version }}"
           echo "Updating manifest with version components:"
           echo "  MAJOR: $MAJOR"
           echo "  MINOR: $MINOR"
@@ -152,7 +174,7 @@ jobs:
 
       - name: Update version in Makefile
         run: |
-          VERSION="${{ needs.validate-and-build.outputs.version }}"
+          VERSION="${{ needs.validate-and-prepare.outputs.version }}"
           echo "Updating Makefile with version: $VERSION"
           sed -i "s/^VERSION := .*/VERSION := $VERSION/" Makefile
           echo "Updated Makefile successfully"
@@ -162,15 +184,69 @@ jobs:
           git config user.name "JellyRock-bot"
           git config user.email "c.ewert@gmail.com"
           git add package.json manifest Makefile
-          git commit -m "chore: bump version to ${{ needs.validate-and-build.outputs.version }}" || echo "No changes to commit"
-          git pull origin ${{ needs.validate-and-build.outputs.branch_name }} --rebase || echo "No remote changes to pull"
-          git push origin ${{ needs.validate-and-build.outputs.branch_name }}
+          git commit -m "chore: bump version to ${{ needs.validate-and-prepare.outputs.version }}" || echo "No changes to commit"
+          git pull origin ${{ needs.validate-and-prepare.outputs.branch_name }} --rebase || echo "No remote changes to pull"
+          git push origin ${{ needs.validate-and-prepare.outputs.branch_name }}
 
-  build-and-release:
-    needs: [validate-and-build, update-version-files]
-    uses: ./.github/workflows/_build-app.yml
-    with:
-      build_type: "prod"
-      upload_zip: true
-      create_github_release: true
-    secrets: inherit
+  create-release-pr:
+    needs: [validate-and-prepare, update-version-files]
+    runs-on: ubuntu-latest
+    if: needs.validate-and-prepare.outputs.pr_exists == 'false'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.validate-and-prepare.outputs.branch_name }}
+          token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+
+      - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+        run: |
+          VERSION="${{ needs.validate-and-prepare.outputs.version }}"
+          BRANCH_NAME="${{ needs.validate-and-prepare.outputs.branch_name }}"
+
+          # Create PR body with version info and changelog
+          PR_BODY="## 🚀 Prepare for v$VERSION release
+
+          This PR prepares the codebase for the v$VERSION release by updating version files and ensuring all components are aligned.
+
+          ### Changes included:
+          - ⬆️ Bump version to $VERSION in package.json
+          - 📄 Update manifest version components
+          - 🔧 Update Makefile version
+          - 📦 Version consistency across all files
+
+          ### Post-merge actions:
+          After this PR is merged, a draft release will be automatically created on the main branch.
+
+          ---
+          *This PR was created automatically by JellyRock-bot*"
+
+          gh pr create \
+            --title "Prepare for v$VERSION release" \
+            --body "$PR_BODY" \
+            --base main \
+            --head "$BRANCH_NAME" \
+            --label "release" \
+            --label "automated"
+
+          echo "✅ Created release preparation PR for v$VERSION"
+
+  update-existing-pr:
+    needs: [validate-and-prepare, update-version-files]
+    runs-on: ubuntu-latest
+    if: needs.validate-and-prepare.outputs.pr_exists == 'true'
+    steps:
+      - name: Update existing PR
+        env:
+          GH_TOKEN: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+        run: |
+          VERSION="${{ needs.validate-and-prepare.outputs.version }}"
+          PR_NUMBER="${{ needs.validate-and-prepare.outputs.pr_number }}"
+
+          gh pr comment "$PR_NUMBER" --body "🔄 **Version files updated to v$VERSION**
+
+          The release branch has been updated with the latest version bumps. Please review the changes before merging."
+
+          echo "✅ Updated existing PR #$PR_NUMBER with version bump info"

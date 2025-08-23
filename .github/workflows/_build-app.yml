@@ -68,8 +68,10 @@ jobs:
             ZIP_NAME="JellyRock-${VERSION_TAG}.zip"
           elif [[ $BRANCH_NAME == "main" ]]; then
             BUILD_CONTEXT="main_branch"
-            ARTIFACT_NAME="JellyRock-${{ inputs.build_type }}-main-${{ github.sha }}"
-            ZIP_NAME="JellyRock-${{ inputs.build_type }}-main-${{ github.sha }}.zip"
+            VERSION_TAG="v${VERSION}"  # Use manifest version for main branch
+            TAG_NAME="v${VERSION}"
+            ARTIFACT_NAME="JellyRock-${VERSION_TAG}-${{ github.sha }}"
+            ZIP_NAME="JellyRock-${VERSION_TAG}.zip"
           else 
             BUILD_CONTEXT="feature_branch"
             SAFE_BRANCH=$(echo $BRANCH_NAME | sed 's/[^a-zA-Z0-9-]/-/g' | cut -c1-50)
@@ -93,9 +95,13 @@ jobs:
           echo "minor=$MINOR" >> $GITHUB_OUTPUT
           echo "build_version=$BUILD_VERSION" >> $GITHUB_OUTPUT
 
-          # For version branches, set the tag name for release creation
-          if [[ $BUILD_CONTEXT == "version_branch" ]]; then
-            TAG_NAME="v${BRANCH_NAME#release-}"  # Convert release-1.0.1 to v1.0.1
+          # For version branches and main branch (for releases), set the tag name
+          if [[ $BUILD_CONTEXT == "version_branch" ]] || [[ $BUILD_CONTEXT == "main_branch" && "${{ inputs.create_github_release }}" == "true" ]]; then
+            if [[ $BUILD_CONTEXT == "version_branch" ]]; then
+              TAG_NAME="v${BRANCH_NAME#release-}"  # Convert release-1.0.1 to v1.0.1
+            else
+              TAG_NAME="v${VERSION}"  # Use manifest version for main branch releases
+            fi
             echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
             echo "  Tag Name: $TAG_NAME"
           fi
@@ -136,7 +142,7 @@ jobs:
           if-no-files-found: error
 
       - name: Rename and prepare ZIP for release
-        if: ${{ inputs.upload_zip == 'true' || steps.context.outputs.build_context == 'version_branch' }}
+        if: ${{ inputs.upload_zip == 'true' || steps.context.outputs.build_context == 'version_branch' || (steps.context.outputs.build_context == 'main_branch' && inputs.create_github_release == true) }}
         run: |
           echo "📦 Preparing ZIP file for release..."
           if [[ -f "${{ github.workspace }}/out/jellyrock.zip" ]]; then
@@ -149,7 +155,7 @@ jobs:
           fi
 
       - name: Upload ZIP artifact
-        if: ${{ inputs.upload_zip == 'true' || steps.context.outputs.build_context == 'version_branch' }}
+        if: ${{ inputs.upload_zip == 'true' || steps.context.outputs.build_context == 'version_branch' || (steps.context.outputs.build_context == 'main_branch' && inputs.create_github_release == true) }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ${{ steps.context.outputs.zip_name }}
@@ -163,10 +169,13 @@ jobs:
           echo "  steps.context.outputs.build_context: '${{ steps.context.outputs.build_context }}'"
           echo "  inputs.create_github_release == true: ${{ inputs.create_github_release == true }}"
           echo "  steps.context.outputs.build_context == 'version_branch': ${{ steps.context.outputs.build_context == 'version_branch' }}"
-          echo "  Overall condition: ${{ inputs.create_github_release == true && steps.context.outputs.build_context == 'version_branch' }}"
+          echo "  steps.context.outputs.build_context == 'main_branch': ${{ steps.context.outputs.build_context == 'main_branch' }}"
+          echo "  Version branch condition: ${{ inputs.create_github_release == true && steps.context.outputs.build_context == 'version_branch' }}"
+          echo "  Main branch condition: ${{ inputs.create_github_release == true && steps.context.outputs.build_context == 'main_branch' }}"
+          echo "  Overall condition: ${{ inputs.create_github_release == true && (steps.context.outputs.build_context == 'version_branch' || steps.context.outputs.build_context == 'main_branch') }}"
 
       - name: Check and Delete Existing Release
-        if: ${{ inputs.create_github_release == true && steps.context.outputs.build_context == 'version_branch' }}
+        if: ${{ inputs.create_github_release == true && (steps.context.outputs.build_context == 'version_branch' || steps.context.outputs.build_context == 'main_branch') }}
         run: |
           TAG_NAME="${{ steps.context.outputs.tag_name }}"
           echo "🔍 Checking for existing release: $TAG_NAME"
@@ -185,7 +194,7 @@ jobs:
           GH_TOKEN: ${{ secrets.JELLYROCK_BOT_TOKEN }}
 
       - name: Create GitHub Release
-        if: ${{ inputs.create_github_release == true && steps.context.outputs.build_context == 'version_branch' }}
+        if: ${{ inputs.create_github_release == true && (steps.context.outputs.build_context == 'version_branch' || steps.context.outputs.build_context == 'main_branch') }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.context.outputs.tag_name }}
