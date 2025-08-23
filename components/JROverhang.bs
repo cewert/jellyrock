@@ -32,26 +32,33 @@ end sub
 
 sub currentUserChanged()
   m.user.text = m.top.currentUser
+  m.userImage = m.top.findNode("userImage")
+  if not isValid(m.userPoster)
+    m.userPoster = createUserPoster() ' save node to memory for faster load time
+  end if
 
   if m.top.currentUser = ""
-    ' remove the user image node if it exists
-    userImage = m.userGroup.findNode("userImage")
-    if isValid(userImage)
-      m.userGroup.removeChild(userImage)
+    ' no user logged in, remove image if it exists
+    if isValid(m.userImage)
+      m.userGroup.removeChild(m.userImage)
+      m.userImage = invalid
     end if
-    ' remove cached user image if it exists
-    m.userImage = invalid
-  else
-    ' cache the user image node if needed
-    if not isValid(m.userImage)
-      m.userImage = createUserImage()
+  else if not isValid(m.userImage)
+    ' user logged in but no image, add it
+    m.userImage = m.userPoster
+    if m.userImage.tag = ""
+      m.userGroup.itemSpacings = 9 ' default image is padded
+    else
+      m.userGroup.itemSpacings = 15
     end if
-    ' add the user image node to the overhang
+
     m.userGroup.insertChild(m.userImage, 0)
   end if
 end sub
 
-function createUserImage() as object
+function createUserPoster() as object
+  userImage = createObject("roSGNode", "Poster")
+
   imgParams = {
     maxHeight: 36,
     maxWidth: 36,
@@ -60,16 +67,15 @@ function createUserImage() as object
   imgTag = m.global.session.user.primaryImageTag
   if isValid(imgTag) and imgTag <> ""
     imgParams.tag = imgTag
+    userImage.tag = imgTag
   end if
 
-  userImage = createObject("roSGNode", "Poster")
   userImage.id = "userImage"
   userImage.width = "36"
   userImage.height = "36"
 
-  if isValid(imgTag) and imgTag <> ""
+  if isValid(imgTag)
     ' reset defaults
-    m.userGroup.itemSpacings = 15
     userImage.blendColor = "0xFFFFFFFF"
 
     if m.global.session.server.url <> ""
@@ -77,11 +83,8 @@ function createUserImage() as object
     else
       print "ERROR: No server URL set, cannot load user image"
     end if
-
   else
-    m.userGroup.itemSpacings = 9 ' account for default image padding
     userImage.blendColor = m.global.constants.colors.text_secondary
-
     userImage.uri = "pkg:/images/icons/person_36px.png"
   end if
 
