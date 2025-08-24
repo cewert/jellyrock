@@ -353,7 +353,6 @@ end sub
 sub onPosterLoadStatusChanged()
   if m.itemPoster.loadStatus = "ready" and m.itemPoster.uri <> ""
     m.backdrop.visible = false
-    m.itemIcon.visible = false
     backdropText = m.top.findNode("backdropText")
     if isValid(backdropText)
       backdropText.visible = false
@@ -373,9 +372,6 @@ sub onIconLoadStatusChanged()
     ' Icon loaded successfully
     m.itemIcon.visible = true
     arrangeIconAndBackdropText()
-  else
-    ' Icon failed to load or no URI set
-    m.itemIcon.visible = false
   end if
 end sub
 
