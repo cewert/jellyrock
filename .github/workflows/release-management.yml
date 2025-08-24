@@ -209,17 +209,8 @@ jobs:
           # Create PR body with version info and changelog
           PR_BODY="## 🚀 Prepare for v$VERSION release
 
-          This PR prepares the codebase for the v$VERSION release by updating version files and ensuring all components are aligned.
-
-          ### Changes included:
-          - ⬆️ Bump version to $VERSION in package.json
-          - 📄 Update manifest version components
-          - 🔧 Update Makefile version
-          - 📦 Version consistency across all files
-
-          ### Post-merge actions:
-          After this PR is merged, a draft release will be automatically created on the main branch.
-
+          ## Post-merge actions:
+          A draft release will be automatically created after merging this PR (whenever manifest version <> latest release tag). Review the draft release and publish it when ready.
           ---
           *This PR was created automatically by JellyRock-bot*"
 
@@ -228,8 +219,7 @@ jobs:
             --body "$PR_BODY" \
             --base main \
             --head "$BRANCH_NAME" \
-            --label "release" \
-            --label "automated"
+            --label "release-prep"
 
           echo "✅ Created release preparation PR for v$VERSION"
 
@@ -245,8 +235,6 @@ jobs:
           VERSION="${{ needs.validate-and-prepare.outputs.version }}"
           PR_NUMBER="${{ needs.validate-and-prepare.outputs.pr_number }}"
 
-          gh pr comment "$PR_NUMBER" --body "🔄 **Version files updated to v$VERSION**
-
-          The release branch has been updated with the latest version bumps. Please review the changes before merging."
+          gh pr comment "$PR_NUMBER" --body "🔄 **Version files updated to v$VERSION**"
 
           echo "✅ Updated existing PR #$PR_NUMBER with version bump info"
