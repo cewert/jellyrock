@@ -391,8 +391,6 @@ sub arrangeIconAndBackdropText()
       backdropText.font.size = fontSizeConstants.large
     else if backdropText.text.len() > 35
       backdropText.font.size = fontSizeConstants.medium
-    else if backdropText.text.len() > 65
-      backdropText.font.size = fontSizeConstants.small
     end if
   end if
 end sub

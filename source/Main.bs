@@ -39,63 +39,11 @@ sub Main (args as dynamic) as void
   ' remove login scenes from the stack
   m.global.sceneManager.callFunc("clearScenes")
 
-  ' Downloads and stores a fallback font to tmp:/ if user has fallback fonts enabled
-  if m.global.session.user.settings["playback.subs.custom"] = true or m.global.session.user.settings["ui.font.fallback"] = true
-    startLoadingSpinner(true, tr("Downloading Fallback Font"))
-    configEncoding = api.system.GetConfigurationByName("encoding")
+  ' Initialize fallback font processing
+  initializeFallbackFont()
 
-    if isValid(configEncoding) and isValid(configEncoding.EnableFallbackFont)
-      if configEncoding.EnableFallbackFont
-        re = CreateObject("roRegex", "Name.:.(.*?).,.Size", "s")
-        fontReq = APIRequest("FallbackFont/Fonts")
-        if isValid(fontReq)
-          filename = fontReq.GetToString()
-          if isValid(filename)
-            filename = re.match(filename)
-            if isValid(filename) and filename.count() > 0
-              filename = filename[1]
-              fontFileReq = APIRequest("FallbackFont/Fonts/" + filename)
-              if isValid(fontFileReq)
-                fontFileReq.gettofile("tmp:/font")
-
-                ' Wait a moment for file to be fully written
-                sleep(100)
-
-                ' Verify the file was written successfully
-                fs = CreateObject("roFileSystem")
-                if fs.Exists("tmp:/font")
-                  if m.global.session.user.settings["ui.font.fallback"] = true
-                    ' Calculate font scale factor once for all UI components
-                    calculateFontScaleFactor()
-                  end if
-                else
-                  print "WARNING - Main: Fallback font file was not created successfully"
-                end if
-              end if
-            end if
-          end if
-        end if
-      end if
-    end if
-  end if
-
-
-  ' load home page
-  group = CreateHomeGroup()
-  group.callFunc("loadLibraries")
-  m.global.sceneManager.callFunc("pushScene", group)
-  stopLoadingSpinner()
-
-  m.scene.observeField("exit", m.port)
-
-  ' update lastRunVersion but only on prod
-  if not m.global.app.isDev
-    ' has the current user ran this version before?
-    usersLastRunVersion = m.global.session.user.settings.lastRunVersion
-    if not isValid(usersLastRunVersion) or not versionChecker(usersLastRunVersion, m.global.app.version)
-      set_user_setting("LastRunVersion", m.global.app.version)
-    end if
-  end if
+  ' load home page - this may be delayed if UI fallback fonts are enabled
+  loadHomeScreen()
 
   ' Handle input messages
   input = CreateObject("roInput")
@@ -139,6 +87,12 @@ sub Main (args as dynamic) as void
         group.lastFocus.setFocus(true)
       else
         group.setFocus(true)
+      end if
+    else if isNodeEvent(msg, "fontDownloadCompleted")
+      ' Handle font download completion
+      fontDownloadTask = msg.getRoSGNode()
+      if isValid(fontDownloadTask)
+        handleFontDownloadCompletion(fontDownloadTask)
       end if
     else if isNodeEvent(msg, "quickPlayNode")
       ' measure processing time
@@ -952,6 +906,90 @@ sub Main (args as dynamic) as void
     end if
   end while
 
+end sub
+
+' Initialize fallback font download process
+sub initializeFallbackFont()
+  ' Check if user needs fallback fonts
+  needsFallbackFonts = m.global.session.user.settings["playback.subs.custom"] = true or m.global.session.user.settings["ui.font.fallback"] = true
+
+  if not needsFallbackFonts
+    print "User doesn't need fallback fonts, skipping font download"
+    return
+  end if
+
+  print "User has custom subtitles or fallback UI font enabled. Starting font download task..."
+
+  ' Create and start font download task
+  fontDownloadTask = CreateObject("roSGNode", "FontDownloadTask")
+  fontDownloadTask.observeField("fontDownloadCompleted", m.port)
+  fontDownloadTask.control = "RUN"
+
+  ' Store whether we need to wait for completion (UI fonts enabled)
+  m.waitForFontDownload = (m.global.session.user.settings["ui.font.fallback"] = true)
+
+  if m.waitForFontDownload
+    startLoadingSpinner(true, tr("Downloading Fallback Font"))
+    print "UI fallback fonts enabled - app will wait for font download completion"
+  else
+    print "Only subtitle fallback fonts enabled - app will continue loading normally"
+  end if
+end sub
+
+' Load the home screen - may wait for font processing if UI fallback fonts are enabled
+sub loadHomeScreen()
+  ' If we don't need to wait for font download, load immediately
+  if not isValid(m.waitForFontDownload) or not m.waitForFontDownload
+    createAndShowHomeGroup()
+    return
+  end if
+
+  ' Otherwise, we'll wait for the font download to complete
+  ' The actual loading will happen in the message loop when we receive fontDownloadCompleted
+  print "Waiting for font download completion before loading home screen"
+end sub
+
+' Create and show the home group
+sub createAndShowHomeGroup()
+  group = CreateHomeGroup()
+  group.callFunc("loadLibraries")
+  m.global.sceneManager.callFunc("pushScene", group)
+  stopLoadingSpinner()
+
+  m.scene.observeField("exit", m.port)
+
+  ' update lastRunVersion but only on prod
+  if not m.global.app.isDev
+    ' has the current user ran this version before?
+    usersLastRunVersion = m.global.session.user.settings.lastRunVersion
+    if not isValid(usersLastRunVersion) or not versionChecker(usersLastRunVersion, m.global.app.version)
+      set_user_setting("LastRunVersion", m.global.app.version)
+    end if
+  end if
+end sub
+
+' Handle font download completion and optionally calculate scale factor
+sub handleFontDownloadCompletion(fontDownloadTask as object)
+  if not fontDownloadTask.fontDownloadSuccess
+    print "WARNING: Font download failed: " + fontDownloadTask.errorMessage
+  else
+
+    ' If UI fallback fonts are enabled, calculate scale factor
+    if m.global.session.user.settings["ui.font.fallback"] = true
+      print "Calculating font scale factor for UI fallback fonts"
+      calculateFontScaleFactor()
+    end if
+  end if
+
+  ' Clean up the task
+  fontDownloadTask.unobserveField("fontDownloadCompleted")
+  fontDownloadTask = invalid
+
+  ' If we were waiting for font download, now load the home screen
+  if isValid(m.waitForFontDownload) and m.waitForFontDownload
+    print "Font processing complete, loading home screen"
+    createAndShowHomeGroup()
+  end if
 end sub
 
 ' Calculate global font scale factor for fallback font
