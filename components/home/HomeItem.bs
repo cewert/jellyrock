@@ -12,6 +12,7 @@ sub init()
   initItemIcon()
   initItemTextExtra()
   m.itemPoster.observeField("loadStatus", "onPosterLoadStatusChanged")
+  m.itemIcon.observeField("loadStatus", "onIconLoadStatusChanged")
   initBackdrop()
 end sub
 
@@ -359,25 +360,66 @@ sub onPosterLoadStatusChanged()
     end if
   else
     m.backdrop.visible = true
-    if m.itemIcon.uri <> ""
-      m.itemIcon.visible = true
-    end if
     backdropText = m.top.findNode("backdropText")
     if isValid(backdropText)
-      ' reposition backdroptext and itemIcon so they don't overlap
-      m.itemIcon.translation = [(m.backdrop.width - m.itemIcon.width) / 2, ((m.backdrop.height - m.itemIcon.height) / 2) / 2]
-
-      backdropText.height = 0
-      backdropText.translation = [backdropText.translation[0], ((m.backdrop.height - m.itemIcon.height) / 2) + m.itemIcon.height]
-      fontSizeConstants = m.global.constants.font_sizes
-      if len(backdropText.text) > 12
-        backdropText.font.size = fontSizeConstants.large
-      else if len(backdropText.text) > 35
-        backdropText.font.size = fontSizeConstants.medium
-      else if len(backdropText.text) > 65
-        backdropText.font.size = fontSizeConstants.small
-      end if
       backdropText.visible = true
+      ' Reset backdrop text to original position when poster fails to load
+      resetBackdropTextPosition()
+    end if
+  end if
+end sub
+
+'Handle icon image load status changes
+sub onIconLoadStatusChanged()
+  if m.itemIcon.loadStatus = "ready" and m.itemIcon.uri <> ""
+    ' Icon loaded successfully
+    m.itemIcon.visible = true
+    ' Only rearrange if backdrop is visible (poster didn't load)
+    if m.backdrop.visible
+      arrangeIconAndBackdropText()
+    end if
+  else
+    ' Icon failed to load or no URI set
+    m.itemIcon.visible = false
+    ' Reset backdrop text position if backdrop is visible
+    if m.backdrop.visible
+      resetBackdropTextPosition()
+    end if
+  end if
+end sub
+
+'Arrange icon and backdrop text when both are visible
+sub arrangeIconAndBackdropText()
+  backdropText = m.top.findNode("backdropText")
+  if isValid(backdropText)
+    ' reposition backdroptext and itemIcon so they don't overlap
+    m.itemIcon.translation = [(m.backdrop.width - m.itemIcon.width) / 2, ((m.backdrop.height - m.itemIcon.height) / 2) / 2]
+
+    backdropText.height = 0
+    backdropText.translation = [backdropText.translation[0], ((m.backdrop.height - m.itemIcon.height) / 2) + m.itemIcon.height]
+
+    ' Set font size based on text length
+    fontSizeConstants = m.global.constants.font_sizes
+    if len(backdropText.text) > 12
+      backdropText.font.size = fontSizeConstants.large
+    else if len(backdropText.text) > 35
+      backdropText.font.size = fontSizeConstants.medium
+    else if len(backdropText.text) > 65
+      backdropText.font.size = fontSizeConstants.small
+    end if
+  end if
+end sub
+
+'Reset backdrop text to original position
+sub resetBackdropTextPosition()
+  backdropText = m.top.findNode("backdropText")
+  if isValid(backdropText)
+    backdropText.height = 231
+    backdropText.translation = [9, 9]
+    ' Reset font size to original
+    fontSizeConstants = m.global.constants.font_sizes
+    if isValid(fontSizeConstants)
+      backdropText.font.size = fontSizeConstants.large ' or whatever the original size should be
     end if
   end if
 end sub
