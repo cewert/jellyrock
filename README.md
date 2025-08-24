@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/github/license/cewert/jellyrock.svg "GPL 2.0 License")](LICENSE)
 <!-- [![Translation Status](https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-roku/svg-badge.svg "Translation Status")](https://translate.jellyfin.org/projects/jellyfin/jellyfin-roku/?utm_source=widget) -->
 
-JellyRock is a Jellyfin client for Roku devices.
+JellyRock is a Jellyfin client for Roku devices, forked from jellyfin-roku [v2.2.5](https://github.com/jellyfin-archive/jellyfin-roku-legacy/releases/tag/v2.2.5).
 
 ## Screenshots
 
@@ -33,9 +33,8 @@ JellyRock is a Jellyfin client for Roku devices.
 ```bash
 git clone https://github.com/cewert/jellyrock.git
 cd jellyrock
-# NOTE: no-optional flag is needed on linux to prevent NPM postinstall failure
-npm install --no-optional 
-npm run build # OR npm run build-prod to use prod images and remove debug logging
+npm install --no-optional # no-optional flag prevents npm postinstall failure on linux
+npm run build # OR npm run build-prod
 ```
 
 ## Advanced
