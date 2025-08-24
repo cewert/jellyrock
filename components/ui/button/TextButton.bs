@@ -92,13 +92,13 @@ sub setSizeAndCenterText()
   ' Use font size for height to avoid stale localBoundingRect() issues
   textHeight = fontSize
 
-  print "[TextButton] text='"; m.buttonText.text; "', length="; textLength; ", charWidth="; charWidth; ", textWidth="; textWidth; ", textHeight="; textHeight
+  ' print "[TextButton] text='"; m.buttonText.text; "', length="; textLength; ", charWidth="; charWidth; ", textWidth="; textWidth; ", textHeight="; textHeight
 
   ' Calculate button dimensions with padding
   buttonWidth = textWidth + (m.top.padding * 2)
   buttonHeight = textHeight + (m.top.padding * 2)
 
-  print "[TextButton] size with padding: width=", buttonWidth, ", height=", buttonHeight
+  ' print "[TextButton] size with padding: width=", buttonWidth, ", height=", buttonHeight
 
   ' Ensure minimum dimensions (this is the ONLY place minWidth should be enforced)
   if buttonWidth < m.top.minWidth
@@ -108,7 +108,7 @@ sub setSizeAndCenterText()
     buttonHeight = m.top.minHeight
   end if
 
-  print "[TextButton] ACTUAL size (using minWidth): width=", buttonWidth, ", height=", buttonHeight
+  ' print "[TextButton] ACTUAL size (using minWidth): width=", buttonWidth, ", height=", buttonHeight
 
   ' Set background size
   m.buttonBackground.width = buttonWidth
