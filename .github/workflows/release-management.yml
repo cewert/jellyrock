@@ -212,7 +212,7 @@ jobs:
           ## Post-merge actions:
           A draft release will be automatically created after merging this PR (whenever manifest version <> latest release tag). Review the draft release and publish it when ready.
           ---
-          *This PR was created automatically by JellyRock-bot*"
+          **This PR was created automatically by JellyRock-bot*"
 
           gh pr create \
             --title "Prepare for v$VERSION release" \
