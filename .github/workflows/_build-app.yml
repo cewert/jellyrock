@@ -54,7 +54,21 @@ jobs:
       - name: Determine build context
         id: context
         run: |
-          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          # Parse branch name properly for different GitHub contexts
+          if [[ "$GITHUB_REF" == refs/pull/*/merge ]]; then
+            # Pull request: extract PR number from refs/pull/123/merge
+            PR_NUMBER=$(echo "$GITHUB_REF" | sed 's|refs/pull/||' | sed 's|/merge||')
+            BRANCH_NAME="PR${PR_NUMBER}"
+            RAW_BRANCH_NAME="$GITHUB_REF"
+          elif [[ "$GITHUB_REF" == refs/heads/* ]]; then
+            # Regular branch: remove refs/heads/ prefix
+            BRANCH_NAME=${GITHUB_REF#refs/heads/}
+            RAW_BRANCH_NAME="$BRANCH_NAME"
+          else
+            # Fallback for other ref types
+            BRANCH_NAME=${GITHUB_REF##*/}
+            RAW_BRANCH_NAME="$GITHUB_REF"
+          fi
 
           MAJOR=$(sed -n 's/^major_version=//p' manifest)
           MINOR=$(sed -n 's/^minor_version=//p' manifest)  
@@ -64,12 +78,12 @@ jobs:
           # Determine artifact naming based on context and whether this is a release build
           if [[ "${{ inputs.create_github_release }}" == "true" ]]; then
             # Release builds use version-based naming
-            if [[ $BRANCH_NAME =~ ^release-[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            if [[ $RAW_BRANCH_NAME =~ ^release-[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
               BUILD_CONTEXT="version_branch"
-              VERSION_TAG="v${BRANCH_NAME#release-}"  # Convert release-1.0.1 to v1.0.1
+              VERSION_TAG="v${RAW_BRANCH_NAME#release-}"  # Convert release-1.0.1 to v1.0.1
               ARTIFACT_NAME="JellyRock-${VERSION_TAG}-${{ github.sha }}"
               ZIP_NAME="JellyRock-${VERSION_TAG}.zip"
-            elif [[ $BRANCH_NAME == "main" ]]; then
+            elif [[ $RAW_BRANCH_NAME == "main" ]]; then
               BUILD_CONTEXT="main_branch"
               VERSION_TAG="v${VERSION}"  # Use manifest version for main branch
               TAG_NAME="v${VERSION}"
@@ -78,13 +92,15 @@ jobs:
             fi
           else
             # Regular dev/prod builds use build_type-branch naming
+            # Use the cleaned branch name for artifact naming
             SAFE_BRANCH=$(echo $BRANCH_NAME | sed 's/[^a-zA-Z0-9-]/-/g' | cut -c1-50)
-            ARTIFACT_NAME="JellyRock-${{ inputs.build_type }}-${SAFE_BRANCH}-${{ github.sha }}"
-            ZIP_NAME="JellyRock-${{ inputs.build_type }}-${SAFE_BRANCH}-${{ github.sha }}.zip"
+            SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+            ARTIFACT_NAME="JellyRock-${{ inputs.build_type }}-${SAFE_BRANCH}-${SHORT_SHA}"
+            ZIP_NAME="JellyRock-${{ inputs.build_type }}-${SAFE_BRANCH}-${SHORT_SHA}.zip"
             
-            if [[ $BRANCH_NAME =~ ^release-[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            if [[ $RAW_BRANCH_NAME =~ ^release-[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
               BUILD_CONTEXT="version_branch"
-            elif [[ $BRANCH_NAME == "main" ]]; then
+            elif [[ $RAW_BRANCH_NAME == "main" ]]; then
               BUILD_CONTEXT="main_branch"
             else 
               BUILD_CONTEXT="feature_branch"
@@ -92,7 +108,8 @@ jobs:
           fi
 
           echo "🔍 Build Context Information:"
-          echo "  Branch: $BRANCH_NAME"
+          echo "  Raw Branch Ref: $RAW_BRANCH_NAME"
+          echo "  Parsed Branch: $BRANCH_NAME"
           echo "  Version: $VERSION" 
           echo "  Build Context: $BUILD_CONTEXT"
           echo "  Artifact Name: $ARTIFACT_NAME"
@@ -110,7 +127,7 @@ jobs:
           # Set tag name for releases
           if [[ "${{ inputs.create_github_release }}" == "true" ]]; then
             if [[ $BUILD_CONTEXT == "version_branch" ]]; then
-              TAG_NAME="v${BRANCH_NAME#release-}"  # Convert release-1.0.1 to v1.0.1
+              TAG_NAME="v${RAW_BRANCH_NAME#release-}"  # Convert release-1.0.1 to v1.0.1
             elif [[ $BUILD_CONTEXT == "main_branch" ]]; then
               TAG_NAME="v${VERSION}"  # Use manifest version for main branch releases
             fi
