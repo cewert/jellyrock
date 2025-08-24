@@ -15,7 +15,7 @@
       </LayoutGroup>
       <!--background for server picker-->
       <Rectangle color="0x00000020" width="1620" height="400">
-        <MarkupList id="serverPicker" translation="[50, 20]" itemComponentName="JRServer" itemSpacing="[0, 10]" itemSize="[1520, 100]" numRows="3" vertFocusAnimationStyle="floatingFocus" />
+        <MarkupList id="serverPicker" translation="[50, 20]" itemComponentName="JRServer" itemSpacing="[0, 10]" itemSize="[1520, 100]" numRows="3" vertFocusAnimationStyle="floatingFocus" drawFocusFeedback="false" />
       </Rectangle>
 
       <LabelPrimaryMedium text="...or enter server URL manually:" translation="[0, 690]" />

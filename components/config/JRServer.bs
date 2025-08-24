@@ -1,9 +1,27 @@
+import "pkg:/source/utils/misc.bs"
+
 sub init() as void
+  m.focusBorder = m.top.findNode("focusBorder")
   m.poster = m.top.findNode("poster")
   m.name = m.top.findNode("name")
   m.baseUrl = m.top.findNode("baseUrl")
   m.labels = m.top.findNode("labels")
-  setTextColor(0)
+
+  ' Set focus border color to primary color and size it to cover the entire component
+  if isValid(m.focusBorder)
+    m.focusBorder.blendColor = m.global.constants.colors.primary
+    ' Size the border to cover the entire component with some padding
+    ' get the itemSize of the parent MarkupList
+    parentList = m.top.getParent()
+    if isValid(parentList) and parentList.hasField("itemSize")
+      itemSize = parentList.itemSize
+      if isValid(itemSize) and itemSize.Count() = 2
+        m.focusBorder.width = itemSize[0]
+        m.focusBorder.height = itemSize[1]
+      end if
+    end if
+    ' m.focusBorder.translation = [-10, -5]
+  end if
 end sub
 
 sub itemContentChanged() as void
@@ -14,21 +32,13 @@ sub itemContentChanged() as void
   m.baseUrl.text = server.baseUrl
 end sub
 
-sub onFocusPercentChange(event)
-  setTextColor(event.getData())
-end sub
-
-sub setTextColor(percentFocused)
-  white = "0xffffffff"
-  black = "0x00000099"
-  if percentFocused > .4
-    color = black
-  else
-    color = white
+sub onFocusPercentChange()
+  ' Show focus border when item is focused (above 40% focus)
+  if isValid(m.focusBorder)
+    if m.top.focusPercent > 0.4
+      m.focusBorder.visible = true
+    else
+      m.focusBorder.visible = false
+    end if
   end if
-
-  children = m.labels.getChildren(-1, 0)
-  for each child in children
-    child.color = color
-  end for
 end sub
