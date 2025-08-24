@@ -24,6 +24,7 @@
     "node_modules/**/*",
     "**/roku_modules/**/*"
   ],
+  "sourceMap": false,
   "autoImportComponentScript": true,
   "stagingDir": "build/staging",
   "retainStagingDir": true
