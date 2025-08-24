@@ -260,9 +260,9 @@ sub setVideoSubTitle()
     end if
     ' Episode number
     if isValid(m.top.episodeNumber)
-      episodeInfoText = episodeInfoText + `:${tr("E")}${m.top.episodeNumber}`
+      episodeInfoText = episodeInfoText + `${tr("E")}${m.top.episodeNumber}`
     else
-      episodeInfoText = episodeInfoText + `:${tr("E")}??`
+      episodeInfoText = episodeInfoText + `${tr("E")}??`
     end if
     ' Episode number end
     if isValid(m.top.episodeNumberEnd) and m.top.episodeNumberEnd <> 0 and m.top.episodeNumberEnd > m.top.episodeNumber
