@@ -96,7 +96,6 @@ namespace session
       tmpSessionServer.AddReplace("id", myServerInfo.Id)
       tmpSessionServer.AddReplace("name", myServerInfo.ServerName)
       tmpSessionServer.AddReplace("localURL", myServerInfo.LocalAddress)
-      tmpSessionServer.AddReplace("os", myServerInfo.OperatingSystem)
       tmpSessionServer.AddReplace("startupWizardCompleted", myServerInfo.StartupWizardCompleted)
       tmpSessionServer.AddReplace("version", myServerInfo.Version)
       tmpSessionServer.AddReplace("hasError", myServerInfo.error)
