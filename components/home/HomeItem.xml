@@ -3,7 +3,7 @@
   <children>
     <RectangleBackgroundSecondary id="backdrop" width="464" height="261" />
 
-    <Poster id="itemIcon" width="100" height="100" translation="[190,85]" loadDisplayMode="scaleToFit" />
+    <Poster id="itemIcon" width="96" height="96" translation="[190,85]" loadDisplayMode="scaleToFit" visible="false" />
 
     <JRPoster id="itemPoster" />
 

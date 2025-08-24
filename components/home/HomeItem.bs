@@ -84,7 +84,7 @@ sub itemContentChanged()
   m.itemTextExtra.text = ""
   m.backdrop.width = itemData.imageWidth
 
-  if isValid(itemData.iconUrl)
+  if isValid(itemData.iconUrl) and itemData.iconUrl <> ""
     m.itemIcon.uri = itemData.iconUrl
   end if
 
@@ -359,9 +359,24 @@ sub onPosterLoadStatusChanged()
     end if
   else
     m.backdrop.visible = true
-    m.itemIcon.visible = true
+    if m.itemIcon.uri <> ""
+      m.itemIcon.visible = true
+    end if
     backdropText = m.top.findNode("backdropText")
     if isValid(backdropText)
+      ' reposition backdroptext and itemIcon so they don't overlap
+      m.itemIcon.translation = [(m.backdrop.width - m.itemIcon.width) / 2, ((m.backdrop.height - m.itemIcon.height) / 2) / 2]
+
+      backdropText.height = 0
+      backdropText.translation = [backdropText.translation[0], ((m.backdrop.height - m.itemIcon.height) / 2) + m.itemIcon.height]
+      fontSizeConstants = m.global.constants.font_sizes
+      if len(backdropText.text) > 12
+        backdropText.font.size = fontSizeConstants.large
+      else if len(backdropText.text) > 35
+        backdropText.font.size = fontSizeConstants.medium
+      else if len(backdropText.text) > 65
+        backdropText.font.size = fontSizeConstants.small
+      end if
       backdropText.visible = true
     end if
   end if
