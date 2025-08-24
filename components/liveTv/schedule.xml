@@ -1,17 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="Schedule" extends="JRGroup">
   <children>
-    <rectangle translation="[0,150]" width="1920" height="930" color="#262626" />
+    <RectangleBackgroundPrimary translation="[0,150]" width="1920" height="930" />
 
     <!-- Selected Item Details -->
     <ProgramDetails id="detailsPane" focusable="true" />
 
-    <TimeGrid id="scheduleGrid" translation="[0,600]"
-      automaticLoadingDataFeedback="false" showLoadingDataFeedback="true"
-      focusBitmapUri="pkg:/images/white.9.png" focusBitmapBlendColor="#006fab"
-      programTitleFocusedColor="#ffffff" iconFocusedColor="#ff0000"
-      showPastTimeScreen="true" pastTimeScreenBlendColor="#555555"
-    />
+    <JRTimeGrid id="scheduleGrid" translation="[0,600]" />
     <Animation id="gridMoveAnimation" duration="1" repeat="false" easeFunction="outQuad">
       <Vector2DFieldInterpolator id="gridMoveAnimationPosition" key="[0.0, 0.5]" fieldToInterp="scheduleGrid.translation" />
     </Animation>

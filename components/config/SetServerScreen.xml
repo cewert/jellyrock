@@ -22,7 +22,7 @@
 
       <Rectangle id="serverUrlContainer" color="0x00000000">
         <TextEditBox id="serverUrlTextbox" hintText="e.g. 192.168.1.100:8096 or https://example.com/jellyfin"></TextEditBox>
-        <Poster id="serverUrlOutline" visible="false" uri="pkg:/images/hd_focus.9.png" />
+        <Poster id="serverUrlOutline" visible="false" uri="pkg:/images/white-focus.9.png" />
       </Rectangle>
       <LabelErrorMedium id="errorMessage" text="" />
     </LayoutGroup>
