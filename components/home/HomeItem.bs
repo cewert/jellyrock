@@ -363,8 +363,6 @@ sub onPosterLoadStatusChanged()
     backdropText = m.top.findNode("backdropText")
     if isValid(backdropText)
       backdropText.visible = true
-      ' Reset backdrop text to original position when poster fails to load
-      resetBackdropTextPosition()
     end if
   end if
 end sub
@@ -374,17 +372,10 @@ sub onIconLoadStatusChanged()
   if m.itemIcon.loadStatus = "ready" and m.itemIcon.uri <> ""
     ' Icon loaded successfully
     m.itemIcon.visible = true
-    ' Only rearrange if backdrop is visible (poster didn't load)
-    if m.backdrop.visible
-      arrangeIconAndBackdropText()
-    end if
+    arrangeIconAndBackdropText()
   else
     ' Icon failed to load or no URI set
     m.itemIcon.visible = false
-    ' Reset backdrop text position if backdrop is visible
-    if m.backdrop.visible
-      resetBackdropTextPosition()
-    end if
   end if
 end sub
 
@@ -400,26 +391,12 @@ sub arrangeIconAndBackdropText()
 
     ' Set font size based on text length
     fontSizeConstants = m.global.constants.font_sizes
-    if len(backdropText.text) > 12
+    if backdropText.text.len() > 12
       backdropText.font.size = fontSizeConstants.large
-    else if len(backdropText.text) > 35
+    else if backdropText.text.len() > 35
       backdropText.font.size = fontSizeConstants.medium
-    else if len(backdropText.text) > 65
+    else if backdropText.text.len() > 65
       backdropText.font.size = fontSizeConstants.small
-    end if
-  end if
-end sub
-
-'Reset backdrop text to original position
-sub resetBackdropTextPosition()
-  backdropText = m.top.findNode("backdropText")
-  if isValid(backdropText)
-    backdropText.height = 231
-    backdropText.translation = [9, 9]
-    ' Reset font size to original
-    fontSizeConstants = m.global.constants.font_sizes
-    if isValid(fontSizeConstants)
-      backdropText.font.size = fontSizeConstants.large ' or whatever the original size should be
     end if
   end if
 end sub
