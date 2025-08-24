@@ -222,19 +222,3 @@ jobs:
             --label "release-prep"
 
           echo "✅ Created release preparation PR for v$VERSION"
-
-  update-existing-pr:
-    needs: [validate-and-prepare, update-version-files]
-    runs-on: ubuntu-latest
-    if: needs.validate-and-prepare.outputs.pr_exists == 'true'
-    steps:
-      - name: Update existing PR
-        env:
-          GH_TOKEN: ${{ secrets.JELLYROCK_BOT_TOKEN }}
-        run: |
-          VERSION="${{ needs.validate-and-prepare.outputs.version }}"
-          PR_NUMBER="${{ needs.validate-and-prepare.outputs.pr_number }}"
-
-          gh pr comment "$PR_NUMBER" --body "🔄 **Version files updated to v$VERSION**"
-
-          echo "✅ Updated existing PR #$PR_NUMBER with version bump info"
