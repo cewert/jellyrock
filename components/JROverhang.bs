@@ -9,8 +9,41 @@ sub init()
   m.user = m.top.findNode("username")
   m.userGroup = m.top.findNode("userGroup")
   m.clock = m.top.findNode("clock")
-  m.slideDownAnimation = m.top.findNode("slideDown")
-  m.slideUpAnimation = m.top.findNode("slideUp")
+
+  ' Create animations programmatically to avoid interpolator field reference issues
+  createSlideAnimations()
+end sub
+
+' Create slide animations programmatically
+sub createSlideAnimations()
+  ' Create slide up animation
+  m.slideUpAnimation = createObject("roSGNode", "Animation")
+  m.slideUpAnimation.id = "slideUp"
+  m.slideUpAnimation.duration = 0.5
+  m.slideUpAnimation.repeat = false
+
+  slideUpInterpolator = createObject("roSGNode", "Vector2DFieldInterpolator")
+  slideUpInterpolator.key = [0.0, 0.5]
+  slideUpInterpolator.keyValue = [[0, 0], [0, -200]]
+  slideUpInterpolator.fieldToInterp = m.top.id + ".translation"
+
+  m.slideUpAnimation.appendChild(slideUpInterpolator)
+  m.top.appendChild(m.slideUpAnimation)
+
+  ' Create slide down animation
+  m.slideDownAnimation = createObject("roSGNode", "Animation")
+  m.slideDownAnimation.id = "slideDown"
+  m.slideDownAnimation.duration = 0.5
+  m.slideDownAnimation.delay = 0.2
+  m.slideDownAnimation.repeat = false
+
+  slideDownInterpolator = createObject("roSGNode", "Vector2DFieldInterpolator")
+  slideDownInterpolator.key = [0.0, 0.5]
+  slideDownInterpolator.keyValue = [[0, -200], [0, 0]]
+  slideDownInterpolator.fieldToInterp = m.top.id + ".translation"
+
+  m.slideDownAnimation.appendChild(slideDownInterpolator)
+  m.top.appendChild(m.slideDownAnimation)
 end sub
 
 sub isVisibleChanged()

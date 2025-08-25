@@ -12,14 +12,6 @@
     <!-- Clock -->
     <Clock />
 
-    <!-- Animations -->
-    <Animation id="slideUp" duration=".5" repeat="false">
-      <Vector2DFieldInterpolator key="[0.0, .5]" keyValue="[[0, 0], [0, -200]]" fieldToInterp="overhang.translation" />
-    </Animation>
-
-    <Animation id="slideDown" delay=".2" duration=".5" repeat="false">
-      <Vector2DFieldInterpolator key="[0.0, .5]" keyValue="[[0, -200], [0, 0]]" fieldToInterp="overhang.translation" />
-    </Animation>
   </children>
   <interface>
     <field id="id" type="string" />
