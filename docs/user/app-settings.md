@@ -1,4 +1,6 @@
 <!-- markdownlint-disable -->
+<!-- cspell:ignore-file -->
+<!-- spell-checker: disable -->
 
 <h1 id="top">JellyRock App Settings</h1>
 

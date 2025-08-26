@@ -38,3 +38,5 @@ bslint
 Linter
 linter
 linters
+jellyfin-roku
+v2.0
