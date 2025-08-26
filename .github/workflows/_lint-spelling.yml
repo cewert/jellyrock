@@ -25,4 +25,4 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
       - name: Check markdown files for spelling errors
-        run: npm run lint-spelling
+        run: npm run lint:spelling

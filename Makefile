@@ -37,8 +37,8 @@ node_modules/: package-lock.json; npm ci
 .PHONY: build-dev build-prod build-tests
 .NOTPARALLEL: build-dev build-prod build-tests # output to the same file
 build-dev: node_modules/; npm run build
-build-prod: node_modules/; npm run build-prod
-build-tests: node_modules/; npm run build-tests
+build-prod: node_modules/; npm run build:prod
+build-tests: node_modules/; npm run build:tests
 
 # default to build-dev if file doesn't exist
 $(BUILT_PKG):; $(MAKE) build-dev

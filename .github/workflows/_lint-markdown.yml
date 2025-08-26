@@ -26,4 +26,4 @@ jobs:
         run: npm ci
       - uses: xt0rted/markdownlint-problem-matcher@1a5fabfb577370cfdf5af944d418e4be3ea06f27 # v3
       - name: Lint markdown files
-        run: npm run lint-markdown
+        run: npm run lint:markdown

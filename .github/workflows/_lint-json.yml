@@ -25,4 +25,4 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
       - name: Validate JSON syntax
-        run: npm run lint-json
+        run: npm run lint:json

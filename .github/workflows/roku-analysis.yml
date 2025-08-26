@@ -27,7 +27,7 @@ jobs:
       - name: NPM install
         run: npm ci
       - name: Build app for production
-        run: npm run build-prod
+        run: npm run build:prod
       - name: Setup Java
         uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5
         with:

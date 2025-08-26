@@ -26,7 +26,7 @@
     {
       "label": "build-prod",
       "type": "shell",
-      "command": "npm run build-prod",
+      "command": "npm run build:prod",
       "problemMatcher": [],
       "presentation": {
         "echo": true,
@@ -46,7 +46,7 @@
     {
       "label": "build-tests",
       "type": "shell",
-      "command": "npm run build-tests",
+      "command": "npm run build:tests",
       "problemMatcher": [],
       "presentation": {
         "echo": true,
@@ -64,7 +64,7 @@
     {
       "label": "build-tdd",
       "type": "shell",
-      "command": "npm run build-tdd",
+      "command": "npm run build:tdd",
       "problemMatcher": [],
       "presentation": {
         "echo": true,

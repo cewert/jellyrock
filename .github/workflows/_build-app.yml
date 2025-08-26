@@ -157,7 +157,7 @@ jobs:
         run: |
           if [[ "${{ inputs.build_type }}" == "prod" ]] || [[ "${{ steps.context.outputs.build_context }}" == "version_branch" ]]; then
             echo "🏗️ Building production version..."
-            npm run build-prod
+            npm run build:prod
           else
             echo "🏗️ Building development version..."
             npm run build

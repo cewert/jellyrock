@@ -34,8 +34,8 @@ JRScene (root scene)
 ## Development Workflow
 
 ### Testing Commands (AI Agent Priority)
-- **Code validation**: `npm run lint-bs` (lint and validate code)
-- **Unit tests**: `npm run build-tests` (builds ALL Rooibos tests - requires physical Roku device to be deployed and actually run the tests)
+- **Code validation**: `npm run lint:bs` (lint and validate code)
+- **Unit tests**: `npm run build:tests` (builds ALL Rooibos tests - requires physical Roku device to be deployed and actually run the tests)
 
 ### Runtime Error Limitations
 ⚠️ **CRITICAL**: Linter and build validation catch syntax/import errors but NOT runtime crashes. Code can build successfully but crash instantly when run. AI agents cannot detect runtime errors automatically - they require:
