@@ -1,6 +1,6 @@
 sub init()
   m.top.poster.uri = "pkg:/images/spinner.png"
-  m.top.poster.blendColor = m.global.constants.colors.secondary
+  m.top.poster.blendColor = m.global.constants.colors.text_secondary
   m.top.control = "start"
   m.top.clockwise = true
   m.top.spinInterval = 1
