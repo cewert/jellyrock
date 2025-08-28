@@ -1,6 +1,4 @@
 <!-- markdownlint-disable -->
-<!-- cspell:ignore-file -->
-<!-- spell-checker: disable -->
 
 <h1 id="top">JellyRock App Settings</h1>
 
@@ -342,7 +340,7 @@ Show already watched episodes in 'Next Up' sections.
 
 <a href="#user-interface">User Interface</a> › <a href="#user-interface-general">General</a> › <a href="#ui.row.layout">Row Layout</a>
 
-Choose how rows are displayed on the home screen.
+Choose how rows are displayed throughout the app.
 
 | Property | Value |
 | --- | --- |
