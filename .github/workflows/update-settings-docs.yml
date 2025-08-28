@@ -7,10 +7,10 @@ on:
   push:
     branches: [main]
     paths:
-      - "docs/user/app-settings.md"
+      - "settings/settings.json"
   pull_request:
     paths:
-      - "docs/user/app-settings.md"
+      - "settings/settings.json"
 
 jobs:
   update-settings-docs:
