@@ -69,10 +69,6 @@
       <extracomment>Additional parts of a video</extracomment>
     </message>
     <message>
-      <source>Ag</source>
-      <translation>Ag</translation>
-    </message>
-    <message>
       <source>Age</source>
       <translation>Age</translation>
     </message>
