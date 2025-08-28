@@ -256,7 +256,7 @@
           },
           {
             "title": "Row Layout",
-            "description": "Choose how rows are displayed on the home screen.",
+            "description": "Choose how rows are displayed throughout the app.",
             "settingName": "ui.row.layout",
             "type": "radio",
             "default": "fullwidth",
