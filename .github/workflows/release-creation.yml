@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: # Allow manual triggering for testing
 
 jobs:
   check-and-create-release:

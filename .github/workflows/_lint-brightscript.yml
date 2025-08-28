@@ -18,7 +18,6 @@ jobs:
           path: |
             source/roku_modules
             components/roku_modules
-            .ropm
           key: ropm-${{ hashFiles('package.json', 'package-lock.json') }}
           restore-keys: ropm-
       - run: npm ci

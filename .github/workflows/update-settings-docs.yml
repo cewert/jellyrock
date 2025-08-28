@@ -1,0 +1,45 @@
+# This workflow automates updating the generated settings documentation when app-settings.md changes.
+# It runs on PRs and pushes to main that modify docs/user/app-settings.md, then commits the regenerated file as jellyrock-bot.
+
+name: Update Settings Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/user/app-settings.md"
+  pull_request:
+    paths:
+      - "docs/user/app-settings.md"
+
+jobs:
+  update-settings-docs:
+    runs-on: ubuntu-latest
+    if: github.actor != 'jellyrock-bot'
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "lts/*"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Regenerate settings docs
+        run: npm run docs:settings
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(docs): auto-update settings docs [skip ci]"
+          commit_user_name: JellyRock-bot
+          commit_user_email: c.ewert@gmail.com
+          commit_author: JellyRock-bot <c.ewert@gmail.com>
+          file_pattern: docs/user/app-settings.md
+          skip_dirty_check: false
+          push_options: "--force-with-lease"
