@@ -34,7 +34,7 @@ jobs:
         run: npm run docs:settings
 
       - name: Commit and push changes
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v6
         with:
           commit_message: "chore(docs): auto-update settings docs [skip ci]"
           commit_user_name: JellyRock-bot
