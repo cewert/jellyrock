@@ -125,7 +125,3 @@ npm run lint
 ```
 
 And fix any encountered issue.
-
-## Bug Fixes
-
-All Pull Requests that fix a bug in production should target the "bugfix" branch i.e. `2.0.z`, `2.1.z`, etc. All other Pull Requests should target the `master` branch.
