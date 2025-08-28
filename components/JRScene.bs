@@ -5,6 +5,12 @@ sub init()
   m.top.backgroundURI = ""
   m.loadingText = m.top.findNode("loadingText")
   m.spinner = m.top.findNode("spinner")
+
+  ' set text manually to AVOID translation
+  defaultFont = m.top.findNode("defaultFont")
+  fallbackFont = m.top.findNode("fallbackFont")
+  defaultFont.text = "Ag"
+  fallbackFont.text = "Ag"
 end sub
 
 sub loadingTextChanged()
