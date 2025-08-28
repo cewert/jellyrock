@@ -241,9 +241,8 @@
       <extracomment>Menu option for showing Live TV Channel List</extracomment>
     </message>
     <message>
-      <source>Choose how rows are displayed on the home screen.</source>
-      <translation>Choose how rows are displayed on the home screen.</translation>
-      <extracomment>User Setting - Setting description</extracomment>
+      <source>Choose how rows are displayed throughout the app.</source>
+      <translation>Choose how rows are displayed throughout the app.</translation>
     </message>
     <message>
       <source>Cinema Mode</source>
