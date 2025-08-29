@@ -4,6 +4,36 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Added
+
+- use workflow to sync changelog file ([c1479da](https://github.com/cewert/jellyrock/commit/c1479da))
+- add(docs): changelog with all v1 commits and PRs ([9cfdc42](https://github.com/cewert/jellyrock/commit/9cfdc42))
+- use CI to auto-update generated app-settings.md doc ([a0773b5](https://github.com/cewert/jellyrock/commit/a0773b5))
+- add settings docs generator ([eb634c1](https://github.com/cewert/jellyrock/commit/eb634c1))
+
+### Changed
+
+- enable manual trigger to fix doc ([f671435](https://github.com/cewert/jellyrock/commit/f671435))
+- update en_US translation file ([b650842](https://github.com/cewert/jellyrock/commit/b650842))
+- merged PR #42 ([#42](https://github.com/cewert/jellyrock/pull/42)) ([03cc60a](https://github.com/cewert/jellyrock/commit/03cc60a))
+- change(docs): add link to user app settings ([b4b8058](https://github.com/cewert/jellyrock/commit/b4b8058))
+- merged PR #40 ([#40](https://github.com/cewert/jellyrock/pull/40)) ([fb0ecee](https://github.com/cewert/jellyrock/commit/fb0ecee))
+- sort scripts ([4d33d02](https://github.com/cewert/jellyrock/commit/4d33d02))
+- use colons instead of dashes ([8e149da](https://github.com/cewert/jellyrock/commit/8e149da))
+- update recommended extensions ([df1350c](https://github.com/cewert/jellyrock/commit/df1350c))
+
+### Fixed
+
+- filepath trigger ([77e3f2e](https://github.com/cewert/jellyrock/commit/77e3f2e))
+- `ui.row.layout` affects all rows ([a217a08](https://github.com/cewert/jellyrock/commit/a217a08))
+- prevent translation commits from triggering translation workflow ([d7cc939](https://github.com/cewert/jellyrock/commit/d7cc939))
+- prevent hardcoded fallback font text from being translatied ([dc80d78](https://github.com/cewert/jellyrock/commit/dc80d78))
+- no longer using bugfix branch ([620cb30](https://github.com/cewert/jellyrock/commit/620cb30))
+- spinner color from secondary -> text_secondary ([74bec4f](https://github.com/cewert/jellyrock/commit/74bec4f))
+- fix spelling linter ([270920b](https://github.com/cewert/jellyrock/commit/270920b))
+- fix overhang warnings in log at app start `Could not find node "overhang" to update the interpolator field on` ([6695a5f](https://github.com/cewert/jellyrock/commit/6695a5f))
 ## [1.0.0](https://github.com/cewert/jellyrock/commits/main/?since=2025-06-28&until=2025-08-24) - 2025-08-24
 
 ### Added
