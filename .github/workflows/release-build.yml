@@ -1,0 +1,58 @@
+name: Finalize Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  finalize-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Extract version info
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag_name=v$VERSION" >> $GITHUB_OUTPUT
+          echo "🏷️ Finalizing release for version $VERSION"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Update changelog for release
+        run: |
+          echo "📝 Converting unreleased changes to release ${{ steps.version.outputs.version }}"
+          node scripts/changelog-syncer.js sync-release "${{ steps.version.outputs.version }}"
+
+      - name: Commit changelog update
+        run: |
+          git config user.name "JellyRock-bot"
+          git config user.email "c.ewert@gmail.com"
+
+          if git diff --quiet CHANGELOG.md; then
+            echo "ℹ️ No changelog changes to commit"
+          else
+            git add CHANGELOG.md
+            git commit -m "chore:(docs) finalize changelog for v${{ steps.version.outputs.version }} [skip ci]"
+            git push origin main
+            echo "✅ Updated changelog for release ${{ steps.version.outputs.version }}"
+          fi
+
+      - name: Release Summary
+        run: |
+          echo "🎉 Release ${{ steps.version.outputs.version }} finalized!"
+          echo "📋 Changelog updated with release notes"
+          echo "🔗 Release published at: https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.tag_name }}"

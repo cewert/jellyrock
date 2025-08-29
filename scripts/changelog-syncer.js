@@ -1,0 +1,467 @@
+#!/usr/bin/env node
+
+/**
+ * Simplified Changelog Sync Manager
+ * 
+ * Keeps CHANGELOG.md automatically in sync with git state:
+ * - Unreleased section tracks commits since latest tag
+ * - Release sections are created when tags are pushed
+ * - No manual intervention required
+ */
+
+import { execSync } from 'child_process';
+import fs from 'fs';
+
+class ChangelogSyncer {
+  constructor() {
+    this.changelogPath = 'CHANGELOG.md';
+    this.repositoryUrl = 'https://github.com/cewert/jellyrock';
+  }
+
+  /**
+   * Sync unreleased changes - called on push to main
+   */
+  syncUnreleased() {
+    console.log('🔄 Syncing unreleased changes...');
+
+    const latestTag = this.getLatestTag();
+    const commits = this.getCommitsSince(latestTag);
+
+    if (commits.length === 0) {
+      console.log('ℹ️ No unreleased changes to sync');
+      return;
+    }
+
+    console.log(`📊 Found ${commits.length} unreleased commits since ${latestTag || 'start'}`);
+
+    const changelog = this.readChangelog();
+    const updatedChangelog = this.updateUnreleasedSection(changelog, commits);
+
+    fs.writeFileSync(this.changelogPath, updatedChangelog);
+    console.log('✅ Unreleased section synced');
+  }
+
+  /**
+   * Sync release - called when tag is created
+   */
+  syncRelease(version) {
+    console.log(`🚀 Syncing release ${version}...`);
+
+    // Validate version format
+    if (!/^\d+\.\d+\.\d+$/.test(version)) {
+      throw new Error(`Invalid version format: ${version}. Expected: x.y.z`);
+    }
+
+    // Get previous tag to determine range
+    const previousTag = this.getPreviousTag(`v${version}`);
+    const commits = this.getCommitsSince(previousTag, `v${version}`);
+
+    if (commits.length === 0) {
+      console.log('⚠️ No commits found for release - creating minimal entry');
+    }
+
+    const changelog = this.readChangelog();
+    const updatedChangelog = this.convertUnreleasedToRelease(changelog, version, commits);
+
+    fs.writeFileSync(this.changelogPath, updatedChangelog);
+    console.log(`✅ Release ${version} synced to changelog`);
+  }
+
+  /**
+   * Get current status of changelog
+   */
+  getStatus() {
+    const latestTag = this.getLatestTag();
+    const commits = this.getCommitsSince(latestTag);
+    const changelog = fs.readFileSync(this.changelogPath, 'utf8');
+
+    const hasUnreleased = changelog.includes('## [Unreleased]');
+    const versionEntries = (changelog.match(/## \[\d+\.\d+\.\d+\]/g) || []).length;
+
+    console.log('📊 Changelog Status:');
+    console.log(`  Latest tag: ${latestTag || 'none'}`);
+    console.log(`  Unreleased commits: ${commits.length}`);
+    console.log(`  Has unreleased section: ${hasUnreleased}`);
+    console.log(`  Version entries: ${versionEntries}`);
+
+    return {
+      latestTag,
+      unreleasedCommits: commits.length,
+      hasUnreleased,
+      versionEntries
+    };
+  }
+
+  /**
+   * Validate changelog consistency
+   */
+  validate() {
+    console.log('🔍 Validating changelog consistency...');
+
+    const status = this.getStatus();
+    const issues = [];
+
+    // Check file exists
+    if (!fs.existsSync(this.changelogPath)) {
+      issues.push('CHANGELOG.md file missing');
+    }
+
+    // Check unreleased section consistency
+    if (status.unreleasedCommits > 0 && !status.hasUnreleased) {
+      issues.push(`${status.unreleasedCommits} unreleased commits but no [Unreleased] section`);
+    }
+
+    if (status.unreleasedCommits === 0 && status.hasUnreleased) {
+      // This is actually OK - unreleased section can exist even with no commits
+      console.log('ℹ️ [Unreleased] section exists but no unreleased commits (this is fine)');
+    }
+
+    // Validate basic format
+    const changelog = fs.readFileSync(this.changelogPath, 'utf8');
+    if (!changelog.includes('# Changelog')) {
+      issues.push('Missing changelog header');
+    }
+
+    if (!changelog.includes('Keep a Changelog')) {
+      issues.push('Missing Keep a Changelog reference');
+    }
+
+    if (issues.length === 0) {
+      console.log('✅ Changelog validation passed');
+      return true;
+    } else {
+      console.log('❌ Changelog validation failed:');
+      issues.forEach(issue => console.log(`  - ${issue}`));
+      return false;
+    }
+  }
+
+  // Helper methods
+  readChangelog() {
+    if (!fs.existsSync(this.changelogPath)) {
+      const header = `# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+`;
+      fs.writeFileSync(this.changelogPath, header);
+    }
+    return fs.readFileSync(this.changelogPath, 'utf8');
+  }
+
+  updateUnreleasedSection(changelog, commits) {
+    const sections = this.categorizeCommits(commits);
+    const unreleasedContent = this.buildUnreleasedContent(sections);
+
+    // Remove existing unreleased section
+    const withoutUnreleased = changelog.replace(
+      /## \[Unreleased\][\s\S]*?(?=## \[|\z)/,
+      ''
+    );
+
+    // Find the proper insertion point after the header
+    const headerMatch = withoutUnreleased.match(/(# Changelog\s*\n\nAll notable changes.*?\n\nThe format is based on.*?\n\n)/s);
+
+    if (headerMatch) {
+      const insertPoint = headerMatch.index + headerMatch[0].length;
+      return withoutUnreleased.slice(0, insertPoint) +
+        unreleasedContent.substring(1) + // Remove leading newline since header already has proper spacing
+        withoutUnreleased.slice(insertPoint);
+    } else {
+      // Fallback: find first occurrence of version section and insert before it
+      const versionMatch = withoutUnreleased.match(/^## \[/m);
+      if (versionMatch) {
+        const insertPoint = versionMatch.index;
+        return withoutUnreleased.slice(0, insertPoint) +
+          unreleasedContent +
+          withoutUnreleased.slice(insertPoint);
+      } else {
+        // Last resort: append to end
+        return withoutUnreleased + unreleasedContent;
+      }
+    }
+  }
+
+  convertUnreleasedToRelease(changelog, version, commits) {
+    const date = new Date().toISOString().split('T')[0];
+    const compareUrl = `${this.repositoryUrl}/releases/tag/v${version}`;
+
+    // If we have unreleased section, convert it to release
+    if (changelog.includes('## [Unreleased]')) {
+      return changelog.replace(
+        /## \[Unreleased\]/,
+        `## [${version}](${compareUrl}) - ${date}`
+      );
+    } else {
+      // No unreleased section, create new release entry
+      const sections = this.categorizeCommits(commits);
+      const releaseContent = this.buildReleaseContent(version, compareUrl, date, sections);
+
+      // Insert after header
+      const headerMatch = changelog.match(/(# Changelog\s*\n\nAll notable changes.*?\n\nThe format is based on.*?\n\n)/s);
+      if (headerMatch) {
+        const insertPoint = headerMatch.index + headerMatch[0].length;
+        return changelog.slice(0, insertPoint) +
+          releaseContent.substring(1) + // Remove leading newline
+          changelog.slice(insertPoint);
+      } else {
+        // Fallback: insert after header
+        const insertPoint = changelog.indexOf('\n\n') + 2;
+        return changelog.slice(0, insertPoint) +
+          releaseContent +
+          changelog.slice(insertPoint);
+      }
+    }
+  }
+
+  categorizeCommits(commits) {
+    const sections = {
+      Added: [],
+      Changed: [],
+      Fixed: [],
+      Removed: [],
+      Security: [],
+      Deprecated: []
+    };
+
+    for (const commit of commits) {
+      const category = this.categorizeCommit(commit.message);
+      if (category && category !== 'Chore') {
+        const entry = this.formatCommitEntry(commit);
+        sections[category].push(entry);
+      }
+    }
+
+    return sections;
+  }
+
+  categorizeCommit(message) {
+    const msg = message.toLowerCase();
+
+    // Security first (highest priority)
+    if (msg.includes('security') || msg.includes('vulnerability') || msg.includes('cve-')) {
+      return 'Security';
+    }
+
+    // Then removals
+    if (msg.startsWith('remove') || msg.startsWith('delete') || msg.includes('removed')) {
+      return 'Removed';
+    }
+
+    // Then deprecations  
+    if (msg.includes('deprecate') || msg.includes('deprecated')) {
+      return 'Deprecated';
+    }
+
+    // Fixes
+    if (msg.startsWith('fix') || msg.includes('fixes') || msg.includes('fixed') ||
+      msg.includes('resolve') || msg.includes('correct')) {
+      return 'Fixed';
+    }
+
+    // Additions
+    if (msg.startsWith('add') || msg.startsWith('feat') || msg.startsWith('implement') ||
+      msg.includes('new ') || msg.includes('create')) {
+      return 'Added';
+    }
+
+    // Changes (default for most things)
+    if (msg.startsWith('update') || msg.startsWith('change') || msg.startsWith('improve') ||
+      msg.startsWith('refactor') || msg.startsWith('enhance')) {
+      return 'Changed';
+    }
+
+    // Skip chores
+    if (msg.startsWith('chore') || msg.startsWith('ci') || msg.startsWith('build') ||
+      msg.startsWith('docs') || msg.startsWith('style') || msg.startsWith('test')) {
+      return 'Chore';
+    }
+
+    // Default to Changed
+    return 'Changed';
+  }
+
+  formatCommitEntry(commit) {
+    const cleanMessage = this.cleanMessage(commit.message);
+    const commitLink = `[${commit.hash.substring(0, 7)}](${this.repositoryUrl}/commit/${commit.hash})`;
+    const prLink = commit.prNumber ?
+      ` ([#${commit.prNumber}](${this.repositoryUrl}/pull/${commit.prNumber}))` : '';
+
+    return `- ${cleanMessage}${prLink} (${commitLink})`;
+  }
+
+  cleanMessage(message) {
+    // Remove conventional commit prefixes
+    let clean = message
+      .replace(/^(feat|fix|docs|style|refactor|test|chore|build|ci)(\([^)]*\))?:\s*/i, '')
+      .replace(/^(add|remove|update|change|improve|implement|create|delete):\s*/i, '');
+
+    // Ensure first letter is lowercase for better flow
+    if (clean.length > 0) {
+      clean = clean[0].toLowerCase() + clean.slice(1);
+    }
+
+    return clean;
+  }
+
+  buildUnreleasedContent(sections) {
+    let content = '\n## [Unreleased]\n';
+
+    for (const [sectionName, items] of Object.entries(sections)) {
+      if (items.length > 0) {
+        content += `\n### ${sectionName}\n\n`;
+        content += items.join('\n') + '\n';
+      }
+    }
+
+    return content;
+  }
+
+  buildReleaseContent(version, compareUrl, date, sections) {
+    let content = `\n## [${version}](${compareUrl}) - ${date}\n`;
+
+    for (const [sectionName, items] of Object.entries(sections)) {
+      if (items.length > 0) {
+        content += `\n### ${sectionName}\n\n`;
+        content += items.join('\n') + '\n';
+      }
+    }
+
+    return content;
+  }
+
+  getLatestTag() {
+    try {
+      return execSync('git describe --tags --abbrev=0', { encoding: 'utf8' }).trim();
+    } catch {
+      return null;
+    }
+  }
+
+  getPreviousTag(currentTag) {
+    try {
+      const allTags = execSync('git tag --sort=-v:refname', { encoding: 'utf8' })
+        .trim()
+        .split('\n')
+        .filter(tag => tag.match(/^v\d+\.\d+\.\d+$/));
+
+      const currentIndex = allTags.indexOf(currentTag);
+      if (currentIndex === -1 || currentIndex === allTags.length - 1) {
+        return null; // First release or tag not found
+      }
+
+      return allTags[currentIndex + 1];
+    } catch {
+      return null;
+    }
+  }
+
+  getCommitsSince(fromTag, toTag = 'HEAD') {
+    try {
+      const range = fromTag ? `${fromTag}..${toTag}` : toTag;
+      const gitLog = execSync(
+        `git log ${range} --oneline --first-parent`,
+        { encoding: 'utf8' }
+      ).trim();
+
+      if (!gitLog) return [];
+
+      return gitLog.split('\n').map(line => {
+        // Parse PR merges
+        const mergeMatch = line.match(/^([a-f0-9]+)\s+Merge pull request #(\d+) from .+$/);
+        if (mergeMatch) {
+          try {
+            const prTitle = execSync(
+              `gh pr view ${mergeMatch[2]} --json title --jq '.title'`,
+              { encoding: 'utf8', stdio: 'pipe' }
+            ).trim();
+            return {
+              hash: mergeMatch[1],
+              message: prTitle || `Merged PR #${mergeMatch[2]}`,
+              prNumber: mergeMatch[2]
+            };
+          } catch {
+            return {
+              hash: mergeMatch[1],
+              message: `Merged PR #${mergeMatch[2]}`,
+              prNumber: mergeMatch[2]
+            };
+          }
+        }
+
+        // Parse regular commits
+        const prMatch = line.match(/\(#(\d+)\)$/);
+        const prNumber = prMatch ? prMatch[1] : null;
+        const message = prMatch ? line.replace(/\s*\(#\d+\)$/, '') : line;
+        const [hash, ...messageParts] = message.split(' ');
+
+        return {
+          hash: hash,
+          message: messageParts.join(' ').trim(),
+          prNumber: prNumber
+        };
+      }).filter(commit => {
+        // Filter out automated commits
+        const msg = commit.message.toLowerCase();
+        return !msg.match(/^(bump version|release v|version bump|docs: sync changelog|docs: update changelog)/) &&
+          !msg.includes('Update en_US translation file') &&
+          !msg.includes('Update API docs') &&
+          commit.message.length > 0;
+      });
+    } catch (error) {
+      console.error('❌ Error getting commits:', error.message);
+      return [];
+    }
+  }
+}
+
+// CLI Interface
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const syncer = new ChangelogSyncer();
+  const command = process.argv[2];
+
+  try {
+    switch (command) {
+      case 'sync-unreleased':
+        syncer.syncUnreleased();
+        break;
+
+      case 'sync-release':
+        const version = process.argv[3];
+        if (!version) {
+          console.error('❌ Version required for sync-release');
+          process.exit(1);
+        }
+        syncer.syncRelease(version);
+        break;
+
+      case 'status':
+        syncer.getStatus();
+        break;
+
+      case 'validate':
+        const isValid = syncer.validate();
+        process.exit(isValid ? 0 : 1);
+        break;
+
+      default:
+        console.log(`
+📖 Changelog Syncer
+
+Commands:
+  sync-unreleased     Sync unreleased changes from commits
+  sync-release <ver>  Convert unreleased to release version
+  status              Show current changelog status  
+  validate            Validate changelog consistency
+        `);
+        break;
+    }
+  } catch (error) {
+    console.error('❌ Error:', error.message);
+    process.exit(1);
+  }
+}
+
+export { ChangelogSyncer };

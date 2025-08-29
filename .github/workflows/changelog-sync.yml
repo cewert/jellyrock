@@ -1,0 +1,61 @@
+name: Changelog Sync
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Determine sync type
+        id: sync_type
+        run: |
+          echo "type=unreleased" >> $GITHUB_OUTPUT
+          echo "📝 Push to main: processing as unreleased"
+
+      - name: Sync unreleased changes
+        run: |
+          echo "🔄 Syncing unreleased changes to changelog..."
+          npm run changelog:sync-unreleased
+
+      - name: Validate changelog
+        run: |
+          echo "🔍 Validating changelog consistency..."
+          npm run changelog:validate
+
+      - name: Commit changes if needed
+        run: |
+          if git diff --quiet HEAD -- CHANGELOG.md; then
+            echo "ℹ️ No changelog changes needed"
+          else
+            echo "📝 Committing changelog sync"
+            git config user.name "JellyRock-bot"
+            git config user.email "c.ewert@gmail.com"
+            git add CHANGELOG.md
+            git commit -m "chore:(docs) sync unreleased changelog entries"
+            git push
+            echo "✅ Changelog synced successfully"
+          fi
+
+      - name: Verify final state
+        run: |
+          echo "✅ Changelog sync completed"
+          echo "📊 Final changelog state:"
+          npm run changelog:status

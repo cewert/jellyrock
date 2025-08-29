@@ -221,6 +221,54 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.JELLYROCK_BOT_TOKEN }}
 
+      - name: Generate Changelog Entry
+        if: ${{ inputs.create_github_release == true && (steps.context.outputs.build_context == 'version_branch' || steps.context.outputs.build_context == 'main_branch') }}
+        run: |
+          echo "📝 Generating changelog for release ${{ steps.context.outputs.tag_name }}"
+
+          # Get the latest tag to compare against
+          LATEST_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1 || echo "")
+
+          if [[ -n "$LATEST_TAG" ]]; then
+            echo "📊 Converting unreleased changes to release ${{ steps.context.outputs.version }}"
+            node scripts/changelog-syncer.js sync-release "${{ steps.context.outputs.version }}"
+          else
+            echo "📊 Creating initial release changelog entry"
+            node scripts/changelog-syncer.js sync-release "${{ steps.context.outputs.version }}"
+          fi
+
+      - name: Extract Release Notes from Changelog
+        if: ${{ inputs.create_github_release == true && (steps.context.outputs.build_context == 'version_branch' || steps.context.outputs.build_context == 'main_branch') }}
+        id: release_notes
+        run: |
+          echo "📖 Extracting release notes for ${{ steps.context.outputs.version }}"
+
+          # Extract the section for this version from CHANGELOG.md
+          VERSION_PATTERN="## \[${{ steps.context.outputs.version }}\]"
+
+          if grep -q "$VERSION_PATTERN" CHANGELOG.md; then
+            # Get content between this version and the next version/end of file
+            RELEASE_NOTES=$(awk "/$VERSION_PATTERN/,/^## \[/ {if(/^## \[/ && !/$VERSION_PATTERN/) exit; print}" CHANGELOG.md | head -n -1 | tail -n +2 | sed 's/^$//' | sed '/./,$!d')
+          else
+            # Fallback to a simple release note
+            RELEASE_NOTES="JellyRock ${{ steps.context.outputs.tag_name }} release.
+
+          See [CHANGELOG.md](https://github.com/cewert/jellyrock/blob/main/CHANGELOG.md) for details."
+          fi
+
+          # Save to file for multi-line output
+          echo "$RELEASE_NOTES" > /tmp/release_notes.md
+
+          echo "📋 Release notes preview:"
+          cat /tmp/release_notes.md
+
+          # Set output for use in release creation
+          {
+            echo "notes<<EOF"
+            cat /tmp/release_notes.md
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Create GitHub Release
         if: ${{ inputs.create_github_release == true && (steps.context.outputs.build_context == 'version_branch' || steps.context.outputs.build_context == 'main_branch') }}
         uses: softprops/action-gh-release@v2
@@ -228,12 +276,20 @@ jobs:
           tag_name: ${{ steps.context.outputs.tag_name }}
           name: ${{ steps.context.outputs.tag_name }}
           body: |
+            ${{ steps.release_notes.outputs.notes }}
+
+            ---
+
+            ## Download
+
+            Download the `.zip` file below and [sideload it to your Roku device](https://github.com/cewert/jellyrock/blob/main/README.md#sideload).
+
             ## Release Schedule
 
             JellyRock ${{ steps.context.outputs.tag_name }} is scheduled for release on the Roku App Store **DATE_TIME**.
           draft: true
           prerelease: false
-          generate_release_notes: true
+          generate_release_notes: false
           discussion_category_name: Announcements
           token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
           files: ${{ github.workspace }}/out/${{ steps.context.outputs.zip_name }}

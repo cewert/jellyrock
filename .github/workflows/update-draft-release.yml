@@ -1,0 +1,96 @@
+name: Update Draft Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  update-draft-release:
+    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'release-prep')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract version from PR title
+        id: extract_version
+        run: |
+          # Extract version from PR title like "Prepare for v1.21.3 release"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          VERSION=$(echo "$PR_TITLE" | sed -n 's/.*v\([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p')
+
+          if [[ -z "$VERSION" ]]; then
+            echo "❌ Could not extract version from PR title: $PR_TITLE"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag_name=v$VERSION" >> $GITHUB_OUTPUT
+          echo "✅ Extracted version: $VERSION"
+
+      - name: Checkout merged code
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production app with updated version
+        run: npm run build:prod
+
+      - name: Create updated release ZIP
+        id: create_zip
+        run: |
+          mkdir -p out
+          cd build
+          ZIP_NAME="JellyRock-${{ steps.extract_version.outputs.tag_name }}.zip"
+          zip -r "../out/$ZIP_NAME" .
+          echo "zip_name=$ZIP_NAME" >> $GITHUB_OUTPUT
+          echo "✅ Created updated ZIP with version bump: $ZIP_NAME"
+
+      - name: Update draft release with new ZIP
+        env:
+          GH_TOKEN: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+        run: |
+          TAG_NAME="${{ steps.extract_version.outputs.tag_name }}"
+          VERSION="${{ steps.extract_version.outputs.version }}"
+
+          # Check if draft release exists
+          RELEASE_INFO=$(gh release view "$TAG_NAME" --json isDraft,id 2>/dev/null || echo "")
+
+          if [[ -z "$RELEASE_INFO" ]]; then
+            echo "❌ No release found for $TAG_NAME"
+            exit 1
+          fi
+
+          IS_DRAFT=$(echo "$RELEASE_INFO" | jq -r '.isDraft')
+
+          if [[ "$IS_DRAFT" != "true" ]]; then
+            echo "⚠️ Release $TAG_NAME is not a draft - skipping update"
+            echo "This release may have already been published"
+            exit 0
+          fi
+
+          # Update the draft release with new ZIP and updated body
+          UPDATED_BODY="## Release Schedule
+
+          JellyRock $TAG_NAME is scheduled for release on the Roku channel store DAY, MONTH 27, 2025 10:00 AM PT
+
+          ## Changes
+
+          See [CHANGELOG.md](https://github.com/cewert/jellyrock/blob/main/CHANGELOG.md) for detailed changes."
+
+          # Upload the new ZIP to the existing draft release
+          gh release upload "$TAG_NAME" "out/${{ steps.create_zip.outputs.zip_name }}" --clobber
+
+          # Update release body
+          gh release edit "$TAG_NAME" --notes "$UPDATED_BODY"
+
+          echo "✅ Updated draft release $TAG_NAME with new ZIP"
+          echo "📝 The release is ready for you to add the scheduled date and publish!"

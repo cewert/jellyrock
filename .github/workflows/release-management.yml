@@ -172,19 +172,15 @@ jobs:
           grep -E "^(major_version|minor_version|build_version)=" manifest
           echo "Updated manifest successfully"
 
-      - name: Update version in Makefile
-        run: |
-          VERSION="${{ needs.validate-and-prepare.outputs.version }}"
-          echo "Updating Makefile with version: $VERSION"
-          sed -i "s/^VERSION := .*/VERSION := $VERSION/" Makefile
-          echo "Updated Makefile successfully"
+      - name: update 'package-lock.json'
+        run: npm ci
 
       - name: Commit version updates
         run: |
           git config user.name "JellyRock-bot"
           git config user.email "c.ewert@gmail.com"
-          git add package.json manifest Makefile
-          git commit -m "chore: bump version to ${{ needs.validate-and-prepare.outputs.version }}" || echo "No changes to commit"
+          git add package.json package-lock.json manifest
+          git commit -m "chore: bump version to ${{ needs.validate-and-prepare.outputs.version }} [skip ci]" || echo "No changes to commit"
           git pull origin ${{ needs.validate-and-prepare.outputs.branch_name }} --rebase || echo "No remote changes to pull"
           git push origin ${{ needs.validate-and-prepare.outputs.branch_name }}
 
@@ -200,6 +196,7 @@ jobs:
           token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
 
       - name: Create Pull Request
+        id: create_pr
         env:
           GH_TOKEN: ${{ secrets.JELLYROCK_BOT_TOKEN }}
         run: |
@@ -214,11 +211,102 @@ jobs:
           ---
           **This PR was created automatically by JellyRock-bot*"
 
-          gh pr create \
+          PR_URL=$(gh pr create \
             --title "Prepare for v$VERSION release" \
             --body "$PR_BODY" \
             --base main \
             --head "$BRANCH_NAME" \
-            --label "release-prep"
+            --label "release-prep")
 
           echo "✅ Created release preparation PR for v$VERSION"
+          echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+
+  create-draft-release:
+    needs: [validate-and-prepare, update-version-files, create-release-pr]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.validate-and-prepare.outputs.branch_name }}
+          token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production app
+        run: npm run build:prod
+
+      - name: Create release ZIP
+        id: create_zip
+        run: |
+          mkdir -p out
+          cd build
+          ZIP_NAME="JellyRock-v${{ needs.validate-and-prepare.outputs.version }}.zip"
+          zip -r "../out/$ZIP_NAME" .
+          echo "zip_name=$ZIP_NAME" >> $GITHUB_OUTPUT
+          echo "✅ Created ZIP: $ZIP_NAME"
+
+      - name: Check for existing draft release
+        id: check_draft
+        env:
+          GH_TOKEN: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+        run: |
+          TAG_NAME="v${{ needs.validate-and-prepare.outputs.version }}"
+
+          # Check if a release (draft or published) already exists
+          EXISTING_RELEASE=$(gh release view "$TAG_NAME" --json isDraft,id 2>/dev/null || echo "")
+
+          if [[ -n "$EXISTING_RELEASE" ]]; then
+            RELEASE_ID=$(echo "$EXISTING_RELEASE" | jq -r '.id')
+            IS_DRAFT=$(echo "$EXISTING_RELEASE" | jq -r '.isDraft')
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "release_id=$RELEASE_ID" >> $GITHUB_OUTPUT
+            echo "is_draft=$IS_DRAFT" >> $GITHUB_OUTPUT
+            echo "ℹ️ Found existing release: $TAG_NAME (ID: $RELEASE_ID, Draft: $IS_DRAFT)"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ No existing release found for: $TAG_NAME"
+          fi
+
+      - name: Delete existing draft release
+        if: steps.check_draft.outputs.exists == 'true' && steps.check_draft.outputs.is_draft == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+        run: |
+          TAG_NAME="v${{ needs.validate-and-prepare.outputs.version }}"
+          echo "🗑️ Deleting existing draft release: $TAG_NAME"
+          gh release delete "$TAG_NAME" --yes
+          echo "✅ Deleted existing draft release"
+
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+        run: |
+          TAG_NAME="v${{ needs.validate-and-prepare.outputs.version }}"
+          VERSION="${{ needs.validate-and-prepare.outputs.version }}"
+
+          # Create release body
+          RELEASE_BODY="## Release Schedule
+
+          JellyRock $TAG_NAME is scheduled for release on the Roku channel store DAY, MONTH 27, 2025 10:00 AM PT
+
+          ## Changes
+
+          See [CHANGELOG.md](https://github.com/cewert/jellyrock/blob/main/CHANGELOG.md) for detailed changes."
+
+          gh release create "$TAG_NAME" \
+            --title "$TAG_NAME" \
+            --notes "$RELEASE_BODY" \
+            --draft \
+            --prerelease=false \
+            out/${{ steps.create_zip.outputs.zip_name }}
+
+          echo "✅ Created draft release: $TAG_NAME"
+          echo "📝 Remember to add your scheduled release date before publishing!"
