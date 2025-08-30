@@ -77,14 +77,36 @@ jobs:
             exit 0
           fi
 
+          # Get unreleased commits since last tag for release notes
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [[ -n "$LATEST_TAG" ]]; then
+            COMMIT_RANGE="$LATEST_TAG..HEAD"
+          else
+            COMMIT_RANGE="HEAD"
+          fi
+          
+          # Generate release notes from commits
+          COMMITS=$(git log $COMMIT_RANGE --oneline --first-parent | head -20)
+          RELEASE_NOTES=""
+          if [[ -n "$COMMITS" ]]; then
+            RELEASE_NOTES="## Changes in this release\n\n"
+            while IFS= read -r commit; do
+              if [[ -n "$commit" ]]; then
+                HASH=$(echo "$commit" | cut -d' ' -f1)
+                MESSAGE=$(echo "$commit" | cut -d' ' -f2-)
+                RELEASE_NOTES+="- $MESSAGE ([${HASH:0:7}](https://github.com/cewert/jellyrock/commit/$HASH))\n"
+              fi
+            done <<< "$COMMITS"
+          fi
+
           # Update the draft release with new ZIP and updated body
           UPDATED_BODY="## Release Schedule
 
           JellyRock $TAG_NAME is scheduled for release on the Roku channel store DAY, MONTH 27, 2025 10:00 AM PT
 
-          ## Changes
+          $RELEASE_NOTES
 
-          See [CHANGELOG.md](https://github.com/cewert/jellyrock/blob/main/CHANGELOG.md) for detailed changes."
+          See [CHANGELOG.md](https://github.com/cewert/jellyrock/blob/main/CHANGELOG.md) for complete change history."
 
           # Upload the new ZIP to the existing draft release
           gh release upload "$TAG_NAME" "out/${{ steps.create_zip.outputs.zip_name }}" --clobber

@@ -223,11 +223,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
       Fixed: [],
       Removed: [],
       Security: [],
-      Deprecated: []
+      Deprecated: [],
+      Dependencies: []
     };
 
     for (const commit of commits) {
-      const category = this.categorizeCommit(commit.message);
+      // Check if this is a dependency-related PR
+      let category = commit.isDependency ? 'Dependencies' : this.categorizeCommit(commit.message);
+      
       if (category && category !== 'Chore') {
         const entry = this.formatCommitEntry(commit);
         sections[category].push(entry);
@@ -285,23 +288,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
   formatCommitEntry(commit) {
     const cleanMessage = this.cleanMessage(commit.message);
-    const commitLink = `[${commit.hash.substring(0, 7)}](${this.repositoryUrl}/commit/${commit.hash})`;
-    const prLink = commit.prNumber ?
-      ` ([#${commit.prNumber}](${this.repositoryUrl}/pull/${commit.prNumber}))` : '';
-
-    return `- ${cleanMessage}${prLink} (${commitLink})`;
+    
+    // Only show commit link if there's no PR, otherwise show PR link
+    if (commit.prNumber) {
+      const prLink = `([#${commit.prNumber}](${this.repositoryUrl}/pull/${commit.prNumber}))`;
+      return `- ${cleanMessage} ${prLink}`;
+    } else {
+      const commitLink = `([${commit.hash.substring(0, 7)}](${this.repositoryUrl}/commit/${commit.hash}))`;
+      return `- ${cleanMessage} ${commitLink}`;
+    }
   }
 
   cleanMessage(message) {
-    // Remove conventional commit prefixes
+    // Remove conventional commit prefixes and action words
     let clean = message
       .replace(/^(feat|fix|docs|style|refactor|test|chore|build|ci)(\([^)]*\))?:\s*/i, '')
-      .replace(/^(add|remove|update|change|improve|implement|create|delete):\s*/i, '');
+      .replace(/^(add|remove|update|change|improve|implement|create|delete|fix)\s*(\([^)]*\))?\s*:?\s*/i, '');
 
-    // Ensure first letter is lowercase for better flow
-    if (clean.length > 0) {
-      clean = clean[0].toLowerCase() + clean.slice(1);
-    }
+    // Remove action words from the start of the message (like "add(docs):", "update", etc.)
+    clean = clean.replace(/^(add|remove|update|change|improve|implement|create|delete|fix)\s*/i, '');
 
     return clean;
   }
@@ -373,20 +378,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
         const mergeMatch = line.match(/^([a-f0-9]+)\s+Merge pull request #(\d+) from .+$/);
         if (mergeMatch) {
           try {
-            const prTitle = execSync(
-              `gh pr view ${mergeMatch[2]} --json title --jq '.title'`,
+            const prInfo = execSync(
+              `gh pr view ${mergeMatch[2]} --json title,labels --jq '{title, labels: [.labels[].name]}'`,
               { encoding: 'utf8', stdio: 'pipe' }
             ).trim();
+            const parsed = JSON.parse(prInfo);
+            const isDependency = parsed.labels && parsed.labels.some(label => 
+              label.toLowerCase().includes('depend') || label.toLowerCase().includes('deps')
+            );
+            
             return {
               hash: mergeMatch[1],
-              message: prTitle || `Merged PR #${mergeMatch[2]}`,
-              prNumber: mergeMatch[2]
+              message: parsed.title || `Merged PR #${mergeMatch[2]}`,
+              prNumber: mergeMatch[2],
+              isDependency: isDependency
             };
           } catch {
             return {
               hash: mergeMatch[1],
               message: `Merged PR #${mergeMatch[2]}`,
-              prNumber: mergeMatch[2]
+              prNumber: mergeMatch[2],
+              isDependency: false
             };
           }
         }
@@ -397,10 +409,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
         const message = prMatch ? line.replace(/\s*\(#\d+\)$/, '') : line;
         const [hash, ...messageParts] = message.split(' ');
 
+        let isDependency = false;
+        if (prNumber) {
+          try {
+            const prInfo = execSync(
+              `gh pr view ${prNumber} --json labels --jq '{labels: [.labels[].name]}'`,
+              { encoding: 'utf8', stdio: 'pipe' }
+            ).trim();
+            const parsed = JSON.parse(prInfo);
+            isDependency = parsed.labels && parsed.labels.some(label => 
+              label.toLowerCase().includes('depend') || label.toLowerCase().includes('deps')
+            );
+          } catch {
+            // If we can't get PR info, assume not a dependency
+            isDependency = false;
+          }
+        }
+
         return {
           hash: hash,
           message: messageParts.join(' ').trim(),
-          prNumber: prNumber
+          prNumber: prNumber,
+          isDependency: isDependency
         };
       }).filter(commit => {
         // Filter out automated commits
