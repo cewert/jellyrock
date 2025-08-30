@@ -52,9 +52,9 @@ class ChangelogSyncer {
       throw new Error(`Invalid version format: ${version}. Expected: x.y.z`);
     }
 
-    // Get previous tag to determine range
-    const previousTag = this.getPreviousTag(`v${version}`);
-    const commits = this.getCommitsSince(previousTag, `v${version}`);
+    // Get previous tag to determine range - use HEAD instead of non-existent future tag
+    const previousTag = this.getLatestTag();
+    const commits = this.getCommitsSince(previousTag, 'HEAD');
 
     if (commits.length === 0) {
       console.log('⚠️ No commits found for release - creating minimal entry');
@@ -192,7 +192,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
     const date = new Date().toISOString().split('T')[0];
     
     // Generate proper compare URL based on previous version
-    const previousTag = this.getPreviousTag(`v${version}`);
+    const previousTag = this.getLatestTag();
     let compareUrl;
     
     if (previousTag) {
@@ -263,38 +263,52 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
       return 'Security';
     }
 
-    // Then removals
-    if (msg.startsWith('remove') || msg.startsWith('delete') || msg.includes('removed')) {
-      return 'Removed';
-    }
-
-    // Then deprecations  
-    if (msg.includes('deprecate') || msg.includes('deprecated')) {
-      return 'Deprecated';
-    }
-
-    // Fixes
-    if (msg.startsWith('fix') || msg.includes('fixes') || msg.includes('fixed') ||
-      msg.includes('resolve') || msg.includes('correct')) {
-      return 'Fixed';
+    // Check prefixes first (most specific)
+    // Changes
+    if (msg.startsWith('update') || msg.startsWith('change') || msg.startsWith('improve') ||
+      msg.startsWith('refactor') || msg.startsWith('enhance')) {
+      return 'Changed';
     }
 
     // Additions
     if (msg.startsWith('add') || msg.startsWith('feat') || msg.startsWith('implement') ||
-      msg.includes('new ') || msg.includes('create')) {
+      msg.startsWith('create')) {
       return 'Added';
     }
 
-    // Changes (default for most things)
-    if (msg.startsWith('update') || msg.startsWith('change') || msg.startsWith('improve') ||
-      msg.startsWith('refactor') || msg.startsWith('enhance')) {
-      return 'Changed';
+    // Fixes
+    if (msg.startsWith('fix')) {
+      return 'Fixed';
+    }
+
+    // Removals
+    if (msg.startsWith('remove') || msg.startsWith('delete')) {
+      return 'Removed';
     }
 
     // Skip chores
     if (msg.startsWith('chore') || msg.startsWith('ci') || msg.startsWith('build') ||
       msg.startsWith('docs') || msg.startsWith('style') || msg.startsWith('test')) {
       return 'Chore';
+    }
+
+    // Then check content-based matches (less specific)
+    if (msg.includes('deprecate') || msg.includes('deprecated')) {
+      return 'Deprecated';
+    }
+
+    if (msg.includes('removed')) {
+      return 'Removed';
+    }
+
+    if (msg.includes('fixes') || msg.includes('fixed') ||
+      msg.includes('resolve') || msg.includes('correct')) {
+      return 'Fixed';
+    }
+
+    // Only match "new" if it's at the beginning of a word or after common prefixes
+    if (msg.includes('new ') || msg.includes('create')) {
+      return 'Added';
     }
 
     // Default to Changed
@@ -320,8 +334,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
       .replace(/^(feat|fix|docs|style|refactor|test|chore|build|ci)(\([^)]*\))?:\s*/i, '')
       .replace(/^(add|remove|update|change|improve|implement|create|delete|fix)\s*(\([^)]*\))?\s*:?\s*/i, '');
 
-    // Remove action words from the start of the message (like "add(docs):", "update", etc.)
-    clean = clean.replace(/^(add|remove|update|change|improve|implement|create|delete|fix)\s*/i, '');
+    // Remove action words from the start of the message using word boundaries
+    clean = clean.replace(/^(add|remove|update|change|improve|implement|create|delete|fix)\b\s*/i, '');
 
     return clean;
   }
