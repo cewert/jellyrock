@@ -27,10 +27,42 @@ jobs:
       - name: Determine sync type
         id: sync_type
         run: |
+          # Check if this push contains a new tag
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          PREVIOUS_HEAD=$(git rev-parse HEAD~1 2>/dev/null || echo "")
+          
+          if [ -n "$LATEST_TAG" ] && [ -n "$PREVIOUS_HEAD" ]; then
+            # Check if the tag was created in this push (tag points to HEAD but not to previous HEAD)
+            TAG_COMMIT=$(git rev-list -n 1 "$LATEST_TAG" 2>/dev/null || echo "")
+            CURRENT_COMMIT=$(git rev-parse HEAD)
+            
+            if [ "$TAG_COMMIT" = "$CURRENT_COMMIT" ]; then
+              # Check if this tag didn't exist in the previous commit
+              if ! git merge-base --is-ancestor "$LATEST_TAG" "$PREVIOUS_HEAD" 2>/dev/null; then
+                # New tag was created, extract version number
+                VERSION=$(echo "$LATEST_TAG" | sed 's/^v//')
+                echo "type=release" >> $GITHUB_OUTPUT
+                echo "version=$VERSION" >> $GITHUB_OUTPUT
+                echo "🚀 New tag detected: $LATEST_TAG, processing as release $VERSION"
+                exit 0
+              fi
+            fi
+          fi
+          
+          # Default to unreleased
           echo "type=unreleased" >> $GITHUB_OUTPUT
           echo "📝 Push to main: processing as unreleased"
 
+      - name: Sync release changes
+        if: steps.sync_type.outputs.type == 'release'
+        env:
+          GH_TOKEN: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+        run: |
+          echo "🚀 Converting unreleased changes to release ${{ steps.sync_type.outputs.version }}..."
+          npm run changelog:sync-release ${{ steps.sync_type.outputs.version }}
+
       - name: Sync unreleased changes
+        if: steps.sync_type.outputs.type == 'unreleased'
         env:
           GH_TOKEN: ${{ secrets.JELLYROCK_BOT_TOKEN }}
         run: |
@@ -47,11 +79,18 @@ jobs:
           if git diff --quiet HEAD -- CHANGELOG.md; then
             echo "ℹ️ No changelog changes needed"
           else
-            echo "📝 Committing changelog sync"
             git config user.name "JellyRock-bot"
             git config user.email "c.ewert@gmail.com"
             git add CHANGELOG.md
-            git commit -m "chore:(docs) sync unreleased changelog entries"
+            
+            if [ "${{ steps.sync_type.outputs.type }}" = "release" ]; then
+              echo "📝 Committing release changelog sync for v${{ steps.sync_type.outputs.version }}"
+              git commit -m "chore:(docs) convert unreleased section to v${{ steps.sync_type.outputs.version }} release"
+            else
+              echo "📝 Committing unreleased changelog sync"
+              git commit -m "chore:(docs) sync unreleased changelog entries"
+            fi
+            
             git push
             echo "✅ Changelog synced successfully"
           fi

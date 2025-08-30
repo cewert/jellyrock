@@ -52,9 +52,9 @@ class ChangelogSyncer {
       throw new Error(`Invalid version format: ${version}. Expected: x.y.z`);
     }
 
-    // Get previous tag to determine range - use HEAD instead of non-existent future tag
-    const previousTag = this.getLatestTag();
-    const commits = this.getCommitsSince(previousTag, 'HEAD');
+    // Get previous tag to determine range
+    const previousTag = this.getPreviousTag(`v${version}`);
+    const commits = this.getCommitsSince(previousTag, `v${version}`);
 
     if (commits.length === 0) {
       console.log('⚠️ No commits found for release - creating minimal entry');
@@ -193,7 +193,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
     const date = new Date().toISOString().split('T')[0];
     
     // Generate proper compare URL based on previous version
-    const previousTag = this.getLatestTag();
+    const previousTag = this.getPreviousTag(`v${version}`);
     let compareUrl;
     
     if (previousTag) {
