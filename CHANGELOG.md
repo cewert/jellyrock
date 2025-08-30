@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- use correct npm command ([587e77c](https://github.com/cewert/jellyrock/commit/587e77c))
 - release prep triggering twice on branch creation ([9788ad7](https://github.com/cewert/jellyrock/commit/9788ad7))
 - filepath trigger ([77e3f2e](https://github.com/cewert/jellyrock/commit/77e3f2e))
 - `ui.row.layout` affects all rows ([a217a08](https://github.com/cewert/jellyrock/commit/a217a08))
