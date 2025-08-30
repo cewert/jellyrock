@@ -155,33 +155,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
     const sections = this.categorizeCommits(commits);
     const unreleasedContent = this.buildUnreleasedContent(sections);
 
-    // Remove existing unreleased section
-    const withoutUnreleased = changelog.replace(
-      /## \[Unreleased\][\s\S]*?(?=## \[|\z)/,
-      ''
-    );
-
-    // Find the proper insertion point after the header
-    const headerMatch = withoutUnreleased.match(/(# Changelog\s*\n\nAll notable changes.*?\n\nThe format is based on.*?\n\n)/s);
-
-    if (headerMatch) {
-      const insertPoint = headerMatch.index + headerMatch[0].length;
-      return withoutUnreleased.slice(0, insertPoint) +
-        unreleasedContent.substring(1) + // Remove leading newline since header already has proper spacing
-        withoutUnreleased.slice(insertPoint);
-    } else {
-      // Fallback: find first occurrence of version section and insert before it
-      const versionMatch = withoutUnreleased.match(/^## \[/m);
-      if (versionMatch) {
-        const insertPoint = versionMatch.index;
-        return withoutUnreleased.slice(0, insertPoint) +
-          unreleasedContent +
-          withoutUnreleased.slice(insertPoint);
+    // More robust removal of unreleased section
+    const lines = changelog.split('\n');
+    const unreleasedStart = lines.findIndex(line => line.trim() === '## [Unreleased]');
+    
+    if (unreleasedStart === -1) {
+      // No existing unreleased section, find insertion point after header
+      const headerEndIndex = lines.findIndex((line, index) => 
+        index > 5 && line.startsWith('## [') && line.match(/## \[\d+\.\d+\.\d+\]/));
+      
+      if (headerEndIndex === -1) {
+        // No version sections, append to end
+        return changelog + unreleasedContent;
       } else {
-        // Last resort: append to end
-        return withoutUnreleased + unreleasedContent;
+        // Insert before first version section
+        lines.splice(headerEndIndex, 0, ...unreleasedContent.trim().split('\n'), '');
+        return lines.join('\n');
       }
     }
+    
+    // Find the end of unreleased section (next version section or end of file)
+    let unreleasedEnd = lines.length;
+    for (let i = unreleasedStart + 1; i < lines.length; i++) {
+      if (lines[i].match(/^## \[\d+\.\d+\.\d+\]/)) {
+        unreleasedEnd = i;
+        break;
+      }
+    }
+    
+    // Replace the unreleased section
+    lines.splice(unreleasedStart, unreleasedEnd - unreleasedStart, ...unreleasedContent.trim().split('\n'), '');
+    return lines.join('\n');
   }
 
   convertUnreleasedToRelease(changelog, version, commits) {
@@ -436,8 +440,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
         // Filter out automated commits
         const msg = commit.message.toLowerCase();
         return !msg.match(/^(bump version|release v|version bump|docs: sync changelog|docs: update changelog)/) &&
-          !msg.includes('Update en_US translation file') &&
-          !msg.includes('Update API docs') &&
+          !msg.includes('update en_us translation file') &&
+          !msg.includes('en_us translation file') &&
+          !msg.includes('update api docs') &&
           commit.message.length > 0;
       });
     } catch (error) {
