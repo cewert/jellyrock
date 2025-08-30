@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- correct release notes extraction in automated release notes ([fc216ab](https://github.com/cewert/jellyrock/commit/fc216ab))
 - automated release workflow - proper changelog extraction and compare URLs ([1d61f4a](https://github.com/cewert/jellyrock/commit/1d61f4a))
 - CI authentication for PR label detection in changelog syncer ([67d285e](https://github.com/cewert/jellyrock/commit/67d285e))
 - automated release body ([868113c](https://github.com/cewert/jellyrock/commit/868113c))
