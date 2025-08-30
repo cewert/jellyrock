@@ -276,17 +276,11 @@ jobs:
           tag_name: ${{ steps.context.outputs.tag_name }}
           name: ${{ steps.context.outputs.tag_name }}
           body: |
-            ${{ steps.release_notes.outputs.notes }}
-
-            ---
-
-            ## Download
-
-            Download the `.zip` file below and [sideload it to your Roku device](https://github.com/cewert/jellyrock/blob/main/README.md#sideload).
-
             ## Release Schedule
 
             JellyRock ${{ steps.context.outputs.tag_name }} is scheduled for release on the Roku App Store **DATE_TIME**.
+
+            ${{ steps.release_notes.outputs.notes }}
           draft: true
           prerelease: false
           generate_release_notes: false
