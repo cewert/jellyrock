@@ -473,12 +473,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
           isDependency: isDependency
         };
       }).filter(commit => {
-        // Filter out automated commits
+        // Filter out automated commits and merge commits
         const msg = commit.message.toLowerCase();
         return !msg.match(/^(bump version|release v|version bump|docs: sync changelog|docs: update changelog)/) &&
           !msg.includes('update en_us translation file') &&
           !msg.includes('en_us translation file') &&
           !msg.includes('update api docs') &&
+          !msg.match(/^merge branch ['"]?main['"]? of https:\/\/github\.com\//) &&
+          !msg.match(/^merge branch ['"]?master['"]? of https:\/\/github\.com\//) &&
           commit.message.length > 0;
       });
     } catch (error) {
