@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- release prep triggering twice on branch creation ([9788ad7](https://github.com/cewert/jellyrock/commit/9788ad7))
 - filepath trigger ([77e3f2e](https://github.com/cewert/jellyrock/commit/77e3f2e))
 - `ui.row.layout` affects all rows ([a217a08](https://github.com/cewert/jellyrock/commit/a217a08))
 - prevent translation commits from triggering translation workflow ([d7cc939](https://github.com/cewert/jellyrock/commit/d7cc939))
@@ -34,6 +35,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - spinner color from secondary -> text_secondary ([74bec4f](https://github.com/cewert/jellyrock/commit/74bec4f))
 - fix spelling linter ([270920b](https://github.com/cewert/jellyrock/commit/270920b))
 - fix overhang warnings in log at app start `Could not find node "overhang" to update the interpolator field on` ([6695a5f](https://github.com/cewert/jellyrock/commit/6695a5f))
+
+### Removed
+
+- project automation ([ec1d760](https://github.com/cewert/jellyrock/commit/ec1d760))
 ## [1.0.0](https://github.com/cewert/jellyrock/commits/main/?since=2025-06-28&until=2025-08-24) - 2025-08-24
 
 ### Added
