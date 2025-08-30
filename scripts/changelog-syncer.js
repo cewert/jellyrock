@@ -405,7 +405,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
               prNumber: mergeMatch[2],
               isDependency: isDependency
             };
-          } catch {
+          } catch (error) {
+            console.log(`⚠️ Failed to get PR info for #${mergeMatch[2]}: ${error.message}`);
             return {
               hash: mergeMatch[1],
               message: `Merged PR #${mergeMatch[2]}`,
@@ -432,8 +433,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
             isDependency = parsed.labels && parsed.labels.some(label => 
               label.toLowerCase().includes('depend') || label.toLowerCase().includes('deps')
             );
-          } catch {
+          } catch (error) {
             // If we can't get PR info, assume not a dependency
+            console.log(`⚠️ Failed to get PR info for #${prNumber}: ${error.message}`);
             isDependency = false;
           }
         }

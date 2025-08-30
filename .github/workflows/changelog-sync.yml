@@ -31,6 +31,8 @@ jobs:
           echo "📝 Push to main: processing as unreleased"
 
       - name: Sync unreleased changes
+        env:
+          GH_TOKEN: ${{ secrets.JELLYROCK_BOT_TOKEN }}
         run: |
           echo "🔄 Syncing unreleased changes to changelog..."
           npm run changelog:sync-unreleased
