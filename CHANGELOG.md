@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- log sync logic after a new release ([7638085](https://github.com/cewert/jellyrock/commit/7638085))
+
 ## [1.0.1](https://github.com/cewert/jellyrock/compare/v1.0.0...v1.0.1) - 2025-08-30
 
 ### Added
