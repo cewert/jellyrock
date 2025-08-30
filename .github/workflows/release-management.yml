@@ -31,6 +31,7 @@ jobs:
         with:
           ref: ${{ github.ref }}
           token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+          fetch-tags: true
 
       - name: Extract version from branch name
         id: extract_version
@@ -294,7 +295,7 @@ jobs:
             node scripts/changelog-syncer.js sync-release "$VERSION"
             
             # Extract the newly created release section - handle the URL format correctly
-            RELEASE_NOTES=$(sed -n "/## \[$VERSION\].*- [0-9-]/,/^## \[/p" CHANGELOG.md | sed '$d' | tail -n +2)
+            RELEASE_NOTES=$(sed -n "/## \[$VERSION\]/,/^## \[/p" CHANGELOG.md | sed '$d' | tail -n +2)
             
             # Restore original changelog (don't commit changes in this workflow)
             mv CHANGELOG.md.backup CHANGELOG.md
@@ -315,11 +316,7 @@ jobs:
 
           JellyRock $TAG_NAME is scheduled for release on the Roku channel store DAY, MONTH 27, 2025 10:00 AM PT
 
-          $RELEASE_NOTES
-
-          ---
-
-          See [CHANGELOG.md](https://github.com/cewert/jellyrock/blob/main/CHANGELOG.md) for complete change history."
+          $RELEASE_NOTES"
 
           gh release create "$TAG_NAME" \
             --title "$TAG_NAME" \
