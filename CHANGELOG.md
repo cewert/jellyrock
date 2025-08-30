@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Merge branch 'main' of https://github.com/cewert/jellyrock ([32e531a](https://github.com/cewert/jellyrock/commit/32e531a))
 - changelog with new parsing logic ([4cf5052](https://github.com/cewert/jellyrock/commit/4cf5052))
 - changelog commit parser logic and release draft body ([03b3e7b](https://github.com/cewert/jellyrock/commit/03b3e7b))
 - release prep pr body ([5ab8cdb](https://github.com/cewert/jellyrock/commit/5ab8cdb))
