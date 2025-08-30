@@ -7,51 +7,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-### Added
-
-- use workflow to sync changelog file ([c1479da](https://github.com/cewert/jellyrock/commit/c1479da))
-- changelog with all v1 commits and PRs ([9cfdc42](https://github.com/cewert/jellyrock/commit/9cfdc42))
-- use CI to auto-update generated app-settings.md doc ([a0773b5](https://github.com/cewert/jellyrock/commit/a0773b5))
-- settings docs generator ([eb634c1](https://github.com/cewert/jellyrock/commit/eb634c1))
-
-### Changed
-
-- Prepare for v1.0.1 release ([#62](https://github.com/cewert/jellyrock/pull/62))
-- changelog with new parsing logic ([4cf5052](https://github.com/cewert/jellyrock/commit/4cf5052))
-- changelog commit parser logic and release draft body ([03b3e7b](https://github.com/cewert/jellyrock/commit/03b3e7b))
-- release prep pr body ([5ab8cdb](https://github.com/cewert/jellyrock/commit/5ab8cdb))
-- lint:json to exclude scripts folder ([59877af](https://github.com/cewert/jellyrock/commit/59877af))
-- enable manual trigger to fix doc ([f671435](https://github.com/cewert/jellyrock/commit/f671435))
-- link to user app settings ([b4b8058](https://github.com/cewert/jellyrock/commit/b4b8058))
-- sort scripts ([4d33d02](https://github.com/cewert/jellyrock/commit/4d33d02))
-- use colons instead of dashes ([8e149da](https://github.com/cewert/jellyrock/commit/8e149da))
-- recommended extensions ([df1350c](https://github.com/cewert/jellyrock/commit/df1350c))
-
-### Fixed
-
-- correct release notes extraction in automated release notes ([0cbb98c](https://github.com/cewert/jellyrock/commit/0cbb98c))
-- automated release workflow - proper changelog extraction and compare URLs ([1d61f4a](https://github.com/cewert/jellyrock/commit/1d61f4a))
-- CI authentication for PR label detection in changelog syncer ([67d285e](https://github.com/cewert/jellyrock/commit/67d285e))
-- automated release body ([868113c](https://github.com/cewert/jellyrock/commit/868113c))
-- release prep triggering twice on branch creation ([9788ad7](https://github.com/cewert/jellyrock/commit/9788ad7))
-- filepath trigger ([77e3f2e](https://github.com/cewert/jellyrock/commit/77e3f2e))
-- `ui.row.layout` affects all rows ([a217a08](https://github.com/cewert/jellyrock/commit/a217a08))
-- prevent translation commits from triggering translation workflow ([d7cc939](https://github.com/cewert/jellyrock/commit/d7cc939))
-- prevent hardcoded fallback font text from being translatied ([dc80d78](https://github.com/cewert/jellyrock/commit/dc80d78))
-- no longer using bugfix branch ([620cb30](https://github.com/cewert/jellyrock/commit/620cb30))
-- spinner color from secondary -> text_secondary ([74bec4f](https://github.com/cewert/jellyrock/commit/74bec4f))
-- spelling linter ([270920b](https://github.com/cewert/jellyrock/commit/270920b))
-- overhang warnings in log at app start `Could not find node "overhang" to update the interpolator field on` ([6695a5f](https://github.com/cewert/jellyrock/commit/6695a5f))
-
-### Removed
-
-- project automation ([ec1d760](https://github.com/cewert/jellyrock/commit/ec1d760))
-
-### Dependencies
-
-- stefanzweifel/git-auto-commit-action action to v6 ([#42](https://github.com/cewert/jellyrock/pull/42))
-- dependency ropm to v0.11.0 ([#40](https://github.com/cewert/jellyrock/pull/40))
-
 ## [1.0.0](https://github.com/cewert/jellyrock/commits/main/?since=2025-06-28&until=2025-08-24) - 2025-08-24
 
 ### Added
