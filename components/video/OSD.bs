@@ -204,6 +204,12 @@ end sub
 
 sub setVideoLogoGroup()
   m.videoLogo.uri = m.top.videoLogo
+
+  ' if isValid(m.top.officialRating) and m.top.officialRating <> ""
+  '     m.videoOfficialRating.text = m.top.officialRating
+  ' end if
+
+  if m.top.currentProgram = "" then return
   currentProgram = ParseJson(m.top.currentProgram)
 
   if isValidAndNotEmpty(currentProgram) and m.top.type = "TvChannel"
@@ -219,14 +225,12 @@ sub setVideoLogoGroup()
       m.videoLogo.uri = buildURL(Substitute("/items/{0}/images/Primary/0", currentProgram.id), imgParams)
     end if
   end if
-
-  ' if isValid(m.top.officialRating) and m.top.officialRating <> ""
-  '     m.videoOfficialRating.text = m.top.officialRating
-  ' end if
 end sub
 
 sub setVideoTitle()
   m.videoTitle.text = m.top.videoTitle
+
+  if m.top.currentProgram = "" then return
   currentProgram = ParseJson(m.top.currentProgram)
 
   if isValidAndNotEmpty(currentProgram) and m.top.type = "TvChannel"
