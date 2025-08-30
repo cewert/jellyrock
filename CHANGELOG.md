@@ -8,15 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- log with new parsing logic ([4cf5052](https://github.com/cewert/jellyrock/commit/4cf5052))
 - use workflow to sync changelog file ([c1479da](https://github.com/cewert/jellyrock/commit/c1479da))
-- log with all v1 commits and PRs ([9cfdc42](https://github.com/cewert/jellyrock/commit/9cfdc42))
+- changelog with all v1 commits and PRs ([9cfdc42](https://github.com/cewert/jellyrock/commit/9cfdc42))
 - use CI to auto-update generated app-settings.md doc ([a0773b5](https://github.com/cewert/jellyrock/commit/a0773b5))
 - settings docs generator ([eb634c1](https://github.com/cewert/jellyrock/commit/eb634c1))
 
 ### Changed
 
-- log commit parser logic and release draft body ([03b3e7b](https://github.com/cewert/jellyrock/commit/03b3e7b))
+- changelog with new parsing logic ([4cf5052](https://github.com/cewert/jellyrock/commit/4cf5052))
+- changelog commit parser logic and release draft body ([03b3e7b](https://github.com/cewert/jellyrock/commit/03b3e7b))
 - release prep pr body ([5ab8cdb](https://github.com/cewert/jellyrock/commit/5ab8cdb))
 - lint:json to exclude scripts folder ([59877af](https://github.com/cewert/jellyrock/commit/59877af))
 - enable manual trigger to fix doc ([f671435](https://github.com/cewert/jellyrock/commit/f671435))
@@ -27,10 +27,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- correct release notes extraction in automated release notes ([dd38783](https://github.com/cewert/jellyrock/commit/dd38783))
 - automated release workflow - proper changelog extraction and compare URLs ([1d61f4a](https://github.com/cewert/jellyrock/commit/1d61f4a))
 - CI authentication for PR label detection in changelog syncer ([67d285e](https://github.com/cewert/jellyrock/commit/67d285e))
 - automated release body ([868113c](https://github.com/cewert/jellyrock/commit/868113c))
-- use correct npm command ([587e77c](https://github.com/cewert/jellyrock/commit/587e77c))
 - release prep triggering twice on branch creation ([9788ad7](https://github.com/cewert/jellyrock/commit/9788ad7))
 - filepath trigger ([77e3f2e](https://github.com/cewert/jellyrock/commit/77e3f2e))
 - `ui.row.layout` affects all rows ([a217a08](https://github.com/cewert/jellyrock/commit/a217a08))
