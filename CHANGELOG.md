@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- lint:json to exclude scripts folder ([59877af](https://github.com/cewert/jellyrock/commit/59877af))
 - enable manual trigger to fix doc ([f671435](https://github.com/cewert/jellyrock/commit/f671435))
 - update en_US translation file ([b650842](https://github.com/cewert/jellyrock/commit/b650842))
 - merged PR #42 ([#42](https://github.com/cewert/jellyrock/pull/42)) ([03cc60a](https://github.com/cewert/jellyrock/commit/03cc60a))
