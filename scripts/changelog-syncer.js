@@ -318,8 +318,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   buildUnreleasedContent(sections) {
     let content = '\n## [Unreleased]\n';
 
-    for (const [sectionName, items] of Object.entries(sections)) {
-      if (items.length > 0) {
+    // Define the order of sections to maintain consistency
+    const sectionOrder = ['Added', 'Changed', 'Fixed', 'Removed', 'Security', 'Deprecated', 'Dependencies'];
+
+    for (const sectionName of sectionOrder) {
+      const items = sections[sectionName];
+      if (items && items.length > 0) {
         content += `\n### ${sectionName}\n\n`;
         content += items.join('\n') + '\n';
       }
@@ -331,8 +335,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   buildReleaseContent(version, compareUrl, date, sections) {
     let content = `\n## [${version}](${compareUrl}) - ${date}\n`;
 
-    for (const [sectionName, items] of Object.entries(sections)) {
-      if (items.length > 0) {
+    // Define the order of sections to maintain consistency
+    const sectionOrder = ['Added', 'Changed', 'Fixed', 'Removed', 'Security', 'Deprecated', 'Dependencies'];
+
+    for (const sectionName of sectionOrder) {
+      const items = sections[sectionName];
+      if (items && items.length > 0) {
         content += `\n### ${sectionName}\n\n`;
         content += items.join('\n') + '\n';
       }
