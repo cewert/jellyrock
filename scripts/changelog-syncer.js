@@ -190,7 +190,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
   convertUnreleasedToRelease(changelog, version, commits) {
     const date = new Date().toISOString().split('T')[0];
-    const compareUrl = `${this.repositoryUrl}/releases/tag/v${version}`;
+    
+    // Generate proper compare URL based on previous version
+    const previousTag = this.getPreviousTag(`v${version}`);
+    let compareUrl;
+    
+    if (previousTag) {
+      // Use GitHub compare URL between previous tag and current version
+      compareUrl = `${this.repositoryUrl}/compare/${previousTag}...v${version}`;
+    } else {
+      // First release, use tag URL as fallback
+      compareUrl = `${this.repositoryUrl}/releases/tag/v${version}`;
+    }
 
     // If we have unreleased section, convert it to release
     if (changelog.includes('## [Unreleased]')) {
