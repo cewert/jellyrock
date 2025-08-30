@@ -31,6 +31,8 @@ jobs:
         with:
           ref: ${{ github.ref }}
           token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+          fetch-tags: true
+          fetch-depth: 0
 
       - name: Extract version from branch name
         id: extract_version
@@ -95,12 +97,28 @@ jobs:
           if [[ -z "$PREVIOUS_VERSION" ]]; then
             echo "No previous version found. This is the first version."
             echo "is_greater=true" >> $GITHUB_OUTPUT
-          elif [[ $(printf '%s\n' "$CURRENT_VERSION" "$PREVIOUS_VERSION" | sort -V | head -n 1) == "$PREVIOUS_VERSION" ]]; then
-            echo "is_greater=false" >> $GITHUB_OUTPUT
-            echo "::error::New version $CURRENT_VERSION is not greater than previous version $PREVIOUS_VERSION"
           else
-            echo "is_greater=true" >> $GITHUB_OUTPUT
-            echo "New version $CURRENT_VERSION is greater than previous version $PREVIOUS_VERSION"
+            # Split versions into components for proper comparison
+            IFS='.' read -r PREV_MAJOR PREV_MINOR PREV_BUILD <<< "$PREVIOUS_VERSION"
+            IFS='.' read -r CURR_MAJOR CURR_MINOR CURR_BUILD <<< "$CURRENT_VERSION"
+            
+            # Compare versions numerically
+            IS_GREATER=false
+            if [[ $CURR_MAJOR -gt $PREV_MAJOR ]]; then
+              IS_GREATER=true
+            elif [[ $CURR_MAJOR -eq $PREV_MAJOR ]] && [[ $CURR_MINOR -gt $PREV_MINOR ]]; then
+              IS_GREATER=true
+            elif [[ $CURR_MAJOR -eq $PREV_MAJOR ]] && [[ $CURR_MINOR -eq $PREV_MINOR ]] && [[ $CURR_BUILD -gt $PREV_BUILD ]]; then
+              IS_GREATER=true
+            fi
+            
+            if [[ $IS_GREATER == true ]]; then
+              echo "is_greater=true" >> $GITHUB_OUTPUT
+              echo "New version $CURRENT_VERSION is greater than previous version $PREVIOUS_VERSION"
+            else
+              echo "is_greater=false" >> $GITHUB_OUTPUT
+              echo "::error::New version $CURRENT_VERSION is not greater than previous version $PREVIOUS_VERSION"
+            fi
           fi
 
       - name: Notify on invalid new version
@@ -294,7 +312,9 @@ jobs:
             node scripts/changelog-syncer.js sync-release "$VERSION"
             
             # Extract the newly created release section - handle the URL format correctly
-            RELEASE_NOTES=$(sed -n "/## \[$VERSION\].*- [0-9-]/,/^## \[/p" CHANGELOG.md | sed '$d' | tail -n +2)
+            # The sync-release creates a section like: ## [1.0.1](https://github.com/...) - 2025-08-30
+            # Use a more flexible pattern that matches the version in square brackets regardless of what follows
+            RELEASE_NOTES=$(awk "/^## \[$VERSION\]/{flag=1; next} /^## \[/{if(flag) exit} flag" CHANGELOG.md)
             
             # Restore original changelog (don't commit changes in this workflow)
             mv CHANGELOG.md.backup CHANGELOG.md
@@ -315,11 +335,7 @@ jobs:
 
           JellyRock $TAG_NAME is scheduled for release on the Roku channel store DAY, MONTH 27, 2025 10:00 AM PT
 
-          $RELEASE_NOTES
-
-          ---
-
-          See [CHANGELOG.md](https://github.com/cewert/jellyrock/blob/main/CHANGELOG.md) for complete change history."
+          $RELEASE_NOTES"
 
           gh release create "$TAG_NAME" \
             --title "$TAG_NAME" \
