@@ -170,7 +170,7 @@ jobs:
           echo "Updated manifest successfully"
 
       - name: update 'package-lock.json'
-        run: npm ci
+        run: npm install --no-optional
 
       - name: Commit version updates
         run: |
