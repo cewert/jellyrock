@@ -20,15 +20,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - release prep pr body ([5ab8cdb](https://github.com/cewert/jellyrock/commit/5ab8cdb))
 - lint:json to exclude scripts folder ([59877af](https://github.com/cewert/jellyrock/commit/59877af))
 - enable manual trigger to fix doc ([f671435](https://github.com/cewert/jellyrock/commit/f671435))
-- Merged PR #42 ([#42](https://github.com/cewert/jellyrock/pull/42))
 - link to user app settings ([b4b8058](https://github.com/cewert/jellyrock/commit/b4b8058))
-- Merged PR #40 ([#40](https://github.com/cewert/jellyrock/pull/40))
 - sort scripts ([4d33d02](https://github.com/cewert/jellyrock/commit/4d33d02))
 - use colons instead of dashes ([8e149da](https://github.com/cewert/jellyrock/commit/8e149da))
 - recommended extensions ([df1350c](https://github.com/cewert/jellyrock/commit/df1350c))
 
 ### Fixed
 
+- CI authentication for PR label detection in changelog syncer ([67d285e](https://github.com/cewert/jellyrock/commit/67d285e))
 - automated release body ([868113c](https://github.com/cewert/jellyrock/commit/868113c))
 - use correct npm command ([587e77c](https://github.com/cewert/jellyrock/commit/587e77c))
 - release prep triggering twice on branch creation ([9788ad7](https://github.com/cewert/jellyrock/commit/9788ad7))
@@ -44,6 +43,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 - project automation ([ec1d760](https://github.com/cewert/jellyrock/commit/ec1d760))
+
+### Dependencies
+
+- stefanzweifel/git-auto-commit-action action to v6 ([#42](https://github.com/cewert/jellyrock/pull/42))
+- dependency ropm to v0.11.0 ([#40](https://github.com/cewert/jellyrock/pull/40))
 
 ## [1.0.0](https://github.com/cewert/jellyrock/commits/main/?since=2025-06-28&until=2025-08-24) - 2025-08-24
 
