@@ -61,6 +61,9 @@ jobs:
           TAG_NAME="${{ steps.extract_version.outputs.tag_name }}"
           VERSION="${{ steps.extract_version.outputs.version }}"
 
+          # Sync changelog to ensure unreleased section is up to date
+          npm run changelog:sync-unreleased
+
           # Check if draft release exists
           RELEASE_INFO=$(gh release view "$TAG_NAME" --json isDraft,id 2>/dev/null || echo "")
 
@@ -77,26 +80,27 @@ jobs:
             exit 0
           fi
 
-          # Get unreleased commits since last tag for release notes
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          if [[ -n "$LATEST_TAG" ]]; then
-            COMMIT_RANGE="$LATEST_TAG..HEAD"
+          # Use changelog syncer to format release notes (same logic as tag creation workflow)
+          if [[ -f "CHANGELOG.md" ]]; then
+            # Create temporary changelog to extract formatted release notes
+            cp CHANGELOG.md CHANGELOG.md.backup
+            node scripts/changelog-syncer.js sync-release "$VERSION"
+            
+            # Extract the newly created release section
+            RELEASE_NOTES=$(sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d')
+            
+            # Restore original changelog (don't commit changes in this workflow)
+            mv CHANGELOG.md.backup CHANGELOG.md
+            
+            if [[ -z "$RELEASE_NOTES" ]]; then
+              RELEASE_NOTES="## $VERSION - Changes in this release
+
+              No changes documented in CHANGELOG.md unreleased section."
+            fi
           else
-            COMMIT_RANGE="HEAD"
-          fi
-          
-          # Generate release notes from commits
-          COMMITS=$(git log $COMMIT_RANGE --oneline --first-parent | head -20)
-          RELEASE_NOTES=""
-          if [[ -n "$COMMITS" ]]; then
-            RELEASE_NOTES="## Changes in this release\n\n"
-            while IFS= read -r commit; do
-              if [[ -n "$commit" ]]; then
-                HASH=$(echo "$commit" | cut -d' ' -f1)
-                MESSAGE=$(echo "$commit" | cut -d' ' -f2-)
-                RELEASE_NOTES+="- $MESSAGE ([${HASH:0:7}](https://github.com/cewert/jellyrock/commit/$HASH))\n"
-              fi
-            done <<< "$COMMITS"
+            RELEASE_NOTES="## $VERSION - Changes in this release
+
+            CHANGELOG.md not found."
           fi
 
           # Update the draft release with new ZIP and updated body
@@ -105,6 +109,8 @@ jobs:
           JellyRock $TAG_NAME is scheduled for release on the Roku channel store DAY, MONTH 27, 2025 10:00 AM PT
 
           $RELEASE_NOTES
+
+          ---
 
           See [CHANGELOG.md](https://github.com/cewert/jellyrock/blob/main/CHANGELOG.md) for complete change history."
 
