@@ -40,3 +40,8 @@ linter
 linters
 jellyfin-roku
 v2.0
+changelog
+Changelog
+Keep-a-Changelog
+Makefile
+jellyrock-bot

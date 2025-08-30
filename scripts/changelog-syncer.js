@@ -139,7 +139,8 @@ class ChangelogSyncer {
   // Helper methods
   readChangelog() {
     if (!fs.existsSync(this.changelogPath)) {
-      const header = `# Changelog
+      const header = `<!-- markdownlint-disable -->
+# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -215,7 +216,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
       const releaseContent = this.buildReleaseContent(version, compareUrl, date, sections);
 
       // Insert after header
-      const headerMatch = changelog.match(/(# Changelog\s*\n\nAll notable changes.*?\n\nThe format is based on.*?\n\n)/s);
+      const headerMatch = changelog.match(/((?:<!-- markdownlint-disable -->\s*\n)?# Changelog\s*\n\nAll notable changes.*?\n\nThe format is based on.*?\n\n)/s);
       if (headerMatch) {
         const insertPoint = headerMatch.index + headerMatch[0].length;
         return changelog.slice(0, insertPoint) +

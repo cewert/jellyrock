@@ -42,8 +42,8 @@ git push origin release-1.21.3
 - ✅ Validates version format (must be x.y.z)
 - ✅ Validates version is greater than latest release
 - ✅ Updates `package.json` and `manifest` files (not Makefile)
-- ✅ JellyRock-bot creates PR "Prepare for v1.21.3 release"
-- ✅ Creates draft GitHub release with initial ZIP
+- ✅ jellyrock-bot creates PR "Prepare for v1.21.3 release"
+- ✅ Creates draft GitHub release with build ZIP
 
 ### 2. Merge Release PR
 
@@ -51,9 +51,7 @@ When you merge the PR to main:
 
 **Triggers**: `update-draft-release.yml`
 
-- ✅ Builds new ZIP with version-bumped files
-- ✅ Updates the draft release with new ZIP
-- ✅ Release is ready for your manual editing
+- ✅ Release is ready to be published
 
 ### 3. Manually Publish Release
 
@@ -73,7 +71,7 @@ When you publish the draft release:
 
 - Validates semantic version format and increment
 - Updates package.json and manifest files with new version
-- JellyRock-bot creates release preparation PR
+- jellyrock-bot creates release preparation PR
 - Creates initial draft release with production ZIP
 - Handles version validation errors gracefully
 
