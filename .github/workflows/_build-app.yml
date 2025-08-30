@@ -50,6 +50,8 @@ jobs:
         uses: actions/checkout@v5
         with:
           token: ${{ secrets.JELLYROCK_BOT_TOKEN || github.token }}
+          fetch-tags: true
+          fetch-depth: 0
 
       - name: Determine build context
         id: context
@@ -248,7 +250,8 @@ jobs:
 
           if grep -q "$VERSION_PATTERN" CHANGELOG.md; then
             # Get content between this version and the next version/end of file
-            RELEASE_NOTES=$(awk "/$VERSION_PATTERN/,/^## \[/ {if(/^## \[/ && !/$VERSION_PATTERN/) exit; print}" CHANGELOG.md | head -n -1 | tail -n +2 | sed 's/^$//' | sed '/./,$!d')
+            # Use more flexible pattern to handle URL-based headers like [1.0.1](https://...)
+            RELEASE_NOTES=$(awk "/^## \[${{ steps.context.outputs.version }}\]/{flag=1; next} /^## \[.*\]/{if(flag) exit} flag" CHANGELOG.md)
           else
             # Fallback to a simple release note
             RELEASE_NOTES="JellyRock ${{ steps.context.outputs.tag_name }} release.
