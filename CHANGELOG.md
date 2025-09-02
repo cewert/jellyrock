@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- custom subtitle crash while watching video ([#65](https://github.com/cewert/jellyrock/pull/65))
 - validate json string before parsing ([aca6f3c](https://github.com/cewert/jellyrock/commit/aca6f3c))
 - log sync logic after a new release ([7638085](https://github.com/cewert/jellyrock/commit/7638085))
 
