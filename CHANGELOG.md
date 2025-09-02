@@ -7,9 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- `Custom Subtitles` setting description ([b198483](https://github.com/cewert/jellyrock/commit/b198483))
+- Merged PR #65 ([#65](https://github.com/cewert/jellyrock/pull/65))
+
 ### Fixed
 
-- custom subtitle crash while watching video ([#65](https://github.com/cewert/jellyrock/pull/65))
+- CI race conditions ([d38a8ac](https://github.com/cewert/jellyrock/commit/d38a8ac))
 - validate json string before parsing ([aca6f3c](https://github.com/cewert/jellyrock/commit/aca6f3c))
 - log sync logic after a new release ([7638085](https://github.com/cewert/jellyrock/commit/7638085))
 
