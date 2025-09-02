@@ -8,6 +8,7 @@ sub init()
   m.top.observeField("url", "fetchCaption")
   m.top.currentCaption = []
   m.top.currentPos = 0
+  m.lastCaptionTexts = invalid
 
   m.captionTimer = m.top.findNode("captionTimer")
   m.captionTimer.ObserveField("fire", "updateCaption")
@@ -29,6 +30,19 @@ sub init()
   m.textOpac = m.percentageDict[deviceInfo.GetCaptionsOption("Text/Opacity")]
   m.bgColor = m.bgColorDict[deviceInfo.GetCaptionsOption("Background/Color")]
   m.bgOpac = m.percentageDict[deviceInfo.GetCaptionsOption("Background/Opacity")]
+
+  ' Validate fontSize - fallback to default if invalid
+  if not isValid(m.fontSize) or m.fontSize <= 0
+    m.fontSize = m.fontSizeDict["Default"]
+    m.log.warn("Invalid font size from device settings, using default", m.fontSize)
+  end if
+
+  ' Validate text opacity - ensure visibility if set to 0 (Off)
+  if not isValid(m.textOpac) or m.textOpac <= 0
+    m.textOpac = m.percentageDict["Default"]
+    m.log.warn("Text opacity is 0 or invalid, using default for visibility", m.textOpac)
+  end if
+
   setFont()
 end sub
 
@@ -43,8 +57,20 @@ sub setFont()
   end if
 end sub
 
+function arraysEqual(arr1, arr2) as boolean
+  if not isValid(arr1) and not isValid(arr2) then return true
+  if not isValid(arr1) or not isValid(arr2) then return false
+  if arr1.count() <> arr2.count() then return false
+
+  for i = 0 to arr1.count() - 1
+    if arr1[i] <> arr2[i] then return false
+  end for
+
+  return true
+end function
+
 sub fetchCaption()
-  m.log.debug("start fetchCaption()")
+  m.log.debug("Start fetchCaption()", m.top.url)
   m.captionTimer.control = "stop"
   re = CreateObject("roRegex", "(http.*?\.vtt)", "s")
   url = re.match(m.top.url)[0]
@@ -54,16 +80,30 @@ sub fetchCaption()
     m.reader.setUrl(url)
     m.reader.setMessagePort(port)
     if m.reader.AsyncGetToString()
-      msg = port.waitMessage(0)
-      if type(msg) = "roUrlEvent"
-        m.captionList = parseVTT(msg.GetString())
-        m.captionTimer.control = "start"
+      ' Wait for response with 10 second timeout to prevent infinite blocking
+      msg = port.waitMessage(10000)
+      if isValid(msg) and type(msg) = "roUrlEvent"
+        responseCode = msg.GetResponseCode()
+        if responseCode = 200
+          vttContent = msg.GetString()
+          m.log.debug("VTT content received, length:", vttContent.len())
+          m.captionList = parseVTT(vttContent)
+          m.log.info("Parsed", m.captionList.count(), "caption entries")
+          m.captionTimer.control = "start"
+        else
+          m.log.error("Failed to fetch captions. HTTP response code:", responseCode)
+        end if
+      else
+        m.log.error("Timeout or invalid response when fetching captions")
       end if
+    else
+      m.log.error("Failed to initiate caption download")
     end if
   else
+    m.log.warn("No valid VTT URL found in:", m.top.url)
     m.captionTimer.control = "stop"
   end if
-  m.log.debug("end fetchCaption()", url)
+  m.log.debug("End fetchCaption()")
 end sub
 
 function newlabel(txt)
@@ -105,7 +145,6 @@ end function
 
 
 sub updateCaption()
-  m.top.currentCaption = []
   if LCase(m.top.playerState) = "playingon"
     m.top.currentPos = m.top.currentPos + 100
     texts = []
@@ -115,15 +154,27 @@ sub updateCaption()
         texts.push(t)
       end if
     end for
-    labels = []
-    for each text in texts
-      labels.push(newlabel (text))
-    end for
-    lines = newLayoutGroup(labels)
-    rect = newRect(lines)
-    m.top.currentCaption = [rect, lines]
+
+    ' Only update captions if content has changed
+    if not isValid(m.lastCaptionTexts) or not arraysEqual(texts, m.lastCaptionTexts)
+      m.lastCaptionTexts = texts
+      m.top.currentCaption = []
+
+      if texts.count() > 0
+        labels = []
+        for each text in texts
+          labels.push(newlabel(text))
+        end for
+        lines = newLayoutGroup(labels)
+        rect = newRect(lines)
+        m.top.currentCaption = [rect, lines]
+      else
+        ' Clear captions when no text should be displayed
+        m.top.currentCaption = []
+      end if
+    end if
   else if LCase(m.top.playerState.right(1)) = "w"
-    m.top.playerState = m.top.playerState.left(len (m.top.playerState) - 1)
+    m.top.playerState = m.top.playerState.left(len(m.top.playerState) - 1)
   end if
 end sub
 
