@@ -18,6 +18,7 @@ jobs:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           ref: ${{ github.head_ref }}
+          fetch-depth: 0 # Get full history
           token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -44,3 +45,5 @@ jobs:
           commit_user_email: c.ewert@gmail.com
           # use JellyRock-bot to author the changes instead of the default author of the merge commit
           commit_author: JellyRock-bot <c.ewert@gmail.com>
+          # Handle race conditions safely - only push if remote hasn't changed
+          push_options: "--force-with-lease"
