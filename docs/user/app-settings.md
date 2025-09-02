@@ -75,7 +75,7 @@ Bring the theater experience straight to your living room with the ability to pl
 
 <a href="#playback">Playback</a> › <a href="#playback.subs.custom">Custom Subtitles</a>
 
-Attempt to replace Roku's default subtitle font with the fallback font provided by the server. Fallback fonts must be configured and enabled by the server admin for this to work.
+Use custom subtitle rendering for external VTT subtitle files. Enables fallback fonts from the server and removes some formatting tags from misformatted subtitles. Note: May not fully support all Roku caption preferences.
 
 | Property | Value |
 | --- | --- |
