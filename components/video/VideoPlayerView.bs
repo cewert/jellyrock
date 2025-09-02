@@ -273,6 +273,43 @@ sub onOSDAction()
   end if
 end sub
 
+' Determines if custom subtitles should be used for the current selection
+' Custom subtitles should only be used for external subtitles when the user has enabled the setting
+function shouldUseCustomSubtitlesForCurrentSelection() as boolean
+  ' First check if the user has enabled custom subtitles at all
+  if not m.global.session.user.settings["playback.subs.custom"]
+    m.log.debug("Custom subtitles disabled by user setting")
+    return false
+  end if
+
+  ' If no subtitle is currently selected, no need for custom subtitles
+  if not isValid(m.top.selectedSubtitle) or m.top.selectedSubtitle = -1
+    m.log.debug("No subtitle selected", m.top.selectedSubtitle)
+    return false
+  end if
+
+  ' Find the selected subtitle in the fullSubtitleData
+  selectedSubtitle = invalid
+  if isValid(m.top.fullSubtitleData)
+    for each subtitle in m.top.fullSubtitleData
+      if subtitle.Index = m.top.selectedSubtitle
+        selectedSubtitle = subtitle
+        exit for
+      end if
+    end for
+  end if
+
+  ' If we found the selected subtitle and it's external, use custom subtitles
+  if isValid(selectedSubtitle) and isValid(selectedSubtitle.IsExternal)
+    m.log.debug("Subtitle found", selectedSubtitle.IsExternal, selectedSubtitle.Index)
+    return selectedSubtitle.IsExternal
+  end if
+
+  m.log.debug("Selected subtitle not found in fullSubtitleData or invalid IsExternal flag")
+  ' Default to false (use native Roku subtitles)
+  return false
+end function
+
 ' Only setup caption items if captions are allowed
 sub onAllowCaptionsChange()
   if not m.top.allowCaptions then return
@@ -285,17 +322,13 @@ sub onAllowCaptionsChange()
   m.top.observeField("subtitleTrack", "loadCaption")
   m.top.observeField("globalCaptionMode", "toggleCaption")
 
-  if m.global.session.user.settings["playback.subs.custom"]
-    m.top.suppressCaptions = true
-    toggleCaption()
-  else
-    m.top.suppressCaptions = false
-  end if
 end sub
 
 ' Set caption url to server subtitle track
 sub loadCaption()
+  m.log.debug("loadCaption() called", m.top.subtitleTrack, m.top.suppressCaptions)
   if m.top.suppressCaptions
+    m.log.debug("Setting captionTask.url", m.top.subtitleTrack)
     m.captionTask.url = m.top.subtitleTrack
   end if
 end sub
@@ -328,6 +361,22 @@ sub onSubtitleChange()
 
   ' If previous sustitle was encoded, then we need to a video stop/start to change subtitle content
   if m.top.previousSubtitleWasEncoded then switchWithoutRefresh = false
+
+  ' Update custom subtitle behavior based on new selection
+  if m.top.allowCaptions
+    shouldUseCustomSubtitles = shouldUseCustomSubtitlesForCurrentSelection()
+
+    m.log.debug("Subtitle changed", shouldUseCustomSubtitles, m.top.suppressCaptions)
+
+    if shouldUseCustomSubtitles <> m.top.suppressCaptions
+      ' Custom subtitle mode has changed, update it
+      m.log.debug("Changing custom subtitle mode to", shouldUseCustomSubtitles)
+      m.top.suppressCaptions = shouldUseCustomSubtitles
+      if m.top.suppressCaptions
+        toggleCaption()
+      end if
+    end if
+  end if
 
   if switchWithoutRefresh then return
 
@@ -458,6 +507,15 @@ sub onVideoContentLoaded()
 
   m.top.selectedSubtitle = videoContent[0].selectedSubtitle
 
+  ' Update custom subtitle behavior based on the selected subtitle
+  if m.top.allowCaptions
+    shouldUseCustomSubtitles = shouldUseCustomSubtitlesForCurrentSelection()
+    m.top.suppressCaptions = shouldUseCustomSubtitles
+    if m.top.suppressCaptions
+      toggleCaption()
+    end if
+  end if
+
   m.top.observeField("selectedSubtitle", "onSubtitleChange")
 
   if isValid(m.top.audioIndex)
@@ -524,7 +582,6 @@ sub showNextEpisodeButton()
 
   ' align button with bottom right edge with 5% padding
   boundingRect = m.notifyButtons.localBoundingRect()
-  print "boundingRect =", boundingRect
 
   m.notifyButtons.translation = [
     1920 - (1920 * 0.05),
@@ -611,7 +668,7 @@ end sub
 '
 ' When Video Player state changes
 sub onState()
-  m.log.debug("start onState()", m.top.state)
+  m.log.debug("start onState", m.top.state)
   if isValid(m.captionTask)
     m.captionTask.playerState = m.top.state + m.top.globalCaptionMode
   end if
@@ -681,7 +738,7 @@ sub onState()
   else
     m.log.warning("Unhandled state", m.top.state, m.playReported, m.playFinished)
   end if
-  m.log.debug("end onState()", m.top.state)
+  m.log.debug("end onState", m.top.state)
 end sub
 
 '
@@ -689,7 +746,7 @@ end sub
 sub ReportPlayback(state = "update" as string)
   if not isValid(m.top.position) then return
 
-  m.log.debug("start ReportPlayback()", state, int(m.top.position))
+  m.log.debug("start ReportPlayback", state, int(m.top.position))
 
   params = {
     "ItemId": m.top.id,
@@ -706,7 +763,7 @@ sub ReportPlayback(state = "update" as string)
   end if
 
   if (state = "stop" or state = "finished") and isValid(m.originalClosedCaptionState)
-    m.log.debug("ReportPlayback() setting", m.top.globalCaptionMode, "back to", m.originalClosedCaptionState)
+    m.log.debug("ReportPlayback setting", m.top.globalCaptionMode, "back to", m.originalClosedCaptionState)
     m.top.globalCaptionMode = m.originalClosedCaptionState
     m.originalClosedCaptionState = invalid
   end if
@@ -716,7 +773,7 @@ sub ReportPlayback(state = "update" as string)
   playstateTask.setFields({ status: state, params: params })
   playstateTask.control = "RUN"
 
-  m.log.debug("end ReportPlayback()", state, int(m.top.position))
+  m.log.debug("end ReportPlayback", state, int(m.top.position))
 end sub
 
 '
