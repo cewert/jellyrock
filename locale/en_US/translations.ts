@@ -155,10 +155,6 @@
       <translation>Attempt Direct Play of potentially unsupported profile levels</translation>
     </message>
     <message>
-      <source>Attempt to replace Roku&apos;s default subtitle font with the fallback font provided by the server. Fallback fonts must be configured and enabled by the server admin for this to work.</source>
-      <translation>Attempt to replace Roku&apos;s default subtitle font with the fallback font provided by the server. Fallback fonts must be configured and enabled by the server admin for this to work.</translation>
-    </message>
-    <message>
       <source>Audio</source>
       <translation>Audio</translation>
     </message>
@@ -1259,6 +1255,10 @@
     <message>
       <source>URL:</source>
       <translation>URL:</translation>
+    </message>
+    <message>
+      <source>Use custom subtitle rendering for external VTT subtitle files. Enables fallback fonts from the server and removes some formatting tags from misformatted subtitles. Note: May not fully support all Roku caption preferences.</source>
+      <translation>Use custom subtitle rendering for external VTT subtitle files. Enables fallback fonts from the server and removes some formatting tags from misformatted subtitles. Note: May not fully support all Roku caption preferences.</translation>
     </message>
     <message>
       <source>Use Episode Image</source>
