@@ -424,12 +424,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
             const isDependency = parsed.labels && parsed.labels.some(label => 
               label.toLowerCase().includes('depend') || label.toLowerCase().includes('deps')
             );
+            const isReleasePrep = parsed.labels && parsed.labels.some(label => 
+              label.toLowerCase().includes('release-prep')
+            );
             
             return {
               hash: mergeMatch[1],
               message: parsed.title || `Merged PR #${mergeMatch[2]}`,
               prNumber: mergeMatch[2],
-              isDependency: isDependency
+              isDependency: isDependency,
+              isReleasePrep: isReleasePrep
             };
           } catch (error) {
             console.log(`⚠️ Failed to get PR info for #${mergeMatch[2]}: ${error.message}`);
@@ -437,7 +441,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
               hash: mergeMatch[1],
               message: `Merged PR #${mergeMatch[2]}`,
               prNumber: mergeMatch[2],
-              isDependency: false
+              isDependency: false,
+              isReleasePrep: false
             };
           }
         }
@@ -449,6 +454,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
         const [hash, ...messageParts] = message.split(' ');
 
         let isDependency = false;
+        let isReleasePrep = false;
         if (prNumber) {
           try {
             const prInfo = execSync(
@@ -459,10 +465,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
             isDependency = parsed.labels && parsed.labels.some(label => 
               label.toLowerCase().includes('depend') || label.toLowerCase().includes('deps')
             );
+            isReleasePrep = parsed.labels && parsed.labels.some(label => 
+              label.toLowerCase().includes('release-prep')
+            );
           } catch (error) {
-            // If we can't get PR info, assume not a dependency
+            // If we can't get PR info, assume not a dependency or release-prep
             console.log(`⚠️ Failed to get PR info for #${prNumber}: ${error.message}`);
             isDependency = false;
+            isReleasePrep = false;
           }
         }
 
@@ -470,7 +480,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
           hash: hash,
           message: messageParts.join(' ').trim(),
           prNumber: prNumber,
-          isDependency: isDependency
+          isDependency: isDependency,
+          isReleasePrep: isReleasePrep
         };
       }).filter(commit => {
         // Filter out automated commits and merge commits
@@ -481,6 +492,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
           !msg.includes('update api docs') &&
           !msg.match(/^merge branch ['"]?main['"]? of https:\/\/github\.com\//) &&
           !msg.match(/^merge branch ['"]?master['"]? of https:\/\/github\.com\//) &&
+          !commit.isReleasePrep &&
           commit.message.length > 0;
       });
     } catch (error) {

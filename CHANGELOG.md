@@ -9,7 +9,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
-- Prepare for v1.0.2 release ([#66](https://github.com/cewert/jellyrock/pull/66))
 - `Custom Subtitles` setting description ([b198483](https://github.com/cewert/jellyrock/commit/b198483))
 
 ### Fixed
