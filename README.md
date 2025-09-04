@@ -20,7 +20,7 @@ JellyRock is a Jellyfin client for Roku devices, forked from jellyfin-roku [v2.2
 
 ## Sideload
 
-1. Put your Roku device in [developer mode](https://blog.roku.com/developer/2016/02/04/developer-setup-guide). Write down your Roku device IP and the password you created - you will need these!
+1. Put your Roku device in [Developer Mode](docs/dev/developer-mode.md). Save your password!
 2. Download the latest [build](https://github.com/cewert/jellyrock/actions/workflows/build.yml?query=branch%3Amain) created by GitHub Actions. Select the first item listed then click one of the links at the bottom of the page i.e. `JellyRock-prod-main-e34f4f169ff47531abd23ae3a11c102f6811f907`. This will download a zip file to your computer.
 3. Put your Roku's IP from step 1 into a browser i.e. `http://192.168.1.2` and press enter.
 4. Log in with credentials from step 1.
@@ -43,4 +43,5 @@ npm run build # OR npm run build:prod
 
 ## Dev Docs
 
+- [Developer Mode](docs/dev/developer-mode.md)
 - [Dev Guide](docs/dev/DEVGUIDE.md)
