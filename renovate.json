@@ -13,5 +13,13 @@
     "**/node_modules/**"
   ],
   "timezone": "America/New_York",
-  "packageRules": []
+  "packageRules": [
+    {
+      "description": "Group GitHub Actions updates together",
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions",
+      "schedule": ["before 6am on monday"],
+      "pinDigests": true
+    }
+  ]
 }

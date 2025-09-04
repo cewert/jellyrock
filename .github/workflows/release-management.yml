@@ -27,7 +27,7 @@ jobs:
           echo "SHA: ${{ github.sha }}"
 
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           ref: ${{ github.ref }}
           token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
@@ -152,13 +152,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           ref: ${{ github.ref }}
           token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
 
       - name: Install required packages
-        uses: awalsh128/cache-apt-pkgs-action@latest
+        uses: awalsh128/cache-apt-pkgs-action@2c09a5e66da6c8016428a2172bd76e5e4f14bb17 # v1.5.3
         with:
           packages: jq
 
@@ -205,7 +205,7 @@ jobs:
     if: needs.validate-and-prepare.outputs.pr_exists == 'false'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           ref: ${{ needs.validate-and-prepare.outputs.branch_name }}
           token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
@@ -236,7 +236,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout release branch
-        uses: actions/checkout@v5
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           ref: ${{ needs.validate-and-prepare.outputs.branch_name }}
           token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
@@ -244,7 +244,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "lts/*"
           cache: "npm"
