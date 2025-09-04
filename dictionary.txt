@@ -45,3 +45,4 @@ Changelog
 Keep-a-Changelog
 Makefile
 jellyrock-bot
+SDK
