@@ -43,4 +43,4 @@ npm run build # OR npm run build:prod
 
 ## Dev Docs
 
-- [Dev Guide](docs/DEVGUIDE.md)
+- [Dev Guide](docs/dev/DEVGUIDE.md)
