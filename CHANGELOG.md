@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- llm agent instructions, create CLAUDE.md, format as instructions ([1fe8568](https://github.com/cewert/jellyrock/commit/1fe8568))
 - d: lint all translation files not just english ([470991f](https://github.com/cewert/jellyrock/commit/470991f))
 
 ### Fixed
