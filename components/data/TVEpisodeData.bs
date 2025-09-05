@@ -1,5 +1,5 @@
-import "pkg:/source/utils/misc.bs"
 import "pkg:/source/api/Image.bs"
+import "pkg:/source/utils/misc.bs"
 
 sub setFields()
   if not isValid(m.top.json) then return
