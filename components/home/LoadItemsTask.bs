@@ -144,7 +144,9 @@ sub loadItems()
           tmp = CreateObject("roSGNode", "HomeData")
 
           params = {}
-          params["Tags"] = item.PrimaryImageTag
+          if isValidAndNotEmpty(item.PrimaryImageTag)
+            params["Tags"] = item.PrimaryImageTag
+          end if
           params["MaxWidth"] = 234
           params["MaxHeight"] = 330
           tmp.posterURL = ImageUrl(item.Id, "Primary", params)
@@ -183,7 +185,9 @@ sub loadItems()
       tmp.Id = person.Id
       tmp.labelText = person.Name
       params = {}
-      params["Tags"] = person.PrimaryImageTag
+      if isValidAndNotEmpty(person.PrimaryImageTag)
+        params["Tags"] = person.PrimaryImageTag
+      end if
       params["MaxWidth"] = 234
       params["MaxHeight"] = 330
       tmp.posterURL = ImageUrl(person.Id, "Primary", params)
@@ -200,7 +204,9 @@ sub loadItems()
         tmp = CreateObject("roSGNode", "ExtrasData")
         results.push(tmp)
         params = {}
-        params["Tags"] = specfeat.ImageTags.Primary
+        if isValid(specfeat.ImageTags) and isValidAndNotEmpty(specfeat.ImageTags.Primary)
+          params["Tags"] = specfeat.ImageTags.Primary
+        end if
         params["MaxWidth"] = 450
         params["MaxHeight"] = 402
         tmp.posterURL = ImageUrl(specfeat.Id, "Primary", params)
@@ -213,7 +219,9 @@ sub loadItems()
       for each part in additionalParts.items
         tmp = CreateObject("roSGNode", "ExtrasData")
         params = {}
-        params["Tags"] = part.ImageTags.Primary
+        if isValid(part.ImageTags) and isValidAndNotEmpty(part.ImageTags.Primary)
+          params["Tags"] = part.ImageTags.Primary
+        end if
         params["MaxWidth"] = 450
         params["MaxHeight"] = 402
         tmp.posterURL = ImageUrl(part.Id, "Primary", params)
@@ -229,7 +237,11 @@ sub loadItems()
     if isValid(data) and isValid(data.Items)
       for each item in data.items
         tmp = CreateObject("roSGNode", "ExtrasData")
-        tmp.posterURL = ImageUrl(item.Id, "Primary", { "Tags": item.PrimaryImageTag })
+        params = {}
+        if isValidAndNotEmpty(item.PrimaryImageTag)
+          params["Tags"] = item.PrimaryImageTag
+        end if
+        tmp.posterURL = ImageUrl(item.Id, "Primary", params)
         tmp.json = item
         results.push(tmp)
       end for
@@ -260,7 +272,10 @@ sub getPersonVideos(videoType, dest, dimens)
   if isValid(data) and data.count() > 0
     for each item in data.items
       tmp = CreateObject("roSGNode", "ExtrasData")
-      imgParms = { "Tags": item.ImageTags.Primary }
+      imgParms = {}
+      if isValid(item.ImageTags) and isValidAndNotEmpty(item.ImageTags.Primary)
+        imgParms["Tags"] = item.ImageTags.Primary
+      end if
       imgParms.append(dimens)
       tmp.posterURL = ImageUrl(item.Id, "Primary", imgParms)
       tmp.json = item

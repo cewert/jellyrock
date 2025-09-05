@@ -1,3 +1,4 @@
+import "pkg:/source/api/Image.bs"
 import "pkg:/source/utils/misc.bs"
 
 sub setFields()
@@ -15,7 +16,11 @@ end sub
 sub setPoster()
   if isValid(m.top.image)
     m.top.posterURL = m.top.image.url
+  else if isValid(m.top.json) and isValid(m.top.json.ImageTags) and isValidAndNotEmpty(m.top.json.ImageTags.Primary)
+    imgParams = { "maxHeight": 440, "maxWidth": 295, "Tag": m.top.json.ImageTags.Primary }
+    m.top.posterURL = ImageURL(m.top.json.id, "Primary", imgParams)
   else
+    ' Set posterURL to empty string when no valid tags exist to prevent 404 requests
     m.top.posterURL = ""
   end if
 end sub
