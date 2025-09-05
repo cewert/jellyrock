@@ -12,6 +12,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - npm script to validate translation files + convert CI to use script ([ae344c2](https://github.com/cewert/jellyrock/commit/ae344c2))
 - developer mode doc and link to it on readme ([df60ff9](https://github.com/cewert/jellyrock/commit/df60ff9))
 
+### Changed
+
+- d: lint all translation files not just english ([470991f](https://github.com/cewert/jellyrock/commit/470991f))
+
 ### Fixed
 
 - exclude release-prep PRs from changelog. Fixes #68 ([98a3fcb](https://github.com/cewert/jellyrock/commit/98a3fcb))
