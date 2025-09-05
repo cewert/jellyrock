@@ -214,7 +214,7 @@ sub setVideoLogoGroup()
 
   if isValidAndNotEmpty(currentProgram) and m.top.type = "TvChannel"
     ' set video title to current program name
-    if isValid(currentProgram.ImageTags) and isValid(currentProgram.ImageTags.Primary)
+    if isValid(currentProgram.ImageTags) and isValidAndNotEmpty(currentProgram.ImageTags.Primary)
       imgParams = {
         maxHeight: 300,
         maxWidth: 500,
@@ -223,6 +223,9 @@ sub setVideoLogoGroup()
       }
 
       m.videoLogo.uri = buildURL(Substitute("/items/{0}/images/Primary/0", currentProgram.id), imgParams)
+    else
+      ' Set empty URI when no valid program image tags exist
+      m.videoLogo.uri = ""
     end if
   end if
 end sub

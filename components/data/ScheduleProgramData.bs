@@ -40,9 +40,12 @@ sub setPoster()
   if isValid(m.top.image)
     m.top.posterURL = m.top.image.url
   else
-    if isValid(m.top.json.ImageTags) and isValid(m.top.json.ImageTags.Thumb)
+    if isValid(m.top.json.ImageTags) and isValidAndNotEmpty(m.top.json.ImageTags.Thumb)
       imgParams = { "maxHeight": 500, "maxWidth": 500, "Tag": m.top.json.ImageTags.Thumb }
       m.top.posterURL = ImageURL(m.top.json.id, "Thumb", imgParams)
+    else
+      ' Set posterURL to empty string when no valid thumb tags exist to prevent 404 requests
+      m.top.posterURL = ""
     end if
   end if
 end sub

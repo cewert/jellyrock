@@ -1,3 +1,5 @@
+import "pkg:/source/utils/misc.bs"
+
 function ItemImages(id = "" as string, params = {} as object)
   ' This seems to cause crazy core dumps
   ' if there is a conflict between on disk images, and library.db
@@ -35,7 +37,27 @@ function PosterImage(id as string, params = {} as object)
   return primary_image
 end function
 
+' Returns an image URL for the specified item, or empty string if tag validation fails
+' @param id - The item ID
+' @param version - Image type/version (default: "Primary")
+' @param params - URL parameters object. If "tag" or "Tag" key exists but contains
+'                 invalid/empty value, function returns empty string to prevent 404 requests
 function ImageURL(id, version = "Primary", params = {})
+  ' Validate tag parameter if provided - return empty string for invalid tags to prevent 404 requests
+  if params.doesExist("tag") or params.doesExist("Tag")
+    tagValue = invalid
+    if params.doesExist("tag")
+      tagValue = params.tag
+    else if params.doesExist("Tag")
+      tagValue = params.Tag
+    end if
+
+    ' Return empty string if tag is invalid or empty to prevent 404 requests
+    if not isValidAndNotEmpty(tagValue)
+      return ""
+    end if
+  end if
+
   ' set defaults
   if not isValid(params.maxHeight)
     param = { "maxHeight": "384" }

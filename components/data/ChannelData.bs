@@ -19,11 +19,16 @@ end sub
 sub setPoster()
   if isValid(m.top.image)
     m.top.posterURL = m.top.image.url
-  else if isValid(m.top.json.ImageTags) and isValid(m.top.json.ImageTags.Primary)
+  else if isValid(m.top.json.ImageTags) and isValidAndNotEmpty(m.top.json.ImageTags.Primary)
     imgParams = { "maxHeight": 60, "Tag": m.top.json.ImageTags.Primary }
     m.top.hdsmalliconurl = ImageURL(m.top.json.id, "Primary", imgParams)
 
     imgParams = { "maxHeight": 440, "maxWidth": 295, "Tag": m.top.json.ImageTags.Primary }
     m.top.posterURL = ImageURL(m.top.json.id, "Primary", imgParams)
+  else
+    ' Set URLs to empty strings when no valid tags exist to prevent 404 requests
+    ' Note: Live TV channels may have images without ImageTags - handled by ImageURL function
+    m.top.posterURL = ""
+    m.top.hdsmalliconurl = ""
   end if
 end sub
