@@ -15,7 +15,6 @@ A Jellyfin client for Roku devices allowing users to consume media from their pe
 - `settings/settings.json` - All the available app settings and their metadata. e.g. id, description, type, default state, etc
 - `source` - .bs files containing main app logic and utilities.
 - `CHANGELOG.md` - "Keep a Changelog" format, automatically updated by CI.
-
 ## BrighterScript Guide
 - XML and .bs files in the same folder, with the same name, are automatically scoped together when compiled.
 - ALWAYS use `import` statements instead of XML script tags(`<script type="text/brighterscript" uri="ExampleComponent.bs" />`)

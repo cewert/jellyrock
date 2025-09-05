@@ -3,7 +3,9 @@
     "*.brs": "brightscript",
     "*.bs": "brighterscript",
     "*.ts": "xml",
-    "manifest": "plaintext"
+    "manifest": "plaintext",
+    "CLAUDE.md": "instructions",
+    ".github/copilot-instructions.md": "instructions"
   },
   "[xml]": {
     "editor.defaultFormatter": "redhat.vscode-xml"
