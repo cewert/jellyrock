@@ -6,7 +6,7 @@
     <field id="startColor" type="integer" value="0x000000FF" />
     <field id="endColor" type="integer" value="0x00000000" />
     <field id="direction" type="string" value="vertical" />
-    <field id="rotation" type="integer" value="0" />
+    <field id="rotateDegrees" type="integer" value="0" />
   </interface>
 </component>
 
@@ -16,7 +16,7 @@
 - startColor: Starting color in hex (default 0x000000FF)
 - endColor: Ending color in hex (default 0x00000000)
 - direction: "vertical" or "horizontal" (default "vertical")
-- rotation: 0, 90, 180, or 270 degrees (default 0)
+- rotateDegrees: 0, 90, 180, or 270 degrees (default 0)
 
 <Gradient translation="[0, 100]" />
 <Gradient rotation="180" translation="[0, 640]" /> (Flipped gradient)

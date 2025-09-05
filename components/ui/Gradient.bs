@@ -5,7 +5,7 @@ sub init()
   m.top.observeField("startColor", "recreateGradient")
   m.top.observeField("endColor", "recreateGradient")
   m.top.observeField("direction", "recreateGradient")
-  m.top.observeField("rotation", "recreateGradient")
+  m.top.observeField("rotateDegrees", "recreateGradient")
 
   ' Create initial gradient
   createGradient()
@@ -24,34 +24,30 @@ sub createGradient()
   startColor = m.top.startColor
   endColor = m.top.endColor
   direction = m.top.direction
-  rotation = m.top.rotation
+  rotation = m.top.rotateDegrees
 
-  ' Apply rotation by swapping colors or changing direction
+  ' Handle rotation: rotation changes rendering direction and color order
   actualStartColor = startColor
   actualEndColor = endColor
-  actualDirection = direction
 
-  ' Handle rotation
-  if rotation = 90
-    ' 90 degrees: vertical becomes left-to-right horizontal, horizontal becomes bottom-to-top vertical
-    if direction = "vertical"
-      actualDirection = "horizontal"
-    else
-      actualDirection = "vertical"
-      actualStartColor = endColor
-      actualEndColor = startColor
-    end if
-  else if rotation = 180
-    ' 180 degrees: flip colors
+  ' Flip colors for 180° and 270° rotations
+  flipColors = (rotation = 180 or rotation = 270)
+  if flipColors
     actualStartColor = endColor
     actualEndColor = startColor
-  else if rotation = 270
-    ' 270 degrees: vertical becomes right-to-left horizontal, horizontal becomes top-to-bottom vertical
-    if direction = "vertical"
+  end if
+
+  ' Determine actual rendering direction based on original direction + rotation
+  if direction = "vertical"
+    if rotation = 0 or rotation = 180
+      actualDirection = "vertical"
+    else ' rotation = 90 or 270
       actualDirection = "horizontal"
-      actualStartColor = endColor
-      actualEndColor = startColor
-    else
+    end if
+  else ' direction = "horizontal"
+    if rotation = 0 or rotation = 180
+      actualDirection = "horizontal"
+    else ' rotation = 90 or 270
       actualDirection = "vertical"
     end if
   end if

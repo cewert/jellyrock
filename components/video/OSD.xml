@@ -3,7 +3,7 @@
   <children>
     <!-- Background overlay so we can see UI -->
     <Gradient width="1920" height="300" translation="[0, 0]" />
-    <Gradient width="1920" height="350" rotation="180" translation="[0, 640]" />
+    <Gradient width="1920" height="350" rotateDegrees="180" translation="[0, 640]" />
     <Rectangle color="0x000000FF" width="1920" height="90" translation="[0,990]" />
 
     <!-- HEADER LEFT -->
