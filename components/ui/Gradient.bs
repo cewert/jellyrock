@@ -1,0 +1,190 @@
+sub init()
+  ' Watch for field changes
+  m.top.observeField("width", "recreateGradient")
+  m.top.observeField("height", "recreateGradient")
+  m.top.observeField("startColor", "recreateGradient")
+  m.top.observeField("endColor", "recreateGradient")
+  m.top.observeField("direction", "recreateGradient")
+  m.top.observeField("rotation", "recreateGradient")
+
+  ' Create initial gradient
+  createGradient()
+end sub
+
+sub recreateGradient()
+  ' Clear existing rectangles
+  m.top.removeChildren(m.top.getChildren(-1, 0))
+  ' Create new gradient
+  createGradient()
+end sub
+
+sub createGradient()
+  width = m.top.width
+  height = m.top.height
+  startColor = m.top.startColor
+  endColor = m.top.endColor
+  direction = m.top.direction
+  rotation = m.top.rotation
+
+  ' Apply rotation by swapping colors or changing direction
+  actualStartColor = startColor
+  actualEndColor = endColor
+  actualDirection = direction
+
+  ' Handle rotation
+  if rotation = 90
+    ' 90 degrees: vertical becomes left-to-right horizontal, horizontal becomes bottom-to-top vertical
+    if direction = "vertical"
+      actualDirection = "horizontal"
+    else
+      actualDirection = "vertical"
+      actualStartColor = endColor
+      actualEndColor = startColor
+    end if
+  else if rotation = 180
+    ' 180 degrees: flip colors
+    actualStartColor = endColor
+    actualEndColor = startColor
+  else if rotation = 270
+    ' 270 degrees: vertical becomes right-to-left horizontal, horizontal becomes top-to-bottom vertical
+    if direction = "vertical"
+      actualDirection = "horizontal"
+      actualStartColor = endColor
+      actualEndColor = startColor
+    else
+      actualDirection = "vertical"
+    end if
+  end if
+
+  ' Calculate dynamic smoothness based on dimensions
+  if actualDirection = "vertical"
+    ' Calculate optimal smoothness: each strip should be 1-2 pixels tall
+    ' Larger dimensions get more strips for smoother gradients
+    smoothness = Int(height / 1.5)
+    ' Ensure minimum smoothness for gradient quality
+    if smoothness < 20 then smoothness = 20
+    ' Cap maximum smoothness to prevent excessive strips
+    if smoothness > 300 then smoothness = 300
+    createVerticalGradient(width, height, actualStartColor, actualEndColor, smoothness)
+  else if actualDirection = "horizontal"
+    ' Calculate optimal smoothness: each strip should be 1-2 pixels wide
+    smoothness = Int(width / 1.5)
+    ' Ensure minimum smoothness for gradient quality
+    if smoothness < 20 then smoothness = 20
+    ' Cap maximum smoothness to prevent excessive strips
+    if smoothness > 300 then smoothness = 300
+    createHorizontalGradient(width, height, actualStartColor, actualEndColor, smoothness)
+  end if
+end sub
+
+sub createVerticalGradient(width, height, startColor, endColor, smoothness)
+  stripHeight = height / smoothness
+
+  ' Extract RGBA components from start color
+  startR = (startColor and &hFF000000) >> 24
+  startG = (startColor and &h00FF0000) >> 16
+  startB = (startColor and &h0000FF00) >> 8
+  startA = startColor and &h000000FF
+
+  ' Extract RGBA components from end color
+  endR = (endColor and &hFF000000) >> 24
+  endG = (endColor and &h00FF0000) >> 16
+  endB = (endColor and &h0000FF00) >> 8
+  endA = endColor and &h000000FF
+
+  ' Calculate steps for each component
+  stepR = (endR - startR) / (smoothness - 1)
+  stepG = (endG - startG) / (smoothness - 1)
+  stepB = (endB - startB) / (smoothness - 1)
+  stepA = (endA - startA) / (smoothness - 1)
+
+  for i = 0 to smoothness - 1
+    ' Calculate current color components
+    currentR = Int(startR + (stepR * i))
+    currentG = Int(startG + (stepG * i))
+    currentB = Int(startB + (stepB * i))
+    currentA = Int(startA + (stepA * i))
+
+    ' Clamp values to valid range (0-255)
+    if currentR < 0 then currentR = 0
+    if currentR > 255 then currentR = 255
+    if currentG < 0 then currentG = 0
+    if currentG > 255 then currentG = 255
+    if currentB < 0 then currentB = 0
+    if currentB > 255 then currentB = 255
+    if currentA < 0 then currentA = 0
+    if currentA > 255 then currentA = 255
+
+    ' Combine into color value
+    currentColor = (currentR << 24) + (currentG << 16) + (currentB << 8) + currentA
+
+    ' Calculate exact positioning and sizing to prevent gaps
+    yPos = Int(stripHeight * i)
+    nextYPos = Int(stripHeight * (i + 1))
+    if i = smoothness - 1 then nextYPos = height ' Ensure last strip reaches the edge
+    actualStripHeight = nextYPos - yPos
+
+    ' Create rectangle strip
+    rect = createObject("roSGNode", "Rectangle")
+    rect.width = width
+    rect.height = actualStripHeight
+    rect.color = currentColor
+    rect.translation = [0, yPos]
+
+    m.top.appendChild(rect)
+  end for
+end sub
+
+sub createHorizontalGradient(width, height, startColor, endColor, smoothness)
+  stripWidth = width / smoothness
+
+  ' Extract RGBA components
+  startR = (startColor and &hFF000000) >> 24
+  startG = (startColor and &h00FF0000) >> 16
+  startB = (startColor and &h0000FF00) >> 8
+  startA = startColor and &h000000FF
+
+  endR = (endColor and &hFF000000) >> 24
+  endG = (endColor and &h00FF0000) >> 16
+  endB = (endColor and &h0000FF00) >> 8
+  endA = endColor and &h000000FF
+
+  stepR = (endR - startR) / (smoothness - 1)
+  stepG = (endG - startG) / (smoothness - 1)
+  stepB = (endB - startB) / (smoothness - 1)
+  stepA = (endA - startA) / (smoothness - 1)
+
+  for i = 0 to smoothness - 1
+    currentR = Int(startR + (stepR * i))
+    currentG = Int(startG + (stepG * i))
+    currentB = Int(startB + (stepB * i))
+    currentA = Int(startA + (stepA * i))
+
+    ' Clamp values
+    if currentR < 0 then currentR = 0
+    if currentR > 255 then currentR = 255
+    if currentG < 0 then currentG = 0
+    if currentG > 255 then currentG = 255
+    if currentB < 0 then currentB = 0
+    if currentB > 255 then currentB = 255
+    if currentA < 0 then currentA = 0
+    if currentA > 255 then currentA = 255
+
+    currentColor = (currentR << 24) + (currentG << 16) + (currentB << 8) + currentA
+
+    ' Calculate exact positioning and sizing to prevent gaps
+    xPos = Int(stripWidth * i)
+    nextXPos = Int(stripWidth * (i + 1))
+    if i = smoothness - 1 then nextXPos = width ' Ensure last strip reaches the edge
+    actualStripWidth = nextXPos - xPos
+
+    ' Create rectangle strip
+    rect = createObject("roSGNode", "Rectangle")
+    rect.width = actualStripWidth
+    rect.height = height
+    rect.color = currentColor
+    rect.translation = [xPos, 0]
+
+    m.top.appendChild(rect)
+  end for
+end sub
