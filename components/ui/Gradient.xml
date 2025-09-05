@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component name="Gradient" extends="Group">
+  <interface>
+    <field id="width" type="integer" value="1920" />
+    <field id="height" type="integer" value="300" />
+    <field id="startColor" type="integer" value="0x000000FF" />
+    <field id="endColor" type="integer" value="0x00000000" />
+    <field id="direction" type="string" value="vertical" />
+    <field id="rotateDegrees" type="integer" value="0" />
+  </interface>
+</component>
+
+<!-- PARAMETERS:
+- width: Width in pixels (default 1920)
+- height: Height in pixels (default 300) 
+- startColor: Starting color in hex (default 0x000000FF)
+- endColor: Ending color in hex (default 0x00000000)
+- direction: "vertical" or "horizontal" (default "vertical")
+- rotateDegrees: 0, 90, 180, or 270 degrees (default 0)
+
+<Gradient translation="[0, 100]" />
+<Gradient rotation="180" translation="[0, 640]" /> (Flipped gradient)
+-->
