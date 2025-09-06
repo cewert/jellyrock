@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- debug flag to manifest ([ce1fb28](https://github.com/cewert/jellyrock/commit/ce1fb28))
 - dynamic gradient component ([#80](https://github.com/cewert/jellyrock/pull/80))
 - npm script to validate translation files + convert CI to use script ([ae344c2](https://github.com/cewert/jellyrock/commit/ae344c2))
 - developer mode doc and link to it on readme ([df60ff9](https://github.com/cewert/jellyrock/commit/df60ff9))
