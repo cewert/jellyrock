@@ -2,7 +2,7 @@
 
 ' Print out all of the registry contents to the debug log
 sub printRegistry()
-  #if printReg
+  #if debug
     ' get a list of every registry section
     regSections = getRegistrySections()
     for each section in regSections
