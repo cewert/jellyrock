@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- ropm copy error ([a31d18e](https://github.com/cewert/jellyrock/commit/a31d18e))
 - exclude release-prep PRs from changelog. Fixes #68 ([98a3fcb](https://github.com/cewert/jellyrock/commit/98a3fcb))
 
 ### Security
