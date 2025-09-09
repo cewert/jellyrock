@@ -5,12 +5,12 @@
   "description": "Roku client for Jellyfin media server",
   "dependencies": {
     "@rokucommunity/bslib": "0.1.1",
-    "brighterscript-formatter": "1.7.17",
     "log": "npm:roku-log@0.11.1"
   },
   "devDependencies": {
     "@rokucommunity/bslint": "0.8.34",
     "brighterscript": "0.70.0",
+    "brighterscript-formatter": "1.7.17",
     "brighterscript-xml-plugin": "0.2.1",
     "fast-glob": "3.3.3",
     "jshint": "2.13.6",

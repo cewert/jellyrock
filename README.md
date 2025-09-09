@@ -33,7 +33,7 @@ JellyRock is a Jellyfin client for Roku devices, forked from jellyfin-roku [v2.2
 ```bash
 git clone https://github.com/cewert/jellyrock.git
 cd jellyrock
-npm install # --no-optional flag prevents postinstall failure on linux
+npm install
 npm run build # OR npm run build:prod
 ```
 
