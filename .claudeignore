@@ -1,0 +1,8 @@
+.claudesync
+.git
+.vscode
+locale
+node_modules
+out
+unit-tests
+LICENSE

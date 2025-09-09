@@ -45,3 +45,4 @@ npm run build # OR npm run build:prod
 
 - [Developer Mode](docs/dev/developer-mode.md)
 - [Dev Guide](docs/dev/DEVGUIDE.md)
+- [Logging](docs/dev/logging.md)

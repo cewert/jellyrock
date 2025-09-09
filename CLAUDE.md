@@ -1,22 +1,25 @@
 # JellyRock
-A Jellyfin client for Roku devices allowing users to consume media from their personal Jellyfin servers.
+JellyRock is a Jellyfin client for Roku devices allowing users to consume media from their personal Jellyfin servers.
 ## Technologies used
 - BrightScript - Roku's proprietary scripting language. `ExampleFile.brs`
 - BrighterScript - A superset of BrightScript that compiles to standard BrightScript. `ExampleFile.bs`
 - Roku Scene Graph (RSG) - XML-based programming framework. Uses a hierarchical node structure to manage UI elements and separates design (XML) from logic (BrighterScript). `ExampleFile.xml`
 - Jellyfin Server REST API - All API calls to a Jellyfin server should use functions from the sdk.bs file. `source/api/sdk.bs`
-## Expected Behavior and Workflow
-1. Provide a brief overview of any changes made.
-2. Provide a list of app behavior to test e.g. button clicks, focus on certain elements, screenshot a specific screen, etc. and what logging information will show up to prove they are working.
-3. A human will test your code and provide you with the logging output.
+## ⚠️ Expected Behavior and Workflow ⚠️
+1. Ask questions when you are not sure about something! Do not make things up or guess!
+2. When you are finished coding, format your code `npm run format`.
+3. When you are finished formatting your code, lint and validate your code `npm run lint:bs`.
+4. Provide a brief overview of any code changes and assumptions made.
+5. Provide a list of app behavior to test and expected log output.
 ## Folder Structure
-- `components` - XML and .bs file pairs categorized by folders.
+- `build/staging` - Transpiled `.brs` files created after running `npm run build` or `npm run build-prod`. **These are the actual files used to deploy the app and are the files that will show up in runtime logs!**
+- `components` - `.xml` and `.bs` file pairs categorized by folders.
 - `scripts` - JavaScript files used for NPM scripts.
-- `settings/settings.json` - All the available app settings and their metadata. e.g. id, description, type, default state, etc
-- `source` - .bs files containing main app logic and utilities.
+- `settings/settings.json` - All the available app settings and their metadata. e.g. id, description, type, default state, etc.
+- `source` - `.bs` files containing main app logic and utilities.
 - `CHANGELOG.md` - "Keep a Changelog" format, automatically updated by CI.
 ## BrighterScript Guide
-- XML and .bs files in the same folder, with the same name, are automatically scoped together when compiled.
+- `.xml` and `.bs` files in the same folder, with the same name, are automatically scoped together when compiled.
 - ALWAYS use `import` statements instead of XML script tags(`<script type="text/brighterscript" uri="ExampleComponent.bs" />`)
 - Use `isValid()` for conditional invalid comparisons. For components, ensure the file containing `isValid()` is imported as needed. i.e. `import "pkg:/source/utils/misc.bs"`
 - ⚠️ **Minimize rendezvous with Task nodes (main thread)!** ⚠️
@@ -80,13 +83,13 @@ end function
 - No more than 1 blank line for visual spacing.
 - `camelCase` variable names and function names.
 - `PascalCase` file names and class names.
-- Use comments to make the code easier to scan, understand, and maintain by a junior dev. e.g. function definitions, to explain complex code, to explain any roku specific oddities and best practices.
+- Use comments for function definitions, complex code, any Roku specific oddities, and best practices.
 ## Coding Standards
+- Never use print statements outside of `source/main.bs`.
+- Use `roku-log` for all logging. Use best practices and provide enough logging to effectively test your code during runtime without being excessive. `docs/dev/logging.md`.
+- Never use an API or write to the file system on the render thread (don't block the render thread).
 - Never hardcode color values - Use global theme colors from the `source/utils/globals.bs` file.
 - Use themed UI components when possible. `/components/ui/`
-- NEVER use an API or write to the file system on the render thread (don't block the render thread).
-- Lint and validate all code changes before commiting `npm run lint:bs`
-- Format all code changes before commiting `npm run format`
 ## Core Architecture
 ### Scene Management System
 The app uses a central `SceneManager` (`components/data/SceneManager.bs`) that manages all screen navigation:
@@ -109,4 +112,4 @@ JRScene (root scene)
 - `m.global.session` - Current session state.
 - `m.global.session.server` - The active Jellyfin server state.
 - `m.global.session.user` - The state of the authenticated user connected to the active server and using the app.
-- `m.global.session.user.settings` - The active user's app setting config
+- `m.global.session.user.settings` - The setting configuration for the active user.
