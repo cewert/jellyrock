@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- docs/dev/logging.md ([efab961](https://github.com/cewert/jellyrock/commit/efab961))
 - debug flag to manifest ([ce1fb28](https://github.com/cewert/jellyrock/commit/ce1fb28))
 - dynamic gradient component ([#80](https://github.com/cewert/jellyrock/pull/80))
 - npm script to validate translation files + convert CI to use script ([ae344c2](https://github.com/cewert/jellyrock/commit/ae344c2))
@@ -16,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- bot instructions ([62dbe04](https://github.com/cewert/jellyrock/commit/62dbe04))
 - Stop using invalid poster image uris ([#78](https://github.com/cewert/jellyrock/pull/78))
 - llm agent instructions, create CLAUDE.md, format as instructions ([1fe8568](https://github.com/cewert/jellyrock/commit/1fe8568))
 - d: lint all translation files not just english ([470991f](https://github.com/cewert/jellyrock/commit/470991f))
