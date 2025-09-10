@@ -33,6 +33,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Dependencies
 
+- softprops/action-gh-release action to v2.3.3 ([#81](https://github.com/cewert/jellyrock/pull/81))
 - github actions (major) ([#82](https://github.com/cewert/jellyrock/pull/82))
 
 ## [1.0.2](https://github.com/cewert/jellyrock/compare/v1.0.1...v1.0.2) - 2025-09-02
