@@ -31,6 +31,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - renovate config and github actions. All actions pinned to immutable commit hashes for security. Unified @<hash> # v<version> format across all workflows for consistency. Renovate will handle future updates with Monday morning grouped PRs ([1457818](https://github.com/cewert/jellyrock/commit/1457818))
 
+### Dependencies
+
+- github actions (major) ([#82](https://github.com/cewert/jellyrock/pull/82))
+
 ## [1.0.2](https://github.com/cewert/jellyrock/compare/v1.0.1...v1.0.2) - 2025-09-02
 
 ### Changed
