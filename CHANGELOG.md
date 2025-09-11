@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- claude subagent to enforce roku-log best practices and use it to refactor Home.bs ([3dd2088](https://github.com/cewert/jellyrock/commit/3dd2088))
 - docs/dev/logging.md ([efab961](https://github.com/cewert/jellyrock/commit/efab961))
 - debug flag to manifest ([ce1fb28](https://github.com/cewert/jellyrock/commit/ce1fb28))
 - dynamic gradient component ([#80](https://github.com/cewert/jellyrock/pull/80))
