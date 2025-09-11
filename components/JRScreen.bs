@@ -5,9 +5,9 @@ sub init()
   ' initialize the log manager. second param sets log output:
   ' 1 error, 2 warn, 3 info, 4 verbose, 5 debug
   #if debug
-    m.top._rLog = log.initializeLogManager(["log_PrintTransport"], 5) ' Debug mode: show all logs (info + verbose + debug)
+    log.initializeLogManager(["log_PrintTransport"], 5) ' Debug mode: show all logs (info + verbose + debug)
   #else
-    m.top._rLog = log.initializeLogManager(["log_PrintTransport"], 2) ' Production mode: show warn and error only
+    log.initializeLogManager(["log_PrintTransport"], 2) ' Production mode: show warn and error only
   #end if
 end sub
 ' Function called when the screen is displayed by the screen manager

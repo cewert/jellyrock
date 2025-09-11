@@ -4,6 +4,7 @@
     "*.bs": "brighterscript",
     "*.ts": "xml",
     "manifest": "plaintext",
+    ".claude/agents/*.md": "instructions",
     "CLAUDE.md": "instructions",
     ".github/copilot-instructions.md": "instructions"
   },

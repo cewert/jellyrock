@@ -1,83 +1,221 @@
 import "pkg:/source/api/baserequest.bs"
+import "pkg:/source/roku_modules/log/LogMixin.brs"
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/deviceCapabilities.bs"
 import "pkg:/source/utils/misc.bs"
 
 sub init()
+  m.log = new log.Logger("Home")
+  m.log.verbose("Initializing Home component")
+
+  m.log.increaseIndent("Setting up component state")
   m.isFirstRun = true
+  m.log.debug("Set isFirstRun", m.isFirstRun)
+
   m.top.overhangTitle = "Home"
   m.top.optionsAvailable = true
-  m.postTask = createObject("roSGNode", "PostTask")
+  m.log.debug("Configured overhang properties", "title:", m.top.overhangTitle, "optionsAvailable:", m.top.optionsAvailable)
 
+  m.postTask = createObject("roSGNode", "PostTask")
+  m.log.debug("Created PostTask node", m.postTask)
+  m.log.decreaseIndent()
+
+  m.log.increaseIndent("Finding child nodes")
   m.homeRows = m.top.findNode("homeRows")
+  if not isValid(m.homeRows)
+    m.log.error("Failed to find homeRows node")
+  else
+    m.log.debug("Found homeRows node", m.homeRows)
+  end if
 
   m.backdrop = m.top.findNode("backdrop")
-  if m.global.session.user.settings["ui.home.splashBackground"] = true
-    m.backdrop.uri = buildURL("/Branding/Splashscreen?format=jpg&foregroundLayer=0.15&fillWidth=1280&width=1280&fillHeight=720&height=720&tag=splash")
+  if not isValid(m.backdrop)
+    m.log.error("Failed to find backdrop node")
+  else
+    m.log.debug("Found backdrop node", m.backdrop)
   end if
+  m.log.decreaseIndent()
+
+  ' Configure splash background if enabled
+  splashEnabled = m.global.session.user.settings["ui.home.splashBackground"]
+  m.log.debug("Splash background setting", splashEnabled)
+
+  if splashEnabled = true and isValid(m.backdrop)
+    splashUrl = buildURL("/Branding/Splashscreen?format=jpg&foregroundLayer=0.15&fillWidth=1280&width=1280&fillHeight=720&height=720&tag=splash")
+    m.backdrop.uri = splashUrl
+    m.log.info("Applied splash background", splashUrl)
+  end if
+
+  m.log.verbose("Home component initialization complete")
 end sub
 
 sub refresh()
+  m.log.verbose("Refreshing home content")
+
+  if not isValid(m.homeRows)
+    m.log.error("Cannot refresh - homeRows node is invalid")
+    return
+  end if
+
+  m.log.debug("Calling updateHomeRows on homeRows node")
   m.homeRows.callFunc("updateHomeRows")
+  m.log.info("Home content refresh initiated")
 end sub
 
 sub loadLibraries()
+  m.log.verbose("Loading libraries for home content")
+
+  if not isValid(m.homeRows)
+    m.log.error("Cannot load libraries - homeRows node is invalid")
+    return
+  end if
+
+  m.log.debug("Calling loadLibraries on homeRows node")
   m.homeRows.callFunc("loadLibraries")
+  m.log.info("Library loading initiated")
 end sub
 
 ' JRScreen hook called when the screen is displayed by the screen manager
 sub OnScreenShown()
+  m.log.info("Home screen shown - configuring UI and loading content")
+  m.log.increaseIndent("OnScreenShown operations")
+
+  ' Configure overhang UI
+  m.log.increaseIndent("Configuring overhang")
   scene = m.top.getScene()
+  m.log.debug("Retrieved scene", scene)
+
   overhang = scene.findNode("overhang")
   if isValid(overhang)
+    m.log.debug("Found overhang node", overhang)
+
     overhang.isLogoVisible = true
     overhang.currentUser = m.global.session.user.name
     overhang.title = tr("Home")
+    m.log.debug("Updated overhang properties", "user:", overhang.currentUser, "title:", overhang.title, "logoVisible:", overhang.isLogoVisible)
 
-    if m.global.session.user.settings["ui.design.hideclock"]
+    ' Hide clock if user preference is set
+    hideClockSetting = m.global.session.user.settings["ui.design.hideclock"]
+    m.log.debug("Hide clock setting", hideClockSetting)
+
+    if hideClockSetting
       clock = overhang.findNode("clock")
-      overhang.removeChild(clock)
+      if isValid(clock)
+        overhang.removeChild(clock)
+        m.log.info("Clock hidden per user preference")
+      else
+        m.log.warn("Clock node not found - cannot hide")
+      end if
     end if
+  else
+    m.log.error("Overhang node not found - UI configuration incomplete")
   end if
+  m.log.decreaseIndent()
 
+  ' Set focus appropriately
+  m.log.increaseIndent("Setting focus")
   if isValid(m.top.lastFocus)
+    m.log.debug("Restoring focus to last focused element", m.top.lastFocus)
     m.top.lastFocus.setFocus(true)
   else
+    m.log.debug("No last focus found - setting focus to home screen")
     m.top.setFocus(true)
   end if
+  m.log.decreaseIndent()
 
-  ' post the device profile the first time this screen is loaded
+  ' Handle first run device capabilities posting or refresh content
   if m.isFirstRun
+    m.log.increaseIndent("First run - posting device capabilities")
     m.isFirstRun = false
-    m.postTask.arrayData = getDeviceCapabilities()
+    m.log.debug("Set isFirstRun to false")
+
+    deviceCapabilities = getDeviceCapabilities()
+    m.log.debug("Retrieved device capabilities", deviceCapabilities)
+
+    m.postTask.arrayData = deviceCapabilities
     m.postTask.apiUrl = "/Sessions/Capabilities/Full"
     m.postTask.control = "RUN"
+    m.log.debug("Configured PostTask", "apiUrl:", m.postTask.apiUrl, "control:", m.postTask.control)
+
     m.postTask.observeField("responseCode", "postFinished")
+    m.log.info("Device capabilities post initiated")
+    m.log.decreaseIndent()
   else
+    m.log.increaseIndent("Subsequent run - refreshing content")
     refresh()
 
-    if m.global.session.user.settings["ui.home.splashBackground"] = true
-      m.backdrop.uri = buildURL("/Branding/Splashscreen?format=jpg&foregroundLayer=0.15&fillWidth=1280&width=1280&fillHeight=720&height=720&tag=splash")
+    ' Update backdrop based on current splash background setting
+    splashEnabled = m.global.session.user.settings["ui.home.splashBackground"]
+    m.log.debug("Current splash background setting", splashEnabled)
+
+    if isValid(m.backdrop)
+      if splashEnabled = true
+        splashUrl = buildURL("/Branding/Splashscreen?format=jpg&foregroundLayer=0.15&fillWidth=1280&width=1280&fillHeight=720&height=720&tag=splash")
+        m.backdrop.uri = splashUrl
+        m.log.info("Updated backdrop with splash background", splashUrl)
+      else
+        m.backdrop.uri = ""
+        m.log.info("Cleared backdrop - splash background disabled")
+      end if
     else
-      m.backdrop.uri = ""
+      m.log.warn("Backdrop node invalid - cannot update background")
     end if
+    m.log.decreaseIndent()
   end if
+
+  m.log.decreaseIndent()
+  m.log.info("Home screen shown configuration complete")
 end sub
 
 ' JRScreen hook called when the screen is hidden by the screen manager
 sub OnScreenHidden()
+  m.log.info("Home screen hidden - cleaning up UI state")
+  m.log.increaseIndent("OnScreenHidden operations")
+
   scene = m.top.getScene()
+  m.log.debug("Retrieved scene for cleanup", scene)
+
   overhang = scene.findNode("overhang")
   if isValid(overhang)
+    m.log.debug("Found overhang node - clearing properties")
+
     overhang.isLogoVisible = false
     overhang.currentUser = ""
     overhang.title = ""
+
+    m.log.debug("Cleared overhang properties", "logoVisible:", overhang.isLogoVisible, "user:", overhang.currentUser, "title:", overhang.title)
+    m.log.info("Overhang UI state cleared")
+  else
+    m.log.warn("Overhang node not found - cleanup incomplete")
   end if
+
+  m.log.decreaseIndent()
+  m.log.info("Home screen hidden cleanup complete")
 end sub
 
 ' Triggered by m.postTask after completing a post.
 ' Empty the task data when finished.
 sub postFinished()
-  m.postTask.unobserveField("responseCode")
-  m.postTask.callFunc("empty")
+  m.log.verbose("Device capabilities post finished - cleaning up task")
+  m.log.increaseIndent("Post cleanup operations")
+
+  if isValid(m.postTask)
+    responseCode = m.postTask.responseCode
+    m.log.debug("Post task response code", responseCode)
+
+    if responseCode = 200 or responseCode = 204
+      m.log.info("Device capabilities posted successfully", "responseCode:", responseCode)
+    else
+      m.log.warn("Device capabilities post completed with non-success code", "responseCode:", responseCode)
+    end if
+
+    m.postTask.unobserveField("responseCode")
+    m.postTask.callFunc("empty")
+    m.log.debug("Post task cleaned up and emptied")
+  else
+    m.log.error("Post task invalid during cleanup")
+  end if
+
+  m.log.decreaseIndent()
+  m.log.verbose("Post task cleanup complete")
 end sub
