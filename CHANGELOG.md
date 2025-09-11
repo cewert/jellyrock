@@ -27,6 +27,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - ropm copy error ([a31d18e](https://github.com/cewert/jellyrock/commit/a31d18e))
 - exclude release-prep PRs from changelog. Fixes #68 ([98a3fcb](https://github.com/cewert/jellyrock/commit/98a3fcb))
 
+### Removed
+
+- redundant component fields ([23d12d3](https://github.com/cewert/jellyrock/commit/23d12d3))
+
 ### Security
 
 - renovate config and github actions. All actions pinned to immutable commit hashes for security. Unified @<hash> # v<version> format across all workflows for consistency. Renovate will handle future updates with Monday morning grouped PRs ([1457818](https://github.com/cewert/jellyrock/commit/1457818))
