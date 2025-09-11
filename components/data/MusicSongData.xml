@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="MusicSongData" extends="JRContentItem">
   <interface>
-    <field id="id" type="string" />
     <field id="title" type="string" />
     <field id="trackNumber" type="integer" />
     <field id="image" type="node" onChange="setPoster" />

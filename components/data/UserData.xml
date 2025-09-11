@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="UserData" extends="ContentNode">
   <interface>
-    <field id="id" type="string" />
     <field id="username" type="string" />
     <field id="token" type="string" />
     <field id="server" type="string" />

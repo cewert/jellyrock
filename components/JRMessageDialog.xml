@@ -14,7 +14,6 @@
 
   </children>
   <interface>
-    <field id="id" type="string" />
     <field id="message" type="string" onChange="updateMessage" />
     <field id="options" type="array" onChange="updateOptions" />
     <field id="fontHeight" type="integer" />
