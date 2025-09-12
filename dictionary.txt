@@ -54,3 +54,7 @@ Auth
 Mixin
 mixin
 Fallbacks
+roku-log-expert
+auth
+fallbacks
+codebase.
