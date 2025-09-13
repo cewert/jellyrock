@@ -38,6 +38,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Dependencies
 
+- dependency @rokucommunity/bslint to v0.8.35 ([#84](https://github.com/cewert/jellyrock/pull/84))
 - dependency brighterscript-formatter to v1.7.18 ([#85](https://github.com/cewert/jellyrock/pull/85))
 - dependency brighterscript to v0.70.1 ([#83](https://github.com/cewert/jellyrock/pull/83))
 - softprops/action-gh-release action to v2.3.3 ([#81](https://github.com/cewert/jellyrock/pull/81))
