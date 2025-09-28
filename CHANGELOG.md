@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Fixed
+
+- app crash when `CreateInstantMix` returns invalid ([#90](https://github.com/cewert/jellyrock/pull/90))
+
 ## [1.0.3](https://github.com/cewert/jellyrock/compare/v1.0.2...v1.0.3) - 2025-09-16
 
 ### Added
