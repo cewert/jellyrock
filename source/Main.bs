@@ -471,7 +471,12 @@ sub Main (args as dynamic) as void
           if screenContent.albumData.items.count() > 0
             m.global.queueManager.callFunc("clear")
             m.global.queueManager.callFunc("resetShuffle")
-            m.global.queueManager.callFunc("set", CreateInstantMix(screenContent.albumData.items[0].id).Items)
+            instantMixData = CreateInstantMix(screenContent.albumData.items[0].id)
+            if isValid(instantMixData) and isValid(instantMixData.Items)
+              m.global.queueManager.callFunc("set", instantMixData.Items)
+            else
+              print "Failed to create instant mix for album item: ", screenContent.albumData.items[0].id
+            end if
             m.global.queueManager.callFunc("playQueue")
 
             viewHandled = true
@@ -483,7 +488,12 @@ sub Main (args as dynamic) as void
         ' Create instant mix based on selected artist
         m.global.queueManager.callFunc("clear")
         m.global.queueManager.callFunc("resetShuffle")
-        m.global.queueManager.callFunc("set", CreateInstantMix(screenContent.pageContent.id).Items)
+        instantMixData = CreateInstantMix(screenContent.pageContent.id)
+        if isValid(instantMixData) and isValid(instantMixData.Items)
+          m.global.queueManager.callFunc("set", instantMixData.Items)
+        else
+          print "Failed to create instant mix for artist: ", screenContent.pageContent.id
+        end if
         m.global.queueManager.callFunc("playQueue")
       end if
 
@@ -664,7 +674,12 @@ sub Main (args as dynamic) as void
             if group.albumData.items.count() > 0
               m.global.queueManager.callFunc("clear")
               m.global.queueManager.callFunc("resetShuffle")
-              m.global.queueManager.callFunc("set", CreateInstantMix(group.albumData.items[0].id).Items)
+              instantMixData = CreateInstantMix(group.albumData.items[0].id)
+              if isValid(instantMixData) and isValid(instantMixData.Items)
+                m.global.queueManager.callFunc("set", instantMixData.Items)
+              else
+                print "Failed to create instant mix for album item: ", group.albumData.items[0].id
+              end if
               m.global.queueManager.callFunc("playQueue")
 
               viewHandled = true
@@ -678,7 +693,12 @@ sub Main (args as dynamic) as void
           if isValid(parentWithPageContent) and isValid(parentWithPageContent.pageContent) and isValid(parentWithPageContent.pageContent.id)
             m.global.queueManager.callFunc("clear")
             m.global.queueManager.callFunc("resetShuffle")
-            m.global.queueManager.callFunc("set", CreateInstantMix(parentWithPageContent.pageContent.id).Items)
+            instantMixData = CreateInstantMix(parentWithPageContent.pageContent.id)
+            if isValid(instantMixData) and isValid(instantMixData.Items)
+              m.global.queueManager.callFunc("set", instantMixData.Items)
+            else
+              print "Failed to create instant mix for artist: ", parentWithPageContent.pageContent.id
+            end if
             m.global.queueManager.callFunc("playQueue")
           else
             stopLoadingSpinner()
