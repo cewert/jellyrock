@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - app crash when `CreateInstantMix` returns invalid ([#90](https://github.com/cewert/jellyrock/pull/90))
 
+### Dependencies
+
+- actions/cache action to v4.3.0 ([#91](https://github.com/cewert/jellyrock/pull/91))
+
 ## [1.0.3](https://github.com/cewert/jellyrock/compare/v1.0.2...v1.0.3) - 2025-09-16
 
 ### Added
