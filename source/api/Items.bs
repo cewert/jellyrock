@@ -1,9 +1,10 @@
 import "pkg:/source/api/Image.bs"
 import "pkg:/source/api/sdk.bs"
+import "pkg:/source/enums/SubtitleSelection.bs"
 import "pkg:/source/utils/deviceCapabilities.bs"
 import "pkg:/source/utils/misc.bs"
 
-function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioTrackIndex = -1 as integer, subtitleTrackIndex = -1 as integer, startTimeTicks = 0 as longinteger, forceMp3 = false as boolean)
+function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioTrackIndex = -1 as integer, subtitleTrackIndex = SubtitleSelection.none as integer, startTimeTicks = 0 as longinteger, forceMp3 = false as boolean)
   params = {
     "UserId": m.global.session.user.id,
     "StartTimeTicks": startTimeTicks,

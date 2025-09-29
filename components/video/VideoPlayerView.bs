@@ -1,3 +1,4 @@
+import "pkg:/source/enums/SubtitleSelection.bs"
 import "pkg:/source/roku_modules/log/LogMixin.brs"
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/misc.bs"
@@ -354,7 +355,7 @@ end sub
 sub onSubtitleChange()
   switchWithoutRefresh = true
 
-  if m.top.SelectedSubtitle <> -1
+  if m.top.SelectedSubtitle <> SubtitleSelection.none
     ' If the global caption mode is off, then Roku can't display the subtitles natively and needs a video stop/start
     if LCase(m.top.globalCaptionMode) <> "on" then switchWithoutRefresh = false
   end if
@@ -816,7 +817,7 @@ end function
 ' availSubtitleTrackIdx: Returns Roku's index for requested subtitle track
 '
 ' @param {string} tracknameToFind - TrackName for subtitle we're looking to match
-' @return {integer} indicating Roku's index for requested subtitle track. Returns -1 if not found
+' @return {integer} indicating Roku's index for requested subtitle track. Returns SubtitleSelection.none if not found
 function availSubtitleTrackIdx(tracknameToFind as string) as integer
   idx = 0
   for each availTrack in m.top.availableSubtitleTracks
@@ -828,7 +829,7 @@ function availSubtitleTrackIdx(tracknameToFind as string) as integer
     end if
     idx = idx + 1
   end for
-  return -1
+  return SubtitleSelection.none
 end function
 
 function onKeyEvent(key as string, press as boolean) as boolean
