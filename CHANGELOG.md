@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- device profile to improve support for HDR10Plus and DOVIWithHDR10Plus ([ca25905](https://github.com/cewert/jellyrock/commit/ca25905))
+
 ### Fixed
 
 - app crash when `CreateInstantMix` returns invalid ([#90](https://github.com/cewert/jellyrock/pull/90))
