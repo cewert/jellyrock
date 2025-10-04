@@ -550,7 +550,12 @@ function getCodecProfiles() as object
     end if
 
     if dp.Hdr10Plus
-      av1VideoRangeTypes = av1VideoRangeTypes + "|HDR10+"
+      av1VideoRangeTypes = av1VideoRangeTypes + "|HDR10Plus"
+
+      if canPlayDovi
+        hevcVideoRangeTypes = hevcVideoRangeTypes + "|DOVIWithHDR10Plus"
+        av1VideoRangeTypes = av1VideoRangeTypes + "|DOVIWithHDR10Plus"
+      end if
     end if
 
     if dp.HLG
