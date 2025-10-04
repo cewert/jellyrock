@@ -268,9 +268,14 @@ sub SetDefaultAudioTrack(itemData)
   defaults = new VideoDefaults(itemData)
 
   defaultAudioStream = defaults.getDefaultAudioStream()
+  if not isValid(defaultAudioStream) then return
 
-  m.top.selectedAudioStreamIndex = defaultAudioStream.index
-  setFieldText("audio_codec", tr("Audio") + ": " + defaultAudioStream.displayTitle)
+  if isValid(defaultAudioStream.index)
+    m.top.selectedAudioStreamIndex = defaultAudioStream.index
+  end if
+  if isValid(defaultAudioStream.displayTitle)
+    setFieldText("audio_codec", tr("Audio") + ": " + defaultAudioStream.displayTitle)
+  end if
 end sub
 
 sub setFieldText(field, value)
