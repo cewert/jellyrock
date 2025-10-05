@@ -23,13 +23,21 @@
   ],
   "diagnosticFilters": [
     "node_modules/**/*",
-    "**/roku_modules/**/*"
+    "**/roku_modules/**/*",
+    {
+      "src": "unit-tests/**/*",
+      "codes": [
+        1026,
+        "LINT3008"
+      ]
+    }
   ],
   "autoImportComponentScript": true,
   "stagingDir": "build",
   "retainStagingDir": true,
   "plugins": [
-    "rooibos-roku"
+    "rooibos-roku",
+    "@rokucommunity/bslint"
   ],
   "rooibos": {
     "isRecordingCodeCoverage": false,

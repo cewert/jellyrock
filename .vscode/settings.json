@@ -27,6 +27,16 @@
   "editor.formatOnSave": true,
   "brightscript.output.hyperlinkFormat": "FilenameAndFunction",
   "brightscript.bsdk": "node_modules/brighterscript",
+  "brightscript.projects": [
+    {
+      "path": "bsconfig.json",
+      "name": "Main Project"
+    },
+    {
+      "path": "bsconfig-tests.json",
+      "name": "Unit Tests"
+    }
+  ],
   "search.exclude": {
     "**/.git": true,
     "**/node_modules/**": true,
