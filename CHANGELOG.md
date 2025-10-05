@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- proper linting for unit tests ([#94](https://github.com/cewert/jellyrock/pull/94))
+
 ### Changed
 
 - device profile to improve support for HDR10Plus and DOVIWithHDR10Plus ([ca25905](https://github.com/cewert/jellyrock/commit/ca25905))
