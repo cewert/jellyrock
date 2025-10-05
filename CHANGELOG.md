@@ -16,6 +16,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - app crash on MovieDetails ([#93](https://github.com/cewert/jellyrock/pull/93))
 - app crash when `CreateInstantMix` returns invalid ([#90](https://github.com/cewert/jellyrock/pull/90))
 
+### Removed
+
+- bslint warnings for array and assocarray fields ([3da1107](https://github.com/cewert/jellyrock/commit/3da1107))
+
 ### Dependencies
 
 - actions/cache action to v4.3.0 ([#91](https://github.com/cewert/jellyrock/pull/91))
