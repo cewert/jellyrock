@@ -24,6 +24,9 @@
     "undent": "1.0.0",
     "xml2js": "0.6.2"
   },
+  "overrides": {
+    "brighterscript": "0.70.1"
+  },
   "scripts": {
     "build": "npx rimraf build/ out/ && npx bsc --project bsconfig.json",
     "build:prod": "npx rimraf build/ out/ && npx bsc --project bsconfig-prod.json",
