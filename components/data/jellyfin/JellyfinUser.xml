@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  LOADING STATE PATTERN: SENTINEL VALUES
+
+  RULE: If user.id = "" AND user.authToken = "", user is NOT authenticated
+  RULE: If user.id <> "", user IS authenticated and loaded
+
+  User node only exists in m.global.session.user after successful login.
+  Empty configuration/policy fields are VALID defaults.
+-->
+<component name="JellyfinUser" extends="ContentNode">
+  <interface>
+    <!-- User Identity -->
+    <field id="id" type="string" value="" />
+    <field id="name" type="string" value="" />
+    <field id="friendlyName" type="string" value="" />
+
+    <!-- Authentication -->
+    <field id="authToken" type="string" value="" />
+    <field id="primaryImageTag" type="string" value="" />
+
+    <!-- User Configuration (flattened from API Configuration object) -->
+    <field id="useEpisodeImagesInNextUpAndResume" type="boolean" value="false" />
+    <field id="enableNextEpisodeAutoPlay" type="boolean" value="false" />
+    <field id="rememberAudioSelections" type="boolean" value="false" />
+    <field id="rememberSubtitleSelections" type="boolean" value="false" />
+
+    <!-- User Policy (flattened from API Policy object) -->
+    <field id="enableLiveTvManagement" type="boolean" value="false" />
+    <field id="enableContentDeletion" type="boolean" value="false" />
+    <field id="enablePublicSharing" type="boolean" value="false" />
+    <field id="enableMediaPlayback" type="boolean" value="true" />
+    <field id="isAdministrator" type="boolean" value="false" />
+
+    <!-- User Settings (nested node) -->
+    <field id="settings" type="node" />
+
+    <!-- App State -->
+    <field id="lastRunVersion" type="string" value="" />
+    <field id="fontScaleFactor" type="float" value="1.0" />
+
+    <!-- Raw data for compatibility -->
+    <field id="rawUserData" type="assocarray" />
+    <field id="rawConfigData" type="assocarray" />
+    <field id="rawPolicyData" type="assocarray" />
+  </interface>
+</component>

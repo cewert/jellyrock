@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  LOADING STATE PATTERN: ALWAYS LOADED
+
+  Settings are ALWAYS loaded (synchronously from registry or defaults).
+  Empty values represent "use app default" (valid state).
+  No loading states needed - settings node always exists and is valid.
+-->
+<component name="JellyfinUserSettings" extends="ContentNode">
+  <interface>
+    <!-- UI Settings -->
+    <field id="uiRowLayout" type="string" value="" />
+    <field id="uiDesignHideClock" type="boolean" value="false" />
+    <field id="uiGeneralEpisodeImages" type="string" value="" />
+    <field id="uiTvShowsDisableUnwatchedCount" type="boolean" value="false" />
+    <field id="uiHomeUseWebArrangement" type="boolean" value="false" />
+    <field id="uiFontFallback" type="boolean" value="false" />
+
+    <!-- Home Section Settings -->
+    <field id="homeSection0" type="string" value="" />
+    <field id="homeSection1" type="string" value="" />
+    <field id="homeSection2" type="string" value="" />
+    <field id="homeSection3" type="string" value="" />
+    <field id="homeSection4" type="string" value="" />
+    <field id="homeSection5" type="string" value="" />
+    <field id="homeSection6" type="string" value="" />
+
+    <!-- Display Settings -->
+    <field id="displayLiveTvLanding" type="string" value="" />
+
+    <!-- Global Settings -->
+    <field id="globalRememberMe" type="boolean" value="false" />
+
+    <!-- Live TV Settings -->
+    <field id="liveTvCanRecord" type="boolean" value="false" />
+
+    <!-- Content Settings -->
+    <field id="contentCanDelete" type="boolean" value="false" />
+
+    <!-- Raw settings for any unknown fields -->
+    <field id="rawSettings" type="assocarray" />
+  </interface>
+</component>
