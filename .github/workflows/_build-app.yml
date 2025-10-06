@@ -274,7 +274,7 @@ jobs:
 
       - name: Create GitHub Release
         if: ${{ inputs.create_github_release == true && (steps.context.outputs.build_context == 'version_branch' || steps.context.outputs.build_context == 'main_branch') }}
-        uses: softprops/action-gh-release@6cbd405e2c4e67a21c47fa9e383d020e4e28b836 # v2.3.3
+        uses: softprops/action-gh-release@62c96d0c4e8a889135c1f3a25910db8dbe0e85f7 # v2.3.4
         with:
           tag_name: ${{ steps.context.outputs.tag_name }}
           name: ${{ steps.context.outputs.tag_name }}
