@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- unit tests by making rooibos use latest version of brighterscript ([8c69a25](https://github.com/cewert/jellyrock/commit/8c69a25))
 - app crash on MovieDetails ([#93](https://github.com/cewert/jellyrock/pull/93))
 - app crash when `CreateInstantMix` returns invalid ([#90](https://github.com/cewert/jellyrock/pull/90))
 
