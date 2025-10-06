@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Dependencies
+
+- peter-evans/repository-dispatch action to v4 ([#98](https://github.com/cewert/jellyrock/pull/98))
+
 ## [1.0.4](https://github.com/cewert/jellyrock/compare/v1.0.3...v1.0.4) - 2025-10-06
 
 ### Added
