@@ -14,6 +14,9 @@
   "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
   },
+  "markdownlint.lintWorkspaceGlobs": [
+    "!tasks/**/*.md"
+  ],
   "[json]": {
     "editor.defaultFormatter": "vscode.json-language-features"
   },
