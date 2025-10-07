@@ -1,0 +1,199 @@
+import "pkg:/source/utils/misc.bs"
+
+' Transforms session data (server, user, app, device) to content nodes
+class SessionDataTransformer
+
+  sub new()
+  end sub
+
+  ' Transform server info to JellyfinServer content node
+  function transformServerInfo(serverData as object) as object
+    if not isValid(serverData)
+      return invalid
+    end if
+
+    try
+      server = CreateObject("roSGNode", "JellyfinServer")
+
+      server.id = serverData.id ?? ""
+      server.name = serverData.name ?? ""
+      server.version = serverData.version ?? ""
+      server.productName = serverData.productName ?? ""
+      server.operatingSystem = serverData.operatingSystem ?? ""
+
+      server.url = serverData.url ?? ""
+      server.localURL = serverData.localURL ?? ""
+      server.isHTTPS = serverData.isHTTPS ?? false
+      server.isLocalHTTPS = serverData.isLocalHTTPS ?? false
+
+      server.startupWizardCompleted = serverData.startupWizardCompleted ?? false
+
+      ' Set loading state
+      server.isLoaded = true
+      server.isConnected = true
+      server.lastConnected = CreateObject("roDateTime").AsSeconds()
+
+      server.rawServerInfo = serverData
+
+      return server
+
+    catch error
+      return invalid
+    end try
+  end function
+
+  ' Transform user info to JellyfinUser content node (flattened structure)
+  function transformUserInfo(userData as object) as object
+    if not isValid(userData)
+      return invalid
+    end if
+
+    try
+      user = CreateObject("roSGNode", "JellyfinUser")
+
+      ' User identity
+      user.id = userData.id ?? ""
+      user.name = userData.name ?? ""
+      user.friendlyName = userData.friendlyName ?? ""
+      user.authToken = userData.authToken ?? ""
+      user.primaryImageTag = userData.primaryImageTag ?? ""
+      user.lastRunVersion = userData.lastRunVersion ?? ""
+      user.fontScaleFactor = userData.fontScaleFactor ?? 1.0
+
+      ' Flatten configuration fields directly into user
+      if isValid(userData.Configuration)
+        user.useEpisodeImagesInNextUpAndResume = userData.Configuration.useEpisodeImagesInNextUpAndResume ?? false
+        user.enableNextEpisodeAutoPlay = userData.Configuration.EnableNextEpisodeAutoPlay ?? false
+        user.rememberAudioSelections = userData.Configuration.RememberAudioSelections ?? false
+        user.rememberSubtitleSelections = userData.Configuration.RememberSubtitleSelections ?? false
+        user.rawConfigData = userData.Configuration
+      end if
+
+      ' Flatten policy fields directly into user
+      if isValid(userData.Policy)
+        user.enableLiveTvManagement = userData.Policy.EnableLiveTvManagement ?? false
+        user.enableContentDeletion = userData.Policy.EnableContentDeletion ?? false
+        user.enablePublicSharing = userData.Policy.EnablePublicSharing ?? false
+        user.enableMediaPlayback = userData.Policy.EnableMediaPlayback ?? true
+        user.isAdministrator = userData.Policy.IsAdministrator ?? false
+        user.rawPolicyData = userData.Policy
+      end if
+
+      ' Transform user settings (nested node)
+      if isValid(userData.settings)
+        user.settings = m.transformUserSettings(userData.settings)
+      else
+        ' Create empty settings node
+        user.settings = CreateObject("roSGNode", "JellyfinUserSettings")
+      end if
+
+      ' Set loading state
+      user.isLoaded = true
+      user.loadedAt = CreateObject("roDateTime").AsSeconds()
+
+      user.rawUserData = userData
+
+      return user
+
+    catch error
+      return invalid
+    end try
+  end function
+
+  ' Transform user settings (from registry and API)
+  function transformUserSettings(settingsData as object) as object
+    settings = CreateObject("roSGNode", "JellyfinUserSettings")
+
+    if not isValid(settingsData)
+      return settings
+    end if
+
+    ' UI Settings
+    settings.uiRowLayout = settingsData["ui.row.layout"] ?? ""
+    settings.uiDesignHideClock = toBoolean(settingsData["ui.design.hideclock"])
+    settings.uiGeneralEpisodeImages = settingsData["ui.general.episodeimagesnextup"] ?? ""
+    settings.uiTvShowsDisableUnwatchedCount = toBoolean(settingsData["ui.tvshows.disableUnwatchedEpisodeCount"])
+    settings.uiHomeUseWebArrangement = toBoolean(settingsData["ui.home.useWebSectionArrangement"])
+    settings.uiFontFallback = toBoolean(settingsData["ui.font.fallback"])
+
+    ' Home sections
+    settings.homeSection0 = settingsData["homesection0"] ?? ""
+    settings.homeSection1 = settingsData["homesection1"] ?? ""
+    settings.homeSection2 = settingsData["homesection2"] ?? ""
+    settings.homeSection3 = settingsData["homesection3"] ?? ""
+    settings.homeSection4 = settingsData["homesection4"] ?? ""
+    settings.homeSection5 = settingsData["homesection5"] ?? ""
+    settings.homeSection6 = settingsData["homesection6"] ?? ""
+
+    ' Display settings
+    settings.displayLiveTvLanding = settingsData["display.livetv.landing"] ?? ""
+
+    ' Global settings
+    settings.globalRememberMe = toBoolean(settingsData["global.rememberme"])
+
+    ' Permission settings
+    settings.liveTvCanRecord = toBoolean(settingsData["livetv.canrecord"])
+    settings.contentCanDelete = toBoolean(settingsData["content.candelete"])
+
+    ' Set loading state
+    settings.isLoaded = true
+    settings.loadedAt = CreateObject("roDateTime").AsSeconds()
+
+    settings.rawSettings = settingsData
+
+    return settings
+  end function
+
+  ' Transform app info to AppInfo content node
+  function transformAppInfo(appData as object) as object
+    if not isValid(appData)
+      return invalid
+    end if
+
+    app = CreateObject("roSGNode", "AppInfo")
+
+    app.appId = appData.id ?? ""
+    app.isDev = appData.isDev ?? false
+    app.version = appData.version ?? ""
+    app.lastRunVersion = appData.lastRunVersion ?? ""
+
+    return app
+  end function
+
+  ' Transform device info to DeviceInfo content node
+  function transformDeviceInfo(deviceData as object) as object
+    if not isValid(deviceData)
+      return invalid
+    end if
+
+    device = CreateObject("roSGNode", "DeviceInfo")
+
+    device.id = deviceData.id ?? ""
+    device.name = deviceData.name ?? ""
+    device.model = deviceData.model ?? ""
+    device.serial = deviceData.serial ?? ""
+    device.friendlyName = deviceData.friendlyName ?? ""
+    device.serverDeviceName = deviceData.serverDeviceName ?? ""
+    device.modelType = deviceData.modelType ?? ""
+
+    device.videoHeight = deviceData.videoHeight ?? 1080
+    device.videoWidth = deviceData.videoWidth ?? 1920
+    device.maxVideoHeight = deviceData.maxVideoHeight ?? 1080
+    device.maxVideoWidth = deviceData.maxVideoWidth ?? 1920
+    device.canPlay4K = deviceData.canPlay4K ?? false
+
+    if isValid(deviceData.videoCodecs)
+      device.videoCodecs = deviceData.videoCodecs
+    end if
+    if isValid(deviceData.audioCodecs)
+      device.audioCodecs = deviceData.audioCodecs
+    end if
+
+    device.memoryLevel = deviceData.memoryLevel ?? "normal"
+    device.memoryTotal = deviceData.memoryTotal ?? 0
+    device.modelDetails = deviceData.modelDetails ?? {}
+
+    return device
+  end function
+
+end class

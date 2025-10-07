@@ -1,0 +1,12 @@
+{
+  "id": "https-server-456",
+  "name": "HTTPS Test Server",
+  "version": "10.9.0",
+  "productName": "Jellyfin Server",
+  "operatingSystem": "Linux",
+  "url": "https://secure.jellyfin.test",
+  "localURL": "https://192.168.1.100:8920",
+  "isHTTPS": true,
+  "isLocalHTTPS": true,
+  "startupWizardCompleted": true
+}
