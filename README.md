@@ -9,6 +9,10 @@
 
 JellyRock is a Jellyfin client for Roku devices, forked from jellyfin-roku [v2.2.5](https://github.com/jellyfin-archive/jellyfin-roku-legacy/releases/tag/v2.2.5).
 
+## Install
+
+Visit the [Roku Channel Store](https://channelstore.roku.com/details/232f9e82db11ce628e3fe7e01382a330:a85d6e9e520567806e8dae1c0cabadd5/jellyrock) to install the latest release.
+
 ## Screenshots
 
   <a href="docs/screenshots/home.png" target="_blank" title="Home">
