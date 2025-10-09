@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- channel store link to readme and release notes ([b71db07](https://github.com/cewert/jellyrock/commit/b71db07))
+
 ### Dependencies
 
 - github actions ([#97](https://github.com/cewert/jellyrock/pull/97))
