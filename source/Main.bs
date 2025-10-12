@@ -12,7 +12,20 @@ sub Main (args as dynamic) as void
   m.global = m.screen.getGlobalNode()
   setGlobals()
 
-  session.Init()
+  ' Initialize session content nodes
+  serverNode = CreateObject("roSGNode", "JellyfinServer")
+  userNode = CreateObject("roSGNode", "JellyfinUser")
+  settingsNode = CreateObject("roSGNode", "JellyfinUserSettings")
+  userNode.settings = settingsNode
+  m.global.addFields({
+    server: serverNode,
+    user: userNode
+  })
+
+  user.settings.SaveDefaults()
+
+  ' Enable auto-sync AFTER loading defaults
+  settingsNode.callFunc("enableAutoSync")
 
   ' migrate registry if needed
   m.wasMigrated = false
@@ -192,7 +205,7 @@ sub Main (args as dynamic) as void
           for i = 0 to currentScene.objects.Items.count() - 1
             if LCase(currentScene.objects.Items[i].id) = LCase(currentEpisode.id)
 
-              data = api.users.GetItem(m.global.session.user.id, currentEpisode.id)
+              data = api.users.GetItem(m.global.user.id, currentEpisode.id)
               if isValid(data)
                 currentScene.objects.Items[i].json = data
                 m.global.queueManager.callFunc("setTopStartingPoint", data.UserData.PlaybackPositionTicks)
@@ -215,7 +228,7 @@ sub Main (args as dynamic) as void
       currentScene = m.global.sceneManager.callFunc("getActiveScene")
 
       if isValid(currentScene) and isValid(currentScene.itemContent) and isValid(currentScene.itemContent.id)
-        data = api.users.GetItem(m.global.session.user.id, currentScene.itemContent.id)
+        data = api.users.GetItem(m.global.user.id, currentScene.itemContent.id)
         if isValid(data)
           currentScene.itemContent.json = data
           ' Set updated starting point for the queue item
@@ -342,7 +355,7 @@ sub Main (args as dynamic) as void
           print "selectedItem=", selectedItem
 
           ' grab all photos inside photo album
-          photoAlbumData = api.users.GetItemsByQuery(m.global.session.user.id, {
+          photoAlbumData = api.users.GetItemsByQuery(m.global.user.id, {
             "parentId": selectedItem.id,
             "includeItemTypes": "Photo",
             "Recursive": true
@@ -612,7 +625,7 @@ sub Main (args as dynamic) as void
         dialog.title = tr("Loading trailer")
         m.scene.dialog = dialog
 
-        trailerData = api.users.GetLocalTrailers(m.global.session.user.id, group.id)
+        trailerData = api.users.GetLocalTrailers(m.global.user.id, group.id)
 
         if isValid(trailerData) and isValid(trailerData[0]) and isValid(trailerData[0].id)
           m.global.queueManager.callFunc("clear")
@@ -734,7 +747,7 @@ sub Main (args as dynamic) as void
       else if button.id = "change_server"
         startLoadingSpinner()
         unset_setting("server")
-        session.server.Delete()
+        server.Delete()
         SignOut(false)
         m.global.sceneManager.callFunc("clearScenes")
         goto app_start
@@ -834,7 +847,7 @@ sub Main (args as dynamic) as void
         '   - "low" means that the general memory is below acceptable levels but not critical
         '   - "critical" means that general memory are at dangerously low level and that the OS may force terminate the application
         print "event.generalMemoryLevel = ", event.generalMemoryLevel
-        session.Update("memoreyLevel", event.generalMemoryLevel)
+        m.global.device.memoryLevel = event.generalMemoryLevel
       else if isValid(event.audioCodecCapabilityChanged)
         ' The audio codec capability has changed if true.
         print "event.audioCodecCapabilityChanged = ", event.audioCodecCapabilityChanged
@@ -931,7 +944,7 @@ end sub
 ' Initialize fallback font download process
 sub initializeFallbackFont()
   ' Check if user needs fallback fonts
-  needsFallbackFonts = m.global.session.user.settings["playback.subs.custom"] = true or m.global.session.user.settings["ui.font.fallback"] = true
+  needsFallbackFonts = m.global.user.settings.playbackSubsCustom = true or m.global.user.settings.uiFontFallback = true
 
   if not needsFallbackFonts
     print "User doesn't need fallback fonts, skipping font download"
@@ -946,7 +959,7 @@ sub initializeFallbackFont()
   fontDownloadTask.control = "RUN"
 
   ' Store whether we need to wait for completion (UI fonts enabled)
-  m.waitForFontDownload = (m.global.session.user.settings["ui.font.fallback"] = true)
+  m.waitForFontDownload = (m.global.user.settings.uiFontFallback = true)
 
   if m.waitForFontDownload
     startLoadingSpinner(true, tr("Downloading Fallback Font"))
@@ -981,7 +994,7 @@ sub createAndShowHomeGroup()
   ' update lastRunVersion but only on prod
   if not m.global.app.isDev
     ' has the current user ran this version before?
-    usersLastRunVersion = m.global.session.user.settings.lastRunVersion
+    usersLastRunVersion = m.global.user.settings.lastRunVersion
     if not isValid(usersLastRunVersion) or not versionChecker(usersLastRunVersion, m.global.app.version)
       set_user_setting("LastRunVersion", m.global.app.version)
     end if
@@ -995,7 +1008,7 @@ sub handleFontDownloadCompletion(fontDownloadTask as object)
   else
 
     ' If UI fallback fonts are enabled, calculate scale factor
-    if m.global.session.user.settings["ui.font.fallback"] = true
+    if m.global.user.settings.uiFontFallback = true
       print "Calculating font scale factor for UI fallback fonts"
       calculateFontScaleFactor()
     end if
@@ -1035,7 +1048,7 @@ sub calculateFontScaleFactor()
 
   if fontTask.scaleFactor > 0
     ' Update font scale factor in global user session
-    session.user.Update("fontScaleFactor", fontTask.scaleFactor)
+    m.global.user.fontScaleFactor = fontTask.scaleFactor
     print "INFO - calculateFontScaleFactor: Set global font scale factor to " + fontTask.scaleFactor.toStr()
   else
     print "WARNING - calculateFontScaleFactor: Failed to calculate scale factor, using default"

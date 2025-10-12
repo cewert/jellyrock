@@ -1,460 +1,519 @@
-' these are needed for ServerInfo() inside session.server.Populate()
+' Session management helper functions
+' Global content nodes: m.global.server and m.global.user
+' Organized via namespaces for clean code organization
+
 import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/api/userauth.bs"
 import "pkg:/source/migrations.bs"
 import "pkg:/source/utils/misc.bs"
+import "pkg:/source/utils/nodeUtils.bs"
 
-namespace session
-  ' Initialize the global session array
-  sub Init()
-    m.global.addFields({
-      session: {
-        "memoryLevel": "normal",
-        server: {},
-        user: {
-          Configuration: {},
-          Policy: {},
-          settings: {},
-          lastRunVersion: invalid,
-          fontScaleFactor: 1.0
-        },
-        video: {
-          json: {}
-        }
-      }
-    })
-    session.user.settings.SaveDefaults()
-  end sub
+' ============================================
+' SERVER NAMESPACE
+' ============================================
 
-  ' Empty the global session array
-  sub Delete()
-    session.server.Delete()
-    session.user.Logout()
-  end sub
+namespace server
+  ' Update server URL and populate from API
+  function UpdateURL(url as string) as boolean
+    if url = "" then return false
 
-  ' Update one value from the global session array (m.global.session)
-  sub Update(key as string, value = {} as object)
-    ' validate parameters
-    if key = "" or (key <> "user" and key <> "server" and key <> "video") or not isValid(value)
-      print "Error in session.Update(): Invalid parameters provided"
-      return
+    serverNode = m.global.server
+    serverNode.serverUrl = url
+    success = server.Populate()
+
+    if not success
+      ' Reset on failure
+      server.Delete()
     end if
-    ' make copy of global session array
-    tmpSession = m.global.session
-    ' update the temp session array
-    tmpSession.AddReplace(key, value)
-    ' use the temp session array to update the global node
-    m.global.setFields({ session: tmpSession })
-    ' print "m.global.session." + key + " = ", m.global.session[key]
+
+    return success
+  end function
+
+  ' Fetch and populate server info from Jellyfin API
+  function Populate() as boolean
+    serverNode = m.global.server
+
+    ' Validate URL
+    if not isValidAndNotEmpty(serverNode.serverUrl)
+      return false
+    end if
+
+    ' Call Jellyfin API
+    myServerInfo = ServerInfo()
+
+    ' Validate response
+    if not isValid(myServerInfo) or myServerInfo.Error = true
+      return false
+    end if
+
+    if not isValid(myServerInfo.Id)
+      return false
+    end if
+
+    ' Update all server fields directly
+    serverNode.id = myServerInfo.Id ?? ""
+    serverNode.name = myServerInfo.ServerName ?? ""
+    serverNode.localURL = myServerInfo.LocalAddress ?? ""
+    serverNode.startupWizardCompleted = myServerInfo.StartupWizardCompleted ?? false
+    serverNode.version = myServerInfo.Version ?? ""
+
+    ' Check HTTPS
+    serverNode.isHTTPS = (serverNode.serverUrl.left(8) = "https://")
+    serverNode.isLocalHTTPS = false
+    if isValidAndNotEmpty(myServerInfo.LocalAddress)
+      serverNode.isLocalHTTPS = (myServerInfo.LocalAddress.left(8) = "https://")
+    end if
+
+    ' Set loading state
+    serverNode.isLoaded = true
+    serverNode.isConnected = true
+    serverNode.lastConnected = CreateObject("roDateTime").AsSeconds()
+
+    ' Store raw info for debugging
+    #if debug
+      serverNode.rawServerInfo = myServerInfo
+    #end if
+
+    return true
+  end function
+
+  ' Reset server to defaults
+  sub Delete()
+    ' Get local reference to minimize rendezvous
+    localServer = m.global.server
+
+    ' Reset to XML defaults (no fields preserved)
+    nodeUtils.resetNodeToDefaults(localServer, "JellyfinServer", [])
   end sub
+end namespace
 
-  namespace server
-    ' Empty the global server session array
-    sub Delete()
-      session.Update("server")
-    end sub
+' ============================================
+' USER NAMESPACE
+' ============================================
 
-    ' Add or update one value from the global server session array (m.global.session.server)
-    sub Update(key as string, value as dynamic)
-      ' validate parameters
-      if key = "" or not isValid(value) then return
-      ' make copy of global server session array
-      tmpSessionServer = m.global.session.server
-      ' update the temp server array
-      tmpSessionServer[key] = value
+namespace user
+  ' Process user login from API authentication response
+  sub Login(userData as object, saveCredentials = false as boolean)
+    if not isValid(userData) then return
 
-      session.Update("server", tmpSessionServer)
-    end sub
+    ' Check for valid user ID in either location (direct or nested)
+    hasValidId = false
+    if isValid(userData.id) and userData.id <> ""
+      hasValidId = true
+    else if isValid(userData.json) and isValid(userData.json.User) and isValid(userData.json.User.id)
+      hasValidId = true
+    end if
 
-    ' Add or update the jellyfin server URL from the global server session array (m.global.session.server)
-    ' Returns a boolean based on if a connection to the Jellyfin server was made
-    function UpdateURL(value as string) as boolean
-      ' validate parameters
-      if value = "" then return false
-      session.server.Update("url", value)
+    if not hasValidId then return
 
-      success = session.server.Populate()
-      if not success
-        session.server.Delete()
-      end if
+    ' Get local reference to minimize rendezvous
+    userNode = m.global.user
 
-      return success
-    end function
+    ' Create fresh settings node for this user
+    freshSettings = CreateObject("roSGNode", "JellyfinUserSettings")
+    userNode.settings = freshSettings
 
-    ' Use the saved server url to populate the global server session array (m.global.session.server)
-    ' Returns a boolean based on if a connection to the Jellyfin server was made
-    function Populate() as boolean
-      ' validate server url
-      if not isValid(m.global.session.server.url) or m.global.session.server.url = "" then return false
-      ' get server info using API
-      myServerInfo = ServerInfo()
-      ' validate data returned from API
-      if not isValid(myServerInfo.id) then return false
-      ' make copy of global server session
-      tmpSessionServer = m.global.session.server
-      ' update the temp array
-      tmpSessionServer.AddReplace("id", myServerInfo.Id)
-      tmpSessionServer.AddReplace("name", myServerInfo.ServerName)
-      tmpSessionServer.AddReplace("localURL", myServerInfo.LocalAddress)
-      tmpSessionServer.AddReplace("startupWizardCompleted", myServerInfo.StartupWizardCompleted)
-      tmpSessionServer.AddReplace("version", myServerInfo.Version)
-      tmpSessionServer.AddReplace("hasError", myServerInfo.error)
-      ' check urls for https
-      isServerHTTPS = false
-      if tmpSessionServer.url.left(8) = "https://" then isServerHTTPS = true
-      tmpSessionServer.AddReplace("isHTTPS", isServerHTTPS)
-      isLocalServerHTTPS = false
-      if isValid(myServerInfo.LocalAddress) and myServerInfo.LocalAddress.left(8) = "https://" then isLocalServerHTTPS = true
-      tmpSessionServer.AddReplace("isLocalHTTPS", isLocalServerHTTPS)
-      ' update global server session using the temp array
-      session.Update("server", tmpSessionServer)
+    ' Process user data
+    if not isValid(userData.json)
+      ' Data from AboutMe() - already in correct format
+      myAuthToken = userNode.authToken
+      myPrimaryImageTag = userNode.primaryImageTag
 
-      #if debug
-        print "m.global.session.server = ", m.global.session.server
-      #end if
-
-      return true
-    end function
-  end namespace
-
-  namespace user
-
-    ' Add or update one value from the global user session array (m.global.session.user)
-    sub Update(key as string, value as dynamic)
-      ' validate parameters
-      if key = "" or not isValid(value) then return
-
-      ' make copy of global user session
-      tmpSessionUser = m.global.session.user
-      ' update the temp user array
-      tmpSessionUser[key] = value
-
-      ' keep friendlyName in sync
-      if LCase(key) = "name"
-        regex = CreateObject("roRegex", "[^a-zA-Z0-9\ \-\_]", "")
-        tmpSessionUser["friendlyName"] = regex.ReplaceAll(value, "")
-      end if
-
-      ' update global user session using the temp array
-      session.Update("user", tmpSessionUser)
-
-      ' keep auth header in sync
-      if LCase(key) = "name"
-        session.user.SetServerDeviceName()
-      end if
-    end sub
-
-    ' Update the global session after user is authenticated.
-    ' Accepts a UserData.xml object from get_token() or an assocArray from AboutMe()
-    sub Login(userData as object, saveCredentials = false as boolean)
-      ' validate parameters
-      if not isValid(userData) or not isValid(userData.id) then return
-      ' make copy of global user session array
-      tmpSession = m.global.session
-      oldUserSettings = tmpSession.user.settings
-      if not isValid(userData.json)
-        ' we were passed data from AboutMe()
-        myAuthToken = tmpSession.user.authToken
-        myPrimaryImageTag = tmpSession.user.primaryImageTag
-        tmpSession.AddReplace("user", userData)
-        tmpSession.user.AddReplace("authToken", myAuthToken)
-        if isValid(myPrimaryImageTag)
-          tmpSession.user.AddReplace("primaryImageTag", myPrimaryImageTag)
-        end if
-      else
-        ' we were passed data from a UserData object
-        tmpSession.AddReplace("user", userData.json.User)
-        tmpSession.user.AddReplace("authToken", userData.json.AccessToken)
-        if isValid(userData.json.user.PrimaryImageTag)
-          tmpSession.user.AddReplace("primaryImageTag", userData.json.user.PrimaryImageTag)
-        end if
-      end if
-      ' remove special characters from name
-      regex = CreateObject("roRegex", "[^a-zA-Z0-9\ \-\_]", "")
-      friendlyName = regex.ReplaceAll(tmpSession.user.name, "")
-      tmpSession.user.AddReplace("friendlyName", friendlyName)
-
-      tmpSession.user.AddReplace("settings", oldUserSettings)
-      ' update global user session
-      session.Update("user", tmpSession.user)
-
-      ' grab lastRunVersion for this user
-      lastRunVersion = get_user_setting("LastRunVersion")
-      if isValid(lastRunVersion)
-        session.user.Update("LastRunVersion", lastRunVersion)
-      end if
-
-      ' update user session settings with values from registry
-      userSettings = RegistryReadAll(tmpSession.user.id)
-      for each setting in userSettings
-        ' don't add auth token to user session
-        if setting <> "token"
-          session.user.settings.Save(setting, userSettings[setting])
-        end if
+      for each key in userData
+        userNode[key] = userData[key]
       end for
 
-      set_user_setting("serverId", m.global.session.server.id)
+      userNode.authToken = myAuthToken
+      if isValid(myPrimaryImageTag)
+        userNode.primaryImageTag = myPrimaryImageTag
+      end if
+    else
+      ' Data from UserData object (get_token response)
+      for each key in userData.json.User
+        userNode[key] = userData.json.User[key]
+      end for
 
-      if saveCredentials
-        set_user_setting("token", tmpSession.user.authToken)
-        set_user_setting("username", tmpSession.user.name)
-        if isValid(tmpSession.user.primaryImageTag)
-          set_user_setting("primaryimagetag", tmpSession.user.primaryImageTag)
-        end if
+      userNode.authToken = userData.json.AccessToken
+      if isValid(userData.json.User.PrimaryImageTag)
+        userNode.primaryImageTag = userData.json.User.PrimaryImageTag
+      end if
+    end if
+
+    ' Create friendly name
+    regex = CreateObject("roRegex", "[^a-zA-Z0-9\ \-\_]", "")
+    friendlyName = regex.ReplaceAll(userNode.name, "")
+    userNode.friendlyName = friendlyName
+
+    ' Migrations
+    if isValid(userData.LastRunVersion)
+      userNode.LastRunVersion = userData.LastRunVersion
+    end if
+
+    ' Process registry settings
+    ' Load ALL settings from registry into raw format
+    userSettings = RegistryReadAll(userNode.id)
+    for each setting in userSettings
+      if setting <> "token"
+        user.settings.Save(setting, userSettings[setting])
+      end if
+    end for
+
+    ' Transform display settings from flat format to nested structure
+    ' Registry stores: "display.libraryId.key" = "value"
+    ' We need: displaySettings[libraryId][key] = value
+    displaySettings = user.settings.TransformDisplaySettings(userSettings)
+
+    ' Copy displaySettings to user.settings node
+    if isValid(displaySettings)
+      userNode.settings.displaySettings = displaySettings
+    end if
+
+    ' Enable auto-sync AFTER loading all initial settings
+    ' This prevents observers from firing during data load
+    userNode.settings.callFunc("enableAutoSync")
+
+    ' Save credentials if requested
+    set_user_setting("serverId", m.global.server.id)
+    if saveCredentials
+      set_user_setting("token", userNode.authToken)
+      set_user_setting("username", userNode.name)
+      if isValid(userNode.primaryImageTag)
+        set_user_setting("primaryimagetag", userNode.primaryImageTag)
+      end if
+    end if
+
+    if userNode.settings.globalRememberMe
+      set_setting("active_user", userNode.id)
+    end if
+
+    ' Post-login setup
+    user.SetServerDeviceName()
+    user.LoadUserPreferences()
+  end sub
+
+  ' Logout and reset to defaults
+  sub Logout()
+    ' Get local reference to minimize rendezvous
+    localUser = m.global.user
+
+    ' Reset ALL user fields including settings (no fields preserved)
+    nodeUtils.resetNodeToDefaults(localUser, "JellyfinUser", [])
+
+    ' Create fresh settings node with XML defaults
+    freshSettings = CreateObject("roSGNode", "JellyfinUserSettings")
+    localUser.settings = freshSettings
+
+    ' Load default settings from settings.json
+    user.settings.SaveDefaults()
+
+    ' Enable auto-sync AFTER loading defaults
+    ' This prevents observers from firing during data load
+    freshSettings.callFunc("enableAutoSync")
+
+    if isValid(m.global.sceneManager)
+      m.global.sceneManager.currentUser = ""
+    end if
+  end sub
+
+  ' Set device name from user name
+  sub SetServerDeviceName()
+    localGlobal = m.global
+
+    ' default device name is the unique id for the device
+    deviceName = localGlobal.device.id
+    if isValid(localGlobal.user) and isValidAndNotEmpty(localGlobal.user.friendlyName)
+      deviceName = deviceName + localGlobal.user.friendlyName
+    end if
+
+    ' update global if needed
+    if localGlobal.device.serverDeviceName <> deviceName
+      tmpDevice = localGlobal.device
+      tmpDevice.AddReplace("serverDeviceName", deviceName)
+      m.global.setFields({ device: tmpDevice })
+    end if
+  end sub
+
+  ' Load user preferences from Jellyfin server
+  sub LoadUserPreferences()
+    id = m.global.user.id
+
+    url = Substitute("DisplayPreferences/usersettings?userId={0}&client=emby", id)
+    resp = APIRequest(url)
+    jsonResponse = getJson(resp)
+
+    if isValid(jsonResponse) and isValid(jsonResponse.CustomPrefs)
+      tmpSetting = jsonResponse.CustomPrefs.useEpisodeImagesInNextUpAndResume
+      if isValid(tmpSetting)
+        userNode = m.global.user
+        ' Set field directly on flattened content node structure
+        userNode.useEpisodeImagesInNextUpAndResume = toBoolean(tmpSetting)
       end if
 
-      if m.global.session.user.settings["global.rememberme"]
-        set_setting("active_user", tmpSession.user.id)
-      end if
+      user.SaveUserHomeSections(jsonResponse.CustomPrefs)
 
-      ' Save device id so we don't calculate it every time we need it
-      session.user.SetServerDeviceName()
-      ' Load user preferences from server
-      session.user.LoadUserPreferences()
-
-      #if debug
-        print "m.global.session.user = ", m.global.session.user
-        print "m.global.session.user.Configuration = ", m.global.session.user.Configuration
-        print "m.global.session.user.Policy = ", m.global.session.user.Policy
-        print "m.global.session.user.settings = ", m.global.session.user.settings
-      #end if
-    end sub
-
-    ' Sets the global server device name value used by the API
-    sub SetServerDeviceName()
-      localGlobal = m.global
-
-      ' default device name is the unique id for the device
-      deviceName = localGlobal.device.id
-      if isValid(localGlobal.session.user) and isValid(localGlobal.session.user.friendlyName)
-        deviceName = deviceName + localGlobal.session.user.friendlyName
-      end if
-
-      ' update global if needed
-      if localGlobal.device.serverDeviceName <> deviceName
-        tmpDevice = localGlobal.device
-        tmpDevice.AddReplace("serverDeviceName", deviceName)
-        m.global.setFields({ device: tmpDevice })
-      end if
-    end sub
-
-    ' Load and parse Display Settings from server
-    sub LoadUserPreferences()
-      id = m.global.session.user.id
-      ' Currently using client "emby", which is what website uses so we get same Display prefs as web.
-      ' May want to change to specific Roku display settings
-      url = Substitute("DisplayPreferences/usersettings?userId={0}&client=emby", id)
-      resp = APIRequest(url)
-      jsonResponse = getJson(resp)
-
-      if isValid(jsonResponse) and isValid(jsonResponse.CustomPrefs)
-        ' save useEpisodeImagesInNextUpAndResume to global session
-        tmpSetting = jsonResponse.CustomPrefs.useEpisodeImagesInNextUpAndResume
-        if isValid(tmpSetting)
-          tmpConfig = m.global.session.user.Configuration
-          tmpConfig.AddReplace("useEpisodeImagesInNextUpAndResume", toBoolean(tmpSetting))
-          session.user.Update("Configuration", tmpConfig)
-        end if
-
-        session.user.SaveUserHomeSections(jsonResponse.CustomPrefs)
-
-        if isValid(jsonResponse.CustomPrefs["landing-livetv"])
-          set_user_setting("display.livetv.landing", jsonResponse.CustomPrefs["landing-livetv"])
-        else
-          unset_user_setting("display.livetv.landing")
-        end if
+      if isValid(jsonResponse.CustomPrefs["landing-livetv"])
+        set_user_setting("display.livetv.landing", jsonResponse.CustomPrefs["landing-livetv"])
       else
-        ' User has no custom prefs. Save default home section values.
-        session.user.SaveUserHomeSections({
-          homesection0: "librarybuttons",
-          homesection1: "resume",
-          homesection2: "nextup",
-          homesection3: "latestmedia",
-          homesection4: "livetv",
-          homesection5: "none",
-          homesection6: "none"
-        })
-
         unset_user_setting("display.livetv.landing")
       end if
-    end sub
-
-    ' Saves user's web client home sections as Roku user settings.
-    ' Handles unsupported sections and ignores duplicates.
-    sub SaveUserHomeSections(customPrefs as object)
-      userPreferences = customPrefs
-      rowTypes = []
-
-      useWebSectionArrangement = m.global.session.user.settings["ui.home.useWebSectionArrangement"]
-
-      if isValid(useWebSectionArrangement)
-        if not useWebSectionArrangement
-          userPreferences.delete("homesection0")
-        end if
-      end if
-
-      ' If user has no section preferences, use default settings
-      if not userPreferences.doesExist("homesection0")
-        userPreferences = {
-          homesection0: "librarybuttons",
-          homesection1: "resume",
-          homesection2: "nextup",
-          homesection3: "latestmedia",
-          homesection4: "livetv",
-          homesection5: "none",
-          homesection6: "none"
-        }
-      end if
-
-      for i = 0 to 6
-        homeSectionKey = "homesection" + i.toStr()
-
-        ' If home section doesn't exist, create it as a none row
-        if not userPreferences.DoesExist(homeSectionKey)
-          userPreferences.AddReplace(homeSectionKey, "none")
-        end if
-
-        rowType = LCase(userPreferences[homeSectionKey])
-
-        ' Just in case we get invalid data
-        if not isValid(rowType) then rowType = "none"
-
-        ' None is the only section type allowed to have duplicates
-        ' For all other types, only accept the 1st entry
-        if inArray(rowTypes, rowType)
-          set_user_setting(homeSectionKey, "none")
-        else
-          set_user_setting(homeSectionKey, rowType)
-
-          if rowType <> "none"
-            rowTypes.push(rowType)
-          end if
-        end if
-      end for
-    end sub
-
-    ' Empty the global user session array and reload defaults
-    sub Logout()
-      session.Update("user", {
-        Configuration: {},
-        Policy: {},
-        settings: {},
-        lastRunVersion: invalid,
-        fontScaleFactor: 1.0
+    else
+      user.SaveUserHomeSections({
+        homesection0: "librarybuttons",
+        homesection1: "resume",
+        homesection2: "nextup",
+        homesection3: "latestmedia",
+        homesection4: "livetv",
+        homesection5: "none",
+        homesection6: "none"
       })
-      ' reload default user settings
-      session.user.settings.SaveDefaults()
-      ' update overhang
-      m.global.sceneManager.currentUser = ""
-    end sub
+    end if
+  end sub
 
-    namespace settings
-      ' Delete the user setting from the global session (m.global.session.user.settings)
-      sub Delete(name as string)
-        ' validate parameters
-        if name = "" then return
-        tmpSettingArray = m.global.session.user.settings
-        ' update the temp user array
-        tmpSettingArray.Delete(name)
-        ' update global user session using the temp array
-        session.user.Update("settings", tmpSettingArray)
-      end sub
+  ' Save user home sections configuration
+  sub SaveUserHomeSections(userPreferences as object)
+    rowTypes = []
 
-      ' Read the user setting from the global session (m.global.session.user.settings)
-      function Read(name as string) as dynamic
-        ' validate parameters
-        if name = "" then return invalid
+    if not isValid(userPreferences)
+      userPreferences = {
+        homesection0: "librarybuttons",
+        homesection1: "resume",
+        homesection2: "nextup",
+        homesection3: "latestmedia",
+        homesection4: "livetv",
+        homesection5: "none",
+        homesection6: "none"
+      }
+    end if
 
-        if isValid(m.global.session.user.settings[name])
-          return m.global.session.user.settings[name]
-        else
-          return invalid
+    for i = 0 to 6
+      oldHomeSectionKey = "homesection" + i.toStr()
+      newHomeSectionKey = "homeSection" + i.toStr()
+
+      if not userPreferences.DoesExist(oldHomeSectionKey)
+        userPreferences.AddReplace(oldHomeSectionKey, "none")
+      end if
+
+      rowType = LCase(userPreferences[oldHomeSectionKey])
+      if not isValid(rowType) then rowType = "none"
+
+      if inArray(rowTypes, rowType)
+        set_user_setting(newHomeSectionKey, "none")
+      else
+        set_user_setting(newHomeSectionKey, rowType)
+        if rowType <> "none"
+          rowTypes.push(rowType)
         end if
-      end function
+      end if
+    end for
+  end sub
+end namespace
 
-      ' retrieve all default user settings from Config Tree
-      sub SaveDefaults()
-        configTree = GetConfigTree()
-        if not isValid(configTree) then return
+' ============================================
+' USER SETTINGS NAMESPACE
+' ============================================
 
-        for each item in configTree
-          if isValid(item.default) and isValid(item.settingName)
-            session.user.settings.Save(item.settingName, item.default)
-          else if isValid(item.children) and item.children.Count() > 0
-            for each child in item.children
-              if isValid(child.default) and isValid(child.settingName)
-                session.user.settings.Save(child.settingName, child.default)
-              else if isValid(child.children) and child.children.Count() > 0
-                for each child in child.children
-                  if isValid(child.default) and isValid(child.settingName)
-                    session.user.settings.Save(child.settingName, child.default)
-                  else if isValid(child.children) and child.children.Count() > 0
-                    for each child in child.children
-                      if isValid(child.default) and isValid(child.settingName)
-                        session.user.settings.Save(child.settingName, child.default)
-                      else if isValid(child.children) and child.children.Count() > 0
-                        for each child in child.children
-                          if isValid(child.default) and isValid(child.settingName)
-                            session.user.settings.Save(child.settingName, child.default)
-                          else if isValid(child.children) and child.children.Count() > 0
-                            for each child in child.children
-                              if isValid(child.default) and isValid(child.settingName)
-                                session.user.settings.Save(child.settingName, child.default)
-                              end if
-                            end for
-                          end if
-                        end for
-                      end if
-                    end for
-                  end if
-                end for
-              end if
-            end for
+namespace user.settings
+  ' Save setting to content node with type conversion
+  sub Save(name as string, value as dynamic)
+    if not isValid(name) or not isValid(value) then return
+
+    settingsNode = m.global.user.settings
+
+    ' Dynamic field creation with type inference
+    if not settingsNode.hasField(name)
+      ' Infer type from value
+      convertedValue = value
+      fieldType = "string"
+
+      ' Handle different input types
+      valueType = type(value)
+
+      if valueType = "roString" or valueType = "String"
+        ' String input - try to infer actual type
+        valueLower = LCase(value)
+        if valueLower = "true" or valueLower = "false"
+          fieldType = "boolean"
+          convertedValue = toBoolean(value)
+        else
+          intValue = value.toInt()
+          floatValue = value.toFloat()
+
+          if intValue.toStr() = value
+            fieldType = "integer"
+            convertedValue = intValue
+          else if floatValue.toStr() = value or value.instr(".") > -1
+            fieldType = "float"
+            convertedValue = floatValue
           end if
-        end for
+        end if
+      else if valueType = "roBoolean" or valueType = "Boolean"
+        fieldType = "boolean"
+        convertedValue = value
+      else if valueType = "roInt" or valueType = "roInteger" or valueType = "Integer"
+        fieldType = "integer"
+        convertedValue = value
+      else if valueType = "roFloat" or valueType = "Float" or valueType = "roDouble" or valueType = "Double"
+        fieldType = "float"
+        convertedValue = value
+      else
+        ' Unknown type - convert to string using toStr() method
+        convertedValue = value.toStr()
+      end if
 
-        ' load globals
-        session.user.settings.LoadGlobals()
-        ' Reset server device name state
-        session.user.SetServerDeviceName()
-      end sub
+      ' Add new field dynamically
+      settingsNode.addField(name, fieldType, false)
+      settingsNode.setField(name, convertedValue)
+    else
+      ' Update existing field with type conversion
+      fieldType = settingsNode.getFieldType(name)
+      valueType = type(value)
 
-      ' Grab global vars from registry and overwrite defaults
-      sub LoadGlobals()
-        ' search main registry block for all keys that start with "global."
-        jfRegistry = RegistryReadAll("JellyRock")
-        for each item in jfRegistry
-          if Left(item, 7) = "global."
-            session.user.settings.Save(item, get_setting(item))
+      if fieldType = "boolean"
+        if valueType = "roBoolean" or valueType = "Boolean"
+          settingsNode.setField(name, value)
+        else if valueType = "roString" or valueType = "String"
+          settingsNode.setField(name, toBoolean(value))
+        else if valueType = "roInt" or valueType = "roInteger" or valueType = "Integer"
+          ' Convert integer to boolean (0 = false, non-zero = true)
+          settingsNode.setField(name, value <> 0)
+        else
+          ' Fallback - convert to string then to boolean
+          settingsNode.setField(name, toBoolean(value.toStr()))
+        end if
+      else if fieldType = "integer"
+        if valueType = "roInt" or valueType = "roInteger" or valueType = "Integer"
+          settingsNode.setField(name, value)
+        else if valueType = "roString" or valueType = "String"
+          settingsNode.setField(name, value.toInt())
+        else if valueType = "roBoolean" or valueType = "Boolean"
+          ' Convert boolean to integer (true = 1, false = 0)
+          if value then settingsNode.setField(name, 1) else settingsNode.setField(name, 0)
+        else if valueType = "roFloat" or valueType = "Float" or valueType = "roDouble" or valueType = "Double"
+          settingsNode.setField(name, Int(value))
+        else
+          ' Fallback - convert to string then to int
+          settingsNode.setField(name, value.toStr().toInt())
+        end if
+      else if fieldType = "float"
+        if valueType = "roFloat" or valueType = "Float" or valueType = "roDouble" or valueType = "Double"
+          settingsNode.setField(name, value)
+        else if valueType = "roString" or valueType = "String"
+          settingsNode.setField(name, value.toFloat())
+        else if valueType = "roInt" or valueType = "roInteger" or valueType = "Integer"
+          settingsNode.setField(name, Cdbl(value))
+        else if valueType = "roBoolean" or valueType = "Boolean"
+          ' Convert boolean to float (true = 1.0, false = 0.0)
+          if value then settingsNode.setField(name, 1.0) else settingsNode.setField(name, 0.0)
+        else
+          ' Fallback - convert to string then to float
+          settingsNode.setField(name, value.toStr().toFloat())
+        end if
+      else
+        ' String field - convert to string if needed
+        if valueType = "roString" or valueType = "String"
+          settingsNode.setField(name, value)
+        else if valueType = "roBoolean" or valueType = "Boolean"
+          if value then settingsNode.setField(name, "true") else settingsNode.setField(name, "false")
+        else if valueType = "roInt" or valueType = "roInteger" or valueType = "Integer"
+          settingsNode.setField(name, value.toStr())
+        else if valueType = "roFloat" or valueType = "Float" or valueType = "roDouble" or valueType = "Double"
+          settingsNode.setField(name, value.toStr())
+        else
+          ' Fallback - try toStr() method
+          settingsNode.setField(name, value.toStr())
+        end if
+      end if
+    end if
+  end sub
+
+  ' Read setting value
+  function Read(name as string) as dynamic
+    if name = "" then return invalid
+    return m.global.user.settings[name]
+  end function
+
+  ' Delete setting field
+  sub Delete(name as string)
+    if name = "" then return
+    settingsNode = m.global.user.settings
+    if settingsNode.hasField(name)
+      settingsNode.removeField(name)
+    end if
+  end sub
+
+  ' Load all default settings from settings.json
+  sub SaveDefaults()
+    configTree = GetConfigTree()
+    if not isValid(configTree) then return
+
+    loadDefaultsRecursive(configTree)
+
+    user.settings.LoadGlobals()
+    user.SetServerDeviceName()
+  end sub
+
+  ' Load global settings from registry
+  sub LoadGlobals()
+    jfRegistry = RegistryReadAll("JellyRock")
+    for each item in jfRegistry
+      if Left(item, 7) = "global."
+        user.settings.Save(item, get_setting(item))
+      end if
+    end for
+  end sub
+
+  ' Recursively traverse config tree (unlimited depth)
+  sub loadDefaultsRecursive(configItems as object)
+    if not isValid(configItems) then return
+
+    for each item in configItems
+      ' Save this item's default if present
+      if isValid(item.default) and isValid(item.settingName)
+        user.settings.Save(item.settingName, item.default)
+      end if
+
+      ' Recursively process children (handles any nesting depth)
+      if isValid(item.children) and item.children.Count() > 0
+        loadDefaultsRecursive(item.children)
+      end if
+    end for
+  end sub
+
+  ' Transform display settings from registry flat format to nested structure
+  ' Registry stores: "display.libraryId.key" = "value"
+  ' Returns: displaySettings[libraryId][key] = value
+  function TransformDisplaySettings(registryData as object) as object
+    displaySettings = {}
+
+    if not isValid(registryData) then return displaySettings
+
+    for each key in registryData.Keys()
+      if key.StartsWith("display.")
+        ' Parse "display.libraryId.settingKey" → nested object
+        parts = key.Split(".")
+        if parts.Count() = 3 and isValidAndNotEmpty(parts[1]) and isValidAndNotEmpty(parts[2])
+          libraryId = parts[1]
+          settingKey = parts[2]
+
+          ' Create library object if doesn't exist
+          if not displaySettings.DoesExist(libraryId)
+            displaySettings[libraryId] = {}
           end if
-        end for
-      end sub
 
-      ' Saves the user setting to the global session.
-      ' This also converts strings to boolean as necessary before saving to global session
-      sub Save(name as string, value as string)
-        if not isValid(name) or not isValid(value) then return
-        tmpSettingArray = m.global.session.user.settings
+          ' Store setting value with proper type conversion
+          rawValue = registryData[key]
 
-        tmpSettingArray[name] = toBoolean(value)
+          ' Convert boolean fields from string to actual boolean
+          if settingKey = "sortAscending"
+            displaySettings[libraryId][settingKey] = toBoolean(rawValue)
+          else
+            ' Other fields stored as-is (strings, etc.)
+            displaySettings[libraryId][settingKey] = rawValue
+          end if
+        end if
+      end if
+    end for
 
-        session.user.Update("settings", tmpSettingArray)
-      end sub
-    end namespace
-  end namespace
-
-  namespace video
-    ' Return the global video session array to it's default state
-    sub Delete()
-      session.Update("video", { json: {} })
-    end sub
-
-    ' Update the global video session array (m.global.session.video)
-    sub Update(videoMetaData as object)
-      if not isValid(videoMetaData) then return
-
-      session.video.Delete()
-      session.Update("video", videoMetaData)
-    end sub
-  end namespace
+    return displaySettings
+  end function
 end namespace
