@@ -1,4 +1,4 @@
-# JellyRock Logging Guide (roku-log)
+# Logging Guide (roku-log)
 
 JellyRock uses roku-log for structured, flexible logging. Follow these steps to set up and use logging effectively.
 

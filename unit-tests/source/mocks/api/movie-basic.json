@@ -1,8 +1,0 @@
-{
-  "Id": "movie123",
-  "Type": "Movie",
-  "Name": "Test Movie",
-  "RunTimeTicks": 60000000000,
-  "OfficialRating": "PG-13",
-  "CommunityRating": 8.5
-}

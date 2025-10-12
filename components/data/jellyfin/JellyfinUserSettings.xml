@@ -5,39 +5,76 @@
   Settings are ALWAYS loaded (synchronously from registry or defaults).
   Empty values represent "use app default" (valid state).
   No loading states needed - settings node always exists and is valid.
+
+  DEFAULT VALUES:
+  Default values are NOT hardcoded in this XML file. They are loaded at runtime
+  from settings/settings.json via user.settings.SaveDefaults() during app startup.
+  This ensures a single source of truth and prevents drift between XML and JSON.
+
+  Field definitions below have NO value attributes - all defaults come from settings.json.
 -->
 <component name="JellyfinUserSettings" extends="ContentNode">
   <interface>
+    <!-- Global Settings -->
+    <field id="globalRememberMe" type="boolean" />
+
+    <!-- Playback Settings -->
+    <field id="playbackBitrateMaxLimited" type="boolean" />
+    <field id="playbackBitrateLimit" type="integer" />
+    <field id="playbackCinemaMode" type="boolean" />
+    <field id="playbackSubsCustom" type="boolean" />
+    <field id="playbackResolutionMax" type="string" />
+    <field id="playbackNextUpButtonSeconds" type="integer" />
+    <field id="playbackPlayNextEpisode" type="string" />
+    <field id="playbackPreferredAudioCodec" type="string" />
+    <field id="playbackSubsOnlyText" type="boolean" />
+    <field id="playbackMpeg2" type="boolean" />
+    <field id="playbackMpeg4" type="boolean" />
+    <field id="playbackTryDirectH264ProfileLevel" type="boolean" />
+    <field id="playbackTryDirectHevcProfileLevel" type="boolean" />
+
     <!-- UI Settings -->
-    <field id="uiRowLayout" type="string" value="" />
-    <field id="uiDesignHideClock" type="boolean" value="false" />
-    <field id="uiGeneralEpisodeImages" type="string" value="" />
-    <field id="uiTvShowsDisableUnwatchedCount" type="boolean" value="false" />
-    <field id="uiHomeUseWebArrangement" type="boolean" value="false" />
-    <field id="uiFontFallback" type="boolean" value="false" />
+    <field id="uiGeneralEpisodeImages" type="string" />
+    <field id="uiFontFallback" type="boolean" />
+    <field id="uiDesignHideClock" type="boolean" />
+    <field id="uiDetailsMaxDaysNextUp" type="integer" />
+    <field id="uiDetailsEnableRewatchingNextUp" type="boolean" />
+    <field id="uiRowLayout" type="string" />
+    <field id="uiHomeSplashBackground" type="boolean" />
+    <field id="uiHomeUseWebArrangement" type="boolean" />
+    <field id="uiDetailsHideTagline" type="boolean" />
+    <field id="uiMoviesShowRatings" type="boolean" />
+    <field id="uiTvShowsBlurUnwatched" type="boolean" />
+    <field id="uiTvShowsDisableCommunityRating" type="boolean" />
+    <field id="uiTvShowsDisableUnwatchedCount" type="boolean" />
+    <field id="uiTvShowsGoStraightToEpisodes" type="boolean" />
+
+    <!-- Item Grid Settings -->
+    <field id="itemGridShowItemCount" type="boolean" />
+    <field id="itemGridTitles" type="string" />
+    <field id="itemGridReset" type="boolean" />
+    <field id="itemGridMovieDefaultView" type="string" />
 
     <!-- Home Section Settings -->
-    <field id="homeSection0" type="string" value="" />
-    <field id="homeSection1" type="string" value="" />
-    <field id="homeSection2" type="string" value="" />
-    <field id="homeSection3" type="string" value="" />
-    <field id="homeSection4" type="string" value="" />
-    <field id="homeSection5" type="string" value="" />
-    <field id="homeSection6" type="string" value="" />
+    <field id="homeSection0" type="string" />
+    <field id="homeSection1" type="string" />
+    <field id="homeSection2" type="string" />
+    <field id="homeSection3" type="string" />
+    <field id="homeSection4" type="string" />
+    <field id="homeSection5" type="string" />
+    <field id="homeSection6" type="string" />
 
     <!-- Display Settings -->
-    <field id="displayLiveTvLanding" type="string" value="" />
+    <field id="displayLiveTvLanding" type="string" />
 
-    <!-- Global Settings -->
-    <field id="globalRememberMe" type="boolean" value="false" />
+    <!-- Display Settings (nested by library ID) -->
+    <field id="displaySettings" type="assocarray" />
 
-    <!-- Live TV Settings -->
-    <field id="liveTvCanRecord" type="boolean" value="false" />
+    <!-- Permission Settings -->
+    <field id="liveTvCanRecord" type="boolean" />
+    <field id="contentCanDelete" type="boolean" />
 
-    <!-- Content Settings -->
-    <field id="contentCanDelete" type="boolean" value="false" />
-
-    <!-- Raw settings for any unknown fields -->
+    <!-- DEBUG ONLY: Raw settings for debugging - only populated when bs_const=debug=true -->
     <field id="rawSettings" type="assocarray" />
   </interface>
 </component>

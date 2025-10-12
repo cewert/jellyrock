@@ -17,8 +17,7 @@
 -->
 <component name="JellyfinBaseItem" extends="ContentNode">
   <interface>
-    <!-- Core Identity -->
-    <field id="id" type="string" value="" />
+    <!-- Core Identity (id inherited from ContentNode) -->
     <field id="type" type="string" value="" />
     <field id="name" type="string" value="" />
     <field id="originalTitle" type="string" value="" />
@@ -93,6 +92,7 @@
 
     <!-- Version & Debug -->
     <field id="serverVersion" type="string" value="" />
+    <!-- DEBUG ONLY: Raw API data for debugging - only populated when bs_const=debug=true -->
     <field id="rawApiData" type="assocarray" />
     <field id="transformedAt" type="longinteger" value="0" />
   </interface>

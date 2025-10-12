@@ -33,27 +33,27 @@ sub ScanForServersComplete(event)
 
   items = CreateObject("roSGNode", "ContentNode")
   stopLoadingSpinner()
-  for each server in m.servers
-    server.subtype = "ContentNode"
+  for each serverItem in m.servers
+    serverItem.subtype = "ContentNode"
     'add new fields for every server property onto the ContentNode (rather than making a dedicated component just to hold data...)
-    items.update([server], true)
+    items.update([serverItem], true)
   end for
 
   'load any previously logged in to servers as well (if they aren't already discovered on the local network)
   saved = get_setting("saved_servers")
   if isValid(saved)
     savedServers = ParseJson(saved)
-    for each server in savedServers.serverList
+    for each savedServer in savedServers.serverList
       alreadyListed = false
       for each listed in m.servers
-        if LCase(listed.baseUrl) = server.baseUrl 'saved server data is always lowercase
+        if LCase(listed.baseUrl) = savedServer.baseUrl 'saved server data is always lowercase
           alreadyListed = true
           exit for
         end if
       end for
       if alreadyListed = false
-        items.update([server], true)
-        m.servers.push(server)
+        items.update([savedServer], true)
+        m.servers.push(savedServer)
       end if
     end for
   end if

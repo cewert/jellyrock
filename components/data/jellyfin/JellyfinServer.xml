@@ -10,15 +10,14 @@
 -->
 <component name="JellyfinServer" extends="ContentNode">
   <interface>
-    <!-- Server Identity -->
-    <field id="id" type="string" value="" />
+    <!-- Server Identity (id inherited from ContentNode) -->
     <field id="name" type="string" value="" />
     <field id="version" type="string" value="" />
     <field id="productName" type="string" value="" />
     <field id="operatingSystem" type="string" value="" />
 
     <!-- Connection Info -->
-    <field id="url" type="string" value="" />
+    <field id="serverUrl" type="string" value="" />
     <field id="localURL" type="string" value="" />
     <field id="isHTTPS" type="boolean" value="false" />
     <field id="isLocalHTTPS" type="boolean" value="false" />
@@ -31,7 +30,7 @@
     <field id="isConnected" type="boolean" value="false" />
     <field id="lastConnected" type="longinteger" value="0" />
 
-    <!-- Raw server info for compatibility -->
+    <!-- DEBUG ONLY: Raw server info for debugging - only populated when bs_const=debug=true -->
     <field id="rawServerInfo" type="assocarray" />
   </interface>
 </component>

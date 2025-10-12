@@ -1,0 +1,178 @@
+import "pkg:/source/utils/config.bs"
+import "pkg:/source/utils/misc.bs"
+
+' Deep copy displaySettings AA structure
+' Creates a new AA reference with all nested library settings copied
+' This ensures observer will detect changes when we reassign to the node field
+function deepCopyDisplaySettings(source as object) as object
+  if not isValid(source)
+    return {}
+  end if
+
+  result = {}
+
+  for each libraryId in source
+    librarySettings = source[libraryId]
+
+    ' If library settings is an AA, deep copy it
+    if type(librarySettings) = "roAssociativeArray"
+      result[libraryId] = {}
+      for each key in librarySettings
+        result[libraryId][key] = librarySettings[key]
+      end for
+    else
+      ' Shouldn't happen, but handle it gracefully
+      result[libraryId] = librarySettings
+    end if
+  end for
+
+  return result
+end function
+
+' Get all display settings for a library
+' Returns: AA with all settings, or empty {} if library not found
+' Example: { sortField: "DateCreated", filter: "Favorites", landing: "Movies" }
+function getLibraryDisplaySettings(libraryId as dynamic) as object
+  if not isValid(libraryId) or libraryId = ""
+    return {}
+  end if
+
+  ' Single rendezvous to get local reference
+  localUser = m.global.user
+
+  if not isValid(localUser) or not isValid(localUser.settings)
+    return {}
+  end if
+
+  if not isValid(localUser.settings.displaySettings)
+    return {}
+  end if
+
+  if localUser.settings.displaySettings.DoesExist(libraryId)
+    return localUser.settings.displaySettings[libraryId]
+  end if
+
+  return {}
+end function
+
+' Get specific display setting for a library with fallback
+' Returns: Setting value or defaultValue if not found
+' The returned value will be type-cast to match the defaultValue's type
+function getLibraryDisplaySetting(libraryId as dynamic, key as dynamic, defaultValue = invalid as dynamic) as dynamic
+  if not isValid(libraryId) or libraryId = "" or not isValid(key) or key = ""
+    return defaultValue
+  end if
+
+  librarySettings = getLibraryDisplaySettings(libraryId)
+
+  if librarySettings.DoesExist(key)
+    value = librarySettings[key]
+
+    ' Type-cast the retrieved value to match the defaultValue's type
+    ' Registry always returns strings, so we need to convert to expected type
+    if isValid(defaultValue)
+      defaultType = Type(defaultValue)
+
+      if defaultType = "roBoolean" or defaultType = "Boolean"
+        return toBoolean(value)
+      else if defaultType = "roInteger" or defaultType = "Integer"
+        ' val() converts string to Float, Int() converts Float to Integer
+        return Int(val(value))
+      else if defaultType = "roFloat" or defaultType = "Float"
+        return val(value)
+      end if
+    end if
+
+    ' Return as-is if no type conversion needed
+    return value
+  end if
+
+  return defaultValue
+end function
+
+' Set library display setting (updates node + persists to registry)
+sub setLibraryDisplaySetting(libraryId as dynamic, key as dynamic, value as dynamic)
+  if not isValid(libraryId) or libraryId = "" or not isValid(key) or key = ""
+    return
+  end if
+
+  ' Get local reference to minimize rendezvous
+  localUser = m.global.user
+
+  if not isValid(localUser) or not isValid(localUser.settings)
+    return
+  end if
+
+  ' Get current displaySettings and create a DEEP COPY
+  ' CRITICAL: We must create a new AA reference, not reuse the existing one
+  ' Otherwise the observer won't detect changes (observers only fire on reference changes)
+  oldDisplaySettings = localUser.settings.displaySettings
+  if not isValid(oldDisplaySettings)
+    displaySettings = {}
+  else
+    displaySettings = deepCopyDisplaySettings(oldDisplaySettings)
+  end if
+
+  ' Ensure library object exists
+  if not displaySettings.DoesExist(libraryId)
+    displaySettings[libraryId] = {}
+  end if
+
+  ' Update value in the deep copy
+  displaySettings[libraryId][key] = value
+
+  ' Reassign NEW reference to content node (triggers onChange observer which syncs to registry)
+  localUser.settings.displaySettings = displaySettings
+end sub
+
+' Batch get multiple settings at once (performance optimization)
+' keys: Array of setting keys ["sortField", "filter", "landing"]
+' defaults: AA of default values { sortField: "SortName", filter: "All" }
+' Returns: AA with all requested settings
+function getLibraryDisplaySettingsBatch(libraryId as string, keys as object, defaults as object) as object
+  result = {}
+  librarySettings = getLibraryDisplaySettings(libraryId)
+
+  for each key in keys
+    if librarySettings.DoesExist(key)
+      result[key] = librarySettings[key]
+    else if defaults.DoesExist(key)
+      result[key] = defaults[key]
+    else
+      result[key] = invalid
+    end if
+  end for
+
+  return result
+end function
+
+' Delete all display settings for a library
+sub deleteLibraryDisplaySettings(libraryId as dynamic)
+  if not isValid(libraryId) or libraryId = ""
+    return
+  end if
+
+  ' Get local reference to minimize rendezvous
+  localUser = m.global.user
+
+  if not isValid(localUser) or not isValid(localUser.settings)
+    return
+  end if
+
+  ' Get current displaySettings and create a DEEP COPY
+  ' CRITICAL: We must create a new AA reference for observer to detect changes
+  oldDisplaySettings = localUser.settings.displaySettings
+  if not isValid(oldDisplaySettings)
+    return
+  end if
+
+  displaySettings = deepCopyDisplaySettings(oldDisplaySettings)
+
+  ' Remove library from the deep copy
+  if displaySettings.DoesExist(libraryId)
+    displaySettings.Delete(libraryId)
+  end if
+
+  ' Reassign NEW reference to content node (triggers onChange observer which cleans up registry)
+  localUser.settings.displaySettings = displaySettings
+end sub

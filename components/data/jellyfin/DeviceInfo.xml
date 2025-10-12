@@ -7,8 +7,7 @@
 -->
 <component name="DeviceInfo" extends="ContentNode">
   <interface>
-    <!-- Device Identity -->
-    <field id="id" type="string" value="" />
+    <!-- Device Identity (id inherited from ContentNode) -->
     <field id="name" type="string" value="" />
     <field id="model" type="string" value="" />
     <field id="serial" type="string" value="" />

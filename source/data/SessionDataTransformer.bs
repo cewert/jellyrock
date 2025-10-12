@@ -13,29 +13,31 @@ class SessionDataTransformer
     end if
 
     try
-      server = CreateObject("roSGNode", "JellyfinServer")
+      serverNode = CreateObject("roSGNode", "JellyfinServer")
 
-      server.id = serverData.id ?? ""
-      server.name = serverData.name ?? ""
-      server.version = serverData.version ?? ""
-      server.productName = serverData.productName ?? ""
-      server.operatingSystem = serverData.operatingSystem ?? ""
+      serverNode.id = serverData.id ?? ""
+      serverNode.name = serverData.name ?? ""
+      serverNode.version = serverData.version ?? ""
+      serverNode.productName = serverData.productName ?? ""
+      serverNode.operatingSystem = serverData.operatingSystem ?? ""
 
-      server.url = serverData.url ?? ""
-      server.localURL = serverData.localURL ?? ""
-      server.isHTTPS = serverData.isHTTPS ?? false
-      server.isLocalHTTPS = serverData.isLocalHTTPS ?? false
+      serverNode.serverUrl = serverData.serverUrl ?? ""
+      serverNode.localURL = serverData.localURL ?? ""
+      serverNode.isHTTPS = serverData.isHTTPS ?? false
+      serverNode.isLocalHTTPS = serverData.isLocalHTTPS ?? false
 
-      server.startupWizardCompleted = serverData.startupWizardCompleted ?? false
+      serverNode.startupWizardCompleted = serverData.startupWizardCompleted ?? false
 
       ' Set loading state
-      server.isLoaded = true
-      server.isConnected = true
-      server.lastConnected = CreateObject("roDateTime").AsSeconds()
+      serverNode.isLoaded = true
+      serverNode.isConnected = true
+      serverNode.lastConnected = CreateObject("roDateTime").AsSeconds()
 
-      server.rawServerInfo = serverData
+      #if debug
+        serverNode.rawServerInfo = serverData
+      #end if
 
-      return server
+      return serverNode
 
     catch error
       return invalid
@@ -49,51 +51,70 @@ class SessionDataTransformer
     end if
 
     try
-      user = CreateObject("roSGNode", "JellyfinUser")
+      userNode = CreateObject("roSGNode", "JellyfinUser")
 
       ' User identity
-      user.id = userData.id ?? ""
-      user.name = userData.name ?? ""
-      user.friendlyName = userData.friendlyName ?? ""
-      user.authToken = userData.authToken ?? ""
-      user.primaryImageTag = userData.primaryImageTag ?? ""
-      user.lastRunVersion = userData.lastRunVersion ?? ""
-      user.fontScaleFactor = userData.fontScaleFactor ?? 1.0
+      userNode.id = userData.id ?? ""
+      userNode.name = userData.name ?? ""
+      userNode.friendlyName = userData.friendlyName ?? ""
+      userNode.authToken = userData.authToken ?? ""
+      userNode.primaryImageTag = userData.primaryImageTag ?? ""
+      userNode.lastRunVersion = userData.lastRunVersion ?? ""
+      userNode.fontScaleFactor = userData.fontScaleFactor ?? 1.0
 
       ' Flatten configuration fields directly into user
       if isValid(userData.Configuration)
-        user.useEpisodeImagesInNextUpAndResume = userData.Configuration.useEpisodeImagesInNextUpAndResume ?? false
-        user.enableNextEpisodeAutoPlay = userData.Configuration.EnableNextEpisodeAutoPlay ?? false
-        user.rememberAudioSelections = userData.Configuration.RememberAudioSelections ?? false
-        user.rememberSubtitleSelections = userData.Configuration.RememberSubtitleSelections ?? false
-        user.rawConfigData = userData.Configuration
+        userNode.audioLanguagePreference = userData.Configuration.AudioLanguagePreference ?? ""
+        userNode.playDefaultAudioTrack = userData.Configuration.PlayDefaultAudioTrack ?? true
+        userNode.subtitleMode = userData.Configuration.SubtitleMode ?? "Default"
+        userNode.subtitleLanguagePreference = userData.Configuration.SubtitleLanguagePreference ?? ""
+        userNode.displayMissingEpisodes = userData.Configuration.DisplayMissingEpisodes ?? false
+        userNode.displayCollectionsView = userData.Configuration.DisplayCollectionsView ?? false
+        userNode.enableLocalPassword = userData.Configuration.EnableLocalPassword ?? false
+        userNode.orderedViews = userData.Configuration.OrderedViews ?? []
+        userNode.latestItemsExcludes = userData.Configuration.LatestItemsExcludes ?? []
+        userNode.myMediaExcludes = userData.Configuration.MyMediaExcludes ?? []
+        userNode.hidePlayedInLatest = userData.Configuration.HidePlayedInLatest ?? true
+        userNode.rememberAudioSelections = userData.Configuration.RememberAudioSelections ?? false
+        userNode.rememberSubtitleSelections = userData.Configuration.RememberSubtitleSelections ?? false
+        userNode.enableNextEpisodeAutoPlay = userData.Configuration.EnableNextEpisodeAutoPlay ?? false
+        userNode.useEpisodeImagesInNextUpAndResume = userData.Configuration.useEpisodeImagesInNextUpAndResume ?? false
+        userNode.groupedFolders = userData.Configuration.GroupedFolders ?? []
+        userNode.castReceiverId = userData.Configuration.CastReceiverId ?? ""
+        #if debug
+          userNode.rawConfigData = userData.Configuration
+        #end if
       end if
 
       ' Flatten policy fields directly into user
       if isValid(userData.Policy)
-        user.enableLiveTvManagement = userData.Policy.EnableLiveTvManagement ?? false
-        user.enableContentDeletion = userData.Policy.EnableContentDeletion ?? false
-        user.enablePublicSharing = userData.Policy.EnablePublicSharing ?? false
-        user.enableMediaPlayback = userData.Policy.EnableMediaPlayback ?? true
-        user.isAdministrator = userData.Policy.IsAdministrator ?? false
-        user.rawPolicyData = userData.Policy
+        userNode.enableLiveTvManagement = userData.Policy.EnableLiveTvManagement ?? false
+        userNode.enableContentDeletion = userData.Policy.EnableContentDeletion ?? false
+        userNode.enablePublicSharing = userData.Policy.EnablePublicSharing ?? false
+        userNode.enableMediaPlayback = userData.Policy.EnableMediaPlayback ?? true
+        userNode.isAdministrator = userData.Policy.IsAdministrator ?? false
+        #if debug
+          userNode.rawPolicyData = userData.Policy
+        #end if
       end if
 
       ' Transform user settings (nested node)
       if isValid(userData.settings)
-        user.settings = m.transformUserSettings(userData.settings)
+        userNode.settings = m.transformUserSettings(userData.settings)
       else
         ' Create empty settings node
-        user.settings = CreateObject("roSGNode", "JellyfinUserSettings")
+        userNode.settings = CreateObject("roSGNode", "JellyfinUserSettings")
       end if
 
       ' Set loading state
-      user.isLoaded = true
-      user.loadedAt = CreateObject("roDateTime").AsSeconds()
+      userNode.isLoaded = true
+      userNode.loadedAt = CreateObject("roDateTime").AsSeconds()
 
-      user.rawUserData = userData
+      #if debug
+        userNode.rawUserData = userData
+      #end if
 
-      return user
+      return userNode
 
     catch error
       return invalid
@@ -128,6 +149,40 @@ class SessionDataTransformer
     ' Display settings
     settings.displayLiveTvLanding = settingsData["display.livetv.landing"] ?? ""
 
+    ' Transform display settings into nested structure
+    ' Build local AA first, then assign to node field
+    displaySettings = {}
+
+    for each key in settingsData.Keys()
+      if key.StartsWith("display.")
+        ' Parse "display.libraryId.settingKey" → nested object
+        parts = key.Split(".")
+        if parts.Count() = 3 and isValidAndNotEmpty(parts[1]) and isValidAndNotEmpty(parts[2])
+          libraryId = parts[1]
+          settingKey = parts[2]
+
+          ' Create library object if doesn't exist
+          if not displaySettings.DoesExist(libraryId)
+            displaySettings[libraryId] = {}
+          end if
+
+          ' Store setting value with proper type conversion
+          rawValue = settingsData[key]
+
+          ' Convert boolean fields from string to actual boolean
+          if settingKey = "sortAscending"
+            displaySettings[libraryId][settingKey] = toBoolean(rawValue)
+          else
+            ' Other fields stored as-is (strings, etc.)
+            displaySettings[libraryId][settingKey] = rawValue
+          end if
+        end if
+      end if
+    end for
+
+    ' Assign to content node field
+    settings.displaySettings = displaySettings
+
     ' Global settings
     settings.globalRememberMe = toBoolean(settingsData["global.rememberme"])
 
@@ -139,7 +194,10 @@ class SessionDataTransformer
     settings.isLoaded = true
     settings.loadedAt = CreateObject("roDateTime").AsSeconds()
 
-    settings.rawSettings = settingsData
+    ' Debug-only: Store raw settings for debugging
+    #if debug
+      settings.rawSettings = settingsData
+    #end if
 
     return settings
   end function
