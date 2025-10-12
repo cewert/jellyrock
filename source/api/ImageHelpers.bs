@@ -100,16 +100,16 @@ end function
 ' @param maxHeight - Maximum height in pixels (default: 300)
 ' @param maxWidth - Maximum width in pixels (default: 300)
 ' @returns Image URL string or empty string if no image available
-function GetUserAvatarURL(user as object, maxHeight = 300 as integer, maxWidth = 300 as integer) as string
-  if not isValid(user) or not isValidAndNotEmpty(user.id) then return ""
+function GetUserAvatarURL(userObj as object, maxHeight = 300 as integer, maxWidth = 300 as integer) as string
+  if not isValid(userObj) or not isValidAndNotEmpty(userObj.id) then return ""
 
-  if not isValidAndNotEmpty(user.primaryImageTag) then return ""
+  if not isValidAndNotEmpty(userObj.primaryImageTag) then return ""
 
   params = {
     "maxHeight": maxHeight,
     "maxWidth": maxWidth,
-    "Tag": user.primaryImageTag
+    "Tag": userObj.primaryImageTag
   }
 
-  return UserImageURL(user.id, params)
+  return UserImageURL(userObj.id, params)
 end function
