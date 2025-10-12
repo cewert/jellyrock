@@ -1,9 +1,12 @@
 {
   "files": [
-    "!tests/source/tests/e2e/**/*",
     {
       "src": "tests/**/*"
     },
+    {
+      "src": "tests/shared/**/*"
+    },
+    "!tests/source/tests/e2e/**/*",
     {
       "src": "source/**/!(Main.brs)",
       "dest": "source"

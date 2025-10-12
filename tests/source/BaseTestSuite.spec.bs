@@ -3,7 +3,7 @@ import "pkg:/source/data/SessionDataTransformer.bs"
 import "pkg:/source/utils/globals.bs"
 import "pkg:/source/utils/nodeUtils.bs"
 import "pkg:/source/utils/session.bs"
-import "tests/integration/utils/RegistryTestUtils.bs"
+import "shared/RegistryTestUtils.bs"
 
 namespace tests
 

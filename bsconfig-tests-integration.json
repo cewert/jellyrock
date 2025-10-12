@@ -1,11 +1,11 @@
 {
   "extends": "bsconfig-tests.json",
   "files": [
-    "!tests/source/tests/unit/**/*",
-    "!tests/source/tests/e2e/**/*",
     {
       "src": "tests/**/*"
     },
+    "!tests/source/tests/unit/**/*",
+    "!tests/source/tests/e2e/**/*",
     {
       "src": "source/**/!(Main.brs)",
       "dest": "source"

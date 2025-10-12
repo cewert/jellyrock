@@ -1,34 +1,21 @@
 import "pkg:/source/utils/config.bs"
 
-' Utility functions for managing registry during unit tests
-' Ensures test data doesn't pollute production registry
-
 namespace RegistryTestUtils
 
   ' Delete all registry sections that match test user pattern
-  ' Call this in afterEach() or after test suites complete
-  ' @param {string} pattern - Pattern to match (default: "test-user-")
   sub CleanupTestRegistrySections(pattern = "test-user-" as string)
     registry = CreateObject("roRegistry")
     allSections = registry.GetSectionList()
-
     deletedCount = 0
 
     for each sectionName in allSections
-      ' Only delete sections matching test pattern
       if sectionName.StartsWith(pattern)
-        ' Delete entire section by deleting all keys
         registrySection = CreateObject("roRegistrySection", sectionName)
         if isValid(registrySection)
-          ' Get all keys in this section
           keyList = registrySection.GetKeyList()
-
-          ' Delete each key
           for each key in keyList
             registrySection.delete(key)
           end for
-
-          ' Flush changes
           registrySection.flush()
           deletedCount++
         end if
@@ -40,45 +27,31 @@ namespace RegistryTestUtils
     end if
   end sub
 
-  ' Get all registry section names matching a pattern
-  ' Useful for debugging/verification
-  ' @param {string} pattern - Pattern to match (default: "test-user-")
-  ' @returns {object} Array of matching section names
+  ' Return an array of registry section names that match pattern
   function GetTestRegistrySections(pattern = "test-user-" as string) as object
     registry = CreateObject("roRegistry")
     allSections = registry.GetSectionList()
     matchingSections = []
-
     for each sectionName in allSections
       if sectionName.StartsWith(pattern)
         matchingSections.Push(sectionName)
       end if
     end for
-
     return matchingSections
   end function
 
-  ' Verify no test registry sections exist
-  ' Useful for asserting cleanup worked
-  ' @param {string} pattern - Pattern to match (default: "test-user-")
-  ' @returns {boolean} True if no test sections exist
   function VerifyNoTestRegistrySections(pattern = "test-user-" as string) as boolean
     testSections = GetTestRegistrySections(pattern)
     return testSections.Count() = 0
   end function
 
-  ' Print all registry sections for debugging
-  ' Shows test vs production sections
   sub PrintAllRegistrySections()
     registry = CreateObject("roRegistry")
     allSections = registry.GetSectionList()
-
     print "===== All Registry Sections ====="
     print "Total sections: " + allSections.Count().ToStr()
-
     testSections = []
     prodSections = []
-
     for each sectionName in allSections
       if sectionName.StartsWith("test-user-")
         testSections.Push(sectionName)
@@ -86,19 +59,16 @@ namespace RegistryTestUtils
         prodSections.Push(sectionName)
       end if
     end for
-
     print ""
     print "Test sections (" + testSections.Count().ToStr() + "):"
     for each name in testSections
       print "  - " + name
     end for
-
     print ""
     print "Production sections (" + prodSections.Count().ToStr() + "):"
     for each name in prodSections
       print "  - " + name
     end for
-
     print "=================================="
   end sub
 
