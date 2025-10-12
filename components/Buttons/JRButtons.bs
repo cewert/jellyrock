@@ -62,7 +62,7 @@ sub showButtons()
     l.font.size = 40
 
     ' Apply fallback font scaling if enabled
-    if m.global.session.user.settings["ui.font.fallback"] = true
+    if m.global.user.settings.uiFontFallback = true
       l.font.uri = "tmp:/font"
       applyFallbackFontScale(l)
     end if
@@ -88,7 +88,7 @@ sub applyFallbackFontScale(labelNode as object)
   end if
 
   ' Apply the global scale factor
-  fontScaleFactor = m.global.session.user.fontScaleFactor
+  fontScaleFactor = m.global.user.fontScaleFactor
   if isValid(fontScaleFactor) and fontScaleFactor > 0
     scaledSize = currentSize * fontScaleFactor
     labelNode.font.size = scaledSize
@@ -102,6 +102,8 @@ end sub
 sub highlightSelected(index as integer, animate = true)
 
   val = m.buttonGroup.getChild(index)
+  if not isValid(val) then return
+
   rect = val.ancestorBoundingRect(m.top)
 
   if animate = true

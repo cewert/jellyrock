@@ -13,7 +13,7 @@ end sub
 sub itemContentChanged()
   item = m.top.itemContent
   itemData = item.json
-  userSettings = m.global.session.user.settings
+  userSettings = m.global.user.settings
 
   ' Set default video source if user hasn't selected one yet
   if item.selectedVideoStreamId = "" and isValid(itemData.MediaSources)
@@ -41,7 +41,7 @@ sub itemContentChanged()
 
   imageUrl = item.posterURL
 
-  if userSettings["ui.tvshows.blurunwatched"] = true
+  if userSettings.uiTvShowsBlurUnwatched = true
     if itemData.lookup("Type") = "Episode"
       if not itemData.userdata.played
         imageUrl = imageUrl + "&blur=15"
@@ -59,12 +59,12 @@ sub itemContentChanged()
       m.top.findNode("runtime").text = stri(runTime).trim() + " " + tr("mins")
     end if
 
-    if userSettings["ui.design.hideclock"] <> true
+    if userSettings.uiDesignHideClock <> true
       m.top.findNode("endtime").text = tr("Ends at %1").Replace("%1", getEndTime())
     end if
   end if
 
-  if userSettings["ui.tvshows.disableCommunityRating"] = false
+  if userSettings.uiTvShowsDisableCommunityRating = false
     if isValid(itemData.communityRating)
       if not isValid(m.communityRating)
         m.communityRating = CreateObject("roSGNode", "CommunityRating")

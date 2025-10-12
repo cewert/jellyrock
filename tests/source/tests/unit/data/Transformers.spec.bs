@@ -95,7 +95,7 @@ namespace tests
     function _()
       transformer = new JellyfinDataTransformer()
 
-      ' BaseTestSuite already mocks m.global.session.server.version
+      ' BaseTestSuite already mocks m.global.server.version
       ' So calling without serverVersion should use the mocked value
 
       apiData = {

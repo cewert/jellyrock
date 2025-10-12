@@ -38,10 +38,10 @@ sub itemContentChanged()
   itemData = m.top.itemContent
 
   if not isValid(itemData) then return
-  userSettings = m.global.session.user.settings
+  userSettings = m.global.user.settings
 
   if isValid(itemData.json)
-    if not userSettings["ui.tvshows.disableUnwatchedEpisodeCount"]
+    if not userSettings.uiTvShowsDisableUnwatchedCount
       if isValid(itemData.json.UserData)
         if isValid(itemData.json.UserData.Played) and itemData.json.UserData.Played = true
           m.itemPoster.isWatched = true

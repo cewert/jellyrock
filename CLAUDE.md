@@ -6,11 +6,12 @@ JellyRock is a Jellyfin client for Roku devices allowing users to consume media 
 - Roku Scene Graph (RSG) - XML-based programming framework. Uses a hierarchical node structure to manage UI elements and separates design (XML) from logic (BrighterScript). `ExampleFile.xml`
 - Jellyfin Server REST API - All API calls to a Jellyfin server should use functions from the sdk.bs file. `source/api/sdk.bs`
 ## ⚠️ Expected Behavior and Workflow ⚠️
-1. Ask questions when you are not sure about something! Do not make things up or guess!
-2. When you are finished coding, format your code `npm run format`.
-3. When you are finished formatting your code, lint and validate your code `npm run lint:bs`.
-4. Provide a brief overview of any code changes and assumptions made.
-5. Provide a list of app behavior to test and expected log output.
+1. Ask questions when you are not sure about something! Do not make things up or assume!
+2. Fix problems at their source if possible, not at every usage point!
+3. When you are finished coding, format your code `npm run format`.
+4. When you are finished formatting your code, lint and validate your code `npm run lint:bs`.
+5. Provide a concise overview of any code changes.
+6. Provide a list of app behavior to test and expected log output.
 ## Folder Structure
 - `build/staging` - Transpiled `.brs` files created after running `npm run build` or `npm run build-prod`. **These are the actual files used to deploy the app and are the files that will show up in runtime logs!**
 - `components` - `.xml` and `.bs` file pairs categorized by folders.
@@ -86,7 +87,7 @@ end function
 - Use comments for function definitions, complex code, any Roku specific oddities, and best practices.
 ## Coding Standards
 - Never use print statements outside of `source/main.bs`.
-- Use `roku-log` for all logging. Use best practices and provide enough logging to effectively test your code during runtime without being excessive. `docs/dev/logging.md`.
+- Use `roku-log` for all logging in components and classes. For namespace/function code in `source/` folder, use print statements sparingly and only when absolutely necessary (roku-log only works in components/classes). Use best practices and provide enough logging to effectively test your code during runtime without being excessive. `docs/dev/logging.md`.
 - Never use an API or write to the file system on the render thread (don't block the render thread).
 - Never hardcode color values - Use global theme colors from the `source/utils/globals.bs` file.
 - Use themed UI components when possible. `/components/ui/`
@@ -109,7 +110,17 @@ JRScene (root scene)
 3. Scene navigation via `m.global.sceneManager.callFunc("pushScene", group)`.
 ### Global State
 - `m.global` - App-wide state.
-- `m.global.session` - Current session state.
-- `m.global.session.server` - The active Jellyfin server state.
-- `m.global.session.user` - The state of the authenticated user connected to the active server and using the app.
-- `m.global.session.user.settings` - The setting configuration for the active user.
+- `m.global.server` - The active Jellyfin server state.
+- `m.global.user` - The state of the authenticated user connected to the active server and using the app.
+- `m.global.user.settings` - The setting configuration for the active user.
+
+**Best practice for accessing global state:**
+```brighterscript
+' ONE rendezvous to get local reference
+localUser = m.global.user
+
+' Access fields from local copy (no additional rendezvous)
+userId = localUser.id
+userName = localUser.name
+userSettings = localUser.settings
+```

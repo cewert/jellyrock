@@ -68,7 +68,7 @@ namespace quickplay
     if not isValid(itemNode) or not isValid(itemNode.id) then return
 
     ' grab all photos inside photo album
-    photoAlbumData = api.users.GetItemsByQuery(m.global.session.user.id, {
+    photoAlbumData = api.users.GetItemsByQuery(m.global.user.id, {
       "parentId": itemNode.id,
       "includeItemTypes": "Photo",
       "sortBy": "Random",
@@ -94,7 +94,7 @@ namespace quickplay
     if not isValid(itemNode) or not isValid(itemNode.id) then return
 
     ' grab list of songs in the album
-    albumSongs = api.users.GetItemsByQuery(m.global.session.user.id, {
+    albumSongs = api.users.GetItemsByQuery(m.global.user.id, {
       "parentId": itemNode.id,
       "imageTypeLimit": 1,
       "sortBy": "SortName",
@@ -115,7 +115,7 @@ namespace quickplay
     if not isValid(itemNode) or not isValid(itemNode.id) then return
 
     ' get all songs by artist
-    artistSongs = api.users.GetItemsByQuery(m.global.session.user.id, {
+    artistSongs = api.users.GetItemsByQuery(m.global.user.id, {
       "artistIds": itemNode.id,
       "includeItemTypes": "Audio",
       "sortBy": "Album",
@@ -139,8 +139,11 @@ namespace quickplay
   sub boxset(itemNode as object)
     if not isValid(itemNode) or not isValid(itemNode.id) then return
 
+    ' ONE rendezvous to get user ID
+    userId = m.global.user.id
+
     data = api.items.GetByQuery({
-      "userid": m.global.session.user.id,
+      "userid": userId,
       "parentid": itemNode.id,
       "limit": 2000,
       "EnableTotalRecordCount": false
@@ -158,14 +161,17 @@ namespace quickplay
   sub series(itemNode as object)
     if not isValid(itemNode) or not isValid(itemNode.id) then return
 
+    ' ONE rendezvous to get user
+    localUser = m.global.user
+
     data = api.shows.GetNextUp({
       "seriesId": itemNode.id,
       "recursive": true,
       "SortBy": "DatePlayed",
       "SortOrder": "Descending",
       "ImageTypeLimit": 1,
-      "UserId": m.global.session.user.id,
-      "EnableRewatching": m.global.session.user.settings["ui.details.enablerewatchingnextup"],
+      "UserId": localUser.id,
+      "EnableRewatching": localUser.settings.uiDetailsEnableRewatchingNextUp,
       "DisableFirstEpisode": false,
       "EnableTotalRecordCount": false
     })
@@ -176,9 +182,9 @@ namespace quickplay
     else
       ' next up check was empty
       ' check for a resumable episode
-      data = api.users.GetResumeItemsByQuery(m.global.session.user.id, {
+      data = api.users.GetResumeItemsByQuery(localUser.id, {
         "parentId": itemNode.id,
-        "userid": m.global.session.user.id,
+        "userid": localUser.id,
         "SortBy": "DatePlayed",
         "recursive": true,
         "SortOrder": "Descending",
@@ -195,7 +201,7 @@ namespace quickplay
       else
         ' shuffle all episodes
         data = api.shows.GetEpisodes(itemNode.id, {
-          "userid": m.global.session.user.id,
+          "userid": localUser.id,
           "SortBy": "Random",
           "limit": 2000,
           "EnableTotalRecordCount": false
@@ -215,12 +221,15 @@ namespace quickplay
   ' Shuffle play all watched episodes
   sub multipleSeries(itemNodes as object)
     if isValidAndNotEmpty(itemNodes)
+      ' ONE rendezvous to get user ID
+      userId = m.global.user.id
+
       numTotal = 0
       numLimit = 2000
       for each tvshow in itemNodes
         ' grab all watched episodes for each series
         showData = api.shows.GetEpisodes(tvshow.id, {
-          "userId": m.global.session.user.id,
+          "userId": userId,
           "SortBy": "Random",
           "imageTypeLimit": 0,
           "EnableTotalRecordCount": false,
@@ -261,7 +270,7 @@ namespace quickplay
     collectionType = Lcase(itemNode.collectionType)
     if collectionType = "movies"
       ' get randomized list of videos inside
-      data = api.users.GetItemsByQuery(m.global.session.user.id, {
+      data = api.users.GetItemsByQuery(m.global.user.id, {
         "parentId": itemNode.id,
         "sortBy": "Random",
         "recursive": true,
@@ -289,7 +298,7 @@ namespace quickplay
     else if collectionType = "tvshows" or collectionType = "collectionfolder"
       ' get list of tv shows inside
 
-      tvshowsData = api.users.GetItemsByQuery(m.global.session.user.id, {
+      tvshowsData = api.users.GetItemsByQuery(m.global.user.id, {
         "parentId": itemNode.id,
         "sortBy": "Random",
         "recursive": true,
@@ -327,7 +336,7 @@ namespace quickplay
 
     unwatchedData = api.shows.GetEpisodes(itemNode.json.SeriesId, {
       "seasonId": itemNode.id,
-      "userid": m.global.session.user.id,
+      "userid": m.global.user.id,
       "limit": 2000,
       "EnableTotalRecordCount": false
     })
@@ -354,9 +363,9 @@ namespace quickplay
         end for
       else
         ' try to find a "continue watching" episode
-        continueData = api.users.GetResumeItemsByQuery(m.global.session.user.id, {
+        continueData = api.users.GetResumeItemsByQuery(m.global.user.id, {
           "parentId": itemNode.id,
-          "userid": m.global.session.user.id,
+          "userid": m.global.user.id,
           "SortBy": "DatePlayed",
           "recursive": true,
           "SortOrder": "Descending",
@@ -390,7 +399,7 @@ namespace quickplay
   sub person(itemNode as object)
     if not isValid(itemNode) or not isValid(itemNode.id) then return
     ' get movies and videos by the person
-    personMovies = api.users.GetItemsByQuery(m.global.session.user.id, {
+    personMovies = api.users.GetItemsByQuery(m.global.user.id, {
       "personIds": itemNode.id,
       "includeItemTypes": "Movie,Video",
       "excludeItemTypes": "Season,Series",
@@ -405,7 +414,7 @@ namespace quickplay
     end if
 
     ' get watched episodes by the person
-    personEpisodes = api.users.GetItemsByQuery(m.global.session.user.id, {
+    personEpisodes = api.users.GetItemsByQuery(m.global.user.id, {
       "personIds": itemNode.id,
       "includeItemTypes": ["Episode", "Recording"],
       "isPlayed": true,
@@ -452,7 +461,7 @@ namespace quickplay
     if not isValid(itemNode) or not isValid(itemNode.id) then return
     ' get playlist items
     myPlaylist = api.playlists.GetItems(itemNode.id, {
-      "userId": m.global.session.user.id,
+      "userId": m.global.user.id,
       "limit": 2000
     })
 
@@ -510,7 +519,7 @@ namespace quickplay
       paramArray.Delete("videoTypes")
     end if
     ' get folder items
-    folderData = api.users.GetItemsByQuery(m.global.session.user.id, paramArray)
+    folderData = api.users.GetItemsByQuery(m.global.user.id, paramArray)
     print "folderData=", folderData
 
     if isValid(folderData) and isValidAndNotEmpty(folderData.items)
@@ -552,7 +561,7 @@ namespace quickplay
     else if collectionType = "music"
       ' get audio files from under this collection
       ' sort songs by album then artist
-      songsData = api.users.GetItemsByQuery(m.global.session.user.id, {
+      songsData = api.users.GetItemsByQuery(m.global.user.id, {
         "parentId": itemNode.id,
         "includeItemTypes": "Audio",
         "sortBy": "Album",
@@ -570,7 +579,7 @@ namespace quickplay
       end if
     else if collectionType = "boxsets"
       ' get list of all boxsets inside
-      boxsetData = api.users.GetItemsByQuery(m.global.session.user.id, {
+      boxsetData = api.users.GetItemsByQuery(m.global.user.id, {
         "parentId": itemNode.id,
         "limit": 2000,
         "imageTypeLimit": 0,
@@ -587,7 +596,7 @@ namespace quickplay
         myBoxset = boxsetData.items[arrayIndex]
         ' grab list of items from boxset
         print "myBoxset=", myBoxset
-        boxsetData = api.users.GetItemsByQuery(m.global.session.user.id, {
+        boxsetData = api.users.GetItemsByQuery(m.global.user.id, {
           "parentId": myBoxset.id,
           "EnableTotalRecordCount": false
         })
@@ -603,7 +612,7 @@ namespace quickplay
       quickplay.videoContainer(itemNode)
     else if collectionType = "musicvideos"
       ' get randomized list of videos inside
-      data = api.users.GetItemsByQuery(m.global.session.user.id, {
+      data = api.users.GetItemsByQuery(m.global.user.id, {
         "parentId": itemNode.id,
         "includeItemTypes": "MusicVideo",
         "sortBy": "Random",
@@ -623,7 +632,7 @@ namespace quickplay
       ' Photo library - items can be type video, photo, or photoAlbum
 
       ' grab all photos inside library
-      folderData = api.users.GetItemsByQuery(m.global.session.user.id, {
+      folderData = api.users.GetItemsByQuery(m.global.user.id, {
         "parentId": itemNode.id,
         "includeItemTypes": "Photo",
         "sortBy": "Random",
@@ -656,7 +665,7 @@ namespace quickplay
 
     if collectionType = "playlists"
       ' get list of all playlists inside
-      playlistData = api.users.GetItemsByQuery(m.global.session.user.id, {
+      playlistData = api.users.GetItemsByQuery(m.global.user.id, {
         "parentId": itemNode.id,
         "imageTypeLimit": 0,
         "enableUserData": false,
@@ -673,7 +682,7 @@ namespace quickplay
         ' grab list of items from playlist
         print "myPlaylist=", myPlaylist
         playlistItems = api.playlists.GetItems(myPlaylist.id, {
-          "userId": m.global.session.user.id,
+          "userId": m.global.user.id,
           "EnableTotalRecordCount": false,
           "limit": 2000
         })
@@ -686,7 +695,7 @@ namespace quickplay
       end if
     else if collectionType = "livetv"
       ' get list of all tv channels
-      channelData = api.users.GetItemsByQuery(m.global.session.user.id, {
+      channelData = api.users.GetItemsByQuery(m.global.user.id, {
         "includeItemTypes": "TVChannel",
         "sortBy": "Random",
         "Recursive": true,

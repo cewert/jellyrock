@@ -97,7 +97,7 @@ function createUserPoster() as object
     maxWidth: 36,
     quality: 90
   }
-  imgTag = m.global.session.user.primaryImageTag
+  imgTag = m.global.user.primaryImageTag
   if isValid(imgTag) and imgTag <> ""
     imgParams.tag = imgTag
     userImage.tag = imgTag
@@ -111,8 +111,8 @@ function createUserPoster() as object
     ' reset defaults
     userImage.blendColor = "0xFFFFFFFF"
 
-    if m.global.session.server.url <> ""
-      userImage.uri = buildURL(Substitute("/Users/{0}/Images/Primary", m.global.session.user.id), imgParams)
+    if m.global.server.serverUrl <> ""
+      userImage.uri = buildURL(Substitute("/Users/{0}/Images/Primary", m.global.user.id), imgParams)
     else
       print "ERROR: No server URL set, cannot load user image"
     end if

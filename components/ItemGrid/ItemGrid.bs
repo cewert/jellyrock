@@ -2,16 +2,17 @@ import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/roku_modules/log/LogMixin.brs"
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/deviceCapabilities.bs"
+import "pkg:/source/utils/displaySettings.bs"
 import "pkg:/source/utils/misc.bs"
 
 sub init()
   m.log = log.Logger("ItemGrid")
   m.log.debug("start init()")
-  userSettings = m.global.session.user.settings
+  userSettings = m.global.user.settings
 
   m.options = m.top.findNode("options")
 
-  m.showItemCount = userSettings["itemgrid.showItemCount"]
+  m.showItemCount = userSettings.itemGridShowItemCount
 
   m.tvGuide = invalid
   m.channelFocused = invalid
@@ -73,9 +74,9 @@ sub init()
   m.alphaMenu = m.alpha.findNode("alphaMenu")
 
   'Get reset folder setting
-  m.resetGrid = userSettings["itemgrid.reset"]
+  m.resetGrid = userSettings.itemGridReset
 
-  m.top.gridTitles = userSettings["itemgrid.gridTitles"]
+  m.top.gridTitles = userSettings.itemGridTitles
   m.log.debug("end init()")
 end sub
 
@@ -89,7 +90,7 @@ sub loadInitialItems()
   m.log.debug("start loadInitialItems()")
   m.loadItemsTask.control = "stop"
   startLoadingSpinner()
-  userSettings = m.global.session.user.settings
+  userSettings = m.global.user.settings
 
   if m.top.parentItem.json.Type = "CollectionFolder" 'or m.top.parentItem.json.Type = "Folder"
     m.top.HomeLibraryItem = m.top.parentItem.Id
@@ -99,28 +100,40 @@ sub loadInitialItems()
     SetBackground(m.top.parentItem.backdropUrl)
   end if
 
-  ' Read view/sort/filter settings
+  ' Read view/sort/filter settings using new displaySettings structure
   if m.top.parentItem.collectionType = "livetv"
-    ' Translate between app and server nomenclature
-    viewSetting = userSettings["display.livetv.landing"]
+    ' LiveTV uses hardcoded "livetv" as library ID
+    viewSetting = getLibraryDisplaySetting("livetv", "landing", "")
     if viewSetting = "guide"
       m.view = "tvGuide"
-    else
+    else if viewSetting = "channels"
       m.view = "livetv"
+    else
+      ' No setting saved - check legacy setting for backward compatibility
+      viewSetting = userSettings.displayLiveTvLanding
+      if viewSetting = "guide"
+        m.view = "tvGuide"
+      else
+        m.view = "livetv"
+      end if
     end if
-    m.sortField = userSettings["display.livetv.sortField"]
-    sortAscendingStr = userSettings["display.livetv.sortAscending"]
-    m.filter = userSettings["display.livetv.filter"]
+    m.sortField = getLibraryDisplaySetting("livetv", "sortField", "SortName")
+    m.filter = getLibraryDisplaySetting("livetv", "filter", "All")
+    sortAscendingStr = getLibraryDisplaySetting("livetv", "sortAscending", "true")
   else if m.top.parentItem.collectionType = "music"
-    m.view = userSettings["display.music.view"]
-    m.sortField = userSettings["display." + m.top.parentItem.Id + ".sortField"]
-    sortAscendingStr = userSettings["display." + m.top.parentItem.Id + ".sortAscending"]
-    m.filter = userSettings["display." + m.top.parentItem.Id + ".filter"]
+    ' Music uses hardcoded "music" as library ID for view setting
+    m.view = getLibraryDisplaySetting("music", "view", "")
+    ' But uses actual library ID for sort/filter settings
+    m.sortField = getLibraryDisplaySetting(m.top.parentItem.Id, "sortField", "SortName")
+    m.filter = getLibraryDisplaySetting(m.top.parentItem.Id, "filter", "All")
+    sortAscendingStr = getLibraryDisplaySetting(m.top.parentItem.Id, "sortAscending", "true")
   else
-    m.sortField = userSettings["display." + m.top.parentItem.Id + ".sortField"]
-    sortAscendingStr = userSettings["display." + m.top.parentItem.Id + ".sortAscending"]
-    m.filter = userSettings["display." + m.top.parentItem.Id + ".filter"]
-    m.view = userSettings["display." + m.top.parentItem.Id + ".landing"]
+    ' All other library types (movies, TV, collections, etc.) use library ID
+    libraryId = m.top.parentItem.Id
+    m.sortField = getLibraryDisplaySetting(libraryId, "sortField", "SortName")
+    m.filter = getLibraryDisplaySetting(libraryId, "filter", "All")
+    m.view = getLibraryDisplaySetting(libraryId, "landing", invalid)
+    sortAscendingStr = getLibraryDisplaySetting(libraryId, "sortAscending", "true")
   end if
 
   if not isValid(m.sortField)
@@ -134,7 +147,10 @@ sub loadInitialItems()
 
   if not isValid(m.filter) then m.filter = "All"
 
-  if not isValid(sortAscendingStr) or sortAscendingStr = true
+  ' Convert sortAscendingStr (string) to boolean
+  ' Registry stores everything as strings, so we need to convert
+  if not isValid(sortAscendingStr) or sortAscendingStr = "true"
+
     m.sortAscending = true
   else
     m.sortAscending = false
@@ -186,7 +202,7 @@ sub loadInitialItems()
     m.loadItemsTask.itemType = "MusicArtist"
     m.loadItemsTask.itemId = m.top.parentItem.Id
 
-    m.view = userSettings["display.music.view"]
+    m.view = userSettings.displayMusicView
 
     if m.view = "music-album"
       m.loadItemsTask.itemType = "MusicAlbum"
@@ -197,7 +213,7 @@ sub loadInitialItems()
     ' For LiveTV, we want to "Fit" the item images, not zoom
     m.top.imageDisplayMode = "scaleToFit"
 
-    if userSettings["display.livetv.landing"] = "guide" and m.options.view <> "livetv"
+    if userSettings.displayLiveTvLanding = "guide" and m.options.view <> "livetv"
       showTvGuide()
     end if
   else if m.top.parentItem.collectionType = "CollectionFolder" or m.top.parentItem.type = "CollectionFolder" or m.top.parentItem.collectionType = "boxsets" or m.top.parentItem.Type = "Boxset" or m.top.parentItem.Type = "Boxsets" or m.top.parentItem.Type = "Folder" or m.top.parentItem.Type = "Channel"
@@ -651,12 +667,12 @@ sub optionsClosed()
   if m.top.parentItem.collectionType = "livetv" and m.options.view <> m.view
     if m.options.view = "tvGuide"
       m.view = "tvGuide"
-      set_user_setting("display.livetv.landing", "guide")
+      setLibraryDisplaySetting("livetv", "landing", "guide")
       showTVGuide()
       return
     else
       m.view = "livetv"
-      set_user_setting("display.livetv.landing", "channels")
+      setLibraryDisplaySetting("livetv", "landing", "channels")
 
       if isValid(m.tvGuide)
         ' Try to hide the TV Guide
@@ -684,15 +700,15 @@ sub optionsClosed()
   if m.top.parentItem.collectionType = "music"
     if m.options.view <> m.view
       m.view = m.options.view
-      set_user_setting("display.music.view", m.view)
+      setLibraryDisplaySetting("music", "view", m.view)
       reload = true
     end if
   else
-    m.view = m.global.session.user.settings["display." + m.top.parentItem.Id + ".landing"]
+    m.view = getLibraryDisplaySetting(m.top.parentItem.Id, "landing", invalid)
     if m.options.view <> m.view
       'reload and store new view setting
       m.view = m.options.view
-      set_user_setting("display." + m.top.parentItem.Id + ".landing", m.view)
+      setLibraryDisplaySetting(m.top.parentItem.Id, "landing", m.view)
       reload = true
     end if
   end if
@@ -710,11 +726,11 @@ sub optionsClosed()
     end if
 
     if m.top.parentItem.collectionType = "livetv"
-      set_user_setting("display.livetv.sortField", m.sortField)
-      set_user_setting("display.livetv.sortAscending", sortAscendingStr)
+      setLibraryDisplaySetting("livetv", "sortField", m.sortField)
+      setLibraryDisplaySetting("livetv", "sortAscending", sortAscendingStr)
     else
-      set_user_setting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
-      set_user_setting("display." + m.top.parentItem.Id + ".sortAscending", sortAscendingStr)
+      setLibraryDisplaySetting(m.top.parentItem.Id, "sortField", m.sortField)
+      setLibraryDisplaySetting(m.top.parentItem.Id, "sortAscending", sortAscendingStr)
     end if
   end if
   if m.options.filter <> m.filter
@@ -723,9 +739,9 @@ sub optionsClosed()
     reload = true
     'Store filter setting
     if m.top.parentItem.collectionType = "livetv"
-      set_user_setting("display.livetv.filter", m.options.filter)
+      setLibraryDisplaySetting("livetv", "filter", m.options.filter)
     else
-      set_user_setting("display." + m.top.parentItem.Id + ".filter", m.options.filter)
+      setLibraryDisplaySetting(m.top.parentItem.Id, "filter", m.options.filter)
     end if
   end if
   if reload

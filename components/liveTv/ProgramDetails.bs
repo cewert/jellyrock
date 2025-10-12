@@ -91,7 +91,7 @@ sub setupLabels()
   m.recordSeriesOutline.width = recordSeriesButtonBackground.width
   m.recordSeriesOutline.height = recordSeriesButtonBackground.height
 
-  m.userCanRecord = m.global.session.user.settings["livetv.canrecord"]
+  m.userCanRecord = m.global.user.settings.liveTvCanRecord
   if m.userCanRecord = false
     m.recordButton.visible = false
     m.recordSeriesButton.visible = false

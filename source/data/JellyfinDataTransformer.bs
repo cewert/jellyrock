@@ -9,7 +9,7 @@ class JellyfinDataTransformer
   end sub
 
   ' Transform BaseItemDto to JellyfinBaseItem content node
-  ' Server version is automatically retrieved from m.global.session.server.version
+  ' Server version is automatically retrieved from m.global.server.version
   ' Only pass serverVersion explicitly for testing or when global session isn't available
   function transformBaseItem(apiData as object, serverVersion = "" as string) as object
     if not isValid(apiData)
@@ -94,7 +94,9 @@ class JellyfinDataTransformer
 
       ' Metadata
       item.serverVersion = serverVersion
-      item.rawApiData = apiData
+      #if debug
+        item.rawApiData = apiData
+      #end if
       item.transformedAt = CreateObject("roDateTime").AsSeconds()
 
       return item

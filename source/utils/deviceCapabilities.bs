@@ -53,7 +53,9 @@ function getDeviceProfile() as object
 end function
 
 function GetDirectPlayProfiles() as object
-  globalUserSettings = m.global.session.user.settings
+  ' ONE rendezvous to get user settings
+  globalUserSettings = m.global.user.settings
+
   directPlayProfiles = []
   di = CreateObject("roDeviceInfo")
   ' all possible containers
@@ -103,12 +105,12 @@ function GetDirectPlayProfiles() as object
   end for
 
   ' user setting overrides
-  if globalUserSettings["playback.mpeg4"]
+  if globalUserSettings.playbackMpeg4
     for each container in supportedCodecs
       supportedCodecs[container]["video"].push("mpeg4")
     end for
   end if
-  if globalUserSettings["playback.mpeg2"]
+  if globalUserSettings.playbackMpeg2
     for each container in supportedCodecs
       supportedCodecs[container]["video"].push("mpeg2video")
     end for
@@ -173,7 +175,9 @@ function GetDirectPlayProfiles() as object
 end function
 
 function getTranscodingProfiles() as object
-  globalUserSettings = m.global.session.user.settings
+  ' ONE rendezvous to get user settings
+  globalUserSettings = m.global.user.settings
+
   transcodingProfiles = []
 
   di = CreateObject("roDeviceInfo")
@@ -260,7 +264,7 @@ function getTranscodingProfiles() as object
   end for
 
   ' MPEG2
-  if globalUserSettings["playback.mpeg2"]
+  if globalUserSettings.playbackMpeg2
     for each container in transcodingContainers
       if di.CanDecodeVideo({ Codec: "mpeg2", Container: container }).Result
         if container = "mp4"
@@ -365,9 +369,9 @@ function getTranscodingProfiles() as object
   end if
 
   ' add user-selected preferred codec to the front of the list
-  if globalUserSettings["playback.preferredAudioCodec"] <> "auto"
-    tsArray.AudioCodec = globalUserSettings["playback.preferredAudioCodec"] + "," + tsArray.AudioCodec
-    mp4Array.AudioCodec = globalUserSettings["playback.preferredAudioCodec"] + "," + mp4Array.AudioCodec
+  if globalUserSettings.playbackPreferredAudioCodec <> "auto"
+    tsArray.AudioCodec = globalUserSettings.playbackPreferredAudioCodec + "," + tsArray.AudioCodec
+    mp4Array.AudioCodec = globalUserSettings.playbackPreferredAudioCodec + "," + mp4Array.AudioCodec
   end if
 
   transcodingProfiles.push(tsArray)
@@ -383,8 +387,8 @@ function getContainerProfiles() as object
 end function
 
 function getCodecProfiles() as object
-  myGlobal = m.global
-  globalUserSettings = myGlobal.session.user.settings
+  ' ONE rendezvous to get user settings
+  globalUserSettings = m.global.user.settings
 
   codecProfiles = []
   profileSupport = {
@@ -615,7 +619,7 @@ function getCodecProfiles() as object
   }
 
   ' check user setting before adding video level restrictions
-  if not globalUserSettings["playback.tryDirect.h264ProfileLevel"]
+  if not globalUserSettings.playbackTryDirectH264ProfileLevel
     h264ProfileArray.Conditions.push({
       "Condition": "LessThanEqual",
       "Property": "VideoLevel",
@@ -639,7 +643,7 @@ function getCodecProfiles() as object
 
   ' MPEG2
   ' NOTE: the mpeg2 levels are being saved in the profileSupport array as if they were profiles
-  if globalUserSettings["playback.mpeg2"]
+  if globalUserSettings.playbackMpeg2
     mpeg2Levels = []
     for each level in profileSupport["mpeg2"]
       if not arrayHasValue(mpeg2Levels, level)
@@ -771,7 +775,7 @@ function getCodecProfiles() as object
     }
 
     ' check user setting before adding VideoLevel restrictions
-    if not globalUserSettings["playback.tryDirect.hevcProfileLevel"]
+    if not globalUserSettings.playbackTryDirectHevcProfileLevel
       hevcProfileArray.Conditions.push({
         "Condition": "LessThanEqual",
         "Property": "VideoLevel",
@@ -879,9 +883,11 @@ function getSubtitleProfiles() as object
 end function
 
 function GetBitRateLimit(codec as string) as object
-  globalUserSettings = m.global.session.user.settings
-  if globalUserSettings["playback.bitrate.maxlimited"]
-    userSetLimit = globalUserSettings["playback.bitrate.limit"].ToInt()
+  ' ONE rendezvous to get user settings
+  globalUserSettings = m.global.user.settings
+
+  if globalUserSettings.playbackBitrateMaxLimited
+    userSetLimit = globalUserSettings.playbackBitrateLimit
     if isValid(userSetLimit) and type(userSetLimit) = "Integer" and userSetLimit > 0
       userSetLimit *= 1000000
       return {
@@ -933,7 +939,7 @@ function GetBitRateLimit(codec as string) as object
 end function
 
 function getMaxHeightArray(isRequired = false as boolean) as object
-  userMaxHeight = m.global.session.user.settings["playback.resolution.max"]
+  userMaxHeight = m.global.user.settings.playbackResolutionMax
   if userMaxHeight = invalid or userMaxHeight = "" then userMaxHeight = "auto"
   if userMaxHeight = "off" then return {}
 

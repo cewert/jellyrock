@@ -5,13 +5,12 @@
   RULE: If user.id = "" AND user.authToken = "", user is NOT authenticated
   RULE: If user.id <> "", user IS authenticated and loaded
 
-  User node only exists in m.global.session.user after successful login.
+  User node only exists in m.global.user after successful login.
   Empty configuration/policy fields are VALID defaults.
 -->
 <component name="JellyfinUser" extends="ContentNode">
   <interface>
-    <!-- User Identity -->
-    <field id="id" type="string" value="" />
+    <!-- User Identity (id inherited from ContentNode) -->
     <field id="name" type="string" value="" />
     <field id="friendlyName" type="string" value="" />
 
@@ -20,10 +19,23 @@
     <field id="primaryImageTag" type="string" value="" />
 
     <!-- User Configuration (flattened from API Configuration object) -->
-    <field id="useEpisodeImagesInNextUpAndResume" type="boolean" value="false" />
-    <field id="enableNextEpisodeAutoPlay" type="boolean" value="false" />
+    <field id="audioLanguagePreference" type="string" value="" />
+    <field id="playDefaultAudioTrack" type="boolean" value="true" />
+    <field id="subtitleMode" type="string" value="Default" />
+    <field id="subtitleLanguagePreference" type="string" value="" />
+    <field id="displayMissingEpisodes" type="boolean" value="false" />
+    <field id="displayCollectionsView" type="boolean" value="false" />
+    <field id="enableLocalPassword" type="boolean" value="false" />
+    <field id="orderedViews" type="array" value="[]" />
+    <field id="latestItemsExcludes" type="array" value="[]" />
+    <field id="myMediaExcludes" type="array" value="[]" />
+    <field id="hidePlayedInLatest" type="boolean" value="true" />
     <field id="rememberAudioSelections" type="boolean" value="false" />
     <field id="rememberSubtitleSelections" type="boolean" value="false" />
+    <field id="enableNextEpisodeAutoPlay" type="boolean" value="false" />
+    <field id="useEpisodeImagesInNextUpAndResume" type="boolean" value="false" />
+    <field id="groupedFolders" type="array" value="[]" />
+    <field id="castReceiverId" type="string" value="" />
 
     <!-- User Policy (flattened from API Policy object) -->
     <field id="enableLiveTvManagement" type="boolean" value="false" />
@@ -39,7 +51,7 @@
     <field id="lastRunVersion" type="string" value="" />
     <field id="fontScaleFactor" type="float" value="1.0" />
 
-    <!-- Raw data for compatibility -->
+    <!-- DEBUG ONLY: Raw data for debugging - only populated when bs_const=debug=true -->
     <field id="rawUserData" type="assocarray" />
     <field id="rawConfigData" type="assocarray" />
     <field id="rawPolicyData" type="assocarray" />

@@ -2,6 +2,7 @@ import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/api/Image.bs"
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/deviceCapabilities.bs"
+import "pkg:/source/utils/displaySettings.bs"
 import "pkg:/source/utils/misc.bs"
 
 sub setupNodes()
@@ -25,11 +26,11 @@ end sub
 
 sub init()
   setupNodes()
-  userSettings = m.global.session.user.settings
+  userSettings = m.global.user.settings
 
   m.overhang.isVisible = false
 
-  m.showItemCount = userSettings["itemgrid.showItemCount"]
+  m.showItemCount = userSettings.itemGridShowItemCount
 
   m.swapAnimation.observeField("state", "swapDone")
 
@@ -76,7 +77,7 @@ sub init()
   m.loadItemsTask.totalRecordCount = 0
 
   'Get reset folder setting
-  m.resetGrid = userSettings["itemgrid.reset"]
+  m.resetGrid = userSettings.itemGridReset
 end sub
 
 sub OnScreenHidden()
@@ -102,7 +103,7 @@ end sub
 sub loadInitialItems()
   m.loadItemsTask.control = "stop"
   startLoadingSpinner(false)
-  userSettings = m.global.session.user.settings
+  userSettings = m.global.user.settings
 
   if LCase(m.top.parentItem.json.Type) = "collectionfolder"
     m.top.HomeLibraryItem = m.top.parentItem.Id
@@ -114,17 +115,12 @@ sub loadInitialItems()
     SetBackground("")
   end if
 
-  m.sortField = userSettings["display." + m.top.parentItem.Id + ".sortField"]
-  m.sortAscending = userSettings["display." + m.top.parentItem.Id + ".sortAscending"]
-  m.filter = userSettings["display." + m.top.parentItem.Id + ".filter"]
-  m.view = userSettings["display." + m.top.parentItem.Id + ".landing"]
+  m.sortField = getLibraryDisplaySetting(m.top.parentItem.Id, "sortField", "SortName")
+  m.sortAscending = getLibraryDisplaySetting(m.top.parentItem.Id, "sortAscending", true)
+  m.filter = getLibraryDisplaySetting(m.top.parentItem.Id, "filter", "All")
+  m.view = getLibraryDisplaySetting(m.top.parentItem.Id, "landing", "ArtistsPresentation")
 
-  if not isValid(m.sortField) then m.sortField = "SortName"
-  if not isValid(m.filter) then m.filter = "All"
-  if not isValid(m.view) then m.view = "ArtistsPresentation"
-  if not isValid(m.sortAscending) then m.sortAscending = true
-
-  m.top.showItemTitles = userSettings["itemgrid.gridTitles"]
+  m.top.showItemTitles = userSettings.itemGridTitles
 
   if LCase(m.top.parentItem.json.type) = "musicgenre"
     m.itemGrid.translation = "[96, 60]"
@@ -672,22 +668,22 @@ sub optionsClosed()
       sortAscendingStr = "false"
     end if
 
-    set_user_setting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
-    set_user_setting("display." + m.top.parentItem.Id + ".sortAscending", sortAscendingStr)
+    setLibraryDisplaySetting(m.top.parentItem.Id, "sortField", m.sortField)
+    setLibraryDisplaySetting(m.top.parentItem.Id, "sortAscending", sortAscendingStr)
   end if
 
   if m.options.filter <> m.filter
     m.filter = m.options.filter
     reload = true
-    set_user_setting("display." + m.top.parentItem.Id + ".filter", m.options.filter)
+    setLibraryDisplaySetting(m.top.parentItem.Id, "filter", m.options.filter)
   end if
 
-  m.view = m.global.session.user.settings["display." + m.top.parentItem.Id + ".landing"]
+  m.view = getLibraryDisplaySetting(m.top.parentItem.Id, "landing", invalid)
 
   if m.options.view <> m.view
     m.view = m.options.view
     m.top.view = m.view
-    set_user_setting("display." + m.top.parentItem.Id + ".landing", m.view)
+    setLibraryDisplaySetting(m.top.parentItem.Id, "landing", m.view)
 
     ' Reset any filtering or search terms
     m.top.alphaSelected = ""
@@ -698,9 +694,9 @@ sub optionsClosed()
     m.sortAscending = true
 
     ' Reset view to defaults
-    set_user_setting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
-    set_user_setting("display." + m.top.parentItem.Id + ".sortAscending", "true")
-    set_user_setting("display." + m.top.parentItem.Id + ".filter", m.filter)
+    setLibraryDisplaySetting(m.top.parentItem.Id, "sortField", m.sortField)
+    setLibraryDisplaySetting(m.top.parentItem.Id, "sortAscending", "true")
+    setLibraryDisplaySetting(m.top.parentItem.Id, "filter", m.filter)
 
     reload = true
   end if

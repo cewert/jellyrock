@@ -24,7 +24,7 @@ sub init()
   overlayPoster = m.top.getChild(2)
   if isValid(overlayPoster) then overlayPoster.visible = false
 
-  if m.global.session.user.settings["ui.font.fallback"] = true
+  if m.global.user.settings.uiFontFallback = true
     applyFallbackFont(m.top.timeLabelFont)
     applyFallbackFont(m.top.programTitleFont)
     applyFallbackFont(m.top.channelInfoFont)
@@ -38,7 +38,7 @@ sub applyFallbackFont(fontNode as object)
   currentSize = fontNode.size
 
   ' Apply the global scale factor
-  fontScaleFactor = m.global.session.user.fontScaleFactor
+  fontScaleFactor = m.global.user.fontScaleFactor
   if isValid(fontScaleFactor) and fontScaleFactor > 0
     scaledSize = currentSize * fontScaleFactor
     fontNode.size = scaledSize
