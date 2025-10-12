@@ -30,8 +30,10 @@
   "scripts": {
     "build": "npx rimraf build/ out/ && npx bsc --project bsconfig.json",
     "build:prod": "npx rimraf build/ out/ && npx bsc --project bsconfig-prod.json",
-    "build:tests": "npx rimraf build/ out/ && npx bsc --project bsconfig-tests.json",
     "build:tdd": "npx rimraf build/ out/ && npx bsc --project bsconfig-tdd.json",
+    "build:tests": "npx rimraf build/ out/ && npx bsc --project bsconfig-tests.json",
+    "build:tests-unit": "npx rimraf build/ out/ && npx bsc --project bsconfig-tests-unit.json",
+    "build:tests-integration": "npx rimraf build/ out/ && npx bsc --project bsconfig-tests-integration.json",
     "changelog:sync-unreleased": "node scripts/changelog-syncer.js sync-unreleased",
     "changelog:sync-release": "node scripts/changelog-syncer.js sync-release",
     "changelog:validate": "node scripts/changelog-syncer.js validate",

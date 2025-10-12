@@ -1,5 +1,8 @@
 {
+  "extends": "bsconfig-tests.json",
   "files": [
+    "!tests/source/tests/unit/**/*",
+    "!tests/source/tests/e2e/**/*",
     {
       "src": "tests/**/*"
     },
@@ -19,36 +22,15 @@
       "src": "settings/**/*",
       "dest": "settings"
     },
-    "!**/*.spec.bs",
-    {
-      "src": "**/BaseTestSuite.spec.bs",
-      "dest": "source"
-    },
-    {
-      "src": "**/NewFeature.spec.bs",
-      "dest": "source"
-    }
-  ],
-  "diagnosticFilters": [
-    "node_modules/**/*",
-    "**/roku_modules/**/*"
-  ],
-  "autoImportComponentScript": true,
-  "createPackage": false,
-  "stagingDir": "build",
-  "retainStagingDir": true,
-  "plugins": [
-    "rooibos-roku"
+    "manifest"
   ],
   "rooibos": {
-    "isRecordingCodeCoverage": false,
-    "testsFilePattern": null,
     "tags": null,
+    "isRecordingCodeCoverage": false,
     "showOnlyFailures": true,
     "catchCrashes": true,
     "lineWidth": 70,
     "failFast": false,
     "sendHomeOnFinish": false
-  },
-  "sourceMap": true
+  }
 }

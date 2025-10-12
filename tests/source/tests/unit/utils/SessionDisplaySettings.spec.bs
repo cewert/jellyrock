@@ -1,0 +1,161 @@
+import "pkg:/source/utils/misc.bs"
+import "pkg:/source/utils/session.bs"
+
+namespace tests.utils
+
+  @suite("Session Display Settings Transformation")
+  @tags("unit")
+  class SessionDisplaySettingsTests extends rooibos.BaseTestSuite
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("user.settings.TransformDisplaySettings()")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("transforms flat registry format to nested structure")
+    function _()
+      ' Arrange
+      registryData = {
+        "display.lib1.sortField": "Name",
+        "display.lib1.sortAscending": "true",
+        "display.lib1.filter": "Favorites",
+        "display.lib2.sortField": "DateCreated",
+        "display.lib2.sortAscending": "false"
+      }
+
+      ' Act
+      result = user.settings.TransformDisplaySettings(registryData)
+
+      ' Assert
+      m.assertNotInvalid(result)
+      m.assertNotInvalid(result.lib1)
+      m.assertEqual("Name", result.lib1.sortField)
+      m.assertTrue(result.lib1.sortAscending) ' Should be boolean true
+      m.assertEqual("Favorites", result.lib1.filter)
+      m.assertNotInvalid(result.lib2)
+      m.assertEqual("DateCreated", result.lib2.sortField)
+      m.assertFalse(result.lib2.sortAscending) ' Should be boolean false
+    end function
+
+    @it("returns empty object for invalid input")
+    function _()
+      ' Act
+      result1 = user.settings.TransformDisplaySettings(invalid)
+      result2 = user.settings.TransformDisplaySettings({})
+
+      ' Assert
+      m.assertNotInvalid(result1)
+      m.assertEqual(0, result1.Count())
+      m.assertNotInvalid(result2)
+      m.assertEqual(0, result2.Count())
+    end function
+
+    @it("ignores non-display keys")
+    function _()
+      ' Arrange
+      registryData = {
+        "display.lib1.sortField": "Name",
+        "ui.design.hideclock": "true",
+        "global.rememberme": "false",
+        "homesection0": "librarybuttons"
+      }
+
+      ' Act
+      result = user.settings.TransformDisplaySettings(registryData)
+
+      ' Assert
+      m.assertNotInvalid(result)
+      m.assertEqual(1, result.Count()) ' Only lib1 should exist
+      m.assertNotInvalid(result.lib1)
+      m.assertInvalid(result.ui)
+      m.assertInvalid(result.global)
+      m.assertInvalid(result.homesection0)
+    end function
+
+    @it("ignores malformed display keys")
+    function _()
+      ' Arrange
+      registryData = {
+        "display.lib1.sortField": "Name",
+        "display.": "bad",
+        "display.lib2": "bad",
+        "display": "bad",
+        "display.lib3.": "bad",
+        "display..sortField": "bad"
+      }
+
+      ' Act
+      result = user.settings.TransformDisplaySettings(registryData)
+
+      ' Assert
+      m.assertNotInvalid(result)
+      m.assertEqual(1, result.Count()) ' Only lib1 should exist
+      m.assertNotInvalid(result.lib1)
+      m.assertInvalid(result.lib2)
+      m.assertInvalid(result.lib3)
+    end function
+
+    @it("handles multiple libraries correctly")
+    function _()
+      ' Arrange
+      registryData = {
+        "display.movies.sortField": "Name",
+        "display.movies.sortAscending": "true",
+        "display.tvshows.sortField": "DateCreated",
+        "display.tvshows.sortAscending": "false",
+        "display.music.sortField": "Album"
+      }
+
+      ' Act
+      result = user.settings.TransformDisplaySettings(registryData)
+
+      ' Assert
+      m.assertNotInvalid(result)
+      m.assertEqual(3, result.Count())
+      m.assertNotInvalid(result.movies)
+      m.assertNotInvalid(result.tvshows)
+      m.assertNotInvalid(result.music)
+      m.assertEqual("Name", result.movies.sortField)
+      m.assertEqual("DateCreated", result.tvshows.sortField)
+      m.assertEqual("Album", result.music.sortField)
+    end function
+
+    @it("converts sortAscending to boolean type")
+    function _()
+      ' Arrange
+      registryData = {
+        "display.lib1.sortAscending": "true",
+        "display.lib2.sortAscending": "false"
+      }
+
+      ' Act
+      result = user.settings.TransformDisplaySettings(registryData)
+
+      ' Assert
+      m.assertTrue(result.lib1.sortAscending = true) ' Boolean true
+      m.assertTrue(result.lib2.sortAscending = false) ' Boolean false
+      ' Verify it's actually boolean type, not string
+      m.assertEqual("roBoolean", type(result.lib1.sortAscending))
+      m.assertEqual("roBoolean", type(result.lib2.sortAscending))
+    end function
+
+    @it("preserves other setting values as strings")
+    function _()
+      ' Arrange
+      registryData = {
+        "display.lib1.sortField": "Name",
+        "display.lib1.filter": "Favorites",
+        "display.lib1.customValue": "123"
+      }
+
+      ' Act
+      result = user.settings.TransformDisplaySettings(registryData)
+
+      ' Assert
+      m.assertEqual("roString", type(result.lib1.sortField))
+      m.assertEqual("roString", type(result.lib1.filter))
+      m.assertEqual("roString", type(result.lib1.customValue))
+    end function
+
+  end class
+
+end namespace

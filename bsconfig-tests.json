@@ -1,7 +1,8 @@
 {
   "files": [
+    "!tests/source/tests/e2e/**/*",
     {
-      "src": "unit-tests/**/*"
+      "src": "tests/**/*"
     },
     {
       "src": "source/**/!(Main.brs)",
@@ -25,7 +26,7 @@
     "node_modules/**/*",
     "**/roku_modules/**/*",
     {
-      "src": "unit-tests/**/*",
+      "src": "tests/**/*",
       "codes": [
         1026,
         "LINT3008"
@@ -40,8 +41,9 @@
     "@rokucommunity/bslint"
   ],
   "rooibos": {
-    "isRecordingCodeCoverage": false,
+    "isRecordingCodeCoverage": true,
     "testsFilePattern": null,
+    "tags": null,
     "showOnlyFailures": true,
     "catchCrashes": true,
     "lineWidth": 70,

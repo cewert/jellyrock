@@ -1,0 +1,123 @@
+import "pkg:/source/utils/misc.bs"
+
+namespace tests.components
+
+  @suite("JellyfinUserSettings Component Tests")
+  @tags("unit")
+  class JellyfinUserSettingsTests extends rooibos.BaseTestSuite
+
+    protected override sub setup()
+      super.setup()
+    end sub
+
+    protected override sub teardown()
+      super.teardown()
+    end sub
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Dynamic Field Discovery")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("getFields() returns all fields defined in XML interface")
+    function _()
+      ' Create a fresh JellyfinUserSettings node
+      settingsNode = CreateObject("roSGNode", "JellyfinUserSettings")
+
+      m.assertNotInvalid(settingsNode, "settings node should be created")
+
+      ' Get all fields as associative array
+      allFields = settingsNode.getFields()
+
+      m.assertNotInvalid(allFields, "getFields() should return data")
+      m.assertEqual(type(allFields), "roAssociativeArray", "getFields() should return AA")
+
+      ' Verify we can iterate over field names (keys)
+      fieldCount = 0
+      for each fieldName in allFields
+        fieldCount++
+      end for
+
+      m.assertTrue(fieldCount > 0, "should have at least one field")
+
+      ' Verify specific expected fields exist
+      m.assertTrue(allFields.DoesExist("globalRememberMe"), "should have globalRememberMe field")
+      m.assertTrue(allFields.DoesExist("playbackBitrateLimit"), "should have playbackBitrateLimit field")
+      m.assertTrue(allFields.DoesExist("displaySettings"), "should have displaySettings field")
+      m.assertTrue(allFields.DoesExist("rawSettings"), "should have rawSettings field")
+    end function
+
+    @it("can filter out excluded fields from getFields() result")
+    function _()
+      settingsNode = CreateObject("roSGNode", "JellyfinUserSettings")
+      allFields = settingsNode.getFields()
+
+      ' Define excluded fields
+      excludedFields = [
+        "id",
+        "isLoaded",
+        "loadedAt",
+        "rawSettings"
+      ]
+
+      ' Filter out excluded fields
+      observableFields = []
+      for each fieldName in allFields
+        shouldExclude = false
+        for each excluded in excludedFields
+          if fieldName = excluded
+            shouldExclude = true
+            exit for
+          end if
+        end for
+
+        if not shouldExclude
+          observableFields.push(fieldName)
+        end if
+      end for
+
+      ' Verify excluded fields are not in observable list
+      m.assertFalse(inArray(observableFields, "rawSettings"), "rawSettings should be excluded")
+      m.assertFalse(inArray(observableFields, "id"), "id should be excluded")
+
+      ' Verify non-excluded fields ARE in observable list
+      m.assertTrue(inArray(observableFields, "displaySettings"), "displaySettings should be observable")
+      m.assertTrue(inArray(observableFields, "globalRememberMe"), "globalRememberMe should be observable")
+    end function
+
+    @it("can distinguish displaySettings from other fields")
+    function _()
+      settingsNode = CreateObject("roSGNode", "JellyfinUserSettings")
+      allFields = settingsNode.getFields()
+
+      excludedFields = ["id", "isLoaded", "loadedAt", "rawSettings"]
+
+      displaySettingsCount = 0
+      otherSettingsCount = 0
+
+      for each fieldName in allFields
+        ' Check if excluded
+        shouldExclude = false
+        for each excluded in excludedFields
+          if fieldName = excluded
+            shouldExclude = true
+            exit for
+          end if
+        end for
+
+        if shouldExclude then continue for
+
+        ' Count field types
+        if fieldName = "displaySettings"
+          displaySettingsCount++
+        else
+          otherSettingsCount++
+        end if
+      end for
+
+      m.assertEqual(displaySettingsCount, 1, "should have exactly one displaySettings field")
+      m.assertTrue(otherSettingsCount > 0, "should have other observable fields")
+    end function
+
+  end class
+
+end namespace

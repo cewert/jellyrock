@@ -1,0 +1,222 @@
+namespace tests
+  @suite("toBoolean function")
+  class toBooleanTests extends tests.BaseTestSuite
+
+    protected override function setup()
+      super.setup()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("toBoolean()")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("converts string 'true' to boolean true")
+    function _()
+      result = toBoolean("true")
+      m.assertEqual(Type(result), "Boolean")
+      m.assertEqual(result, true)
+    end function
+
+    @it("converts string 'false' to boolean false")
+    function _()
+      result = toBoolean("false")
+      m.assertEqual(Type(result), "Boolean")
+      m.assertEqual(result, false)
+    end function
+
+    @it("returns boolean true unchanged")
+    function _()
+      result = toBoolean(true)
+      m.assertEqual(Type(result), "Boolean")
+      m.assertEqual(result, true)
+    end function
+
+    @it("returns boolean false unchanged")
+    function _()
+      result = toBoolean(false)
+      m.assertEqual(Type(result), "Boolean")
+      m.assertEqual(result, false)
+    end function
+
+    @it("returns invalid for invalid input")
+    function _()
+      result = toBoolean(invalid)
+      m.assertEqual(result, invalid)
+    end function
+
+    @it("converts case-insensitive boolean strings to boolean")
+    @params("True", true)
+    @params("TRUE", true)
+    @params("FALSE", false)
+    @params("False", false)
+    @params("TrUe", true)
+    function _(value, expected)
+      result = toBoolean(value)
+      m.assertEqual(Type(result), "Boolean", `toBoolean("${value}") should return Boolean but got ${Type(result)}`)
+      m.assertEqual(result, expected)
+    end function
+
+    @it("returns string unchanged for non-boolean string values")
+    @params("yes")
+    @params("no")
+    @params("1")
+    @params("0")
+    @params("")
+    @params("random")
+    function _(value)
+      result = toBoolean(value)
+      m.assertTrue(Type(result) = "roString" or Type(result) = "String", `toBoolean("${value}") should return string type but got ${Type(result)}`)
+      m.assertEqual(result, value)
+    end function
+
+    @it("returns integer unchanged for integer input")
+    @params(0)
+    @params(1)
+    @params(-1)
+    @params(123)
+    function _(value)
+      result = toBoolean(value)
+      m.assertTrue(Type(result) = "roInteger" or Type(result) = "Integer")
+      m.assertEqual(result, value)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Bug reproduction: sortAscending type mismatch")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("reproduces the bug when toBoolean returns string instead of boolean")
+    function _()
+      ' Simulate the bug scenario
+      sortAscendingStr = "true"
+      result = toBoolean(sortAscendingStr)
+
+      ' This should be boolean true
+      m.assertEqual(Type(result), "Boolean")
+      m.assertEqual(result, true)
+
+      ' Test comparison that was failing
+      ' If result is still a string, this would cause type mismatch
+      if result = false
+        m.fail("Comparison succeeded but should have been boolean")
+      end if
+    end function
+
+    @it("tests behavior when string has different case - FIXED")
+    @params("True", "Boolean", true)
+    @params("FALSE", "Boolean", false)
+    @params("tRuE", "Boolean", true)
+    @params("FaLsE", "Boolean", false)
+    function _(inputValue, expectedType, expectedValue)
+      result = toBoolean(inputValue)
+      m.assertEqual(Type(result), expectedType, `Expected type ${expectedType} but got ${Type(result)}`)
+      m.assertEqual(result, expectedValue)
+    end function
+
+    @it("tests that comparison of string 'false' with boolean false causes type mismatch")
+    function _()
+      ' This test demonstrates the actual bug
+      stringValue = "false"
+      boolValue = false
+
+      ' In BrightScript, comparing string "false" with boolean false should cause error
+      ' But we can't directly test this without crashing the test
+      ' Instead, verify types are different
+      m.assertNotEqual(Type(stringValue), Type(boolValue))
+    end function
+
+    @it("demonstrates registry returns strings not booleans")
+    function _()
+      ' When values are stored to registry and retrieved, they come back as strings
+      ' This simulates what happens with getLibraryDisplaySetting
+
+      ' Simulate storing "true" as string (like setLibraryDisplaySetting does)
+      storedValue = "true"
+
+      ' Simulate retrieving and converting (like MovieLibraryView.bs:132 does)
+      retrievedValue = toBoolean(storedValue)
+
+      ' Should now be boolean
+      m.assertEqual(Type(retrievedValue), "Boolean")
+      m.assertEqual(retrievedValue, true)
+
+      ' Test the comparison that crashes
+      canCompare = true
+      try
+        if retrievedValue = false
+          canCompare = true
+        end if
+      catch e
+        canCompare = false
+      end try
+
+      m.assertTrue(canCompare, "Should be able to compare boolean with boolean")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Simulating the full data flow")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("simulates the complete flow from storage to comparison")
+    function _()
+      ' Step 1: Store as string (setLibraryDisplaySetting)
+      sortAscendingStr = "false"
+
+      ' Step 2: Retrieve as string (getLibraryDisplaySetting returns string)
+      retrievedFromRegistry = sortAscendingStr
+
+      ' Step 3: Convert with toBoolean (MovieLibraryView.bs:132)
+      m_sortAscending = toBoolean(retrievedFromRegistry)
+
+      ' Step 4: Assign to associative array (MovieLibraryView.bs:316)
+      sortItem = {}
+      sortItem.Ascending = m_sortAscending
+
+      ' Step 5: Compare in ItemGridOptions.bs:123
+      m.assertTrue(Type(sortItem.Ascending) = "roBoolean" or Type(sortItem.Ascending) = "Boolean")
+
+      canCompare = true
+      if isValid(sortItem.Ascending) and sortItem.Ascending = false
+        ' This is the line that crashes if Ascending is a string
+        canCompare = true
+      end if
+
+      m.assertTrue(canCompare)
+    end function
+
+    @it("handles case-insensitive boolean strings correctly - FIX VERIFIED")
+    function _()
+      ' This verifies the fix for the crash scenario
+      ' toBoolean should handle case-insensitive "true"/"false" strings
+
+      ' Test various case combinations that should be converted to boolean
+      booleanStrings = {
+        "TRUE": true,
+        "True": true,
+        "tRuE": true,
+        "FALSE": false,
+        "False": false,
+        "FaLsE": false
+      }
+
+      for each testValue in booleanStrings
+        result = toBoolean(testValue)
+        expected = booleanStrings[testValue]
+
+        ' Should be boolean, not string
+        m.assertTrue(Type(result) = "roBoolean" or Type(result) = "Boolean", `toBoolean('${testValue}') should return boolean type but got ${Type(result)}`)
+        m.assertEqual(result, expected, `toBoolean('${testValue}') should return ${expected} but got ${result}`)
+      end for
+
+      ' These should still return strings (not boolean values)
+      nonBooleanStrings = ["", " true", "true ", "1", "0", "yes", "no"]
+
+      for each testValue in nonBooleanStrings
+        result = toBoolean(testValue)
+
+        ' Should remain a string since they're not "true"/"false"
+        m.assertTrue(Type(result) = "roString" or Type(result) = "String", `toBoolean('${testValue}') should return string type but got ${Type(result)}`)
+      end for
+    end function
+
+  end class
+end namespace

@@ -1,0 +1,368 @@
+import "pkg:/source/api/userauth.bs"
+import "pkg:/source/utils/config.bs"
+import "pkg:/source/utils/misc.bs"
+import "pkg:/source/utils/session.bs"
+
+namespace tests
+  @suite("Session Management Tests")
+  @tags("integration")
+  class SessionManagementTests extends tests.BaseTestSuite
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("server namespace - Initialization and State")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("initializes server node with default values")
+    function _()
+      serverNode = CreateObject("roSGNode", "JellyfinServer")
+
+      m.assertEqual(serverNode.id, "")
+      m.assertEqual(serverNode.name, "")
+      m.assertEqual(serverNode.serverUrl, "")
+      m.assertEqual(serverNode.version, "")
+      m.assertEqual(serverNode.isLoaded, false)
+      m.assertEqual(serverNode.isConnected, false)
+      m.assertEqual(serverNode.lastConnected, 0&)
+    end function
+
+    @it("server.Delete() clears all server data")
+    function _()
+      ' Load mock data to populate server
+      populatedServer = MockDataLoader.LoadServer("default")
+      m.assertNotInvalid(populatedServer, "Mock data should load")
+
+      ' Get local reference to minimize rendezvous
+      localServer = m.getTestServer()
+
+      ' Populate server with test data
+      for each key in populatedServer
+        localServer[key] = populatedServer[key]
+      end for
+
+      ' Verify populated
+      m.assertEqual(localServer.id, populatedServer.id)
+      m.assertNotEqual(localServer.id, "")
+
+      ' Execute - this resets all fields to defaults
+      server.Delete()
+
+      ' Verify reset to XML defaults (empty strings, false booleans, etc.)
+      m.assertEqual(localServer.id, "")
+      m.assertEqual(localServer.name, "")
+      m.assertEqual(localServer.serverUrl, "")
+      m.assertEqual(localServer.isLoaded, false)
+      return m.assertEqual(localServer.isConnected, false)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("user namespace - Authentication State")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("initializes user node with default values")
+    function _()
+      userNode = CreateObject("roSGNode", "JellyfinUser")
+
+      m.assertEqual(userNode.id, "")
+      m.assertEqual(userNode.name, "")
+      m.assertEqual(userNode.authToken, "")
+      m.assertEqual(userNode.enableNextEpisodeAutoPlay, false)
+      m.assertEqual(userNode.isAdministrator, false)
+      m.assertEqual(userNode.enableMediaPlayback, true)
+    end function
+
+    @it("uses id and authToken as sentinel values")
+    function _()
+      userNode = CreateObject("roSGNode", "JellyfinUser")
+
+      ' Empty id/token = not authenticated
+      m.assertEqual(userNode.id, "")
+      m.assertEqual(userNode.authToken, "")
+
+      ' Set values = authenticated
+      userNode.id = "user-123"
+      userNode.authToken = "abc123token"
+
+      m.assertNotEqual(userNode.id, "")
+      m.assertNotEqual(userNode.authToken, "")
+    end function
+
+    @it("user.Logout() clears authentication data")
+    function _()
+      ' Load mock authenticated user data
+      authenticatedUser = MockDataLoader.LoadUser("admin")
+      m.assertNotInvalid(authenticatedUser, "Mock data should load")
+
+      ' Get local reference to minimize rendezvous
+      localUser = m.getTestUser()
+
+      ' Populate user with authenticated data
+      for each key in authenticatedUser
+        localUser[key] = authenticatedUser[key]
+      end for
+
+      ' Verify populated
+      m.assertEqual(localUser.id, authenticatedUser.id)
+      m.assertNotEqual(localUser.id, "")
+
+      ' Execute - this resets all fields to defaults
+      user.Logout()
+
+      ' Verify reset to XML defaults (empty strings, false booleans, etc.)
+      m.assertEqual(localUser.id, "")
+      m.assertEqual(localUser.authToken, "")
+      m.assertEqual(localUser.name, "")
+      return m.assertEqual(localUser.isAdministrator, false)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("user.settings namespace - Settings Management")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("initializes settings node with default values")
+    function _()
+      settingsNode = CreateObject("roSGNode", "JellyfinUserSettings")
+
+      m.assertEqual(settingsNode.uiRowLayout, "")
+      m.assertEqual(settingsNode.uiDesignHideClock, false)
+      m.assertEqual(settingsNode.homeSection0, "")
+      return m.assertEqual(settingsNode.globalRememberMe, false)
+    end function
+
+    @it("user.settings.Save() stores string values correctly")
+    function _()
+      ' Use existing global user node from setup
+      user.settings.Save("uiRowLayout", "narrowgrid")
+
+      localSettings = m.getTestUserSettings()
+      return m.assertEqual(localSettings.uiRowLayout, "narrowgrid")
+    end function
+
+    @it("user.settings.Save() converts boolean strings to boolean")
+    function _()
+      localSettings = m.getTestUserSettings()
+
+      user.settings.Save("uiDesignHideClock", "true")
+      m.assertEqual(localSettings.uiDesignHideClock, true)
+
+      user.settings.Save("uiDesignHideClock", "false")
+      return m.assertEqual(localSettings.uiDesignHideClock, false)
+    end function
+
+    @it("user.settings.Save() converts numeric strings to integers")
+    function _()
+      user.settings.Save("playbackNextUpButtonSeconds", "45")
+
+      localSettings = m.getTestUserSettings()
+      return m.assertEqual(localSettings.playbackNextUpButtonSeconds, 45)
+    end function
+
+    @it("user.settings.Save() handles native integer values from JSON")
+    function _()
+      ' This tests the bug fix - ParseJSON returns native integers, not strings
+      user.settings.Save("playbackNextUpButtonSeconds", 30)
+
+      localSettings = m.getTestUserSettings()
+      m.assertEqual(localSettings.playbackNextUpButtonSeconds, 30)
+      return m.assertEqual(type(localSettings.playbackNextUpButtonSeconds), "roInt")
+    end function
+
+    @it("user.settings.Save() handles native boolean values from JSON")
+    function _()
+      ' ParseJSON returns native booleans, not strings
+      user.settings.Save("uiDesignHideClock", true)
+
+      localSettings = m.getTestUserSettings()
+      m.assertEqual(localSettings.uiDesignHideClock, true)
+
+      user.settings.Save("uiDesignHideClock", false)
+      m.assertEqual(localSettings.uiDesignHideClock, false)
+      return m.assertEqual(type(localSettings.uiDesignHideClock), "roBoolean")
+    end function
+
+    @it("user.settings.Save() handles native float values from JSON")
+    function _()
+      ' ParseJSON can return floats for decimal numbers
+      user.settings.Save("customFloatSetting", 3.14)
+
+      localSettings = m.getTestUserSettings()
+      m.assertEqual(localSettings.customFloatSetting, 3.14)
+      return m.assertEqual(type(localSettings.customFloatSetting), "roFloat")
+    end function
+
+    @it("user.settings.Save() updates existing integer field with native integer")
+    function _()
+      ' Create field with string first
+      user.settings.Save("playbackNextUpButtonSeconds", "45")
+
+      localSettings = m.getTestUserSettings()
+      m.assertEqual(localSettings.playbackNextUpButtonSeconds, 45)
+
+      ' Update with native integer (simulating JSON default value)
+      user.settings.Save("playbackNextUpButtonSeconds", 30)
+      return m.assertEqual(localSettings.playbackNextUpButtonSeconds, 30)
+    end function
+
+    @it("user.settings.Save() updates existing boolean field with native boolean")
+    function _()
+      ' Create field with string first
+      user.settings.Save("uiDesignHideClock", "false")
+
+      localSettings = m.getTestUserSettings()
+      m.assertEqual(localSettings.uiDesignHideClock, false)
+
+      ' Update with native boolean (simulating JSON default value)
+      user.settings.Save("uiDesignHideClock", true)
+      return m.assertEqual(localSettings.uiDesignHideClock, true)
+    end function
+
+    @it("user.settings.Save() updates existing string field with native integer by conversion")
+    function _()
+      ' Create string field
+      user.settings.Save("customStringSetting", "hello")
+
+      localSettings = m.getTestUserSettings()
+      m.assertEqual(localSettings.customStringSetting, "hello")
+
+      ' Update with integer - should convert to string
+      user.settings.Save("customStringSetting", 42)
+      m.assertEqual(localSettings.customStringSetting, "42")
+      return m.assertEqual(type(localSettings.customStringSetting), "roString")
+    end function
+
+    @it("user.settings.Save() handles mixed type scenarios from settings.json")
+    function _()
+      ' Simulate loading defaults from settings.json where ParseJSON returns native types
+      localSettings = m.getTestUserSettings()
+
+      ' Integer setting
+      user.settings.Save("playbackBitrateLimit", 0)
+      m.assertEqual(localSettings.playbackBitrateLimit, 0)
+
+      ' Boolean setting
+      user.settings.Save("playbackCinemaMode", false)
+      m.assertEqual(localSettings.playbackCinemaMode, false)
+
+      ' String setting
+      user.settings.Save("playbackResolutionMax", "auto")
+      m.assertEqual(localSettings.playbackResolutionMax, "auto")
+
+      ' Another integer setting
+      user.settings.Save("playbackNextUpButtonSeconds", 30)
+      m.assertEqual(localSettings.playbackNextUpButtonSeconds, 30)
+
+      return m.assertTrue(true, "All mixed types handled correctly")
+    end function
+
+    @it("user.settings.Read() retrieves stored values")
+    function _()
+      ' Set some test values using local reference
+      localSettings = m.getTestUserSettings()
+      localSettings.uiRowLayout = "narrowgrid"
+      localSettings.uiDesignHideClock = true
+
+      layoutValue = user.settings.Read("uiRowLayout")
+      clockValue = user.settings.Read("uiDesignHideClock")
+
+      m.assertEqual(layoutValue, "narrowgrid")
+      return m.assertEqual(clockValue, true)
+    end function
+
+    @it("user.settings.Read() returns invalid for non-existent settings")
+    function _()
+      value = user.settings.Read("nonexistent.setting")
+
+      return m.assertInvalid(value)
+    end function
+
+    @it("user.settings.Delete() removes setting field")
+    function _()
+      ' Add a custom field to test deletion using local reference
+      localSettings = m.getTestUserSettings()
+      localSettings.addField("customTestSetting", "string", false)
+      localSettings.customTestSetting = "test"
+
+      m.assertEqual(localSettings.customTestSetting, "test")
+
+      user.settings.Delete("customTestSetting")
+
+      return m.assertFalse(localSettings.hasField("customTestSetting"))
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Integration - Demo Server Connection")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("connects to Jellyfin stable demo server")
+    function _()
+      ' Clear server to start fresh
+      server.Delete()
+
+      ' Attempt connection
+      success = server.UpdateURL("https://demo.jellyfin.org/stable")
+
+      localServer = m.getTestServer()
+      m.assertTrue(success, "Should successfully connect to stable demo server")
+      m.assertNotEqual(localServer.id, "", "Server should have ID after connection")
+      return m.assertTrue(localServer.isConnected, "Server should be connected")
+    end function
+
+    @it("connects to Jellyfin unstable demo server")
+    function _()
+      ' Clear server to start fresh
+      server.Delete()
+
+      ' Attempt connection
+      success = server.UpdateURL("https://demo.jellyfin.org/unstable")
+
+      localServer = m.getTestServer()
+      m.assertTrue(success, "Should successfully connect to unstable demo server")
+      m.assertNotEqual(localServer.id, "", "Server should have ID after connection")
+      return m.assertTrue(localServer.isConnected, "Server should be connected")
+    end function
+
+    @it("authenticates with demo user credentials")
+    function _()
+      ' Clear and connect to server
+      server.Delete()
+      serverConnected = server.UpdateURL("https://demo.jellyfin.org/stable")
+      m.assertTrue(serverConnected, "Server must connect before authentication")
+
+      ' Attempt login with demo credentials (username: "demo", password: "")
+      authData = get_token("demo", "")
+
+      m.assertNotInvalid(authData, "Should receive authentication response")
+      m.assertNotInvalid(authData.json, "Should have json field")
+      m.assertNotInvalid(authData.json.AccessToken, "Should receive access token")
+      return m.assertNotEqual(authData.json.AccessToken, "", "Should receive valid auth token")
+    end function
+
+    @it("completes full login/logout cycle")
+    function _()
+      ' Clear and connect to server
+      server.Delete()
+      user.Logout()
+
+      ' 1. Connect to server
+      serverConnected = server.UpdateURL("https://demo.jellyfin.org/stable")
+      m.assertTrue(serverConnected, "Server connection required")
+
+      ' 2. Login
+      authData = get_token("demo", "")
+      m.assertNotInvalid(authData, "Should receive auth data")
+      m.assertNotInvalid(authData.json, "Should have json field")
+      m.assertNotInvalid(authData.json.User, "Auth data should contain user info")
+
+      user.Login(authData, false)
+
+      localUser = m.getTestUser()
+      m.assertNotEqual(localUser.id, "", "User should be authenticated")
+      m.assertNotEqual(localUser.authToken, "", "User should have auth token")
+
+      ' 3. Logout
+      user.Logout()
+      m.assertEqual(localUser.id, "", "User ID should be cleared after logout")
+      return m.assertEqual(localUser.authToken, "", "Auth token should be cleared after logout")
+    end function
+
+  end class
+end namespace

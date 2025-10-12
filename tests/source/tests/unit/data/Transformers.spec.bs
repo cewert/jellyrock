@@ -1,0 +1,828 @@
+
+namespace tests
+  @suite("Transformer Tests")
+  @tags("unit")
+  class TransformerTests extends tests.BaseTestSuite
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("JellyfinDataTransformer")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("transforms basic BaseItemDto")
+    function _()
+      transformer = new JellyfinDataTransformer()
+
+      apiData = MockDataLoader.LoadApiData("movie-basic")
+
+      result = transformer.transformBaseItem(apiData, "10.8.0")
+
+      m.assertEqual(result.id, "movie123")
+      m.assertEqual(result.type, "Movie")
+      m.assertEqual(result.name, "Test Movie")
+      m.assertEqual(result.runTimeTicks, 60000000000&)
+      m.assertEqual(result.officialRating, "PG-13")
+      m.assertEqual(result.communityRating, 8.5)
+      m.assertEqual(result.serverVersion, "10.8.0")
+    end function
+
+    @it("flattens user data correctly")
+    function _()
+      transformer = new JellyfinDataTransformer()
+
+      apiData = MockDataLoader.LoadApiData("movie-with-userdata")
+
+      result = transformer.transformBaseItem(apiData, "10.8.0")
+
+      m.assertEqual(result.isWatched, true)
+      m.assertEqual(result.isFavorite, false)
+      m.assertEqual(result.playbackPositionTicks, 30000000000&)
+      m.assertEqual(result.playCount, 2)
+      m.assertEqual(result.isResumable, false) ' watched = true, so not resumable
+    end function
+
+    @it("stores image tags not URLs")
+    function _()
+      transformer = new JellyfinDataTransformer()
+
+      apiData = MockDataLoader.LoadApiData("movie-with-images")
+
+      result = transformer.transformBaseItem(apiData, "10.8.0")
+
+      m.assertEqual(result.primaryImageTag, "abc123")
+      m.assertEqual(result.thumbImageTag, "def456")
+      m.assertEqual(result.backdropImageTags.Count(), 2)
+      m.assertEqual(result.backdropImageTags[0], "ghi789")
+    end function
+
+    @it("transforms episode-specific fields")
+    function _()
+      transformer = new JellyfinDataTransformer()
+
+      apiData = MockDataLoader.LoadApiData("episode-basic")
+
+      result = transformer.transformBaseItem(apiData, "10.8.0")
+
+      m.assertEqual(result.seriesId, "series123")
+      m.assertEqual(result.seriesName, "Test Series")
+      m.assertEqual(result.indexNumber, 1)
+      m.assertEqual(result.parentIndexNumber, 1)
+    end function
+
+    @it("handles invalid data gracefully")
+    function _()
+      transformer = new JellyfinDataTransformer()
+
+      result = transformer.transformBaseItem(invalid, "10.8.0")
+
+      m.assertEqual(result, invalid)
+    end function
+
+    @it("transforms array of items")
+    function _()
+      transformer = new JellyfinDataTransformer()
+
+      apiArray = MockDataLoader.LoadApiData("movie-array")
+
+      results = transformer.transformBaseItemArray(apiArray, "10.8.0")
+
+      m.assertEqual(results.Count(), 3)
+      m.assertEqual(results[0].id, "1")
+      m.assertEqual(results[1].id, "2")
+      m.assertEqual(results[2].id, "3")
+    end function
+
+    @it("auto-detects server version from GetGlobalAA when not provided")
+    function _()
+      transformer = new JellyfinDataTransformer()
+
+      ' BaseTestSuite already mocks m.global.session.server.version
+      ' So calling without serverVersion should use the mocked value
+
+      apiData = {
+        Id: "test123",
+        Type: "Movie",
+        Name: "Version Test"
+      }
+
+      ' Don't pass serverVersion - should use GetGlobalAA()
+      result = transformer.transformBaseItem(apiData)
+
+      m.assertNotInvalid(result)
+      m.assertEqual(result.id, "test123")
+      ' serverVersion should be from global (set in BaseTestSuite)
+      m.assertTrue(isValidAndNotEmpty(result.serverVersion))
+    end function
+
+    @it("calculates isResumable correctly for unwatched with position")
+    function _()
+      transformer = new JellyfinDataTransformer()
+
+      apiData = MockDataLoader.LoadApiData("movie-resumable")
+
+      result = transformer.transformBaseItem(apiData, "10.8.0")
+
+      m.assertEqual(result.isWatched, false)
+      m.assertTrue(result.playbackPositionTicks > 0)
+      m.assertEqual(result.isResumable, true) ' not watched but has position
+    end function
+
+    @it("handles missing UserData gracefully")
+    function _()
+      transformer = new JellyfinDataTransformer()
+
+      apiData = MockDataLoader.LoadApiData("movie-no-userdata")
+
+      result = transformer.transformBaseItem(apiData, "10.8.0")
+
+      ' Should have default values
+      m.assertEqual(result.isWatched, false)
+      m.assertEqual(result.isFavorite, false)
+      m.assertEqual(result.playbackPositionTicks, 0&)
+      m.assertEqual(result.isResumable, false)
+    end function
+
+    @it("transforms Series-specific fields")
+    function _()
+      transformer = new JellyfinDataTransformer()
+
+      apiData = MockDataLoader.LoadApiData("series-basic")
+
+      result = transformer.transformBaseItem(apiData, "10.8.0")
+
+      m.assertEqual(result.id, "series123")
+      m.assertEqual(result.type, "Series")
+      m.assertEqual(result.name, "Test Series")
+    end function
+
+    @it("transforms Program (LiveTV) fields")
+    function _()
+      transformer = new JellyfinDataTransformer()
+
+      apiData = MockDataLoader.LoadApiData("program-livetv")
+
+      result = transformer.transformBaseItem(apiData, "10.8.0")
+
+      m.assertEqual(result.type, "Program")
+      m.assertEqual(result.channelName, "ABC")
+      m.assertEqual(result.isLive, true)
+      m.assertEqual(result.isNews, true)
+      m.assertEqual(result.isSports, false)
+    end function
+
+    @it("stores parent and series image tags for episodes")
+    function _()
+      transformer = new JellyfinDataTransformer()
+
+      apiData = MockDataLoader.LoadApiData("episode-with-parent-images")
+
+      result = transformer.transformBaseItem(apiData, "10.8.0")
+
+      m.assertEqual(result.parentPrimaryImageTag, "parentTag")
+      m.assertEqual(result.parentPrimaryImageItemId, "season123")
+      m.assertEqual(result.parentThumbImageTag, "parentThumb")
+      m.assertEqual(result.seriesPrimaryImageTag, "seriesTag")
+    end function
+
+    @it("extracts studio names from objects and strings")
+    function _()
+      transformer = new JellyfinDataTransformer()
+
+      ' Studios can be objects with Name property or just strings
+      apiData = MockDataLoader.LoadApiData("movie-with-studios")
+
+      result = transformer.transformBaseItem(apiData, "10.8.0")
+
+      m.assertEqual(result.studios.Count(), 4)
+      m.assertEqual(result.studios[0], "Warner Bros")
+      m.assertEqual(result.studios[1], "Universal")
+      m.assertEqual(result.studios[2], "Paramount")
+      m.assertEqual(result.studios[3], "Disney")
+    end function
+
+    @it("handles empty arrays gracefully")
+    function _()
+      transformer = new JellyfinDataTransformer()
+
+      apiData = MockDataLoader.LoadApiData("movie-empty-arrays")
+
+      result = transformer.transformBaseItem(apiData, "10.8.0")
+
+      m.assertNotInvalid(result)
+      m.assertEqual(result.id, "movie123")
+    end function
+
+    @it("returns empty array for invalid input array")
+    function _()
+      transformer = new JellyfinDataTransformer()
+
+      result = transformer.transformBaseItemArray(invalid, "10.8.0")
+
+      m.assertNotInvalid(result)
+      m.assertEqual(result.Count(), 0)
+    end function
+
+    @it("returns empty array for empty input array")
+    function _()
+      transformer = new JellyfinDataTransformer()
+
+      result = transformer.transformBaseItemArray([], "10.8.0")
+
+      m.assertEqual(result.Count(), 0)
+    end function
+
+    @it("always populates transformedAt timestamp")
+    function _()
+      transformer = new JellyfinDataTransformer()
+
+      apiData = MockDataLoader.LoadApiData("movie-basic")
+
+      result = transformer.transformBaseItem(apiData, "10.8.0")
+
+      m.assertNotInvalid(result)
+      m.assertTrue(result.transformedAt > 0)
+    end function
+
+    #if debug
+      @it("DEBUG MODE: populates rawApiData field")
+      function _()
+        transformer = new JellyfinDataTransformer()
+
+        apiData = MockDataLoader.LoadApiData("movie-basic")
+
+        result = transformer.transformBaseItem(apiData, "10.8.0")
+
+        m.assertNotInvalid(result)
+        m.assertNotInvalid(result.rawApiData, "rawApiData should be populated in debug mode")
+        m.assertEqual(result.rawApiData.Id, "movie123")
+      end function
+    #else
+      @it("PRODUCTION MODE: does not populate rawApiData field")
+      function _()
+        transformer = new JellyfinDataTransformer()
+
+        apiData = MockDataLoader.LoadApiData("movie-basic")
+
+        result = transformer.transformBaseItem(apiData, "10.8.0")
+
+        m.assertNotInvalid(result)
+        m.assertInvalid(result.rawApiData, "rawApiData should NOT be populated in production mode")
+      end function
+    #end if
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("SessionDataTransformer")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("transforms server info")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      serverData = MockDataLoader.LoadServer("default")
+
+      result = transformer.transformServerInfo(serverData)
+
+      m.assertEqual(result.id, "test-server-123")
+      m.assertEqual(result.name, "Test Jellyfin Server")
+      m.assertEqual(result.version, "10.8.0")
+      m.assertEqual(result.isLoaded, true)
+      m.assertEqual(result.isConnected, true)
+    end function
+
+    @it("transforms user info with flattened config and policy")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      userData = MockDataLoader.LoadUser("admin")
+
+      result = transformer.transformUserInfo(userData)
+
+      m.assertEqual(result.id, "admin-user-456")
+      m.assertEqual(result.enableNextEpisodeAutoPlay, true)
+      m.assertEqual(result.isAdministrator, true)
+      m.assertEqual(result.enableContentDeletion, true)
+    end function
+
+    @it("transforms user settings from registry data")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      settingsData = MockDataLoader.LoadApiData("user-settings")
+
+      result = transformer.transformUserSettings(settingsData)
+
+      m.assertNotInvalid(result)
+      m.assertEqual(result.uiRowLayout, "landscape")
+      m.assertEqual(result.uiDesignHideClock, true)
+      m.assertEqual(result.uiGeneralEpisodeImages, "always")
+      m.assertEqual(result.uiTvShowsDisableUnwatchedCount, false)
+      m.assertEqual(result.uiHomeUseWebArrangement, true)
+      m.assertEqual(result.uiFontFallback, false)
+      m.assertEqual(result.homeSection0, "library-movies")
+      m.assertEqual(result.homeSection1, "library-tvshows")
+      m.assertEqual(result.homeSection2, "resume")
+      m.assertEqual(result.displayLiveTvLanding, "guide")
+      m.assertEqual(result.globalRememberMe, true)
+      m.assertEqual(result.liveTvCanRecord, true)
+      m.assertEqual(result.contentCanDelete, false)
+    end function
+
+    @it("transforms user settings with invalid/missing data")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      ' Invalid input should return settings node with XML defaults
+      result = transformer.transformUserSettings(invalid)
+
+      m.assertNotInvalid(result)
+      m.assertEqual(result.uiRowLayout, "")
+      return m.assertEqual(result.uiDesignHideClock, false)
+    end function
+
+    @it("transforms flat display settings to nested structure")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      settingsData = MockDataLoader.LoadApiData("user-settings-with-display")
+
+      result = transformer.transformUserSettings(settingsData)
+
+      m.assertNotInvalid(result)
+      m.assertNotInvalid(result.displaySettings)
+
+      ' Verify library123 settings
+      m.assertTrue(result.displaySettings.DoesExist("library123"))
+      m.assertEqual(result.displaySettings.library123.sortField, "SortName")
+      m.assertEqual(result.displaySettings.library123.sortAscending, true)
+      m.assertEqual(result.displaySettings.library123.filter, "all")
+      m.assertEqual(result.displaySettings.library123.view, "Movies")
+
+      ' Verify library456 settings
+      m.assertTrue(result.displaySettings.DoesExist("library456"))
+      m.assertEqual(result.displaySettings.library456.sortField, "DateCreated")
+      m.assertEqual(result.displaySettings.library456.sortAscending, false)
+      m.assertEqual(result.displaySettings.library456.view, "Series")
+    end function
+
+    @it("handles empty display settings correctly")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      settingsData = MockDataLoader.LoadApiData("user-settings-empty-display")
+
+      result = transformer.transformUserSettings(settingsData)
+
+      m.assertNotInvalid(result)
+      m.assertNotInvalid(result.displaySettings)
+      m.assertEqual(result.displaySettings.Count(), 0, "displaySettings should be empty AA")
+    end function
+
+    @it("skips malformed display setting keys")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      settingsData = MockDataLoader.LoadApiData("user-settings-malformed-display")
+
+      result = transformer.transformUserSettings(settingsData)
+
+      m.assertNotInvalid(result)
+      m.assertNotInvalid(result.displaySettings)
+
+      ' Only validLib should exist
+      m.assertEqual(result.displaySettings.Count(), 1, "only valid display settings should be parsed")
+      m.assertTrue(result.displaySettings.DoesExist("validLib"))
+      m.assertEqual(result.displaySettings.validLib.validSetting, "this-should-work")
+
+      ' Invalid entries should not exist
+      m.assertFalse(result.displaySettings.DoesExist(""))
+      m.assertFalse(result.displaySettings.DoesExist("lib123"))
+    end function
+
+    @it("handles special characters in library IDs")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      settingsData = MockDataLoader.LoadApiData("user-settings-special-chars-display")
+
+      result = transformer.transformUserSettings(settingsData)
+
+      m.assertNotInvalid(result)
+      m.assertNotInvalid(result.displaySettings)
+
+      ' All should be valid
+      m.assertEqual(result.displaySettings.Count(), 4)
+      m.assertTrue(result.displaySettings.DoesExist("lib-with-dash"))
+      m.assertTrue(result.displaySettings.DoesExist("lib_with_underscore"))
+      m.assertTrue(result.displaySettings.DoesExist("lib123numbers"))
+      m.assertTrue(result.displaySettings.DoesExist("MixedCaseLib"))
+
+      ' Verify values
+      m.assertEqual(result.displaySettings["lib-with-dash"].sortField, "Name")
+      m.assertEqual(result.displaySettings["lib_with_underscore"].sortField, "DateCreated")
+      m.assertEqual(result.displaySettings.lib123numbers.view, "Movies")
+      m.assertEqual(result.displaySettings.MixedCaseLib.filter, "unplayed")
+    end function
+
+    @it("groups multiple settings for same library ID")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      settingsData = MockDataLoader.LoadApiData("user-settings-duplicate-library-display")
+
+      result = transformer.transformUserSettings(settingsData)
+
+      m.assertNotInvalid(result)
+      m.assertNotInvalid(result.displaySettings)
+
+      ' Should have single library with all settings
+      m.assertEqual(result.displaySettings.Count(), 1)
+      m.assertTrue(result.displaySettings.DoesExist("sameLib"))
+
+      ' All settings should be in the same library object
+      m.assertEqual(result.displaySettings.sameLib.sortField, "Name")
+      m.assertEqual(result.displaySettings.sameLib.sortAscending, true)
+      m.assertEqual(result.displaySettings.sameLib.filter, "all")
+      m.assertEqual(result.displaySettings.sameLib.view, "Movies")
+      m.assertEqual(result.displaySettings.sameLib.landing, "movies")
+    end function
+
+    @it("transforms app info with all fields")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      appData = {
+        id: "dev.jellyrock.jellyfin",
+        isDev: true,
+        version: "2.0.0",
+        lastRunVersion: "1.0.4"
+      }
+
+      result = transformer.transformAppInfo(appData)
+
+      m.assertNotInvalid(result)
+      m.assertEqual(result.appId, "dev.jellyrock.jellyfin")
+      m.assertEqual(result.isDev, true)
+      m.assertEqual(result.version, "2.0.0")
+      m.assertEqual(result.lastRunVersion, "1.0.4")
+    end function
+
+    @it("transforms app info with missing fields")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      ' Minimal app data
+      appData = {
+        id: "dev.jellyrock.jellyfin"
+      }
+
+      result = transformer.transformAppInfo(appData)
+
+      m.assertNotInvalid(result)
+      m.assertEqual(result.appId, "dev.jellyrock.jellyfin")
+      m.assertEqual(result.isDev, false)
+      m.assertEqual(result.version, "")
+      m.assertEqual(result.lastRunVersion, "")
+    end function
+
+    @it("returns invalid for invalid app info")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      result = transformer.transformAppInfo(invalid)
+
+      m.assertInvalid(result)
+    end function
+
+    @it("transforms device info with all fields")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      deviceData = {
+        id: "12345ABC",
+        name: "Roku Ultra",
+        model: "4802X",
+        serial: "YN00H1234567",
+        friendlyName: "Living Room Roku",
+        serverDeviceName: "Living_Room_Roku",
+        modelType: "STB",
+        videoHeight: 2160,
+        videoWidth: 3840,
+        maxVideoHeight: 2160,
+        maxVideoWidth: 3840,
+        canPlay4K: true,
+        videoCodecs: ["h264", "hevc", "vp9"],
+        audioCodecs: ["aac", "ac3", "eac3"],
+        memoryLevel: "normal",
+        memoryTotal: 1536,
+        modelDetails: { chipset: "ARM" }
+      }
+
+      result = transformer.transformDeviceInfo(deviceData)
+
+      m.assertNotInvalid(result)
+      m.assertEqual(result.id, "12345ABC")
+      m.assertEqual(result.name, "Roku Ultra")
+      m.assertEqual(result.model, "4802X")
+      m.assertEqual(result.serial, "YN00H1234567")
+      m.assertEqual(result.friendlyName, "Living Room Roku")
+      m.assertEqual(result.serverDeviceName, "Living_Room_Roku")
+      m.assertEqual(result.modelType, "STB")
+      m.assertEqual(result.videoHeight, 2160)
+      m.assertEqual(result.videoWidth, 3840)
+      m.assertEqual(result.canPlay4K, true)
+      m.assertEqual(result.videoCodecs.Count(), 3)
+      m.assertEqual(result.audioCodecs.Count(), 3)
+      m.assertEqual(result.memoryLevel, "normal")
+    end function
+
+    @it("transforms device info with minimal fields")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      ' Minimal device data
+      deviceData = {
+        id: "12345ABC",
+        name: "Roku Express"
+      }
+
+      result = transformer.transformDeviceInfo(deviceData)
+
+      m.assertNotInvalid(result)
+      m.assertEqual(result.id, "12345ABC")
+      m.assertEqual(result.name, "Roku Express")
+      m.assertEqual(result.model, "")
+      m.assertEqual(result.videoHeight, 1080)
+      m.assertEqual(result.canPlay4K, false)
+      m.assertEqual(result.memoryLevel, "normal")
+    end function
+
+    @it("returns invalid for invalid device info")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      result = transformer.transformDeviceInfo(invalid)
+
+      m.assertInvalid(result)
+    end function
+
+    #if debug
+      @it("DEBUG MODE: populates rawServerInfo field")
+      function _()
+        transformer = new SessionDataTransformer()
+
+        serverData = MockDataLoader.LoadServer("default")
+
+        result = transformer.transformServerInfo(serverData)
+
+        m.assertNotInvalid(result)
+        m.assertNotInvalid(result.rawServerInfo, "rawServerInfo should be populated in debug mode")
+        m.assertEqual(result.rawServerInfo.Id, "test-server-123")
+      end function
+
+      @it("DEBUG MODE: populates rawUserData, rawConfigData, rawPolicyData fields")
+      function _()
+        transformer = new SessionDataTransformer()
+
+        userData = MockDataLoader.LoadUser("admin")
+
+        result = transformer.transformUserInfo(userData)
+
+        m.assertNotInvalid(result)
+        m.assertNotInvalid(result.rawUserData, "rawUserData should be populated in debug mode")
+        m.assertNotInvalid(result.rawConfigData, "rawConfigData should be populated in debug mode")
+        m.assertNotInvalid(result.rawPolicyData, "rawPolicyData should be populated in debug mode")
+        m.assertEqual(result.rawUserData.id, "admin-user-456")
+      end function
+
+      @it("DEBUG MODE: populates rawSettings field")
+      function _()
+        transformer = new SessionDataTransformer()
+
+        settingsData = MockDataLoader.LoadApiData("user-settings")
+
+        result = transformer.transformUserSettings(settingsData)
+
+        m.assertNotInvalid(result)
+        m.assertNotInvalid(result.rawSettings, "rawSettings should be populated in debug mode")
+        m.assertTrue(result.rawSettings.Count() > 0)
+      end function
+    #else
+      @it("PRODUCTION MODE: does not populate rawServerInfo field")
+      function _()
+        transformer = new SessionDataTransformer()
+
+        serverData = MockDataLoader.LoadServer("default")
+
+        result = transformer.transformServerInfo(serverData)
+
+        m.assertNotInvalid(result)
+        m.assertInvalid(result.rawServerInfo, "rawServerInfo should NOT be populated in production mode")
+      end function
+
+      @it("PRODUCTION MODE: does not populate rawUserData, rawConfigData, rawPolicyData fields")
+      function _()
+        transformer = new SessionDataTransformer()
+
+        userData = MockDataLoader.LoadUser("admin")
+
+        result = transformer.transformUserInfo(userData)
+
+        m.assertNotInvalid(result)
+        m.assertInvalid(result.rawUserData, "rawUserData should NOT be populated in production mode")
+        m.assertInvalid(result.rawConfigData, "rawConfigData should NOT be populated in production mode")
+        m.assertInvalid(result.rawPolicyData, "rawPolicyData should NOT be populated in production mode")
+      end function
+
+      @it("PRODUCTION MODE: does not populate rawSettings field")
+      function _()
+        transformer = new SessionDataTransformer()
+
+        settingsData = MockDataLoader.LoadApiData("user-settings")
+
+        result = transformer.transformUserSettings(settingsData)
+
+        m.assertNotInvalid(result)
+        m.assertInvalid(result.rawSettings, "rawSettings should NOT be populated in production mode")
+      end function
+    #end if
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Image Helpers")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("generates poster URL from primary tag")
+    function _()
+      item = CreateObject("roSGNode", "JellyfinBaseItem")
+      item.id = "movie123"
+      item.primaryImageTag = "abc123"
+
+      url = GetPosterURLFromItem(item, 440, 295)
+
+      m.assertTrue(url.Instr("movie123") > -1)
+      m.assertTrue(url.Instr("abc123") > -1)
+      m.assertTrue(url.Instr("Primary") > -1)
+    end function
+
+    @it("falls back to thumb when no primary")
+    function _()
+      item = CreateObject("roSGNode", "JellyfinBaseItem")
+      item.id = "movie123"
+      item.thumbImageTag = "def456"
+
+      url = GetPosterURLFromItem(item, 440, 295)
+
+      m.assertTrue(url.Instr("Thumb") > -1)
+      m.assertTrue(url.Instr("def456") > -1)
+    end function
+
+    @it("returns empty string when no images")
+    function _()
+      item = CreateObject("roSGNode", "JellyfinBaseItem")
+      item.id = "movie123"
+
+      url = GetPosterURLFromItem(item, 440, 295)
+
+      m.assertEqual(url, "")
+    end function
+
+    @it("generates backdrop URL from backdrop tag")
+    function _()
+      item = CreateObject("roSGNode", "JellyfinBaseItem")
+      item.id = "movie123"
+      item.backdropImageTags = ["backdrop123"]
+
+      url = GetBackdropURLFromItem(item, 720, 1280)
+
+      m.assertTrue(url.Instr("movie123") > -1)
+      m.assertTrue(url.Instr("backdrop123") > -1)
+      m.assertTrue(url.Instr("Backdrop") > -1)
+    end function
+
+    @it("generates logo URL from logo tag")
+    function _()
+      item = CreateObject("roSGNode", "JellyfinBaseItem")
+      item.id = "movie123"
+      item.logoImageTag = "logo123"
+
+      url = GetLogoURLFromItem(item, 100, 300)
+
+      m.assertTrue(url.Instr("movie123") > -1)
+      m.assertTrue(url.Instr("logo123") > -1)
+      m.assertTrue(url.Instr("Logo") > -1)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Integration Tests - End-to-End Scenarios")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("transforms single item with nested UserData - end to end")
+    function _()
+      transformer = new JellyfinDataTransformer()
+
+      mockApiData = {
+        Id: "test123",
+        Type: "Movie",
+        Name: "Integration Test Movie",
+        UserData: {
+          Played: true,
+          IsFavorite: true
+        },
+        ImageTags: {
+          Primary: "testTag123"
+        }
+      }
+
+      ' Always pass serverVersion explicitly in tests - don't use GetGlobalAA()
+      result = transformer.transformBaseItem(mockApiData, "10.8.0")
+
+      m.assertEqual(result.id, "test123")
+      m.assertEqual(result.isWatched, true)
+      m.assertEqual(result.isFavorite, true)
+      m.assertEqual(result.primaryImageTag, "testTag123")
+    end function
+
+    @it("transforms array and skips invalid entries - end to end")
+    function _()
+      transformer = new JellyfinDataTransformer()
+
+      mockArray = [
+        { Id: "1", Type: "Movie", Name: "Movie 1" },
+        { Id: "2", Type: "Movie", Name: "Movie 2" },
+        invalid, ' Should be skipped
+        { Id: "3", Type: "Movie", Name: "Movie 3" }
+      ]
+
+      ' Always pass serverVersion explicitly in tests
+      results = transformer.transformBaseItemArray(mockArray, "10.8.0")
+
+      m.assertEqual(results.Count(), 3)
+      m.assertEqual(results[0].id, "1")
+      m.assertEqual(results[1].id, "2")
+      m.assertEqual(results[2].id, "3")
+    end function
+
+    @it("stores image tags not URLs - end to end")
+    function _()
+      transformer = new JellyfinDataTransformer()
+
+      mockApiData = {
+        Id: "test123",
+        Type: "Movie",
+        Name: "Test",
+        ImageTags: {
+          Primary: "tag1",
+          Thumb: "tag2",
+          Logo: "tag3"
+        },
+        BackdropImageTags: ["backdrop1", "backdrop2"]
+      }
+
+      ' Always pass serverVersion explicitly in tests
+      result = transformer.transformBaseItem(mockApiData, "10.8.0")
+
+      ' Verify tags stored
+      m.assertEqual(result.primaryImageTag, "tag1")
+      m.assertEqual(result.thumbImageTag, "tag2")
+      m.assertEqual(result.logoImageTag, "tag3")
+      m.assertEqual(result.backdropImageTags.Count(), 2)
+
+      ' Verify NO URL fields exist
+      m.assertFalse(result.hasField("primaryImageUrl"))
+      m.assertFalse(result.hasField("backdropUrl"))
+    end function
+
+    ' NOTE: Skipping GetGlobalAA() test since it doesn't work reliably in Rooibos test environment
+    ' The GetGlobalAA() functionality will be tested in production runtime
+
+    @it("generates complete image URLs from transformed items - end to end")
+    function _()
+      ' Create a mock item node with image tags
+      mockItem = CreateObject("roSGNode", "ContentNode")
+      mockItem.id = "testItem123"
+      mockItem.addFields({
+        primaryImageTag: "primaryTag456",
+        thumbImageTag: "thumbTag789",
+        logoImageTag: "logoTag101",
+        backdropImageTags: ["backdropTag111", "backdropTag222"]
+      })
+
+      ' Test GetPosterURLFromItem
+      posterURL = GetPosterURLFromItem(mockItem, 480, 720)
+      m.assertTrue(posterURL <> "")
+      m.assertTrue(posterURL.Instr("testItem123") > -1)
+      m.assertTrue(posterURL.Instr("primaryTag456") > -1)
+
+      ' Test GetBackdropURLFromItem
+      backdropURL = GetBackdropURLFromItem(mockItem, 720, 1280)
+      m.assertTrue(backdropURL <> "")
+      m.assertTrue(backdropURL.Instr("testItem123") > -1)
+      m.assertTrue(backdropURL.Instr("backdropTag111") > -1)
+
+      ' Test GetLogoURLFromItem
+      logoURL = GetLogoURLFromItem(mockItem, 200, 300)
+      m.assertTrue(logoURL <> "")
+      m.assertTrue(logoURL.Instr("testItem123") > -1)
+      m.assertTrue(logoURL.Instr("logoTag101") > -1)
+    end function
+
+  end class
+end namespace

@@ -1,0 +1,9 @@
+{
+  "ui.row.layout": "landscape",
+  "display.": "invalid-no-library-id",
+  "display.lib123": "invalid-no-setting-key",
+  "display..sortField": "invalid-empty-library-id",
+  "display.lib123..": "invalid-empty-setting-key",
+  "display.validLib.validSetting": "this-should-work",
+  "displayNoPrefix.lib.setting": "invalid-no-prefix"
+}

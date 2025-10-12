@@ -1,0 +1,11 @@
+{
+  "ui.row.layout": "landscape",
+  "global.rememberme": "true",
+  "display.library123.sortField": "SortName",
+  "display.library123.sortAscending": "true",
+  "display.library123.filter": "all",
+  "display.library123.view": "Movies",
+  "display.library456.sortField": "DateCreated",
+  "display.library456.sortAscending": "false",
+  "display.library456.view": "Series"
+}

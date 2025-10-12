@@ -1,0 +1,11 @@
+{
+  "Id": "program123",
+  "Type": "Program",
+  "Name": "Live News",
+  "ChannelName": "ABC",
+  "IsLive": true,
+  "IsNews": true,
+  "IsSports": false,
+  "IsKids": false,
+  "IsPremiere": false
+}

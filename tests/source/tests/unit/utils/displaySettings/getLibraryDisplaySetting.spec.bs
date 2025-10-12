@@ -1,0 +1,116 @@
+namespace tests.utils.displaySettings
+
+  @suite("getLibraryDisplaySetting function")
+  class GetLibraryDisplaySettingTests extends tests.BaseTestSuite
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Type conversion based on defaultValue")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("converts string 'true' to boolean true when defaultValue is boolean")
+    function _()
+      ' Load mock user with pre-configured display settings
+      m.loadTestUser("user-with-display-settings")
+
+      result = getLibraryDisplaySetting("library1", "sortAscending", true)
+
+      m.assertTrue(Type(result) = "roBoolean" or Type(result) = "Boolean", "Should return boolean type")
+      m.assertEqual(result, true, "Should return true")
+    end function
+
+    @it("converts string 'false' to boolean false when defaultValue is boolean")
+    function _()
+      ' Set individual display setting for test
+      m.setTestDisplaySetting("library1", "sortAscending", "false")
+
+      result = getLibraryDisplaySetting("library1", "sortAscending", false)
+
+      m.assertTrue(Type(result) = "roBoolean" or Type(result) = "Boolean", "Should return boolean type")
+      m.assertEqual(result, false, "Should return false")
+    end function
+
+    @it("handles case-insensitive boolean strings")
+    @params("user-boolean-true-upper", "library1", true, true)
+    @params("user-boolean-false-mixed", "library2", false, false)
+    @params("user-boolean-true-mixed", "library3", true, true)
+    function _(userName, libraryId, defaultValue, expected)
+      ' Load mock user with specific boolean value
+      m.loadTestUser(userName)
+
+      result = getLibraryDisplaySetting(libraryId, "testKey", defaultValue)
+
+      m.assertTrue(Type(result) = "roBoolean" or Type(result) = "Boolean")
+      m.assertEqual(result, expected)
+    end function
+
+    @it("converts string numbers to integers when defaultValue is integer")
+    @params("user-integer-42", "library1", 0, 42)
+    @params("user-integer-0", "library2", 10, 0)
+    @params("user-integer-negative", "library3", 1, -5)
+    function _(userName, libraryId, defaultValue, expected)
+      ' Load mock user with specific integer value
+      m.loadTestUser(userName)
+
+      result = getLibraryDisplaySetting(libraryId, "testKey", defaultValue)
+
+      m.assertTrue(Type(result) = "roInteger" or Type(result) = "Integer")
+      m.assertEqual(result, expected)
+    end function
+
+    @it("returns string as-is when defaultValue is string")
+    function _()
+      ' Load mock user with string setting
+      m.loadTestUser("user-string-setting")
+
+      result = getLibraryDisplaySetting("library1", "sortField", "SortName")
+
+      m.assertTrue(Type(result) = "roString" or Type(result) = "String")
+      m.assertEqual(result, "DateCreated")
+    end function
+
+    @it("returns defaultValue when key doesn't exist")
+    function _()
+      ' Load mock user with empty library
+      m.loadTestUser("user-empty-library")
+
+      result = getLibraryDisplaySetting("library1", "nonexistent", true)
+
+      m.assertTrue(Type(result) = "roBoolean" or Type(result) = "Boolean")
+      m.assertEqual(result, true)
+    end function
+
+    @it("returns defaultValue when library doesn't exist")
+    function _()
+      ' Load mock user with empty display settings
+      m.loadTestUser("user-empty-display-settings")
+
+      result = getLibraryDisplaySetting("nonexistent", "sortAscending", false)
+
+      m.assertTrue(Type(result) = "roBoolean" or Type(result) = "Boolean")
+      m.assertEqual(result, false)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Real-world scenario: sortAscending from registry")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("correctly handles sortAscending stored as string from previous session")
+    function _()
+      ' Load realistic mock user with registry-style settings
+      m.loadTestUser("user-with-display-settings")
+
+      ' 2. Next session: retrieve and use
+      sortAscending = getLibraryDisplaySetting("movies", "sortAscending", true)
+
+      ' 3. Should be boolean, not string
+      m.assertTrue(Type(sortAscending) = "roBoolean" or Type(sortAscending) = "Boolean")
+      m.assertEqual(sortAscending, false)
+
+      ' 4. Should be safely comparable with boolean
+      canCompare = (sortAscending = false)
+      m.assertTrue(canCompare)
+    end function
+
+  end class
+
+end namespace

@@ -1,0 +1,7 @@
+{
+  "ui.row.layout": "landscape",
+  "display.lib-with-dash.sortField": "Name",
+  "display.lib_with_underscore.sortField": "DateCreated",
+  "display.lib123numbers.view": "Movies",
+  "display.MixedCaseLib.filter": "unplayed"
+}
