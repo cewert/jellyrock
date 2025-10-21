@@ -1,3 +1,5 @@
+import "pkg:/source/enums/SubtitleSelection.bs"
+
 ' Roku translates the info provided in subtitleTracks into availableSubtitleTracks
 ' Including ignoring tracks, if they are not understood, thus making indexing unpredictable.
 ' This function translates between our internel selected subtitle index
@@ -14,7 +16,7 @@ function availSubtitleTrackIdx(video, sub_idx) as integer
     end if
     idx = idx + 1
   end for
-  return -1
+  return SubtitleSelection.none
 end function
 
 ' Identify the default subtitle track for a given video id
@@ -24,18 +26,18 @@ function defaultSubtitleTrackFromVid(video_id) as integer
   if isValid(meta) and isValid(meta.json) and isValid(meta.json.mediaSources)
     subtitles = sortSubtitles(meta.id, meta.json.MediaSources[0].MediaStreams)
     default_text_subs = defaultSubtitleTrack(subtitles["all"], true) ' Find correct subtitle track (forced text)
-    if default_text_subs <> -1
+    if default_text_subs <> SubtitleSelection.none
       return default_text_subs
     else
       if m.global.session.user.settings["playback.subs.onlytext"] = false
         return defaultSubtitleTrack(subtitles["all"]) ' if no appropriate text subs exist, allow non-text
       else
-        return -1
+        return SubtitleSelection.none
       end if
     end if
   end if
   ' No valid mediaSources (i.e. LiveTV)
-  return -1
+  return SubtitleSelection.none
 end function
 
 
@@ -45,7 +47,7 @@ end function
 ' returns the server-side track index for the appriate subtitle
 function defaultSubtitleTrack(sorted_subtitles, require_text = false) as integer
   if m.global.session.user.configuration.SubtitleMode = "None"
-    return -1 ' No subtitles desired: select none
+    return SubtitleSelection.none ' No subtitles desired: select none
   end if
 
   for each item in sorted_subtitles
@@ -67,16 +69,16 @@ function defaultSubtitleTrack(sorted_subtitles, require_text = false) as integer
       end if
     end if
   end for
-  return -1 ' Keep current default behavior of "None", if no correct subtitle is identified
+  return SubtitleSelection.none ' Keep current default behavior of "None", if no correct subtitle is identified
 end function
 
 ' Given a set of subtitles, and a subtitle index (the index on the server, not in the list provided)
 ' this will set all relevant settings for roku (mainly closed captions) and return the index of the
 ' subtitle track specified, but indexed based on the provided list of subtitles
-function setupSubtitle(video, subtitles, subtitle_idx = -1) as integer
-  if subtitle_idx = -1
+function setupSubtitle(video, subtitles, subtitle_idx = SubtitleSelection.none) as integer
+  if subtitle_idx = SubtitleSelection.none
     ' If we are not using text-based subtitles, turn them off
-    return -1
+    return SubtitleSelection.none
   end if
 
   ' Translate the raw index to one relative to the provided list
@@ -102,28 +104,28 @@ end function
 ' This function converts the former into the latter
 function getSubtitleSelIdxFromSubIdx(subtitles, sub_idx) as integer
   selIdx = 0
-  if sub_idx = -1 then return -1
+  if sub_idx = SubtitleSelection.none then return SubtitleSelection.none
   for each item in subtitles
     if item.Index = sub_idx
       return selIdx
     end if
     selIdx = selIdx + 1
   end for
-  return -1
+  return SubtitleSelection.none
 end function
 
-function selectSubtitleTrack(tracks, current = -1) as integer
+function selectSubtitleTrack(tracks, current = SubtitleSelection.none) as integer
   video = m.scene.focusedChild.focusedChild
   trackSelected = selectSubtitleTrackDialog(video.Subtitles, video.SelectedSubtitle)
-  if not isValid(trackSelected) or trackSelected = -1 ' back pressed in Dialog - no selection made
-    return -2
+  if not isValid(trackSelected) or trackSelected = SubtitleSelection.none ' back pressed in Dialog - no selection made
+    return SubtitleSelection.notset
   else
     return trackSelected - 1
   end if
 end function
 
 ' Present Dialog to user to select subtitle track
-function selectSubtitleTrackDialog(tracks, currentTrack = -1)
+function selectSubtitleTrackDialog(tracks, currentTrack = SubtitleSelection.none)
   iso6392 = getSubtitleLanguages()
   options = ["None"]
   for each item in tracks
@@ -145,7 +147,7 @@ end function
 sub changeSubtitleDuringPlayback(newid)
 
   ' If no subtitles set
-  if not isValid(newid) or newid = -1
+  if not isValid(newid) or newid = SubtitleSelection.none
     turnoffSubtitles()
     return
   end if
@@ -176,12 +178,12 @@ end sub
 sub turnoffSubtitles()
   video = m.scene.focusedChild.focusedChild
   current = video.SelectedSubtitle
-  video.SelectedSubtitle = -1
+  video.SelectedSubtitle = SubtitleSelection.none
   video.globalCaptionMode = "Off"
   device = CreateObject("roDeviceInfo")
   device.EnableAppFocusEvent(false)
   ' Check if Enoded subtitles are being displayed, and turn off
-  if current > -1 and video.Subtitles[current].IsEncoded
+  if current > SubtitleSelection.none and video.Subtitles[current].IsEncoded
     video.control = "stop"
     AddVideoContent(video, video.mediaSourceId, video.audioIndex, -1, video.position * 10000000)
     video.control = "play"
