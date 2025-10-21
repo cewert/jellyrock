@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Dependencies
 
+- github actions (major) ([#109](https://github.com/cewert/jellyrock/pull/109))
 - pin dependencies ([#108](https://github.com/cewert/jellyrock/pull/108))
 - github actions ([#97](https://github.com/cewert/jellyrock/pull/97))
 - peter-evans/repository-dispatch action to v4 ([#98](https://github.com/cewert/jellyrock/pull/98))
