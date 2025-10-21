@@ -44,17 +44,26 @@ jobs:
 
           if git diff --quiet CHANGELOG.md; then
             echo "ℹ️ No changelog changes to commit"
+            echo "has_changes=false" >> $GITHUB_ENV
           else
             # Switch to main branch and apply the changelog changes
             git stash push -m "changelog updates" CHANGELOG.md
             git checkout main
             git stash pop
-            
+
             git add CHANGELOG.md
             git commit -m "chore:(docs) finalize changelog for v${{ steps.version.outputs.version }} [skip ci]"
-            git push origin main
-            echo "✅ Updated changelog for release ${{ steps.version.outputs.version }}"
+            echo "has_changes=true" >> $GITHUB_ENV
+            echo "✅ Prepared changelog for release ${{ steps.version.outputs.version }}"
           fi
+
+      - name: Push changelog to protected branch
+        if: env.has_changes == 'true'
+        uses: CasperWA/push-protected@v2
+        with:
+          token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+          branch: main
+          unprotect_reviews: false
 
       - name: Release Summary
         run: |

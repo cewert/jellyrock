@@ -38,14 +38,30 @@ jobs:
         run: npm ci
       - name: Generate translation file
         run: npm run update-translations
-      - name: Commit any changes
-        uses: stefanzweifel/git-auto-commit-action@778341af668090896ca464160c2def5d1d1a3eb0 # v6
+
+      - name: Check for translation changes
+        id: check_changes
+        run: |
+          if git diff --quiet locale/en_US/translations.ts; then
+            echo "ℹ️ No translation changes to commit"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "✅ Translation file has changes"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit translation changes
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git config user.name "JellyRock-bot"
+          git config user.email "c.ewert@gmail.com"
+          git add locale/en_US/translations.ts
+          git commit -m "chore(translation): Update en_US translation file"
+
+      - name: Push to protected branch
+        if: steps.check_changes.outputs.has_changes == 'true'
+        uses: CasperWA/push-protected@v2
         with:
-          commit_message: "chore(translation): Update en_US translation file"
-          # use JellyRock-bot to commit the changes instead of the default github-actions[bot]
-          commit_user_name: JellyRock-bot
-          commit_user_email: c.ewert@gmail.com
-          # use JellyRock-bot to author the changes instead of the default author of the merge commit
-          commit_author: JellyRock-bot <c.ewert@gmail.com>
-          # Handle race conditions safely - only push if remote hasn't changed
-          push_options: "--force-with-lease"
+          token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+          branch: ${{ github.event_name == 'push' && 'main' || github.head_ref }}
+          unprotect_reviews: false

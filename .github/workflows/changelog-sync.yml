@@ -78,11 +78,12 @@ jobs:
         run: |
           if git diff --quiet HEAD -- CHANGELOG.md; then
             echo "ℹ️ No changelog changes needed"
+            echo "has_changes=false" >> $GITHUB_ENV
           else
             git config user.name "JellyRock-bot"
             git config user.email "c.ewert@gmail.com"
             git add CHANGELOG.md
-            
+
             if [ "${{ steps.sync_type.outputs.type }}" = "release" ]; then
               echo "📝 Committing release changelog sync for v${{ steps.sync_type.outputs.version }}"
               git commit -m "chore:(docs) convert unreleased section to v${{ steps.sync_type.outputs.version }} release"
@@ -90,44 +91,17 @@ jobs:
               echo "📝 Committing unreleased changelog sync"
               git commit -m "chore:(docs) sync unreleased changelog entries"
             fi
-            
-            # Retry push with pull if needed (handles concurrent commits)
-            max_retries=3
-            retry_count=0
-            
-            while [ $retry_count -lt $max_retries ]; do
-              if git push; then
-                echo "✅ Changelog synced successfully"
-                break
-              else
-                retry_count=$((retry_count + 1))
-                echo "⚠️ Push failed (attempt $retry_count/$max_retries). Retrying with latest changes..."
-                
-                if [ $retry_count -lt $max_retries ]; then
-                  # Pull latest changes and re-run changelog sync to handle any new commits
-                  git pull --rebase origin main
-                  
-                  # Re-run changelog sync to process any new commits that were added
-                  if [ "${{ steps.sync_type.outputs.type }}" = "release" ]; then
-                    npm run changelog:sync-release ${{ steps.sync_type.outputs.version }}
-                  else
-                    npm run changelog:sync-unreleased
-                  fi
-                  
-                  # Add any new changes and amend commit if needed
-                  if ! git diff --quiet HEAD -- CHANGELOG.md; then
-                    git add CHANGELOG.md
-                    git commit --amend --no-edit
-                  fi
-                  
-                  sleep $((retry_count * 2))  # Exponential backoff
-                else
-                  echo "❌ Failed to push after $max_retries attempts"
-                  exit 1
-                fi
-              fi
-            done
+
+            echo "has_changes=true" >> $GITHUB_ENV
           fi
+
+      - name: Push changes to protected branch
+        if: env.has_changes == 'true'
+        uses: CasperWA/push-protected@v2
+        with:
+          token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+          branch: main
+          unprotect_reviews: false
 
       - name: Verify final state
         run: |

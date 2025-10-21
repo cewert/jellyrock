@@ -195,9 +195,22 @@ jobs:
           git config user.name "JellyRock-bot"
           git config user.email "c.ewert@gmail.com"
           git add package.json package-lock.json manifest
-          git commit -m "chore: bump version to ${{ needs.validate-and-prepare.outputs.version }} [skip ci]" || echo "No changes to commit"
-          git pull origin ${{ needs.validate-and-prepare.outputs.branch_name }} --rebase || echo "No remote changes to pull"
-          git push origin ${{ needs.validate-and-prepare.outputs.branch_name }}
+
+          if git diff --cached --quiet; then
+            echo "ℹ️ No changes to commit"
+            echo "has_changes=false" >> $GITHUB_ENV
+          else
+            git commit -m "chore: bump version to ${{ needs.validate-and-prepare.outputs.version }} [skip ci]"
+            echo "has_changes=true" >> $GITHUB_ENV
+          fi
+
+      - name: Push version updates to branch
+        if: env.has_changes == 'true'
+        uses: CasperWA/push-protected@v2
+        with:
+          token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+          branch: ${{ needs.validate-and-prepare.outputs.branch_name }}
+          unprotect_reviews: false
 
   create-release-pr:
     needs: [validate-and-prepare, update-version-files]
