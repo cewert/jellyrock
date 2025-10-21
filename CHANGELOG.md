@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Dependencies
 
+- dependency @rokucommunity/bslint to v0.8.37 ([#99](https://github.com/cewert/jellyrock/pull/99))
 - dependency brighterscript-formatter to v1.7.19 ([#101](https://github.com/cewert/jellyrock/pull/101))
 - dependency ropm to v0.11.1 ([#102](https://github.com/cewert/jellyrock/pull/102))
 - github actions (major) ([#109](https://github.com/cewert/jellyrock/pull/109))
