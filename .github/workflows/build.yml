@@ -2,8 +2,9 @@ name: Build
 
 on:
   push:
-    branches-ignore:
-      - "release-*.*.*" # Version branches handled by release workflow
+    branches:
+      - main
+      - "push-action/**" # Temp branches created by CasperWA/push-protected action
   pull_request:
     types: [opened, synchronize]
 
