@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - channel store link to readme and release notes ([b71db07](https://github.com/cewert/jellyrock/commit/b71db07))
 
+### Fixed
+
+- skip build-translation job for fork PRs to prevent secret exposure ([4b03b27](https://github.com/cewert/jellyrock/commit/4b03b27))
+
 ### Dependencies
 
 - github actions ([#97](https://github.com/cewert/jellyrock/pull/97))
