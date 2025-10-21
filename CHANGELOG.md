@@ -17,12 +17,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- prevent duplicate builds on PR push ([0719eed](https://github.com/cewert/jellyrock/commit/0719eed))
 - workflows failing to commit changes due to branch protections ([6e05827](https://github.com/cewert/jellyrock/commit/6e05827))
 - run build workflow for all PR commits ([f3b37bf](https://github.com/cewert/jellyrock/commit/f3b37bf))
 - skip build-translation job for fork PRs to prevent secret exposure ([4b03b27](https://github.com/cewert/jellyrock/commit/4b03b27))
 
 ### Dependencies
 
+- dependency brighterscript-formatter to v1.7.19 ([#101](https://github.com/cewert/jellyrock/pull/101))
 - dependency ropm to v0.11.1 ([#102](https://github.com/cewert/jellyrock/pull/102))
 - github actions (major) ([#109](https://github.com/cewert/jellyrock/pull/109))
 - pin dependencies ([#108](https://github.com/cewert/jellyrock/pull/108))
