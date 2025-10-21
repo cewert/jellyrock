@@ -60,7 +60,7 @@ jobs:
 
       - name: Push to protected branch
         if: steps.check_changes.outputs.has_changes == 'true'
-        uses: CasperWA/push-protected@v2
+        uses: CasperWA/push-protected@74d25b8aa10e0c29024138735d32f3c0b75f9279 # v2
         with:
           token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
           branch: ${{ github.event_name == 'push' && 'main' || github.head_ref }}
