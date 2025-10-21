@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- run build workflow for all PR commits ([f3b37bf](https://github.com/cewert/jellyrock/commit/f3b37bf))
 - skip build-translation job for fork PRs to prevent secret exposure ([4b03b27](https://github.com/cewert/jellyrock/commit/4b03b27))
 
 ### Dependencies
