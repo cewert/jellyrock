@@ -4,12 +4,14 @@ on:
   push:
     branches:
       - main
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize]
 
 jobs:
   build-translation:
-    if: github.actor != 'jellyrock-bot'
+    if: |
+      github.actor != 'jellyrock-bot' &&
+      (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     permissions:
       # Give the default GITHUB_TOKEN write permission to commit and push the changed files back to the repository.
