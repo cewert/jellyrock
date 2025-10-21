@@ -11,8 +11,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - channel store link to readme and release notes ([b71db07](https://github.com/cewert/jellyrock/commit/b71db07))
 
+### Changed
+
+- Use SubtitleSelection enum instead of magic numbers ([#113](https://github.com/cewert/jellyrock/pull/113))
+
 ### Fixed
 
+- workflows failing to commit changes due to branch protections ([6e05827](https://github.com/cewert/jellyrock/commit/6e05827))
 - run build workflow for all PR commits ([f3b37bf](https://github.com/cewert/jellyrock/commit/f3b37bf))
 - skip build-translation job for fork PRs to prevent secret exposure ([4b03b27](https://github.com/cewert/jellyrock/commit/4b03b27))
 
