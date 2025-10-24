@@ -11,7 +11,7 @@
       // To enable RALE:
       // set "brightscript.debug.raleTrackerTaskFileLocation": "/absolute/path/to/rale/TrackerTask.xml" in your vscode user settings
       // set the below field to true
-      "injectRaleTrackerTask": true,
+      "injectRaleTrackerTask": false,
       "injectRdbOnDeviceComponent": true,
       //WARNING: don't edit this value. Instead, set "brightscript.debug.host": "YOUR_HOST_HERE" in your vscode user settings
       //"host": "${promptForHost}",
