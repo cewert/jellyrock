@@ -38,6 +38,7 @@ Visit the [Roku Channel Store](https://channelstore.roku.com/details/232f9e82db1
 git clone https://github.com/cewert/jellyrock.git
 cd jellyrock
 npm install
+# Note: If npm scripts are disabled, manually run `npm run ropm` to install dependencies
 npm run build # OR npm run build:prod
 ```
 
