@@ -36,7 +36,8 @@ namespace nodeUtils
     ' Get all default fields as associative array
     defaultFields = freshNode.getFields()
 
-    ' Copy each field from fresh node to target node, except preserved fields
+    ' Build AA of fields to update (excluding preserved fields)
+    fieldsToUpdate = {}
     for each fieldName in defaultFields
       ' Skip preserved fields
       shouldPreserve = false
@@ -48,10 +49,16 @@ namespace nodeUtils
       end for
 
       if not shouldPreserve
-        ' Set field to default value
-        targetNode[fieldName] = defaultFields[fieldName]
+        ' Add field to update batch
+        fieldsToUpdate[fieldName] = defaultFields[fieldName]
       end if
     end for
+
+    ' Update all fields at once using setFields() - single rendezvous
+    if fieldsToUpdate.Count() > 0
+      print "fieldsToUpdate =", fieldsToUpdate
+      targetNode.setFields(fieldsToUpdate)
+    end if
   end sub
 
   ' ============================================
@@ -76,7 +83,8 @@ namespace nodeUtils
       return
     end if
 
-    ' Iterate over keys in the associative array
+    ' Build AA of fields to update (excluding skipped fields)
+    fieldsToUpdate = {}
     for each key in dataAA
       ' Skip fields that should not be copied
       shouldSkip = false
@@ -88,10 +96,15 @@ namespace nodeUtils
       end for
 
       if not shouldSkip
-        ' Set field value on target node
-        targetNode[key] = dataAA[key]
+        ' Add field to update batch
+        fieldsToUpdate[key] = dataAA[key]
       end if
     end for
+
+    ' Update all fields at once using setFields() - single rendezvous
+    if fieldsToUpdate.Count() > 0
+      targetNode.setFields(fieldsToUpdate)
+    end if
   end sub
 
   ' Populate a ContentNode from another ContentNode's fields

@@ -3,37 +3,158 @@ import "pkg:/source/utils/misc.bs"
 
 ' @fileoverview Functions that update the registry based on the last run version and the currently running version
 
-' client version that the registry was changed in a non-backwards compatible way
-const BASE_MIGRATION = "0.1.0"
+' client version when settings were renamed from dotted names to camelCase
+const SETTINGS_MIGRATION_VERSION = "1.1.0"
 
 ' Run all necessary registry mirations on the "global" JellyRock registry section
 sub runGlobalMigrations()
   appLastRunVersion = m.global.app.lastRunVersion
-  ' BASE_MIGRATION
-  if isValid(appLastRunVersion) and not versionChecker(appLastRunVersion, BASE_MIGRATION)
-    ' last app version used < BASE_MIGRATION
+  ' SETTINGS_MIGRATION_VERSION
+  if isValid(appLastRunVersion) and not versionChecker(appLastRunVersion, SETTINGS_MIGRATION_VERSION)
+    ' last app version used < SETTINGS_MIGRATION_VERSION
     m.wasMigrated = true
-    print `Running ${BASE_MIGRATION} global registry migrations`
+    print `Running ${SETTINGS_MIGRATION_VERSION} global registry migrations`
+
+    migrations = {
+      ' Global Settings (1)
+      "global.rememberme": "globalRememberMe"
+    }
+
+    ' Migrate each setting: read → write new → delete old
+    reg = CreateObject("roRegistrySection", getGlobalRegistrySection())
+    for each oldName in migrations
+      if reg.exists(oldName)
+        value = reg.read(oldName)
+        newName = migrations[oldName]
+        reg.write(newName, value)
+        reg.delete(oldName)
+      end if
+    end for
+
+    reg.flush()
 
   end if
 end sub
 
 sub runRegistryUserMigrations()
   regSections = getRegistrySections()
+
+  ' Detect test mode ONCE: if ANY section starts with "test-", we're in test mode
+  ' In test mode, ONLY migrate test sections to prevent touching real user data
+  hasTestSections = false
+  for each checkSection in regSections
+    if LCase(checkSection).left(5) = "test-"
+      hasTestSections = true
+      exit for
+    end if
+  end for
+
   for each section in regSections
-    if LCase(section) <> "jellyrock"
-      reg = CreateObject("roRegistrySection", section)
-      lastRunVersion = invalid
-      if reg.exists("LastRunVersion")
-        lastRunVersion = reg.read("LastRunVersion")
+    ' Skip global registry sections (JellyRock and test-global)
+    sectionLower = LCase(section)
+    if sectionLower = "jellyrock" or sectionLower = "test-global"
+      continue for
+    end if
+
+    ' In test mode, skip non-test user sections
+    isTestSection = sectionLower.left(5) = "test-"
+    if hasTestSections and not isTestSection
+      continue for
+    end if
+
+    ' Process this section
+    reg = CreateObject("roRegistrySection", section)
+    lastRunVersion = invalid
+    if reg.exists("LastRunVersion")
+      lastRunVersion = reg.read("LastRunVersion")
+    else
+      ' No LastRunVersion found, assume very old version
+      lastRunVersion = "0.0.0"
+      reg.write("LastRunVersion", lastRunVersion)
+    end if
+
+    ' SETTINGS_MIGRATION_VERSION - Rename dotted settings to camelCase
+    if isValid(lastRunVersion) and not versionChecker(lastRunVersion, SETTINGS_MIGRATION_VERSION)
+      m.wasMigrated = true
+      print `Migrating user settings to v${SETTINGS_MIGRATION_VERSION} for userid: ${section}`
+
+      ' Define all 42 setting migrations (old dotted name → new camelCase name)
+      ' Single source of truth for migration mapping
+      migrations = {
+        ' Auth
+        "token": "authToken",
+        "primaryimagetag": "primaryImageTag",
+        ' Playback Settings (13)
+        "playback.bitrate.maxlimited": "playbackBitrateMaxLimited",
+        "playback.bitrate.limit": "playbackBitrateLimit",
+        "playback.cinemamode": "playbackCinemaMode",
+        "playback.subs.custom": "playbackSubsCustom",
+        "playback.resolution.max": "playbackResolutionMax",
+        "playback.nextupbuttonseconds": "playbackNextUpButtonSeconds",
+        "playback.playnextepisode": "playbackPlayNextEpisode",
+        "playback.preferredAudioCodec": "playbackPreferredAudioCodec",
+        "playback.subs.onlytext": "playbackSubsOnlyText",
+        "playback.mpeg2": "playbackMpeg2",
+        "playback.mpeg4": "playbackMpeg4",
+        "playback.tryDirect.h264ProfileLevel": "playbackTryDirectH264ProfileLevel",
+        "playback.tryDirect.hevcProfileLevel": "playbackTryDirectHevcProfileLevel",
+
+        ' UI Settings (14)
+        "ui.general.episodeimagesnextup": "uiGeneralEpisodeImages",
+        "ui.font.fallback": "uiFontFallback",
+        "ui.design.hideclock": "uiDesignHideClock",
+        "ui.details.maxdaysnextup": "uiDetailsMaxDaysNextUp",
+        "ui.details.enablerewatchingnextup": "uiDetailsEnableRewatchingNextUp",
+        "ui.row.layout": "uiRowLayout",
+        "ui.home.splashBackground": "uiHomeSplashBackground",
+        "ui.home.useWebSectionArrangement": "uiHomeUseWebArrangement",
+        "ui.details.hidetagline": "uiDetailsHideTagline",
+        "ui.movies.showRatings": "uiMoviesShowRatings",
+        "ui.tvshows.blurunwatched": "uiTvShowsBlurUnwatched",
+        "ui.tvshows.disableCommunityRating": "uiTvShowsDisableCommunityRating",
+        "ui.tvshows.disableUnwatchedEpisodeCount": "uiTvShowsDisableUnwatchedCount",
+        "ui.tvshows.goStraightToEpisodeListing": "uiTvShowsGoStraightToEpisodes",
+
+        ' Item Grid Settings (4)
+        "itemgrid.showItemCount": "itemGridShowItemCount",
+        "itemgrid.gridTitles": "itemGridTitles",
+        "itemgrid.reset": "itemGridReset",
+        "itemgrid.movieDefaultView": "itemGridMovieDefaultView",
+
+        ' Home Section Settings (7)
+        "homesection0": "homeSection0",
+        "homesection1": "homeSection1",
+        "homesection2": "homeSection2",
+        "homesection3": "homeSection3",
+        "homesection4": "homeSection4",
+        "homesection5": "homeSection5",
+        "homesection6": "homeSection6",
+
+        ' Display Settings (1)
+        "display.livetv.landing": "displayLiveTvLanding",
+
+        ' Permission Settings (2)
+        "livetv.canrecord": "liveTvCanRecord",
+        "content.candelete": "contentCanDelete"
+      }
+
+      ' Migrate each setting: read → write new → delete old
+      migratedCount = 0
+      for each oldName in migrations
+        if reg.exists(oldName)
+          value = reg.read(oldName)
+          newName = migrations[oldName]
+          reg.write(newName, value)
+          reg.delete(oldName)
+          migratedCount++
+        end if
+      end for
+
+      if migratedCount > 0
+        print `Successfully migrated ${migratedCount} settings for user ${section}`
       end if
 
-      ' BASE_MIGRATION
-      if isValid(lastRunVersion) and not versionChecker(lastRunVersion, BASE_MIGRATION)
-        m.wasMigrated = true
-        print `Running Registry Migration for ${BASE_MIGRATION} for userid: ${section}`
-
-      end if
+      reg.flush()
     end if
   end for
 end sub

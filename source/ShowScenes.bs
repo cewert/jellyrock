@@ -35,6 +35,8 @@ function LoginFlow()
     SaveServerList()
   end if
 
+  localUser = m.global.user
+
   activeUser = get_setting("active_user")
   if not isValid(activeUser)
     print "No active user found in registry"
@@ -96,31 +98,28 @@ function LoginFlow()
       else if userSelected <> ""
         startLoadingSpinner()
         print "A public user was selected with username=" + userSelected
-        m.global.user.name = userSelected
+        localUser.name = userSelected
 
         ' save userid to session
         for each userData in publicUsersNodes
           if userData.name = userSelected
-            m.global.user.id = userData.id
+            localUser.id = userData.id
             exit for
           end if
         end for
         ' try to login with token from registry
-        myToken = get_user_setting("token")
-        myPrimaryImageTag = get_user_setting("primaryimagetag")
+        myToken = get_user_setting("authToken")
         if isValid(myToken)
           ' check if token is valid
           print "Auth token found in registry for selected user"
-          m.global.user.authToken = myToken
+          localUser.authToken = myToken
           print "Attempting to use API with auth token"
           currentUser = AboutMe()
           if not isValid(currentUser)
             print "Auth token is no longer valid - deleting token"
-            unset_user_setting("token")
+            unset_user_setting("authToken")
             unset_user_setting("username")
-            if isValid(myPrimaryImageTag)
-              unset_user_setting("primaryimagetag")
-            end if
+            unset_user_setting("primaryImageTag")
           else
             print "Success! Auth token is still valid"
             user.Login(currentUser, true)
@@ -159,19 +158,18 @@ function LoginFlow()
     end if
   else
     print "Active user found in registry"
-    m.global.user.id = activeUser
+    localUser.id = activeUser
 
     myUsername = get_user_setting("username")
-    myAuthToken = get_user_setting("token")
-    myPrimaryImageTag = get_user_setting("primaryimagetag")
+    myAuthToken = get_user_setting("authToken")
+    myPrimaryImageTag = get_user_setting("primaryImageTag")
     if isValid(myAuthToken) and isValid(myUsername)
       print "Auth token found in registry"
-      m.global.user.authToken = myAuthToken
-      m.global.user.name = myUsername
-      if isValid(myPrimaryImageTag)
-        m.global.user.primaryImageTag = myPrimaryImageTag
+      localUser.authToken = myAuthToken
+      localUser.name = myUsername
+      if isValidAndNotEmpty(myPrimaryImageTag)
+        localUser.primaryImageTag = myPrimaryImageTag
       end if
-
       print "Attempting to use API with auth token"
       currentUser = AboutMe()
       if not isValid(currentUser)
@@ -187,10 +185,10 @@ function LoginFlow()
         else
           print "Auth failed. Password required"
           print "delete token and restart login flow"
-          unset_user_setting("token")
+          unset_user_setting("authToken")
           unset_user_setting("username")
           if isValid(myPrimaryImageTag)
-            unset_user_setting("primaryimagetag")
+            unset_user_setting("primaryImageTag")
           end if
           goto start_login
         end if
@@ -203,7 +201,7 @@ function LoginFlow()
     end if
   end if
 
-  if not isValid(m.global.user.id) or not isValid(m.global.user.authToken)
+  if not isValid(localUser.id) or not isValid(localUser.authToken)
     print "Login failed, restart flow"
     unset_setting("active_user")
     user.Logout()
@@ -524,10 +522,10 @@ function CreateSigninGroup(userName = "")
             if checkbox.checkedState[0] = true
               ' save credentials
               user.Login(activeUser, true)
-              set_user_setting("token", activeUser.token)
+              set_user_setting("authToken", activeUser.token)
               set_user_setting("username", userName.value)
               if isValid(activeUser.json.PrimaryImageTag)
-                set_user_setting("primaryimagetag", activeUser.json.PrimaryImageTag)
+                set_user_setting("primaryImageTag", activeUser.json.PrimaryImageTag)
               end if
             else
               user.Login(activeUser)

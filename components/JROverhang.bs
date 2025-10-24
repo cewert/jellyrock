@@ -9,6 +9,7 @@ sub init()
   m.user = m.top.findNode("username")
   m.userGroup = m.top.findNode("userGroup")
   m.clock = m.top.findNode("clock")
+  m.userImage = m.top.findNode("userImage")
 
   ' Create animations programmatically to avoid interpolator field reference issues
   createSlideAnimations()
@@ -65,8 +66,8 @@ end sub
 
 sub currentUserChanged()
   m.user.text = m.top.currentUser
-  m.userImage = m.top.findNode("userImage")
-  if not isValid(m.userPoster)
+
+  if not isValid(m.userPoster) or (m.userPoster.userId <> m.global.user.id)
     m.userPoster = createUserPoster() ' save node to memory for faster load time
   end if
 
@@ -90,6 +91,7 @@ sub currentUserChanged()
 end sub
 
 function createUserPoster() as object
+  localUser = m.global.user
   userImage = createObject("roSGNode", "Poster")
 
   imgParams = {
@@ -97,22 +99,24 @@ function createUserPoster() as object
     maxWidth: 36,
     quality: 90
   }
-  imgTag = m.global.user.primaryImageTag
-  if isValid(imgTag) and imgTag <> ""
-    imgParams.tag = imgTag
-    userImage.tag = imgTag
+
+  if isValidAndNotEmpty(localUser.primaryImageTag)
+    imgParams.tag = localUser.primaryImageTag
   end if
 
   userImage.id = "userImage"
   userImage.width = "36"
   userImage.height = "36"
+  userImage.addFields({
+    userId: localUser.id
+  })
 
-  if isValid(imgTag)
+  if isValid(imgParams.tag)
     ' reset defaults
     userImage.blendColor = "0xFFFFFFFF"
 
     if m.global.server.serverUrl <> ""
-      userImage.uri = buildURL(Substitute("/Users/{0}/Images/Primary", m.global.user.id), imgParams)
+      userImage.uri = buildURL(Substitute("/Users/{0}/Images/Primary", localUser.id), imgParams)
     else
       print "ERROR: No server URL set, cannot load user image"
     end if

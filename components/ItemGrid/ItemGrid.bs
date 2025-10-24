@@ -119,21 +119,21 @@ sub loadInitialItems()
     end if
     m.sortField = getLibraryDisplaySetting("livetv", "sortField", "SortName")
     m.filter = getLibraryDisplaySetting("livetv", "filter", "All")
-    sortAscendingStr = getLibraryDisplaySetting("livetv", "sortAscending", "true")
+    m.sortAscending = getLibraryDisplaySetting("livetv", "sortAscending", true)
   else if m.top.parentItem.collectionType = "music"
     ' Music uses hardcoded "music" as library ID for view setting
     m.view = getLibraryDisplaySetting("music", "view", "")
     ' But uses actual library ID for sort/filter settings
     m.sortField = getLibraryDisplaySetting(m.top.parentItem.Id, "sortField", "SortName")
     m.filter = getLibraryDisplaySetting(m.top.parentItem.Id, "filter", "All")
-    sortAscendingStr = getLibraryDisplaySetting(m.top.parentItem.Id, "sortAscending", "true")
+    m.sortAscending = getLibraryDisplaySetting(m.top.parentItem.Id, "sortAscending", true)
   else
     ' All other library types (movies, TV, collections, etc.) use library ID
     libraryId = m.top.parentItem.Id
     m.sortField = getLibraryDisplaySetting(libraryId, "sortField", "SortName")
     m.filter = getLibraryDisplaySetting(libraryId, "filter", "All")
     m.view = getLibraryDisplaySetting(libraryId, "landing", invalid)
-    sortAscendingStr = getLibraryDisplaySetting(libraryId, "sortAscending", "true")
+    m.sortAscending = getLibraryDisplaySetting(libraryId, "sortAscending", true)
   end if
 
   if not isValid(m.sortField)
@@ -147,14 +147,6 @@ sub loadInitialItems()
 
   if not isValid(m.filter) then m.filter = "All"
 
-  ' Convert sortAscendingStr (string) to boolean
-  ' Registry stores everything as strings, so we need to convert
-  if not isValid(sortAscendingStr) or sortAscendingStr = "true"
-
-    m.sortAscending = true
-  else
-    m.sortAscending = false
-  end if
   ' Set Studio Id
   if m.top.parentItem.json.type = "Studio"
     m.loadItemsTask.studioIds = m.top.parentItem.id

@@ -13,6 +13,6 @@
     "display.library1.sortField": "DateCreated",
     "display.movies.sortAscending": "false",
     "display.movies.sortField": "SortName",
-    "global.rememberme": "true"
+    "globalRememberMe": "true"
   }
 }

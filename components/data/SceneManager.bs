@@ -132,6 +132,7 @@ sub clearScenes()
   for each group in m.groups
     if type(group) = "roSGNode" and group.isSubtype("JRScreen")
       group.callFunc("OnScreenHidden")
+      group = invalid
     end if
   end for
   m.groups = []

@@ -2,25 +2,12 @@ import "pkg:/source/roku_modules/log/LogMixin.brs"
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/misc.bs"
 
-' Initialize component (does NOT enable auto-sync by default)
-' Call enableAutoSync() after loading initial data to start observers
 sub init()
   m.log = log.Logger("JellyfinUserSettings")
   m.log.info("Initializing JellyfinUserSettings node")
 
-  ' Load default values from settings.json for comparison
-  m.defaults = loadSettingDefaults()
-
   ' Track previous state for change detection
   m.previousDisplaySettings = {}
-
-  ' Flag to skip observer on initial load (prevents writing back to registry on app startup)
-  m.isInitialLoad = true
-
-  ' Observers are NOT set up automatically - call enableAutoSync() explicitly
-  ' This prevents side effects during testing and initial data loading
-
-  m.log.info("JellyfinUserSettings initialization complete - auto-sync disabled (call enableAutoSync() to enable)")
 end sub
 
 ' Enable automatic syncing of settings changes to registry
@@ -29,11 +16,14 @@ end sub
 sub enableAutoSync()
   m.log.info("Enabling auto-sync - setting up field observers")
 
+  ' Capture current displaySettings state BEFORE enabling observers
+  ' This prevents initial observer fire from writing to registry
+  if isValid(m.top.displaySettings)
+    m.previousDisplaySettings = deepCopyAA(m.top.displaySettings)
+  end if
+
   ' Set up observers for all settings fields
   observeAllSettings()
-
-  ' Mark initial load as complete - observers will now sync to registry
-  m.isInitialLoad = false
 
   m.log.info("Auto-sync enabled - settings changes will be saved to registry")
 end sub
@@ -66,58 +56,69 @@ end sub
 ' Dynamically set up observers for all user setting fields
 ' This automatically handles new fields added to the XML without code changes
 sub observeAllSettings()
-  ' Get all fields defined in the XML interface as associative array
-  ' Keys are field names, values are current field values
-  allFields = m.top.getFields()
+  ' IMPORTANT: displaySettings must be observed explicitly
+  m.top.observeField("displaySettings", "onDisplaySettingsChanged")
+
+  ' Get ALL field names defined in the XML interface (not just fields with values)
+  allFieldNames = m.top.getFields()
 
   ' Fields that should NOT be observed (internal/system fields)
   excludedFields = [
     "id",
     "isLoaded",
     "loadedAt",
-    "rawSettings" ' Debug-only field, don't observe
+    "rawSettings", ' Debug-only field, don't observe
+    "displaySettings" ' Already observed above with custom handler
   ]
 
-  ' Loop through all field names (keys of the associative array)
-  for each fieldName in allFields
+  ' Loop through all field names
+  for each fieldName in allFieldNames
     ' Skip excluded fields
     if inArray(excludedFields, fieldName)
       continue for
     end if
 
-    ' displaySettings needs special handling (nested AA with diff detection)
-    if fieldName = "displaySettings"
-      m.top.observeField("displaySettings", "onDisplaySettingsChanged")
-    else
-      ' All other fields use the standard handler
-      m.top.observeField(fieldName, "onSettingChanged")
-    end if
+    ' All other fields use the standard handler
+    m.top.observeField(fieldName, "onSettingChanged")
   end for
 end sub
 
 ' Called when any individual setting field changes
+' Observer is the single source of truth for registry sync
+' IMPORTANT: Only syncs to registry - does NOT modify the node (prevents recursion)
+'
+' DESIGN: Always save settings to registry, never delete
+' This preserves user intent - if user explicitly sets a value to match the default,
+' that's different from "never touched this setting". This is important for:
+' - Future multi-device sync
+' - Understanding what users have customized
+' - "Reset all settings" feature can delete entire registry section
 sub onSettingChanged(event as object)
   fieldName = event.getField()
   newValue = event.getData()
 
-  ' Convert field name to registry key format
-  registryKey = convertFieldNameToRegistryKey(fieldName)
-
-  ' Check if value is different from default
-  if isDefaultValue(fieldName, newValue)
-    ' Value matches default - remove from registry to save space
-    unset_user_setting(registryKey)
+  ' Route to appropriate registry section based on setting type
+  if isGlobalSetting(fieldName)
+    ' Global settings apply to all users - save to "JellyRock" or "test-global" section
+    globalSection = getGlobalRegistrySection()
+    registry_write(fieldName, valueToString(newValue), globalSection)
   else
-    ' Value differs from default - save to registry
-    set_user_setting(registryKey, newValue)
+    ' User-specific settings - save to user's section
+    ' Get local reference to minimize rendezvous
+    localUser = m.global.user
+    if not isValid(localUser.id)
+      m.log.warn("Cannot sync setting to registry - user ID is invalid", { field: fieldName })
+      return
+    end if
+
+    ' Always save to registry - track all user changes
+    registry_write(fieldName, valueToString(newValue), localUser.id)
   end if
 end sub
 
 ' Called when displaySettings field changes
 ' Only syncs the specific settings that changed, not the entire object
 sub onDisplaySettingsChanged()
-  m.log.info("onDisplaySettingsChanged observer fired")
-
   newDisplaySettings = m.top.displaySettings
 
   if not isValid(newDisplaySettings)
@@ -125,24 +126,11 @@ sub onDisplaySettingsChanged()
     return
   end if
 
-  ' Skip syncing on initial load (when settings are loaded FROM registry)
-  ' This prevents unnecessary registry writes at app startup
-  if m.isInitialLoad = true
-    m.log.info("Skipping sync on initial load")
-    m.previousDisplaySettings = deepCopyAA(newDisplaySettings)
-    m.isInitialLoad = false
-    return
-  end if
-
-  m.log.debug("Syncing display settings changes to registry", { libraryCount: newDisplaySettings.Count() })
-
-  ' Compare with previous state to find what changed
+  ' Compare with previous state to find what changed BEFORE updating previous state
   syncDisplaySettingsChanges(m.previousDisplaySettings, newDisplaySettings)
 
-  ' Update previous state
+  ' Update previous state for next comparison
   m.previousDisplaySettings = deepCopyAA(newDisplaySettings)
-
-  m.log.debug("Display settings sync complete")
 end sub
 
 ' Sync only the display settings that changed
@@ -184,12 +172,24 @@ sub syncLibrarySettings(libraryId as string, settings as object)
     return
   end if
 
+  ' Get local reference to minimize rendezvous
+  localUser = m.global.user
+  if not isValid(localUser.id)
+    m.log.warn("Cannot write to registry - user ID is invalid")
+    return
+  end if
+
   m.log.info("Syncing all settings for new library", { libraryId: libraryId, settingsCount: settings.Count() })
 
+  ' Display settings are nested structures stored in the displaySettings field
+  ' We write directly to registry using registry_write() instead of set_user_setting()
+  ' because set_user_setting() tries to create node fields with dots in the name, which is invalid
   for each key in settings
     registryKey = "display." + libraryId + "." + key
     m.log.debug("Writing to registry", { key: registryKey, value: settings[key] })
-    set_user_setting(registryKey, settings[key])
+
+    ' Write directly to registry - data is already in m.top.displaySettings (source of truth)
+    registry_write(registryKey, valueToString(settings[key]), localUser.id)
   end for
 end sub
 
@@ -201,6 +201,13 @@ sub syncChangedLibrarySettings(libraryId as string, oldSettings as object, newSe
 
   if not isValid(oldSettings)
     oldSettings = {}
+  end if
+
+  ' Get local reference to minimize rendezvous
+  localUser = m.global.user
+  if not isValid(localUser.id)
+    m.log.warn("Cannot sync display settings - user ID is invalid")
+    return
   end if
 
   changedCount = 0
@@ -218,7 +225,9 @@ sub syncChangedLibrarySettings(libraryId as string, oldSettings as object, newSe
     if not oldSettings.DoesExist(key) or oldValueStr <> newValueStr
       registryKey = "display." + libraryId + "." + key
       m.log.debug("Writing changed setting to registry", { key: registryKey, oldValue: oldValueStr, newValue: newValueStr })
-      set_user_setting(registryKey, newValue)
+
+      ' Write directly to registry - data is already in m.top.displaySettings (source of truth)
+      registry_write(registryKey, valueToString(newValue), localUser.id)
       changedCount++
     end if
   end for
@@ -228,7 +237,9 @@ sub syncChangedLibrarySettings(libraryId as string, oldSettings as object, newSe
     if not newSettings.DoesExist(key)
       registryKey = "display." + libraryId + "." + key
       m.log.debug("Deleting setting from registry", { key: registryKey })
-      unset_user_setting(registryKey)
+
+      ' Delete directly from registry - data was already removed from m.top.displaySettings
+      registry_delete(registryKey, localUser.id)
       changedCount++
     end if
   end for
@@ -240,12 +251,20 @@ end sub
 
 ' Delete all settings for a library from registry
 sub deleteLibraryFromRegistry(libraryId as string)
+  ' Get local reference to minimize rendezvous
+  localUser = m.global.user
+  if not isValid(localUser.id)
+    m.log.warn("Cannot delete library from registry - user ID is invalid")
+    return
+  end if
+
   ' Known display setting keys
   possibleKeys = ["sortField", "filter", "landing", "sortAscending", "filterOptions", "view"]
 
   for each key in possibleKeys
     registryKey = "display." + libraryId + "." + key
-    unset_user_setting(registryKey)
+    ' Delete directly from registry - data was already removed from m.top.displaySettings
+    registry_delete(registryKey, localUser.id)
   end for
 end sub
 
@@ -271,147 +290,3 @@ function deepCopyAA(source as object) as object
   return result
 end function
 
-' Load default values from settings.json for comparison
-function loadSettingDefaults() as object
-  defaults = {}
-
-  ' Map field names to their default values from settings.json
-  ' These must match the "default" values in settings/settings.json
-
-  ' Global
-  defaults["globalRememberMe"] = false
-
-  ' Playback
-  defaults["playbackBitrateMaxLimited"] = false
-  defaults["playbackBitrateLimit"] = 0
-  defaults["playbackCinemaMode"] = false
-  defaults["playbackSubsCustom"] = true
-  defaults["playbackResolutionMax"] = "auto"
-  defaults["playbackNextUpButtonSeconds"] = 30
-  defaults["playbackPlayNextEpisode"] = "enabled"
-  defaults["playbackPreferredAudioCodec"] = ""
-  defaults["playbackSubsOnlyText"] = false
-  defaults["playbackMpeg2"] = false
-  defaults["playbackMpeg4"] = false
-  defaults["playbackTryDirectH264ProfileLevel"] = false
-  defaults["playbackTryDirectHevcProfileLevel"] = false
-
-  ' UI
-  defaults["uiGeneralEpisodeImages"] = "default"
-  defaults["uiFontFallback"] = false
-  defaults["uiDesignHideClock"] = false
-  defaults["uiDetailsMaxDaysNextUp"] = 365
-  defaults["uiDetailsEnableRewatchingNextUp"] = false
-  defaults["uiRowLayout"] = "portrait"
-  defaults["uiHomeSplashBackground"] = false
-  defaults["uiHomeUseWebArrangement"] = false
-  defaults["uiDetailsHideTagline"] = false
-  defaults["uiMoviesShowRatings"] = true
-  defaults["uiTvShowsBlurUnwatched"] = false
-  defaults["uiTvShowsDisableCommunityRating"] = false
-  defaults["uiTvShowsDisableUnwatchedCount"] = false
-  defaults["uiTvShowsGoStraightToEpisodes"] = false
-
-  ' Item Grid
-  defaults["itemGridShowItemCount"] = false
-  defaults["itemGridTitles"] = "two"
-  defaults["itemGridReset"] = false
-  defaults["itemGridMovieDefaultView"] = ""
-
-  ' Home Sections
-  defaults["homeSection0"] = "livetv"
-  defaults["homeSection1"] = "resume"
-  defaults["homeSection2"] = "nextup"
-  defaults["homeSection3"] = "latestmedia"
-  defaults["homeSection4"] = "livetv"
-  defaults["homeSection5"] = "none"
-  defaults["homeSection6"] = "none"
-
-  ' Display
-  defaults["displayLiveTvLanding"] = ""
-
-  ' Permissions (loaded from server, no defaults)
-  defaults["liveTvCanRecord"] = false
-  defaults["contentCanDelete"] = false
-
-  return defaults
-end function
-
-' Check if a value matches the default
-function isDefaultValue(fieldName as string, value as dynamic) as boolean
-  if not m.defaults.DoesExist(fieldName)
-    ' Unknown field - assume not default
-    return false
-  end if
-
-  defaultValue = m.defaults[fieldName]
-
-  ' Handle different types
-  if type(value) = type(defaultValue)
-    return value = defaultValue
-  end if
-
-  ' Type mismatch - not equal
-  return false
-end function
-
-' Convert camelCase field name to registry key format
-' Example: "playbackBitrateLimit" → "playback.bitratelimit"
-function convertFieldNameToRegistryKey(fieldName as string) as string
-  ' Map known field patterns
-  if fieldName.StartsWith("global")
-    return "global." + lowerCaseAfterPrefix(fieldName, "global")
-  else if fieldName.StartsWith("playback")
-    return "playback." + lowerCaseAfterPrefix(fieldName, "playback")
-  else if fieldName.StartsWith("ui")
-    return "ui." + convertUiFieldName(fieldName)
-  else if fieldName.StartsWith("itemGrid")
-    return "itemgrid." + lowerCaseAfterPrefix(fieldName, "itemGrid")
-  else if fieldName.StartsWith("homeSection")
-    ' homeSection0 → homesection0
-    return "homesection" + fieldName.Mid(11)
-  else if fieldName.StartsWith("display")
-    return "display." + lowerCaseAfterPrefix(fieldName, "display")
-  else if fieldName.StartsWith("liveT")
-    return "livetv." + lowerCaseAfterPrefix(fieldName, "liveTv")
-  else if fieldName.StartsWith("content")
-    return "content." + lowerCaseAfterPrefix(fieldName, "content")
-  end if
-
-  ' Fallback - just lowercase it
-  return LCase(fieldName)
-end function
-
-' Helper: lowercase everything after a prefix
-function lowerCaseAfterPrefix(fieldName as string, prefix as string) as string
-  suffix = fieldName.Mid(prefix.Len())
-  return LCase(suffix)
-end function
-
-' Special handling for UI field names (they have nested structure)
-function convertUiFieldName(fieldName as string) as string
-  ' Remove "ui" prefix
-  suffix = fieldName.Mid(2)
-
-  ' ui.general.*, ui.design.*, ui.details.*, etc.
-  if suffix.StartsWith("General")
-    return "general." + LCase(suffix.Mid(7))
-  else if suffix.StartsWith("Font")
-    return "font." + LCase(suffix.Mid(4))
-  else if suffix.StartsWith("Design")
-    return "design." + LCase(suffix.Mid(6))
-  else if suffix.StartsWith("Details")
-    return "details." + LCase(suffix.Mid(7))
-  else if suffix.StartsWith("Row")
-    return "row." + LCase(suffix.Mid(3))
-  else if suffix.StartsWith("Home")
-    return "home." + LCase(suffix.Mid(4))
-  else if suffix.StartsWith("Movies")
-    return "movies." + LCase(suffix.Mid(6))
-  else if suffix.StartsWith("TvShows")
-    return "tvshows." + LCase(suffix.Mid(7))
-  end if
-
-  ' Fallback
-  return LCase(suffix)
-end function

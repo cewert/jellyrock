@@ -14,7 +14,6 @@
     <field id="name" type="string" value="" />
     <field id="version" type="string" value="" />
     <field id="productName" type="string" value="" />
-    <field id="operatingSystem" type="string" value="" />
 
     <!-- Connection Info -->
     <field id="serverUrl" type="string" value="" />

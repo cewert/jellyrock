@@ -17,7 +17,7 @@ sub loadFromRegistry(id as string)
   m.top.id = id
 
   m.top.username = get_user_setting("username")
-  m.top.token = get_user_setting("token")
+  m.top.token = get_user_setting("authToken")
 end sub
 
 sub saveToRegistry()

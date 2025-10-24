@@ -169,12 +169,12 @@ sub boolSettingChanged()
 
   if m.boolSetting.checkedItem
     user.settings.Save(selectedSetting.settingName, "true")
-    if Left(selectedSetting.settingName, 7) = "global."
+    if Left(selectedSetting.settingName, 6) = "global"
       ' global user setting
       ' save to main registry block
       set_setting(selectedSetting.settingName, "true")
       ' setting specific triggers
-      if selectedSetting.settingName = "global.rememberme"
+      if selectedSetting.settingName = "globalRememberMe"
         set_setting("active_user", m.global.user.id)
       end if
     else
@@ -184,12 +184,12 @@ sub boolSettingChanged()
     end if
   else
     user.settings.Save(selectedSetting.settingName, "false")
-    if Left(selectedSetting.settingName, 7) = "global."
+    if Left(selectedSetting.settingName, 6) = "global"
       ' global user setting
       ' save to main registry block
       set_setting(selectedSetting.settingName, "false")
       ' setting specific triggers
-      if selectedSetting.settingName = "global.rememberme"
+      if selectedSetting.settingName = "globalRememberMe"
         unset_setting("active_user")
       end if
     else

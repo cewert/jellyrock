@@ -33,7 +33,7 @@ end function
 
 sub SignOut(deleteSavedEntry = true as boolean)
   if deleteSavedEntry
-    unset_user_setting("token")
+    unset_user_setting("authToken")
     unset_user_setting("username")
   end if
   unset_setting("active_user")
@@ -122,18 +122,18 @@ sub LoadUserAbilities()
   canRecord = userNode.enableLiveTvManagement ?? false
 
   if canRecord
-    set_user_setting("livetv.canrecord", "true")
+    set_user_setting("liveTvCanRecord", "true")
   else
-    set_user_setting("livetv.canrecord", "false")
+    set_user_setting("liveTvCanRecord", "false")
   end if
 
   ' Check for EnableContentDeletion
   canDelete = userNode.enableContentDeletion ?? false
 
   if canDelete
-    set_user_setting("content.candelete", "true")
+    set_user_setting("contentCanDelete", "true")
   else
-    set_user_setting("content.candelete", "false")
+    set_user_setting("contentCanDelete", "false")
   end if
 end sub
 

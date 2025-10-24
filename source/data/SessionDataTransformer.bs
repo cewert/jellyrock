@@ -121,6 +121,24 @@ class SessionDataTransformer
     end try
   end function
 
+  ' Helper function to get setting value with fallback to old name
+  ' After migration, registry has NEW names. Before migration, registry has OLD names.
+  ' This function checks NEW name first, then falls back to OLD name for backward compatibility.
+  private function getSettingValue(settingsData as object, newName as string, oldName as string, defaultValue = invalid as dynamic) as dynamic
+    ' Try NEW name first (post-migration)
+    if settingsData.DoesExist(newName)
+      return settingsData[newName]
+    end if
+
+    ' Fall back to OLD name (pre-migration)
+    if settingsData.DoesExist(oldName)
+      return settingsData[oldName]
+    end if
+
+    ' Return default if neither exists
+    return defaultValue
+  end function
+
   ' Transform user settings (from registry and API)
   function transformUserSettings(settingsData as object) as object
     settings = CreateObject("roSGNode", "JellyfinUserSettings")
@@ -129,25 +147,25 @@ class SessionDataTransformer
       return settings
     end if
 
-    ' UI Settings
-    settings.uiRowLayout = settingsData["ui.row.layout"] ?? ""
-    settings.uiDesignHideClock = toBoolean(settingsData["ui.design.hideclock"])
-    settings.uiGeneralEpisodeImages = settingsData["ui.general.episodeimagesnextup"] ?? ""
-    settings.uiTvShowsDisableUnwatchedCount = toBoolean(settingsData["ui.tvshows.disableUnwatchedEpisodeCount"])
-    settings.uiHomeUseWebArrangement = toBoolean(settingsData["ui.home.useWebSectionArrangement"])
-    settings.uiFontFallback = toBoolean(settingsData["ui.font.fallback"])
+    ' UI Settings (check NEW name first, fall back to OLD name)
+    settings.uiRowLayout = m.getSettingValue(settingsData, "uiRowLayout", "ui.row.layout", "")
+    settings.uiDesignHideClock = toBoolean(m.getSettingValue(settingsData, "uiDesignHideClock", "ui.design.hideclock"))
+    settings.uiGeneralEpisodeImages = m.getSettingValue(settingsData, "uiGeneralEpisodeImages", "ui.general.episodeimagesnextup", "")
+    settings.uiTvShowsDisableUnwatchedCount = toBoolean(m.getSettingValue(settingsData, "uiTvShowsDisableUnwatchedCount", "ui.tvshows.disableUnwatchedEpisodeCount"))
+    settings.uiHomeUseWebArrangement = toBoolean(m.getSettingValue(settingsData, "uiHomeUseWebArrangement", "ui.home.useWebSectionArrangement"))
+    settings.uiFontFallback = toBoolean(m.getSettingValue(settingsData, "uiFontFallback", "ui.font.fallback"))
 
-    ' Home sections
-    settings.homeSection0 = settingsData["homesection0"] ?? ""
-    settings.homeSection1 = settingsData["homesection1"] ?? ""
-    settings.homeSection2 = settingsData["homesection2"] ?? ""
-    settings.homeSection3 = settingsData["homesection3"] ?? ""
-    settings.homeSection4 = settingsData["homesection4"] ?? ""
-    settings.homeSection5 = settingsData["homesection5"] ?? ""
-    settings.homeSection6 = settingsData["homesection6"] ?? ""
+    ' Home sections (OLD names didn't have capital S, so both are similar but check both)
+    settings.homeSection0 = m.getSettingValue(settingsData, "homeSection0", "homesection0", "")
+    settings.homeSection1 = m.getSettingValue(settingsData, "homeSection1", "homesection1", "")
+    settings.homeSection2 = m.getSettingValue(settingsData, "homeSection2", "homesection2", "")
+    settings.homeSection3 = m.getSettingValue(settingsData, "homeSection3", "homesection3", "")
+    settings.homeSection4 = m.getSettingValue(settingsData, "homeSection4", "homesection4", "")
+    settings.homeSection5 = m.getSettingValue(settingsData, "homeSection5", "homesection5", "")
+    settings.homeSection6 = m.getSettingValue(settingsData, "homeSection6", "homesection6", "")
 
     ' Display settings
-    settings.displayLiveTvLanding = settingsData["display.livetv.landing"] ?? ""
+    settings.displayLiveTvLanding = m.getSettingValue(settingsData, "displayLiveTvLanding", "display.livetv.landing", "")
 
     ' Transform display settings into nested structure
     ' Build local AA first, then assign to node field
@@ -183,12 +201,12 @@ class SessionDataTransformer
     ' Assign to content node field
     settings.displaySettings = displaySettings
 
-    ' Global settings
-    settings.globalRememberMe = toBoolean(settingsData["global.rememberme"])
+    ' Global settings are NOT loaded here - they come from "JellyRock" registry section
+    ' and are loaded separately via user.settings.LoadGlobals()
 
     ' Permission settings
-    settings.liveTvCanRecord = toBoolean(settingsData["livetv.canrecord"])
-    settings.contentCanDelete = toBoolean(settingsData["content.candelete"])
+    settings.liveTvCanRecord = toBoolean(m.getSettingValue(settingsData, "liveTvCanRecord", "livetv.canrecord"))
+    settings.contentCanDelete = toBoolean(m.getSettingValue(settingsData, "contentCanDelete", "content.candelete"))
 
     ' Set loading state
     settings.isLoaded = true

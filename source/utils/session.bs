@@ -117,26 +117,45 @@ namespace user
     if not isValid(userData.json)
       ' Data from AboutMe() - already in correct format
       myAuthToken = userNode.authToken
-      myPrimaryImageTag = userNode.primaryImageTag
+      myPrimaryImageTag = userData.PrimaryImageTag
 
       for each key in userData
         userNode[key] = userData[key]
       end for
 
-      userNode.authToken = myAuthToken
-      if isValid(myPrimaryImageTag)
-        userNode.primaryImageTag = myPrimaryImageTag
+      if saveCredentials
+        if isValidAndNotEmpty(myPrimaryImageTag)
+          registry_write("primaryImageTag", myPrimaryImageTag, m.global.user.id)
+        end if
+        if isValidAndNotEmpty(myAuthToken)
+          registry_write("authToken", myAuthToken, m.global.user.id)
+        end if
       end if
     else
       ' Data from UserData object (get_token response)
+      myPrimaryImageTag = userData.json.User.PrimaryImageTag
+      myAuthToken = userData.json.AccessToken
+
       for each key in userData.json.User
         userNode[key] = userData.json.User[key]
       end for
 
-      userNode.authToken = userData.json.AccessToken
-      if isValid(userData.json.User.PrimaryImageTag)
-        userNode.primaryImageTag = userData.json.User.PrimaryImageTag
+      if saveCredentials
+        if isValidAndNotEmpty(myPrimaryImageTag)
+          registry_write("primaryImageTag", myPrimaryImageTag, m.global.user.id)
+        end if
+
+        if isValidAndNotEmpty(myAuthToken)
+          registry_write("authToken", myAuthToken, m.global.user.id)
+        end if
       end if
+    end if
+
+    if isValidAndNotEmpty(myPrimaryImageTag)
+      userNode.primaryImageTag = myPrimaryImageTag
+    end if
+    if isValidAndNotEmpty(myAuthToken)
+      userNode.authToken = myAuthToken
     end if
 
     ' Create friendly name
@@ -150,13 +169,39 @@ namespace user
     end if
 
     ' Process registry settings
-    ' Load ALL settings from registry into raw format
+    ' Load ALL user-specific settings from user's registry section
     userSettings = RegistryReadAll(userNode.id)
+
+    ' Get field types once to check for field existence (more reliable than hasField)
+    userNodeFieldTypes = userNode.getFieldTypes()
+    settingsNodeFieldTypes = userNode.settings.getFieldTypes()
+
+    ' Use node structure as source of truth to determine where each setting belongs
     for each setting in userSettings
-      if setting <> "token"
-        user.settings.Save(setting, userSettings[setting])
+      print "Loading user setting:", setting, "=", userSettings[setting]
+      ' Skip global settings (loaded from global section separately)
+      ' Skip display settings (handled separately below via TransformDisplaySettings)
+      if not isGlobalSetting(setting) and not setting.StartsWith("display.")
+        ' Check where this setting belongs based on field existence
+        if userNodeFieldTypes.DoesExist(setting)
+          print "Setting found on user node:", setting
+          ' Field exists on user node - set it there
+          userNode.setField(setting, userSettings[setting])
+        else if settingsNodeFieldTypes.DoesExist(setting)
+          print "Setting found on user settings node:", setting
+          ' Field exists on settings node - use settings system with type conversion
+          user.settings.Save(setting, userSettings[setting])
+        else
+          print "user.Login: Unknown setting:", setting
+          ' Unknown field - registry-only key (like "serverId"), skip loading to node
+          ' It will remain in registry for getSavedUsers() etc.
+        end if
       end if
     end for
+
+    ' Load global settings from global registry section (JellyRock or test-global)
+    ' These settings apply to all users on this device
+    user.settings.LoadGlobals()
 
     ' Transform display settings from flat format to nested structure
     ' Registry stores: "display.libraryId.key" = "value"
@@ -175,10 +220,10 @@ namespace user
     ' Save credentials if requested
     set_user_setting("serverId", m.global.server.id)
     if saveCredentials
-      set_user_setting("token", userNode.authToken)
+      set_user_setting("authToken", userNode.authToken)
       set_user_setting("username", userNode.name)
       if isValid(userNode.primaryImageTag)
-        set_user_setting("primaryimagetag", userNode.primaryImageTag)
+        set_user_setting("primaryImageTag", userNode.primaryImageTag)
       end if
     end if
 
@@ -189,6 +234,8 @@ namespace user
     ' Post-login setup
     user.SetServerDeviceName()
     user.LoadUserPreferences()
+
+    print "status of m.global.user after login =", m.global.user
   end sub
 
   ' Logout and reset to defaults
@@ -202,13 +249,6 @@ namespace user
     ' Create fresh settings node with XML defaults
     freshSettings = CreateObject("roSGNode", "JellyfinUserSettings")
     localUser.settings = freshSettings
-
-    ' Load default settings from settings.json
-    user.settings.SaveDefaults()
-
-    ' Enable auto-sync AFTER loading defaults
-    ' This prevents observers from firing during data load
-    freshSettings.callFunc("enableAutoSync")
 
     if isValid(m.global.sceneManager)
       m.global.sceneManager.currentUser = ""
@@ -252,19 +292,19 @@ namespace user
       user.SaveUserHomeSections(jsonResponse.CustomPrefs)
 
       if isValid(jsonResponse.CustomPrefs["landing-livetv"])
-        set_user_setting("display.livetv.landing", jsonResponse.CustomPrefs["landing-livetv"])
+        set_user_setting("displayLiveTvLanding", jsonResponse.CustomPrefs["landing-livetv"])
       else
-        unset_user_setting("display.livetv.landing")
+        unset_user_setting("displayLiveTvLanding")
       end if
     else
       user.SaveUserHomeSections({
-        homesection0: "librarybuttons",
+        homesection0: "smalllibrarytiles",
         homesection1: "resume",
         homesection2: "nextup",
-        homesection3: "latestmedia",
-        homesection4: "livetv",
-        homesection5: "none",
-        homesection6: "none"
+        homesection3: "resumeaudio",
+        homesection4: "activerecordings",
+        homesection5: "livetv",
+        homesection6: "latestmedia"
       })
     end if
   end sub
@@ -275,13 +315,13 @@ namespace user
 
     if not isValid(userPreferences)
       userPreferences = {
-        homesection0: "librarybuttons",
+        homesection0: "smalllibrarytiles",
         homesection1: "resume",
         homesection2: "nextup",
-        homesection3: "latestmedia",
-        homesection4: "livetv",
-        homesection5: "none",
-        homesection6: "none"
+        homesection3: "resumeaudio",
+        homesection4: "activerecordings",
+        homesection5: "livetv",
+        homesection6: "latestmedia"
       }
     end if
 
@@ -319,109 +359,73 @@ namespace user.settings
 
     settingsNode = m.global.user.settings
 
-    ' Dynamic field creation with type inference
+    ' All fields should be defined in JellyfinUserSettings.xml
+    ' If field doesn't exist, it's a programming error
     if not settingsNode.hasField(name)
-      ' Infer type from value
-      convertedValue = value
-      fieldType = "string"
+      print `ERROR: Attempted to save unknown setting: ${name}`
+      return
+    end if
 
-      ' Handle different input types
-      valueType = type(value)
+    ' Update field with type conversion based on XML-defined field type
+    fieldType = settingsNode.getFieldType(name)
+    valueType = type(value)
 
-      if valueType = "roString" or valueType = "String"
-        ' String input - try to infer actual type
-        valueLower = LCase(value)
-        if valueLower = "true" or valueLower = "false"
-          fieldType = "boolean"
-          convertedValue = toBoolean(value)
-        else
-          intValue = value.toInt()
-          floatValue = value.toFloat()
-
-          if intValue.toStr() = value
-            fieldType = "integer"
-            convertedValue = intValue
-          else if floatValue.toStr() = value or value.instr(".") > -1
-            fieldType = "float"
-            convertedValue = floatValue
-          end if
-        end if
-      else if valueType = "roBoolean" or valueType = "Boolean"
-        fieldType = "boolean"
-        convertedValue = value
+    if fieldType = "boolean"
+      if valueType = "roBoolean" or valueType = "Boolean"
+        settingsNode.setField(name, value)
+      else if valueType = "roString" or valueType = "String"
+        settingsNode.setField(name, toBoolean(value))
       else if valueType = "roInt" or valueType = "roInteger" or valueType = "Integer"
-        fieldType = "integer"
-        convertedValue = value
-      else if valueType = "roFloat" or valueType = "Float" or valueType = "roDouble" or valueType = "Double"
-        fieldType = "float"
-        convertedValue = value
+        ' Convert integer to boolean (0 = false, non-zero = true)
+        settingsNode.setField(name, value <> 0)
       else
-        ' Unknown type - convert to string using toStr() method
-        convertedValue = value.toStr()
+        ' Fallback - convert to string then to boolean
+        settingsNode.setField(name, toBoolean(value.toStr()))
       end if
-
-      ' Add new field dynamically
-      settingsNode.addField(name, fieldType, false)
-      settingsNode.setField(name, convertedValue)
-    else
-      ' Update existing field with type conversion
-      fieldType = settingsNode.getFieldType(name)
-      valueType = type(value)
-
-      if fieldType = "boolean"
-        if valueType = "roBoolean" or valueType = "Boolean"
-          settingsNode.setField(name, value)
-        else if valueType = "roString" or valueType = "String"
-          settingsNode.setField(name, toBoolean(value))
-        else if valueType = "roInt" or valueType = "roInteger" or valueType = "Integer"
-          ' Convert integer to boolean (0 = false, non-zero = true)
-          settingsNode.setField(name, value <> 0)
-        else
-          ' Fallback - convert to string then to boolean
-          settingsNode.setField(name, toBoolean(value.toStr()))
-        end if
-      else if fieldType = "integer"
-        if valueType = "roInt" or valueType = "roInteger" or valueType = "Integer"
-          settingsNode.setField(name, value)
-        else if valueType = "roString" or valueType = "String"
-          settingsNode.setField(name, value.toInt())
-        else if valueType = "roBoolean" or valueType = "Boolean"
-          ' Convert boolean to integer (true = 1, false = 0)
-          if value then settingsNode.setField(name, 1) else settingsNode.setField(name, 0)
-        else if valueType = "roFloat" or valueType = "Float" or valueType = "roDouble" or valueType = "Double"
-          settingsNode.setField(name, Int(value))
-        else
-          ' Fallback - convert to string then to int
-          settingsNode.setField(name, value.toStr().toInt())
-        end if
-      else if fieldType = "float"
-        if valueType = "roFloat" or valueType = "Float" or valueType = "roDouble" or valueType = "Double"
-          settingsNode.setField(name, value)
-        else if valueType = "roString" or valueType = "String"
-          settingsNode.setField(name, value.toFloat())
-        else if valueType = "roInt" or valueType = "roInteger" or valueType = "Integer"
-          settingsNode.setField(name, Cdbl(value))
-        else if valueType = "roBoolean" or valueType = "Boolean"
-          ' Convert boolean to float (true = 1.0, false = 0.0)
-          if value then settingsNode.setField(name, 1.0) else settingsNode.setField(name, 0.0)
-        else
-          ' Fallback - convert to string then to float
-          settingsNode.setField(name, value.toStr().toFloat())
-        end if
+    else if fieldType = "integer"
+      if valueType = "roInt" or valueType = "roInteger" or valueType = "Integer"
+        settingsNode.setField(name, value)
+      else if valueType = "roString" or valueType = "String"
+        settingsNode.setField(name, value.toInt())
+      else if valueType = "roBoolean" or valueType = "Boolean"
+        ' Convert boolean to integer (true = 1, false = 0)
+        if value then settingsNode.setField(name, 1) else settingsNode.setField(name, 0)
+      else if valueType = "roFloat" or valueType = "Float" or valueType = "roDouble" or valueType = "Double"
+        settingsNode.setField(name, Int(value))
       else
-        ' String field - convert to string if needed
-        if valueType = "roString" or valueType = "String"
-          settingsNode.setField(name, value)
-        else if valueType = "roBoolean" or valueType = "Boolean"
-          if value then settingsNode.setField(name, "true") else settingsNode.setField(name, "false")
-        else if valueType = "roInt" or valueType = "roInteger" or valueType = "Integer"
-          settingsNode.setField(name, value.toStr())
-        else if valueType = "roFloat" or valueType = "Float" or valueType = "roDouble" or valueType = "Double"
-          settingsNode.setField(name, value.toStr())
-        else
-          ' Fallback - try toStr() method
-          settingsNode.setField(name, value.toStr())
-        end if
+        ' Fallback - convert to string then to int
+        settingsNode.setField(name, value.toStr().toInt())
+      end if
+    else if fieldType = "float"
+      if valueType = "roFloat" or valueType = "Float" or valueType = "roDouble" or valueType = "Double"
+        settingsNode.setField(name, value)
+      else if valueType = "roString" or valueType = "String"
+        settingsNode.setField(name, value.toFloat())
+      else if valueType = "roInt" or valueType = "roInteger" or valueType = "Integer"
+        settingsNode.setField(name, Cdbl(value))
+      else if valueType = "roBoolean" or valueType = "Boolean"
+        ' Convert boolean to float (true = 1.0, false = 0.0)
+        if value then settingsNode.setField(name, 1.0) else settingsNode.setField(name, 0.0)
+      else
+        ' Fallback - convert to string then to float
+        settingsNode.setField(name, value.toStr().toFloat())
+      end if
+    else if fieldType = "assocarray"
+      ' AssociativeArray field (e.g., displaySettings, rawSettings)
+      settingsNode.setField(name, value)
+    else
+      ' String or other field type - convert to string if needed
+      if valueType = "roString" or valueType = "String"
+        settingsNode.setField(name, value)
+      else if valueType = "roBoolean" or valueType = "Boolean"
+        if value then settingsNode.setField(name, "true") else settingsNode.setField(name, "false")
+      else if valueType = "roInt" or valueType = "roInteger" or valueType = "Integer"
+        settingsNode.setField(name, value.toStr())
+      else if valueType = "roFloat" or valueType = "Float" or valueType = "roDouble" or valueType = "Double"
+        settingsNode.setField(name, value.toStr())
+      else
+        ' Fallback - try toStr() method
+        settingsNode.setField(name, value.toStr())
       end if
     end if
   end sub
@@ -432,12 +436,33 @@ namespace user.settings
     return m.global.user.settings[name]
   end function
 
-  ' Delete setting field
+  ' Reset setting to its XML default value
+  ' NOTE: This does NOT delete from registry - observer always saves changes
+  ' Use this for "reset to default" functionality
+  ' For sensitive fields (token, username), use unset_user_setting() instead
   sub Delete(name as string)
     if name = "" then return
+
     settingsNode = m.global.user.settings
-    if settingsNode.hasField(name)
-      settingsNode.removeField(name)
+    if not settingsNode.hasField(name) then return
+
+    ' Get the field type to determine XML default value
+    fieldType = settingsNode.getFieldType(name)
+
+    ' Reset XML-defined field to its default value
+    ' This will trigger observer which saves the default to registry
+    if fieldType = "string"
+      settingsNode.setField(name, "")
+    else if fieldType = "boolean"
+      settingsNode.setField(name, false)
+    else if fieldType = "integer"
+      settingsNode.setField(name, 0)
+    else if fieldType = "float"
+      settingsNode.setField(name, 0.0)
+    else if fieldType = "assocarray"
+      settingsNode.setField(name, {})
+    else if fieldType = "array"
+      settingsNode.setField(name, [])
     end if
   end sub
 
@@ -454,10 +479,18 @@ namespace user.settings
 
   ' Load global settings from registry
   sub LoadGlobals()
-    jfRegistry = RegistryReadAll("JellyRock")
-    for each item in jfRegistry
-      if Left(item, 7) = "global."
-        user.settings.Save(item, get_setting(item))
+    ' Load global settings from the global registry section
+    ' Returns "JellyRock" in production, "test-global" during tests
+    ' These settings apply to all users on this device
+    globalSection = getGlobalRegistrySection()
+    globalRegistry = RegistryReadAll(globalSection)
+    for each key in globalRegistry
+      ' Only load keys that start with "global" (actual global settings)
+      if isGlobalSetting(key)
+        value = get_setting(key)
+        if isValid(value)
+          user.settings.Save(key, value)
+        end if
       end if
     end for
   end sub
