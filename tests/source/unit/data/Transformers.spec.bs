@@ -733,43 +733,6 @@ namespace tests
       m.assertEqual(result.displaySettings.library123.sortAscending, true)
     end function
 
-    @it("handles mixed OLD and NEW names (NEW takes precedence)")
-    function _()
-      transformer = new SessionDataTransformer()
-
-      ' Scenario: User has both OLD and NEW names in registry
-      ' NEW names should take precedence (post-migration state)
-      settingsData = {
-        "globalRememberMe": "true", ' NEW name (should use this)
-        "global.rememberme": "false", ' OLD name (should be ignored)
-        "uiRowLayout": "landscape", ' NEW name (should use this)
-        "ui.row.layout": "portrait" ' OLD name (should be ignored)
-      }
-
-      result = transformer.transformUserSettings(settingsData)
-
-      ' NEW names should win
-      m.assertEqual(result.globalRememberMe, true, "NEW name should take precedence")
-      m.assertEqual(result.uiRowLayout, "landscape", "NEW name should take precedence")
-    end function
-
-    @it("falls back to OLD names when NEW names don't exist")
-    function _()
-      transformer = new SessionDataTransformer()
-
-      ' Scenario: Pre-migration state, only OLD names exist
-      settingsData = {
-        "global.rememberme": "true", ' Only OLD name
-        "ui.row.layout": "portrait" ' Only OLD name
-      }
-
-      result = transformer.transformUserSettings(settingsData)
-
-      ' Should fall back to OLD names
-      m.assertEqual(result.globalRememberMe, true, "Should fall back to OLD name")
-      m.assertEqual(result.uiRowLayout, "portrait", "Should fall back to OLD name")
-    end function
-
     @it("handles empty values correctly")
     function _()
       transformer = new SessionDataTransformer()
