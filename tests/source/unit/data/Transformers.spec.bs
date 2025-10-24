@@ -1,7 +1,6 @@
 
 namespace tests
-  @suite("Transformer Tests")
-  @tags("unit")
+  @suite("Transformers - JellyfinDataTransformer and SessionDataTransformer")
   class TransformerTests extends tests.BaseTestSuite
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -644,6 +643,174 @@ namespace tests
         m.assertInvalid(result.rawSettings, "rawSettings should NOT be populated in production mode")
       end function
     #end if
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Complete 42 Settings Coverage - NEW Names")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("transforms all 42 settings with NEW camelCase names")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      settingsData = MockDataLoader.LoadApiData("user-settings-all-new-names")
+
+      result = transformer.transformUserSettings(settingsData)
+
+      ' Global (1)
+      m.assertEqual(result.globalRememberMe, true)
+
+      ' UI (6 loaded)
+      m.assertEqual(result.uiRowLayout, "landscape")
+      m.assertEqual(result.uiDesignHideClock, true)
+      m.assertEqual(result.uiGeneralEpisodeImages, "always")
+      m.assertEqual(result.uiTvShowsDisableUnwatchedCount, false)
+      m.assertEqual(result.uiHomeUseWebArrangement, false)
+      m.assertEqual(result.uiFontFallback, false)
+
+      ' Home Sections (7)
+      m.assertEqual(result.homeSection0, "librarybuttons")
+      m.assertEqual(result.homeSection1, "resume")
+      m.assertEqual(result.homeSection2, "nextup")
+      m.assertEqual(result.homeSection3, "latestmedia")
+      m.assertEqual(result.homeSection4, "livetv")
+      m.assertEqual(result.homeSection5, "none")
+      m.assertEqual(result.homeSection6, "none")
+
+      ' Display (1)
+      m.assertEqual(result.displayLiveTvLanding, "guide")
+
+      ' Permissions (2)
+      m.assertEqual(result.liveTvCanRecord, true)
+      m.assertEqual(result.contentCanDelete, false)
+
+      ' Display settings nested
+      m.assertNotInvalid(result.displaySettings)
+      m.assertTrue(result.displaySettings.DoesExist("library123"))
+      m.assertEqual(result.displaySettings.library123.sortField, "Name")
+      m.assertEqual(result.displaySettings.library123.sortAscending, true)
+    end function
+
+    @it("transforms all 42 settings with OLD dotted names (backward compatibility)")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      settingsData = MockDataLoader.LoadApiData("user-settings-all-old-names")
+
+      result = transformer.transformUserSettings(settingsData)
+
+      ' Verify OLD names are correctly transformed
+      ' Global (1)
+      m.assertEqual(result.globalRememberMe, true)
+
+      ' UI (6 loaded)
+      m.assertEqual(result.uiRowLayout, "landscape")
+      m.assertEqual(result.uiDesignHideClock, true)
+      m.assertEqual(result.uiGeneralEpisodeImages, "always")
+      m.assertEqual(result.uiTvShowsDisableUnwatchedCount, false)
+      m.assertEqual(result.uiHomeUseWebArrangement, false)
+      m.assertEqual(result.uiFontFallback, false)
+
+      ' Home Sections (7)
+      m.assertEqual(result.homeSection0, "librarybuttons")
+      m.assertEqual(result.homeSection1, "resume")
+      m.assertEqual(result.homeSection2, "nextup")
+      m.assertEqual(result.homeSection3, "latestmedia")
+      m.assertEqual(result.homeSection4, "livetv")
+      m.assertEqual(result.homeSection5, "none")
+      m.assertEqual(result.homeSection6, "none")
+
+      ' Display (1)
+      m.assertEqual(result.displayLiveTvLanding, "guide")
+
+      ' Permissions (2)
+      m.assertEqual(result.liveTvCanRecord, true)
+      m.assertEqual(result.contentCanDelete, false)
+
+      ' Display settings nested
+      m.assertNotInvalid(result.displaySettings)
+      m.assertTrue(result.displaySettings.DoesExist("library123"))
+      m.assertEqual(result.displaySettings.library123.sortField, "Name")
+      m.assertEqual(result.displaySettings.library123.sortAscending, true)
+    end function
+
+    @it("handles mixed OLD and NEW names (NEW takes precedence)")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      ' Scenario: User has both OLD and NEW names in registry
+      ' NEW names should take precedence (post-migration state)
+      settingsData = {
+        "globalRememberMe": "true", ' NEW name (should use this)
+        "global.rememberme": "false", ' OLD name (should be ignored)
+        "uiRowLayout": "landscape", ' NEW name (should use this)
+        "ui.row.layout": "portrait" ' OLD name (should be ignored)
+      }
+
+      result = transformer.transformUserSettings(settingsData)
+
+      ' NEW names should win
+      m.assertEqual(result.globalRememberMe, true, "NEW name should take precedence")
+      m.assertEqual(result.uiRowLayout, "landscape", "NEW name should take precedence")
+    end function
+
+    @it("falls back to OLD names when NEW names don't exist")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      ' Scenario: Pre-migration state, only OLD names exist
+      settingsData = {
+        "global.rememberme": "true", ' Only OLD name
+        "ui.row.layout": "portrait" ' Only OLD name
+      }
+
+      result = transformer.transformUserSettings(settingsData)
+
+      ' Should fall back to OLD names
+      m.assertEqual(result.globalRememberMe, true, "Should fall back to OLD name")
+      m.assertEqual(result.uiRowLayout, "portrait", "Should fall back to OLD name")
+    end function
+
+    @it("handles empty values correctly")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      settingsData = {
+        "uiRowLayout": "",
+        "uiGeneralEpisodeImages": "",
+        "displayLiveTvLanding": "",
+        "homeSection0": "",
+        "homeSection1": ""
+      }
+
+      result = transformer.transformUserSettings(settingsData)
+
+      ' Empty strings should be preserved
+      m.assertEqual(result.uiRowLayout, "")
+      m.assertEqual(result.uiGeneralEpisodeImages, "")
+      m.assertEqual(result.displayLiveTvLanding, "")
+      m.assertEqual(result.homeSection0, "")
+      m.assertEqual(result.homeSection1, "")
+    end function
+
+    @it("handles missing settings with defaults")
+    function _()
+      transformer = new SessionDataTransformer()
+
+      ' Only provide one setting, rest should use XML defaults
+      settingsData = {
+        "globalRememberMe": "true"
+      }
+
+      result = transformer.transformUserSettings(settingsData)
+
+      ' Provided setting
+      m.assertEqual(result.globalRememberMe, true)
+
+      ' Missing settings should have defaults (empty strings for strings, false for booleans)
+      m.assertEqual(result.uiRowLayout, "")
+      m.assertEqual(result.uiDesignHideClock, false)
+      m.assertEqual(result.displayLiveTvLanding, "")
+    end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("Image Helpers")

@@ -168,7 +168,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ${{ steps.context.outputs.artifact_name }}
-          path: ${{ github.workspace }}/build/staging
+          path: ${{ github.workspace }}/build
           if-no-files-found: error
 
       - name: Rename and prepare ZIP for release

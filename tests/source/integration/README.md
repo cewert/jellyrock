@@ -1,4 +1,4 @@
-# Integration Tests
+# Integration Unit Tests
 
 **Purpose:** Test component interactions and integration with Roku platform APIs.
 
@@ -8,8 +8,6 @@
 - Tests multiple components working together
 - Slower execution than unit tests
 - Requires cleanup after execution (handled by BaseTestSuite)
-
-**Tag:** `@tags("integration")`
 
 **Build:** `npm run build:tests-integration`
 
@@ -22,5 +20,5 @@
 
 **Cleanup:**
 
-- Registry sections with "test-user-" prefix are automatically cleaned up
+- Registry sections with "test-" prefix are automatically cleaned up
 - BaseTestSuite.afterEach() handles cleanup

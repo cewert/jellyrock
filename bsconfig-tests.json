@@ -1,16 +1,11 @@
 {
   "files": [
+    "manifest",
     {
-      "src": "tests/**/*"
-    },
-    {
-      "src": "tests/shared/**/*"
-    },
-    "!tests/source/tests/e2e/**/*",
-    {
-      "src": "source/**/!(Main.brs)",
+      "src": "source/**/*",
       "dest": "source"
     },
+    "!source/Main.bs",
     {
       "src": "components/**/*",
       "dest": "components"
@@ -23,7 +18,12 @@
       "src": "settings/**/*",
       "dest": "settings"
     },
-    "manifest"
+    {
+      "src": "tests/source/**/*",
+      "dest": "source/tests"
+    },
+    "!tests/source/e2e/**/*",
+    "!tests/source/**/*.md"
   ],
   "diagnosticFilters": [
     "node_modules/**/*",
@@ -51,7 +51,8 @@
     "catchCrashes": true,
     "lineWidth": 70,
     "failFast": false,
-    "sendHomeOnFinish": false
+    "sendHomeOnFinish": false,
+    "printTestTimes": true
   },
   "sourceMap": true
 }

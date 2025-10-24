@@ -9,8 +9,6 @@
 - Fast execution (< 1 second per test)
 - Run on every commit
 
-**Tag:** `@tags("unit")`
-
 **Build:** `npm run build:tests-unit`
 
 **Examples:**

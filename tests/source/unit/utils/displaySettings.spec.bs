@@ -1,9 +1,7 @@
-import "pkg:/source/utils/config.bs"
-import "pkg:/source/utils/displaySettings.bs"
 
 namespace tests
-  @suite("Display Settings Helper Tests")
-  @tags("unit")
+
+  @suite("displaySettings.bs - Library Display Settings Management")
   class DisplaySettingsTests extends tests.BaseTestSuite
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -24,7 +24,6 @@ JellyRock uses the Mocha-inspired Rooibos framework for robust unit and integrat
 namespace tests
 
   @suite("My First Test")
-  @tags("unit")
   class MyFirstTest extends tests.BaseTestSuite
 
     @it("validates a simple function")
@@ -74,14 +73,12 @@ All tests in JellyRock:
 - **SHOULD** follow naming: `ComponentName.spec.bs`
 - **MUST** be inside a `namespace tests` block
 - **MUST** extend `tests.BaseTestSuite`
-- **MUST** be tagged with `@tags("unit")` or `@tags("integration")`
 
 ### Essential Annotations
 
 | Annotation | Purpose | Example |
 |-----------|---------|---------|
 | `@suite("name")` | Define test suite (required) | `@suite("User Tests")` |
-| `@tags("tag1", "tag2")` | Filter tests by tags | `@tags("unit")` |
 | `@describe("name")` | Group related tests | `@describe("Authentication")` |
 | `@it("description")` | Individual test case | `@it("validates input")` |
 | `@params(a, b, c)` | Parameterized test data | `@params(1, 2, 3)` |
@@ -95,7 +92,6 @@ All tests in JellyRock:
 namespace tests
 
   @suite("isValid utility functions")
-  @tags("unit")
   class IsValidTests extends tests.BaseTestSuite
 
     protected override function setup()
@@ -353,7 +349,6 @@ Test Scene Graph components in their proper node context.
 namespace tests
 
   @suite("ItemGrid Component Tests")
-  @tags("integration")
   @SGNode("ItemGrid")  ' Creates test in ItemGrid context
   class ItemGridTests extends tests.BaseTestSuite
 
@@ -370,7 +365,7 @@ namespace tests
 end namespace
 ```
 
-**Note:** `m.top` and `m.node` refer to the same component instance. Use `@tags("integration")` for component tests.
+**Note:** `m.top` and `m.node` refer to the same component instance.
 
 ---
 
@@ -470,27 +465,6 @@ end function
 ```
 
 **Best practice:** Always include a comment explaining why the test is ignored and reference a ticket/issue number.
-
-### Filter by Tags
-
-```brighterscript
-@suite("API Tests")
-@tags("integration", "slow")
-class ApiTests extends tests.BaseTestSuite
-end class
-```
-
-Configure in `bsconfig-tests-unit.json`:
-
-```json
-{
-  "rooibos": {
-    "tags": ["unit"]  // Only run unit tests
-  }
-}
-```
-
-Use `!` to exclude: `"tags": ["!slow", "!integration"]`
 
 ### Debug Mode
 
@@ -612,11 +586,10 @@ m.global.user.settings = {...}  ' Wrong type!
 
 **Solutions:**
 
-1. Use `@tags` to run subset: `"tags": ["unit", "!slow"]`
-2. Disable code coverage: `"isRecordingCodeCoverage": false`
-3. Use `@only` to focus
-4. Check for unnecessary Task node usage
-5. Use `"failFast": true`
+1. Disable code coverage: `"isRecordingCodeCoverage": false`
+2. Use `@only` to focus
+3. Check for unnecessary Task node usage
+4. Use `"failFast": true`
 
 ### Type Mismatch Errors
 
@@ -644,7 +617,6 @@ m.global.user.settings = {...}  ' Wrong type!
 namespace tests
 
   @suite("My Feature Tests")
-  @tags("unit")
   class MyFeatureTests extends tests.BaseTestSuite
 
     protected override function setup()

@@ -1,11 +1,8 @@
-import "pkg:/source/utils/misc.bs"
-import "pkg:/source/utils/session.bs"
 
-namespace tests.utils
+namespace tests
 
-  @suite("Session Display Settings Transformation")
-  @tags("unit")
-  class SessionDisplaySettingsTests extends rooibos.BaseTestSuite
+  @suite("session.bs - Display Settings Transformation")
+  class SessionDisplaySettingsTests extends tests.BaseTestSuite
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("user.settings.TransformDisplaySettings()")

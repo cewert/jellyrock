@@ -5,13 +5,13 @@
       "name": "Build and Deploy",
       "type": "brightscript",
       "request": "launch",
-      "rootDir": "${workspaceFolder}/build/staging",
+      "rootDir": "${workspaceFolder}/build",
       "preLaunchTask": "build-dev",
       "stopOnEntry": false,
       // To enable RALE:
       // set "brightscript.debug.raleTrackerTaskFileLocation": "/absolute/path/to/rale/TrackerTask.xml" in your vscode user settings
       // set the below field to true
-      "injectRaleTrackerTask": false,
+      "injectRaleTrackerTask": true,
       "injectRdbOnDeviceComponent": true,
       //WARNING: don't edit this value. Instead, set "brightscript.debug.host": "YOUR_HOST_HERE" in your vscode user settings
       //"host": "${promptForHost}",
@@ -22,7 +22,7 @@
       "name": "Deploy",
       "type": "brightscript",
       "request": "launch",
-      "rootDir": "${workspaceFolder}/build/staging",
+      "rootDir": "${workspaceFolder}/build",
       "stopOnEntry": false,
       // To enable RALE:
       // set "brightscript.debug.raleTrackerTaskFileLocation": "/absolute/path/to/rale/TrackerTask.xml" in your vscode user settings
@@ -56,7 +56,7 @@
       ],
       "rootDir": "${workspaceFolder}/build",
       "sourceDirs": [
-        "${workspaceFolder}/unit-tests"
+        "${workspaceFolder}/tests"
       ],
       "enableDebuggerAutoRecovery": true,
       "stopDebuggerOnAppExit": true,
@@ -87,7 +87,7 @@
       ],
       "rootDir": "${workspaceFolder}/build",
       "sourceDirs": [
-        "${workspaceFolder}/unit-tests"
+        "${workspaceFolder}/tests"
       ],
       "enableDebuggerAutoRecovery": true,
       "stopDebuggerOnAppExit": true,
@@ -118,7 +118,7 @@
       ],
       "rootDir": "${workspaceFolder}/build",
       "sourceDirs": [
-        "${workspaceFolder}/unit-tests"
+        "${workspaceFolder}/tests"
       ],
       "enableDebuggerAutoRecovery": true,
       "stopDebuggerOnAppExit": true,
@@ -149,7 +149,7 @@
       ],
       "rootDir": "${workspaceFolder}/build",
       "sourceDirs": [
-        "${workspaceFolder}/unit-tests"
+        "${workspaceFolder}/tests"
       ],
       "enableDebuggerAutoRecovery": true,
       "stopDebuggerOnAppExit": true,

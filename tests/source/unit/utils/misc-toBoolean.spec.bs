@@ -1,0 +1,139 @@
+
+namespace tests
+
+  @suite("misc.bs - toBoolean() Type Conversion")
+  class ToBooleanTests extends tests.BaseTestSuite
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("toBoolean(value)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("converts string 'true' to boolean true")
+    function _()
+      result = toBoolean("true")
+      m.assertEqual(Type(result), "Boolean")
+      m.assertEqual(result, true)
+    end function
+
+    @it("converts string 'false' to boolean false")
+    function _()
+      result = toBoolean("false")
+      m.assertEqual(Type(result), "Boolean")
+      m.assertEqual(result, false)
+    end function
+
+    @it("returns boolean true unchanged")
+    function _()
+      result = toBoolean(true)
+      m.assertEqual(Type(result), "Boolean")
+      m.assertEqual(result, true)
+    end function
+
+    @it("returns boolean false unchanged")
+    function _()
+      result = toBoolean(false)
+      m.assertEqual(Type(result), "Boolean")
+      m.assertEqual(result, false)
+    end function
+
+    @it("returns invalid for invalid input")
+    function _()
+      result = toBoolean(invalid)
+      m.assertEqual(result, invalid)
+    end function
+
+    @it("returns string unchanged for non-boolean string values")
+    @params("yes")
+    @params("no")
+    @params("1")
+    @params("0")
+    @params("")
+    @params("random")
+    function _(value)
+      result = toBoolean(value)
+      m.assertTrue(Type(result) = "roString" or Type(result) = "String", `toBoolean("${value}") should return string type but got ${Type(result)}`)
+      m.assertEqual(result, value)
+    end function
+
+    @it("returns integer unchanged for integer input")
+    @params(0)
+    @params(1)
+    @params(-1)
+    @params(123)
+    function _(value)
+      result = toBoolean(value)
+      m.assertTrue(Type(result) = "roInteger" or Type(result) = "Integer")
+      m.assertEqual(result, value)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Bug Fix: sortAscending Type Mismatch Crash")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ' Reference: Bug where registry returns "true"/"false" strings but
+    ' code compares with boolean false, causing type mismatch crash.
+    ' Fix: toBoolean() now handles case-insensitive string conversion.
+
+    @it("converts case-insensitive boolean strings preventing type mismatch in comparisons")
+    @params("true", true)
+    @params("TRUE", true)
+    @params("True", true)
+    @params("tRuE", true)
+    @params("false", false)
+    @params("FALSE", false)
+    @params("False", false)
+    @params("FaLsE", false)
+    function _(input, expected)
+      ' Convert string to boolean
+      result = toBoolean(input)
+
+      ' Verify it's actually boolean type
+      m.assertTrue(Type(result) = "roBoolean" or Type(result) = "Boolean",
+      `toBoolean('${input}') should return boolean type but got ${Type(result)}`)
+      m.assertEqual(result, expected,
+      `toBoolean('${input}') should return ${expected} but got ${result}`)
+
+      ' Verify it can be safely compared to boolean without type mismatch crash
+      ' This comparison would crash with type mismatch if result was still a string
+      if result = false
+        ' Comparison succeeded
+      end if
+      m.assertTrue(true, "Successfully compared without type mismatch crash")
+    end function
+
+    @it("simulates the complete sortAscending workflow from registry to comparison")
+    function _()
+      ' GIVEN: User setting stored in registry as string (common pattern)
+      registryValue = "false" ' Registry returns strings
+
+      ' WHEN: Retrieved and converted with toBoolean()
+      sortAscending = toBoolean(registryValue)
+
+      ' THEN: Value is boolean type
+      m.assertTrue(Type(sortAscending) = "roBoolean" or Type(sortAscending) = "Boolean")
+      m.assertEqual(sortAscending, false)
+
+      ' AND: Can be safely used in comparisons (would crash if string)
+      if sortAscending = false ' This comparison caused the original crash
+        m.assertTrue(true, "Comparison succeeded without type mismatch")
+      end if
+    end function
+
+    @it("handles mixed-case strings that should NOT be converted to boolean")
+    @params(" true") ' Leading space
+    @params("true ") ' Trailing space
+    @params("1")
+    @params("0")
+    @params("yes")
+    @params("no")
+    function _(value)
+      result = toBoolean(value)
+
+      ' Should remain a string since they're not exactly "true" or "false"
+      m.assertTrue(Type(result) = "roString" or Type(result) = "String",
+      `toBoolean('${value}') should return string type but got ${Type(result)}`)
+      m.assertEqual(result, value)
+    end function
+
+  end class
+
+end namespace

@@ -1,9 +1,7 @@
-import "pkg:/source/utils/config.bs"
-
 namespace RegistryTestUtils
 
-  ' Delete all registry sections that match test user pattern
-  sub CleanupTestRegistrySections(pattern = "test-user-" as string)
+  ' Delete all registry sections that match test pattern
+  sub CleanupTestRegistrySections(pattern = "test-" as string)
     registry = CreateObject("roRegistry")
     allSections = registry.GetSectionList()
     deletedCount = 0
@@ -28,7 +26,7 @@ namespace RegistryTestUtils
   end sub
 
   ' Return an array of registry section names that match pattern
-  function GetTestRegistrySections(pattern = "test-user-" as string) as object
+  function GetTestRegistrySections(pattern = "test-" as string) as object
     registry = CreateObject("roRegistry")
     allSections = registry.GetSectionList()
     matchingSections = []
@@ -40,7 +38,7 @@ namespace RegistryTestUtils
     return matchingSections
   end function
 
-  function VerifyNoTestRegistrySections(pattern = "test-user-" as string) as boolean
+  function VerifyNoTestRegistrySections(pattern = "test-" as string) as boolean
     testSections = GetTestRegistrySections(pattern)
     return testSections.Count() = 0
   end function
@@ -53,7 +51,7 @@ namespace RegistryTestUtils
     testSections = []
     prodSections = []
     for each sectionName in allSections
-      if sectionName.StartsWith("test-user-")
+      if sectionName.StartsWith("test-")
         testSections.Push(sectionName)
       else
         prodSections.Push(sectionName)

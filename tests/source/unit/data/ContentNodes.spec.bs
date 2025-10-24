@@ -1,6 +1,5 @@
 namespace tests
-  @suite("Content Node Tests")
-  @tags("unit")
+  @suite("ContentNodes - JellyfinBaseItem, JellyfinServer, JellyfinUser")
   class ContentNodeTests extends tests.BaseTestSuite
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -369,3 +368,4 @@ namespace tests
 
   end class
 end namespace
+

@@ -1,11 +1,6 @@
-import "pkg:/source/api/userauth.bs"
-import "pkg:/source/utils/config.bs"
-import "pkg:/source/utils/misc.bs"
-import "pkg:/source/utils/session.bs"
 
 namespace tests
   @suite("Session Management Tests")
-  @tags("integration")
   class SessionManagementTests extends tests.BaseTestSuite
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -179,15 +174,8 @@ namespace tests
       return m.assertEqual(type(localSettings.uiDesignHideClock), "roBoolean")
     end function
 
-    @it("user.settings.Save() handles native float values from JSON")
-    function _()
-      ' ParseJSON can return floats for decimal numbers
-      user.settings.Save("customFloatSetting", 3.14)
-
-      localSettings = m.getTestUserSettings()
-      m.assertEqual(localSettings.customFloatSetting, 3.14)
-      return m.assertEqual(type(localSettings.customFloatSetting), "roFloat")
-    end function
+    ' NOTE: Test removed - all fields must be XML-defined, no dynamic float fields exist
+    ' Type conversion for floats is not currently needed in the app
 
     @it("user.settings.Save() updates existing integer field with native integer")
     function _()
@@ -217,16 +205,16 @@ namespace tests
 
     @it("user.settings.Save() updates existing string field with native integer by conversion")
     function _()
-      ' Create string field
-      user.settings.Save("customStringSetting", "hello")
+      ' Use existing XML string field
+      user.settings.Save("uiRowLayout", "hello")
 
       localSettings = m.getTestUserSettings()
-      m.assertEqual(localSettings.customStringSetting, "hello")
+      m.assertEqual(localSettings.uiRowLayout, "hello")
 
       ' Update with integer - should convert to string
-      user.settings.Save("customStringSetting", 42)
-      m.assertEqual(localSettings.customStringSetting, "42")
-      return m.assertEqual(type(localSettings.customStringSetting), "roString")
+      user.settings.Save("uiRowLayout", 42)
+      m.assertEqual(localSettings.uiRowLayout, "42")
+      return m.assertEqual(type(localSettings.uiRowLayout), "roString")
     end function
 
     @it("user.settings.Save() handles mixed type scenarios from settings.json")
@@ -274,18 +262,38 @@ namespace tests
       return m.assertInvalid(value)
     end function
 
-    @it("user.settings.Delete() removes setting field")
+    @it("user.settings.Delete() resets field to default and saves default to registry")
     function _()
-      ' Add a custom field to test deletion using local reference
+      ' Test with an XML-defined field (all fields should be in XML now)
       localSettings = m.getTestUserSettings()
-      localSettings.addField("customTestSetting", "string", false)
-      localSettings.customTestSetting = "test"
+      localUser = m.getTestUser()
 
-      m.assertEqual(localSettings.customTestSetting, "test")
+      ' Enable auto-sync so observers write to registry
+      localSettings.callFunc("enableAutoSync")
 
-      user.settings.Delete("customTestSetting")
+      ' Set a non-default value
+      user.settings.Save("playbackCinemaMode", "true")
+      m.assertEqual(localSettings.playbackCinemaMode, true)
 
-      return m.assertFalse(localSettings.hasField("customTestSetting"))
+      ' Verify it was written to registry
+      reg = CreateObject("roRegistrySection", localUser.id)
+      m.assertTrue(reg.exists("playbackCinemaMode"), "Setting should exist in registry after Save")
+      m.assertEqual(reg.read("playbackCinemaMode"), "true")
+
+      ' Delete the setting (resets to default)
+      user.settings.Delete("playbackCinemaMode")
+
+      ' Field should still exist (XML field) but be reset to default (false)
+      m.assertTrue(localSettings.hasField("playbackCinemaMode"), "XML field should still exist")
+      m.assertEqual(localSettings.playbackCinemaMode, false, "Field should be reset to default (false)")
+
+      ' Registry entry should still exist but with default value (false)
+      ' Observer always saves - this preserves user intent
+      regAfterDelete = CreateObject("roRegistrySection", localUser.id)
+      m.assertTrue(regAfterDelete.exists("playbackCinemaMode"), "Setting should still exist in registry")
+      m.assertEqual(regAfterDelete.read("playbackCinemaMode"), "false", "Should save default value (false) to registry")
+
+      return true
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

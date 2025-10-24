@@ -13,7 +13,7 @@ JellyRock is a Jellyfin client for Roku devices allowing users to consume media 
 5. Provide a concise overview of any code changes.
 6. Provide a list of app behavior to test and expected log output.
 ## Folder Structure
-- `build/staging` - Transpiled `.brs` files created after running `npm run build` or `npm run build-prod`. **These are the actual files used to deploy the app and are the files that will show up in runtime logs!**
+- `build` - Transpiled `.brs` files created after running `npm run build` or `npm run build-prod`. **These are the actual files used to deploy the app and are the files that will show up in runtime logs!**
 - `components` - `.xml` and `.bs` file pairs categorized by folders.
 - `scripts` - JavaScript files used for NPM scripts.
 - `settings/settings.json` - All the available app settings and their metadata. e.g. id, description, type, default state, etc.

@@ -1,6 +1,5 @@
-namespace tests.components.ItemGrid
-
-  @suite("ItemGridOptions Component Tests")
+namespace tests
+  @suite("ItemGridOptions - sortAscending Field Handling")
   class ItemGridOptionsTests extends tests.BaseTestSuite
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -127,5 +126,4 @@ namespace tests.components.ItemGrid
     end function
 
   end class
-
 end namespace

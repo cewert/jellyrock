@@ -1,5 +1,3 @@
-import "pkg:/source/utils/misc.bs"
-
 ' Mock Data Loader
 ' Loads JSON mock data files for unit testing
 ' Supports loading servers, users, and devices from mocks/ directory
@@ -9,7 +7,7 @@ namespace MockDataLoader
   ' @param {string} serverName - Name of server mock file (default, https-server, local-server)
   ' @returns {object} Server configuration object or invalid if file not found
   function LoadServer(serverName = "default" as string) as object
-    filePath = "pkg:/source/mocks/servers/" + serverName + ".json"
+    filePath = "pkg:/source/tests/mocks/servers/" + serverName + ".json"
     return loadJSONFile(filePath)
   end function
 
@@ -17,7 +15,7 @@ namespace MockDataLoader
   ' @param {string} userName - Name of user mock file (default, admin, restricted)
   ' @returns {object} User configuration object or invalid if file not found
   function LoadUser(userName = "default" as string) as object
-    filePath = "pkg:/source/mocks/users/" + userName + ".json"
+    filePath = "pkg:/source/tests/mocks/users/" + userName + ".json"
     return loadJSONFile(filePath)
   end function
 
@@ -25,26 +23,26 @@ namespace MockDataLoader
   ' @param {string} deviceName - Name of device mock file (default, roku-ultra, roku-express)
   ' @returns {object} Device configuration object or invalid if file not found
   function LoadDevice(deviceName = "default" as string) as object
-    filePath = "pkg:/source/mocks/devices/" + deviceName + ".json"
+    filePath = "pkg:/source/tests/mocks/devices/" + deviceName + ".json"
     return loadJSONFile(filePath)
   end function
 
   ' Get list of all available mock servers
   ' @returns {array} Array of server names (without .json extension)
   function GetAvailableServers() as object
-    return getFilesFromDirectory("pkg:/source/mocks/servers/")
+    return getFilesFromDirectory("pkg:/source/tests/mocks/servers/")
   end function
 
   ' Get list of all available mock users
   ' @returns {array} Array of user names (without .json extension)
   function GetAvailableUsers() as object
-    return getFilesFromDirectory("pkg:/source/mocks/users/")
+    return getFilesFromDirectory("pkg:/source/tests/mocks/users/")
   end function
 
   ' Get list of all available mock devices
   ' @returns {array} Array of device names (without .json extension)
   function GetAvailableDevices() as object
-    return getFilesFromDirectory("pkg:/source/mocks/devices/")
+    return getFilesFromDirectory("pkg:/source/tests/mocks/devices/")
   end function
 
   ' Internal: Get all .json files from a directory
@@ -75,7 +73,7 @@ namespace MockDataLoader
   ' @param {string} dataName - Name of API mock file without extension
   ' @returns {object} API data object or invalid if file not found
   function LoadApiData(dataName as string) as object
-    filePath = "pkg:/source/mocks/api/" + dataName + ".json"
+    filePath = "pkg:/source/tests/mocks/api/" + dataName + ".json"
     return loadJSONFile(filePath)
   end function
 

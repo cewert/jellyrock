@@ -1,15 +1,11 @@
 {
-  "extends": "bsconfig-tests.json",
   "files": [
+    "manifest",
     {
-      "src": "tests/**/*"
-    },
-    "!tests/source/tests/unit/**/*",
-    "!tests/source/tests/e2e/**/*",
-    {
-      "src": "source/**/!(Main.brs)",
+      "src": "source/**/*",
       "dest": "source"
     },
+    "!source/Main.bs",
     {
       "src": "components/**/*",
       "dest": "components"
@@ -22,7 +18,31 @@
       "src": "settings/**/*",
       "dest": "settings"
     },
-    "manifest"
+    {
+      "src": "tests/source/**/*",
+      "dest": "source/tests"
+    },
+    "!tests/source/unit/**/*",
+    "!tests/source/e2e/**/*",
+    "!tests/source/**/*.md"
+  ],
+  "diagnosticFilters": [
+    "node_modules/**/*",
+    "**/roku_modules/**/*",
+    {
+      "src": "tests/**/*",
+      "codes": [
+        1026,
+        "LINT3008"
+      ]
+    }
+  ],
+  "autoImportComponentScript": true,
+  "stagingDir": "build",
+  "retainStagingDir": true,
+  "plugins": [
+    "rooibos-roku",
+    "@rokucommunity/bslint"
   ],
   "rooibos": {
     "tags": null,
@@ -32,5 +52,6 @@
     "lineWidth": 70,
     "failFast": false,
     "sendHomeOnFinish": false
-  }
+  },
+  "sourceMap": true
 }

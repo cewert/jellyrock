@@ -1,12 +1,11 @@
 {
   "files": [
+    "manifest",
     {
-      "src": "tests/**/*"
-    },
-    {
-      "src": "source/**/!(Main.brs)",
+      "src": "source/**/*",
       "dest": "source"
     },
+    "!source/Main.bs",
     {
       "src": "components/**/*",
       "dest": "components"
@@ -19,6 +18,12 @@
       "src": "settings/**/*",
       "dest": "settings"
     },
+    {
+      "src": "tests/source/**/*",
+      "dest": "source/tests"
+    },
+    "!tests/source/e2e/**/*",
+    "!tests/source/**/*.md",
     "!**/*.spec.bs",
     {
       "src": "**/BaseTestSuite.spec.bs",
