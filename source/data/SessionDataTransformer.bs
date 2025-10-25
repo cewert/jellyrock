@@ -129,15 +129,50 @@ class SessionDataTransformer
       return settings
     end if
 
-    ' UI Settings
-    settings.uiRowLayout = settingsData["uiRowLayout"] ?? ""
-    settings.uiDesignHideClock = toBoolean(settingsData["uiDesignHideClock"])
-    settings.uiGeneralEpisodeImages = settingsData["uiGeneralEpisodeImages"] ?? ""
-    settings.uiTvShowsDisableUnwatchedCount = toBoolean(settingsData["uiTvShowsDisableUnwatchedCount"])
-    settings.uiHomeUseWebArrangement = toBoolean(settingsData["uiHomeUseWebArrangement"])
-    settings.uiFontFallback = toBoolean(settingsData["uiFontFallback"])
+    ' Playback Settings (13)
+    settings.playbackBitrateMaxLimited = toBoolean(settingsData["playbackBitrateMaxLimited"])
+    if settingsData.DoesExist("playbackBitrateLimit")
+      settings.playbackBitrateLimit = Val(settingsData["playbackBitrateLimit"])
+    end if
+    settings.playbackCinemaMode = toBoolean(settingsData["playbackCinemaMode"])
+    settings.playbackSubsCustom = toBoolean(settingsData["playbackSubsCustom"])
+    settings.playbackResolutionMax = settingsData["playbackResolutionMax"] ?? ""
+    if settingsData.DoesExist("playbackNextUpButtonSeconds")
+      settings.playbackNextUpButtonSeconds = Val(settingsData["playbackNextUpButtonSeconds"])
+    end if
+    settings.playbackPlayNextEpisode = settingsData["playbackPlayNextEpisode"] ?? ""
+    settings.playbackPreferredAudioCodec = settingsData["playbackPreferredAudioCodec"] ?? ""
+    settings.playbackSubsOnlyText = toBoolean(settingsData["playbackSubsOnlyText"])
+    settings.playbackMpeg2 = toBoolean(settingsData["playbackMpeg2"])
+    settings.playbackMpeg4 = toBoolean(settingsData["playbackMpeg4"])
+    settings.playbackTryDirectH264ProfileLevel = toBoolean(settingsData["playbackTryDirectH264ProfileLevel"])
+    settings.playbackTryDirectHevcProfileLevel = toBoolean(settingsData["playbackTryDirectHevcProfileLevel"])
 
-    ' Home sections
+    ' UI Settings (14)
+    settings.uiGeneralEpisodeImages = settingsData["uiGeneralEpisodeImages"] ?? ""
+    settings.uiFontFallback = toBoolean(settingsData["uiFontFallback"])
+    settings.uiDesignHideClock = toBoolean(settingsData["uiDesignHideClock"])
+    if settingsData.DoesExist("uiDetailsMaxDaysNextUp")
+      settings.uiDetailsMaxDaysNextUp = Val(settingsData["uiDetailsMaxDaysNextUp"])
+    end if
+    settings.uiDetailsEnableRewatchingNextUp = toBoolean(settingsData["uiDetailsEnableRewatchingNextUp"])
+    settings.uiRowLayout = settingsData["uiRowLayout"] ?? ""
+    settings.uiHomeSplashBackground = toBoolean(settingsData["uiHomeSplashBackground"])
+    settings.uiHomeUseWebArrangement = toBoolean(settingsData["uiHomeUseWebArrangement"])
+    settings.uiDetailsHideTagline = toBoolean(settingsData["uiDetailsHideTagline"])
+    settings.uiMoviesShowRatings = toBoolean(settingsData["uiMoviesShowRatings"])
+    settings.uiTvShowsBlurUnwatched = toBoolean(settingsData["uiTvShowsBlurUnwatched"])
+    settings.uiTvShowsDisableCommunityRating = toBoolean(settingsData["uiTvShowsDisableCommunityRating"])
+    settings.uiTvShowsDisableUnwatchedCount = toBoolean(settingsData["uiTvShowsDisableUnwatchedCount"])
+    settings.uiTvShowsGoStraightToEpisodes = toBoolean(settingsData["uiTvShowsGoStraightToEpisodes"])
+
+    ' Item Grid Settings (4)
+    settings.itemGridShowItemCount = toBoolean(settingsData["itemGridShowItemCount"])
+    settings.itemGridTitles = settingsData["itemGridTitles"] ?? ""
+    settings.itemGridReset = toBoolean(settingsData["itemGridReset"])
+    settings.itemGridMovieDefaultView = settingsData["itemGridMovieDefaultView"] ?? ""
+
+    ' Home sections (7)
     settings.homeSection0 = settingsData["homeSection0"] ?? ""
     settings.homeSection1 = settingsData["homeSection1"] ?? ""
     settings.homeSection2 = settingsData["homeSection2"] ?? ""
@@ -146,7 +181,7 @@ class SessionDataTransformer
     settings.homeSection5 = settingsData["homeSection5"] ?? ""
     settings.homeSection6 = settingsData["homeSection6"] ?? ""
 
-    ' Display settings
+    ' Display settings (1)
     settings.displayLiveTvLanding = settingsData["displayLiveTvLanding"] ?? ""
 
     ' Transform display settings into nested structure

@@ -1,6 +1,5 @@
 {
   "_comment": "Complete user settings using NEW camelCase names (post-migration)",
-  "globalRememberMe": "true",
   "playbackBitrateMaxLimited": "false",
   "playbackBitrateLimit": "8000",
   "playbackCinemaMode": "false",
