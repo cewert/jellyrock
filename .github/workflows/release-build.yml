@@ -52,7 +52,7 @@ jobs:
             git stash pop
 
             git add CHANGELOG.md
-            git commit -m "chore:(docs) finalize changelog for v${{ steps.version.outputs.version }} [skip ci]"
+            git commit -m "chore:(docs) finalize changelog for v${{ steps.version.outputs.version }}"
             echo "has_changes=true" >> $GITHUB_ENV
             echo "✅ Prepared changelog for release ${{ steps.version.outputs.version }}"
           fi

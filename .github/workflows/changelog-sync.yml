@@ -7,6 +7,7 @@ on:
 
 jobs:
   sync-changelog:
+    if: github.actor != 'JellyRock-bot'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -30,7 +31,7 @@ jobs:
           # Check if this push contains a new tag
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           PREVIOUS_HEAD=$(git rev-parse HEAD~1 2>/dev/null || echo "")
-          
+
           if [ -n "$LATEST_TAG" ] && [ -n "$PREVIOUS_HEAD" ]; then
             # Check if the tag was created in this push (tag points to HEAD but not to previous HEAD)
             TAG_COMMIT=$(git rev-list -n 1 "$LATEST_TAG" 2>/dev/null || echo "")
@@ -48,7 +49,7 @@ jobs:
               fi
             fi
           fi
-          
+
           # Default to unreleased
           echo "type=unreleased" >> $GITHUB_OUTPUT
           echo "📝 Push to main: processing as unreleased"
