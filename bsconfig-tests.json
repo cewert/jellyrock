@@ -47,7 +47,7 @@
     "isRecordingCodeCoverage": true,
     "testsFilePattern": null,
     "tags": null,
-    "showOnlyFailures": true,
+    "showOnlyFailures": false,
     "catchCrashes": true,
     "lineWidth": 70,
     "failFast": false,
