@@ -1,0 +1,14 @@
+{
+  "id": "test-device-123",
+  "name": "Test Roku Device",
+  "model": "9102X",
+  "modelType": "STB",
+  "serial": "YN00TEST1234",
+  "friendlyName": "Test Roku Device YN00TEST1234",
+  "serverDeviceName": "test-device-123TestUser",
+  "videoMode": "1080p60",
+  "videoHeight": "1080",
+  "videoWidth": "1920",
+  "videoRefresh": 60,
+  "videoBitDepth": 8
+}

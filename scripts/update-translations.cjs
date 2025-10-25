@@ -16,7 +16,7 @@ const BRS_PATTERNS = [
   'components/**/*.brs',
   'components/**/*.bs',
   '!node_modules/**',
-  '!/unit-tests/**',
+  '!/tests/**',
   '!**/roku_modules/**',
   '!build/**',
   '!out/**'
@@ -24,7 +24,7 @@ const BRS_PATTERNS = [
 const XML_PATTERNS = [
   'components/**/*.xml',
   '!node_modules/**',
-  '!/unit-tests/**',
+  '!/tests/**',
   '!**/roku_modules/**',
   '!build/**',
   '!out/**'

@@ -140,8 +140,8 @@ end sub
 
 ' setButtonStates: Disable previous/next buttons if needed and remove any other unneeded buttons
 sub setButtonStates()
-  queueCount = m.global.QueueManager.callFunc("getCount")
-  queueIndex = m.global.QueueManager.callFunc("getPosition")
+  queueCount = m.global.queueManager.callFunc("getCount")
+  queueIndex = m.global.queueManager.callFunc("getPosition")
 
   ' Disable these buttons as needed
 
@@ -173,7 +173,7 @@ sub setButtonStates()
 end sub
 
 sub setEndsAtText()
-  if m.global.session.user.settings["ui.design.hideclock"]
+  if m.global.user.settings.uiDesignHideClock
     endsAtText = m.top.findNode("endsAtText")
     endsAtText.visible = false
     m.endsAtTime.text = ""

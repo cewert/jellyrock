@@ -91,7 +91,7 @@ sub settingFocused()
   m.integerSetting.visible = false
   m.radioSetting.visible = false
 
-  userSettings = m.global.session.user.settings
+  userSettings = m.global.user.settings
 
   if not isValid(selectedSetting.type)
     return
@@ -168,14 +168,14 @@ sub boolSettingChanged()
   selectedSetting = m.userLocation.peek().children[m.settingsMenu.itemFocused]
 
   if m.boolSetting.checkedItem
-    session.user.settings.Save(selectedSetting.settingName, "true")
-    if Left(selectedSetting.settingName, 7) = "global."
+    user.settings.Save(selectedSetting.settingName, "true")
+    if Left(selectedSetting.settingName, 6) = "global"
       ' global user setting
       ' save to main registry block
       set_setting(selectedSetting.settingName, "true")
       ' setting specific triggers
-      if selectedSetting.settingName = "global.rememberme"
-        set_setting("active_user", m.global.session.user.id)
+      if selectedSetting.settingName = "globalRememberMe"
+        set_setting("active_user", m.global.user.id)
       end if
     else
       ' regular user setting
@@ -183,13 +183,13 @@ sub boolSettingChanged()
       set_user_setting(selectedSetting.settingName, "true")
     end if
   else
-    session.user.settings.Save(selectedSetting.settingName, "false")
-    if Left(selectedSetting.settingName, 7) = "global."
+    user.settings.Save(selectedSetting.settingName, "false")
+    if Left(selectedSetting.settingName, 6) = "global"
       ' global user setting
       ' save to main registry block
       set_setting(selectedSetting.settingName, "false")
       ' setting specific triggers
-      if selectedSetting.settingName = "global.rememberme"
+      if selectedSetting.settingName = "globalRememberMe"
         unset_setting("active_user")
       end if
     else

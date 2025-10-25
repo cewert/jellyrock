@@ -5,7 +5,7 @@
       "name": "Build and Deploy",
       "type": "brightscript",
       "request": "launch",
-      "rootDir": "${workspaceFolder}/build/staging",
+      "rootDir": "${workspaceFolder}/build",
       "preLaunchTask": "build-dev",
       "stopOnEntry": false,
       // To enable RALE:
@@ -22,7 +22,7 @@
       "name": "Deploy",
       "type": "brightscript",
       "request": "launch",
-      "rootDir": "${workspaceFolder}/build/staging",
+      "rootDir": "${workspaceFolder}/build",
       "stopOnEntry": false,
       // To enable RALE:
       // set "brightscript.debug.raleTrackerTaskFileLocation": "/absolute/path/to/rale/TrackerTask.xml" in your vscode user settings
@@ -40,7 +40,7 @@
       "request": "launch",
       "consoleOutput": "full",
       "internalConsoleOptions": "neverOpen",
-      "preLaunchTask": "build-tests",
+      "preLaunchTask": "build-tests-unit",
       "retainStagingFolder": true,
       "stopOnEntry": false,
       "files": [
@@ -56,16 +56,17 @@
       ],
       "rootDir": "${workspaceFolder}/build",
       "sourceDirs": [
-        "${workspaceFolder}/unit-tests"
+        "${workspaceFolder}/tests"
       ],
       "enableDebuggerAutoRecovery": true,
       "stopDebuggerOnAppExit": true,
-      "enableVariablesPanel": false,
+      "deferScopeLoading": true,
       "injectRaleTrackerTask": false,
-      "enableDebugProtocol": false
+      "enableDebugProtocol": false,
+      "rendezvousTracking": false
     },
     {
-      "name": "Run unit test-tdd",
+      "name": "Run TDD tests",
       "type": "brightscript",
       "request": "launch",
       "consoleOutput": "full",
@@ -86,13 +87,76 @@
       ],
       "rootDir": "${workspaceFolder}/build",
       "sourceDirs": [
-        "${workspaceFolder}/unit-tests"
+        "${workspaceFolder}/tests"
       ],
       "enableDebuggerAutoRecovery": true,
       "stopDebuggerOnAppExit": true,
-      "enableVariablesPanel": false,
+      "deferScopeLoading": true,
       "injectRaleTrackerTask": false,
-      "enableDebugProtocol": false
+      "enableDebugProtocol": false,
+      "rendezvousTracking": false
+    },
+    {
+      "name": "Run integration tests",
+      "type": "brightscript",
+      "request": "launch",
+      "consoleOutput": "full",
+      "internalConsoleOptions": "neverOpen",
+      "preLaunchTask": "build-tests-integration",
+      "retainStagingFolder": true,
+      "stopOnEntry": false,
+      "files": [
+        "!**/images/*.*",
+        "!**/fonts/*.*",
+        "!*.jpg",
+        "!*.png",
+        "*",
+        "*.*",
+        "**/*.*",
+        "!*.zip",
+        "!**/*.zip"
+      ],
+      "rootDir": "${workspaceFolder}/build",
+      "sourceDirs": [
+        "${workspaceFolder}/tests"
+      ],
+      "enableDebuggerAutoRecovery": true,
+      "stopDebuggerOnAppExit": true,
+      "deferScopeLoading": true,
+      "injectRaleTrackerTask": false,
+      "enableDebugProtocol": false,
+      "rendezvousTracking": false
+    },
+    {
+      "name": "Run all tests",
+      "type": "brightscript",
+      "request": "launch",
+      "consoleOutput": "full",
+      "internalConsoleOptions": "neverOpen",
+      "preLaunchTask": "build-tests-all",
+      "retainStagingFolder": true,
+      "stopOnEntry": false,
+      "files": [
+        "!**/images/*.*",
+        "!**/fonts/*.*",
+        "!*.jpg",
+        "!*.png",
+        "*",
+        "*.*",
+        "**/*.*",
+        "!*.zip",
+        "!**/*.zip"
+      ],
+      "rootDir": "${workspaceFolder}/build",
+      "sourceDirs": [
+        "${workspaceFolder}/tests"
+      ],
+      "enableDebuggerAutoRecovery": true,
+      "stopDebuggerOnAppExit": true,
+      "deferScopeLoading": true,
+      "injectRaleTrackerTask": false,
+      "enableDebugProtocol": false,
+      "rendezvousTracking": false
     }
   ]
 }

@@ -1,0 +1,257 @@
+import "pkg:/source/utils/misc.bs"
+
+' Transforms session data (server, user, app, device) to content nodes
+class SessionDataTransformer
+
+  sub new()
+  end sub
+
+  ' Transform server info to JellyfinServer content node
+  function transformServerInfo(serverData as object) as object
+    if not isValid(serverData)
+      return invalid
+    end if
+
+    try
+      serverNode = CreateObject("roSGNode", "JellyfinServer")
+
+      serverNode.id = serverData.id ?? ""
+      serverNode.name = serverData.name ?? ""
+      serverNode.version = serverData.version ?? ""
+      serverNode.productName = serverData.productName ?? ""
+      serverNode.operatingSystem = serverData.operatingSystem ?? ""
+
+      serverNode.serverUrl = serverData.serverUrl ?? ""
+      serverNode.localURL = serverData.localURL ?? ""
+      serverNode.isHTTPS = serverData.isHTTPS ?? false
+      serverNode.isLocalHTTPS = serverData.isLocalHTTPS ?? false
+
+      serverNode.startupWizardCompleted = serverData.startupWizardCompleted ?? false
+
+      ' Set loading state
+      serverNode.isLoaded = true
+      serverNode.isConnected = true
+      serverNode.lastConnected = CreateObject("roDateTime").AsSeconds()
+
+      #if debug
+        serverNode.rawServerInfo = serverData
+      #end if
+
+      return serverNode
+
+    catch error
+      return invalid
+    end try
+  end function
+
+  ' Transform user info to JellyfinUser content node (flattened structure)
+  function transformUserInfo(userData as object) as object
+    if not isValid(userData)
+      return invalid
+    end if
+
+    try
+      userNode = CreateObject("roSGNode", "JellyfinUser")
+
+      ' User identity
+      userNode.id = userData.id ?? ""
+      userNode.name = userData.name ?? ""
+      userNode.friendlyName = userData.friendlyName ?? ""
+      userNode.authToken = userData.authToken ?? ""
+      userNode.primaryImageTag = userData.primaryImageTag ?? ""
+      userNode.lastRunVersion = userData.lastRunVersion ?? ""
+      userNode.fontScaleFactor = userData.fontScaleFactor ?? 1.0
+
+      ' Flatten configuration fields directly into user
+      if isValid(userData.Configuration)
+        userNode.audioLanguagePreference = userData.Configuration.AudioLanguagePreference ?? ""
+        userNode.playDefaultAudioTrack = userData.Configuration.PlayDefaultAudioTrack ?? true
+        userNode.subtitleMode = userData.Configuration.SubtitleMode ?? "Default"
+        userNode.subtitleLanguagePreference = userData.Configuration.SubtitleLanguagePreference ?? ""
+        userNode.displayMissingEpisodes = userData.Configuration.DisplayMissingEpisodes ?? false
+        userNode.displayCollectionsView = userData.Configuration.DisplayCollectionsView ?? false
+        userNode.enableLocalPassword = userData.Configuration.EnableLocalPassword ?? false
+        userNode.orderedViews = userData.Configuration.OrderedViews ?? []
+        userNode.latestItemsExcludes = userData.Configuration.LatestItemsExcludes ?? []
+        userNode.myMediaExcludes = userData.Configuration.MyMediaExcludes ?? []
+        userNode.hidePlayedInLatest = userData.Configuration.HidePlayedInLatest ?? true
+        userNode.rememberAudioSelections = userData.Configuration.RememberAudioSelections ?? false
+        userNode.rememberSubtitleSelections = userData.Configuration.RememberSubtitleSelections ?? false
+        userNode.enableNextEpisodeAutoPlay = userData.Configuration.EnableNextEpisodeAutoPlay ?? false
+        userNode.useEpisodeImagesInNextUpAndResume = userData.Configuration.useEpisodeImagesInNextUpAndResume ?? false
+        userNode.groupedFolders = userData.Configuration.GroupedFolders ?? []
+        userNode.castReceiverId = userData.Configuration.CastReceiverId ?? ""
+        #if debug
+          userNode.rawConfigData = userData.Configuration
+        #end if
+      end if
+
+      ' Flatten policy fields directly into user
+      if isValid(userData.Policy)
+        userNode.enableLiveTvManagement = userData.Policy.EnableLiveTvManagement ?? false
+        userNode.enableContentDeletion = userData.Policy.EnableContentDeletion ?? false
+        userNode.enablePublicSharing = userData.Policy.EnablePublicSharing ?? false
+        userNode.enableMediaPlayback = userData.Policy.EnableMediaPlayback ?? true
+        userNode.isAdministrator = userData.Policy.IsAdministrator ?? false
+        #if debug
+          userNode.rawPolicyData = userData.Policy
+        #end if
+      end if
+
+      ' Transform user settings (nested node)
+      if isValid(userData.settings)
+        userNode.settings = m.transformUserSettings(userData.settings)
+      else
+        ' Create empty settings node
+        userNode.settings = CreateObject("roSGNode", "JellyfinUserSettings")
+      end if
+
+      ' Set loading state
+      userNode.isLoaded = true
+      userNode.loadedAt = CreateObject("roDateTime").AsSeconds()
+
+      #if debug
+        userNode.rawUserData = userData
+      #end if
+
+      return userNode
+
+    catch error
+      return invalid
+    end try
+  end function
+
+  ' Transform user settings (from registry and API)
+  function transformUserSettings(settingsData as object) as object
+    settings = CreateObject("roSGNode", "JellyfinUserSettings")
+
+    if not isValid(settingsData)
+      return settings
+    end if
+
+    ' UI Settings
+    settings.uiRowLayout = settingsData["uiRowLayout"] ?? ""
+    settings.uiDesignHideClock = toBoolean(settingsData["uiDesignHideClock"])
+    settings.uiGeneralEpisodeImages = settingsData["uiGeneralEpisodeImages"] ?? ""
+    settings.uiTvShowsDisableUnwatchedCount = toBoolean(settingsData["uiTvShowsDisableUnwatchedCount"])
+    settings.uiHomeUseWebArrangement = toBoolean(settingsData["uiHomeUseWebArrangement"])
+    settings.uiFontFallback = toBoolean(settingsData["uiFontFallback"])
+
+    ' Home sections
+    settings.homeSection0 = settingsData["homeSection0"] ?? ""
+    settings.homeSection1 = settingsData["homeSection1"] ?? ""
+    settings.homeSection2 = settingsData["homeSection2"] ?? ""
+    settings.homeSection3 = settingsData["homeSection3"] ?? ""
+    settings.homeSection4 = settingsData["homeSection4"] ?? ""
+    settings.homeSection5 = settingsData["homeSection5"] ?? ""
+    settings.homeSection6 = settingsData["homeSection6"] ?? ""
+
+    ' Display settings
+    settings.displayLiveTvLanding = settingsData["displayLiveTvLanding"] ?? ""
+
+    ' Transform display settings into nested structure
+    ' Build local AA first, then assign to node field
+    displaySettings = {}
+
+    for each key in settingsData.Keys()
+      if key.StartsWith("display.")
+        ' Parse "display.libraryId.settingKey" → nested object
+        parts = key.Split(".")
+        if parts.Count() = 3 and isValidAndNotEmpty(parts[1]) and isValidAndNotEmpty(parts[2])
+          libraryId = parts[1]
+          settingKey = parts[2]
+
+          ' Create library object if doesn't exist
+          if not displaySettings.DoesExist(libraryId)
+            displaySettings[libraryId] = {}
+          end if
+
+          ' Store setting value with proper type conversion
+          rawValue = settingsData[key]
+
+          ' Convert boolean fields from string to actual boolean
+          if settingKey = "sortAscending"
+            displaySettings[libraryId][settingKey] = toBoolean(rawValue)
+          else
+            ' Other fields stored as-is (strings, etc.)
+            displaySettings[libraryId][settingKey] = rawValue
+          end if
+        end if
+      end if
+    end for
+
+    ' Assign to content node field
+    settings.displaySettings = displaySettings
+
+    ' Global settings are NOT loaded here - they come from "JellyRock" registry section
+    ' and are loaded separately via user.settings.LoadGlobals()
+
+    ' Permission settings
+    settings.liveTvCanRecord = toBoolean(settingsData["liveTvCanRecord"])
+    settings.contentCanDelete = toBoolean(settingsData["contentCanDelete"])
+
+    ' Set loading state
+    settings.isLoaded = true
+    settings.loadedAt = CreateObject("roDateTime").AsSeconds()
+
+    ' Debug-only: Store raw settings for debugging
+    #if debug
+      settings.rawSettings = settingsData
+    #end if
+
+    return settings
+  end function
+
+  ' Transform app info to AppInfo content node
+  function transformAppInfo(appData as object) as object
+    if not isValid(appData)
+      return invalid
+    end if
+
+    app = CreateObject("roSGNode", "AppInfo")
+
+    app.appId = appData.id ?? ""
+    app.isDev = appData.isDev ?? false
+    app.version = appData.version ?? ""
+    app.lastRunVersion = appData.lastRunVersion ?? ""
+
+    return app
+  end function
+
+  ' Transform device info to DeviceInfo content node
+  function transformDeviceInfo(deviceData as object) as object
+    if not isValid(deviceData)
+      return invalid
+    end if
+
+    device = CreateObject("roSGNode", "DeviceInfo")
+
+    device.id = deviceData.id ?? ""
+    device.name = deviceData.name ?? ""
+    device.model = deviceData.model ?? ""
+    device.serial = deviceData.serial ?? ""
+    device.friendlyName = deviceData.friendlyName ?? ""
+    device.serverDeviceName = deviceData.serverDeviceName ?? ""
+    device.modelType = deviceData.modelType ?? ""
+
+    device.videoHeight = deviceData.videoHeight ?? 1080
+    device.videoWidth = deviceData.videoWidth ?? 1920
+    device.maxVideoHeight = deviceData.maxVideoHeight ?? 1080
+    device.maxVideoWidth = deviceData.maxVideoWidth ?? 1920
+    device.canPlay4K = deviceData.canPlay4K ?? false
+
+    if isValid(deviceData.videoCodecs)
+      device.videoCodecs = deviceData.videoCodecs
+    end if
+    if isValid(deviceData.audioCodecs)
+      device.audioCodecs = deviceData.audioCodecs
+    end if
+
+    device.memoryLevel = deviceData.memoryLevel ?? "normal"
+    device.memoryTotal = deviceData.memoryTotal ?? 0
+    device.modelDetails = deviceData.modelDetails ?? {}
+
+    return device
+  end function
+
+end class

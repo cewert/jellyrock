@@ -1,0 +1,14 @@
+{
+  "id": "ultra-device-456",
+  "name": "Roku Ultra",
+  "model": "4802X",
+  "modelType": "STB",
+  "serial": "YN00ULTRA456",
+  "friendlyName": "Living Room Roku Ultra YN00ULTRA456",
+  "serverDeviceName": "ultra-device-456TestUser",
+  "videoMode": "2160p60",
+  "videoHeight": "2160",
+  "videoWidth": "3840",
+  "videoRefresh": 60,
+  "videoBitDepth": 10
+}

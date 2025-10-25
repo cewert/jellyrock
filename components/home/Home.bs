@@ -37,7 +37,7 @@ sub init()
   m.log.decreaseIndent()
 
   ' Configure splash background if enabled
-  splashEnabled = m.global.session.user.settings["ui.home.splashBackground"]
+  splashEnabled = m.global.user.settings.uiHomeSplashBackground
   m.log.debug("Splash background setting", splashEnabled)
 
   if splashEnabled = true and isValid(m.backdrop)
@@ -90,12 +90,12 @@ sub OnScreenShown()
     m.log.debug("Found overhang node", overhang)
 
     overhang.isLogoVisible = true
-    overhang.currentUser = m.global.session.user.name
+    overhang.currentUser = m.global.user.name
     overhang.title = tr("Home")
     m.log.debug("Updated overhang properties", "user:", overhang.currentUser, "title:", overhang.title, "logoVisible:", overhang.isLogoVisible)
 
     ' Hide clock if user preference is set
-    hideClockSetting = m.global.session.user.settings["ui.design.hideclock"]
+    hideClockSetting = m.global.user.settings.uiDesignHideClock
     m.log.debug("Hide clock setting", hideClockSetting)
 
     if hideClockSetting
@@ -145,7 +145,7 @@ sub OnScreenShown()
     refresh()
 
     ' Update backdrop based on current splash background setting
-    splashEnabled = m.global.session.user.settings["ui.home.splashBackground"]
+    splashEnabled = m.global.user.settings.uiHomeSplashBackground
     m.log.debug("Current splash background setting", splashEnabled)
 
     if isValid(m.backdrop)

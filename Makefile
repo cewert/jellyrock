@@ -10,12 +10,15 @@ VERSION := 1.0.0
 .PHONY: help
 help:
 	@echo "targets"
-	@echo "  build-dev    build development package"
-	@echo "  build-prod   build production package"
-	@echo "  build-tests  build tests package"
-	@echo "  format       format brighscripts"
-	@echo "  lint         lint code and documentation"
-	@echo "  make_images  generate branding images from SVGs"
+	@echo "  build-dev               build development package"
+	@echo "  build-prod              build production package"
+	@echo "  build-tests             build all tests (unit + integration)"
+	@echo "  build-tests-unit        build unit tests only"
+	@echo "  build-tests-integration build integration tests only"
+	@echo "  build-tdd               build in watch mode for TDD"
+	@echo "  format                  format brighscripts"
+	@echo "  lint                    lint code and documentation"
+	@echo "  make_images             generate branding images from SVGs"
 	@echo "targets needing ROKU_DEV_TARGET"
 	@echo "  home         press the home button on device"
 	@echo "  launch       launch installed"
@@ -34,11 +37,14 @@ BUILT_PKG := out/$(notdir $(CURDIR)).zip
 
 node_modules/: package-lock.json; npm ci
 
-.PHONY: build-dev build-prod build-tests
-.NOTPARALLEL: build-dev build-prod build-tests # output to the same file
+.PHONY: build-dev build-prod build-tests build-tests-unit build-tests-integration build-tdd
+.NOTPARALLEL: build-dev build-prod build-tests build-tests-unit build-tests-integration build-tdd # output to the same file
 build-dev: node_modules/; npm run build
 build-prod: node_modules/; npm run build:prod
 build-tests: node_modules/; npm run build:tests
+build-tests-unit: node_modules/; npm run build:tests-unit
+build-tests-integration: node_modules/; npm run build:tests-integration
+build-tdd: node_modules/; npm run build:tdd
 
 # default to build-dev if file doesn't exist
 $(BUILT_PKG):; $(MAKE) build-dev

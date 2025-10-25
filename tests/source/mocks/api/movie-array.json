@@ -1,0 +1,5 @@
+[
+  { "Id": "1", "Type": "Movie", "Name": "Movie 1" },
+  { "Id": "2", "Type": "Movie", "Name": "Movie 2" },
+  { "Id": "3", "Type": "Movie", "Name": "Movie 3" }
+]

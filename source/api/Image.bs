@@ -73,7 +73,12 @@ function ImageURL(id, version = "Primary", params = {})
   end if
   url = Substitute("Items/{0}/Images/{1}", id, version)
   ' ?maxHeight=384&maxWidth=256&tag=<tag>&quality=90"
-  return buildURL(url, params)
+  fullURL = buildURL(url, params)
+
+  ' Return empty string if server URL not configured (buildURL returns invalid)
+  if not isValid(fullURL) then return ""
+
+  return fullURL
 end function
 
 function UserImageURL(id, params = {})
@@ -89,5 +94,10 @@ function UserImageURL(id, params = {})
   end if
 
   url = Substitute("Users/{0}/Images/Primary", id)
-  return buildURL(url, params)
+  fullURL = buildURL(url, params)
+
+  ' Return empty string if server URL not configured (buildURL returns invalid)
+  if not isValid(fullURL) then return ""
+
+  return fullURL
 end function

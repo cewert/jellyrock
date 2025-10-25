@@ -4,9 +4,9 @@ import "pkg:/source/enums/SubtitleSelection.bs"
 import "pkg:/source/utils/deviceCapabilities.bs"
 import "pkg:/source/utils/misc.bs"
 
-function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioTrackIndex = -1 as integer, subtitleTrackIndex = SubtitleSelection.none as integer, startTimeTicks = 0 as longinteger, forceMp3 = false as boolean)
+function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioTrackIndex = -1 as integer, subtitleTrackIndex = SubtitleSelection.none as integer, startTimeTicks = 0 as longinteger, forceMp3 = false as boolean, videoMetadata = invalid as dynamic)
   params = {
-    "UserId": m.global.session.user.id,
+    "UserId": m.global.user.id,
     "StartTimeTicks": startTimeTicks,
     "IsPlayback": true,
     "AutoOpenLiveStream": true,
@@ -28,10 +28,8 @@ function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioT
     params.EnableDirectPlay = false
   end if
 
-  myGLobal = m.global
-
-  if audioTrackIndex > -1 and isValid(myGLobal.session.video.json.MediaStreams)
-    selectedAudioStream = myGLobal.session.video.json.MediaStreams[audioTrackIndex]
+  if audioTrackIndex > -1 and isValid(videoMetadata) and isValid(videoMetadata.MediaStreams)
+    selectedAudioStream = videoMetadata.MediaStreams[audioTrackIndex]
 
     if isValid(selectedAudioStream)
       params.AudioStreamIndex = audioTrackIndex
@@ -56,7 +54,7 @@ end function
 ' Search across all libraries
 function searchMedia(query as string)
   if query <> ""
-    data = api.users.GetItemsByQuery(m.global.session.user.id, {
+    data = api.users.GetItemsByQuery(m.global.user.id, {
       "searchTerm": query,
       "IncludePeople": true,
       "IncludeMedia": true,
@@ -88,7 +86,7 @@ end function
 
 ' MetaData about an item
 function ItemMetaData(id as string)
-  url = Substitute("Users/{0}/Items/{1}", m.global.session.user.id, id)
+  url = Substitute("Users/{0}/Items/{1}", m.global.user.id, id)
   resp = APIRequest(url, { "fields": "Chapters" })
   data = getJson(resp)
   if not isValid(data) then return invalid
@@ -198,7 +196,7 @@ end function
 
 ' Get list of albums belonging to an artist
 function MusicAlbumList(id as string)
-  url = Substitute("Users/{0}/Items", m.global.session.user.id)
+  url = Substitute("Users/{0}/Items", m.global.user.id)
   resp = APIRequest(url, {
     "AlbumArtistIds": id,
     "includeitemtypes": "MusicAlbum",
@@ -220,7 +218,7 @@ end function
 
 ' Get list of albums an artist appears on
 function AppearsOnList(id as string)
-  url = Substitute("Users/{0}/Items", m.global.session.user.id)
+  url = Substitute("Users/{0}/Items", m.global.user.id)
   resp = APIRequest(url, {
     "ContributingArtistIds": id,
     "ExcludeItemIds": id,
@@ -244,7 +242,7 @@ end function
 
 ' Get list of songs belonging to an artist
 function GetSongsByArtist(id as string, params = {} as object)
-  url = Substitute("Users/{0}/Items", m.global.session.user.id)
+  url = Substitute("Users/{0}/Items", m.global.user.id)
   paramArray = {
     "AlbumArtistIds": id,
     "includeitemtypes": "Audio",
@@ -278,7 +276,7 @@ end function
 function PlaylistItemList(id as string)
   url = Substitute("Playlists/{0}/Items", id)
   resp = APIRequest(url, {
-    "UserId": m.global.session.user.id
+    "UserId": m.global.user.id
   })
 
   results = []
@@ -300,9 +298,9 @@ end function
 
 ' Get Songs that are on an Album
 function MusicSongList(id as string)
-  url = Substitute("Users/{0}/Items", m.global.session.user.id, id)
+  url = Substitute("Users/{0}/Items", m.global.user.id, id)
   resp = APIRequest(url, {
-    "UserId": m.global.session.user.id,
+    "UserId": m.global.user.id,
     "parentId": id,
     "includeitemtypes": "Audio",
     "sortBy": "SortName"
@@ -327,9 +325,9 @@ end function
 
 ' Get Songs that are on an Album
 function AudioItem(id as string)
-  url = Substitute("Users/{0}/Items/{1}", m.global.session.user.id, id)
+  url = Substitute("Users/{0}/Items/{1}", m.global.user.id, id)
   resp = APIRequest(url, {
-    "UserId": m.global.session.user.id,
+    "UserId": m.global.user.id,
     "includeitemtypes": "Audio",
     "sortBy": "SortName"
   })
@@ -341,7 +339,7 @@ end function
 function CreateInstantMix(id as string)
   url = Substitute("/Items/{0}/InstantMix", id)
   resp = APIRequest(url, {
-    "UserId": m.global.session.user.id,
+    "UserId": m.global.user.id,
     "Limit": 201
   })
 
@@ -350,7 +348,7 @@ end function
 
 ' Get Instant Mix based on item
 function CreateArtistMix(id as string)
-  url = Substitute("Users/{0}/Items", m.global.session.user.id)
+  url = Substitute("Users/{0}/Items", m.global.user.id)
   resp = APIRequest(url, {
     "ArtistIds": id,
     "Recursive": "true",
@@ -369,9 +367,9 @@ end function
 
 ' Get Intro Videos for an item
 function GetIntroVideos(id as string)
-  url = Substitute("Users/{0}/Items/{1}/Intros", m.global.session.user.id, id)
+  url = Substitute("Users/{0}/Items/{1}/Intros", m.global.user.id, id)
   resp = APIRequest(url, {
-    "UserId": m.global.session.user.id
+    "UserId": m.global.user.id
   })
 
   return getJson(resp)
@@ -424,7 +422,7 @@ end function
 ' Seasons for a TV Show
 function TVSeasons(id as string) as dynamic
   url = Substitute("Shows/{0}/Seasons", id)
-  resp = APIRequest(url, { "UserId": m.global.session.user.id })
+  resp = APIRequest(url, { "UserId": m.global.user.id })
 
   data = getJson(resp)
   ' validate data
@@ -445,7 +443,7 @@ end function
 ' Accepts strings for the TV Show Id and the season Id
 function TVEpisodes(showId as string, seasonId as string) as dynamic
   ' Get and validate data
-  data = api.shows.GetEpisodes(showId, { "seasonId": seasonId, "UserId": m.global.session.user.id, "fields": "MediaStreams,MediaSources" })
+  data = api.shows.GetEpisodes(showId, { "seasonId": seasonId, "UserId": m.global.user.id, "fields": "MediaStreams,MediaSources" })
   if not isValid(data) or not isValid(data.Items) then return invalid
 
   results = []
@@ -472,7 +470,7 @@ end function
 ' Accepts a string that is a TV Show season id
 function TVSeasonExtras(seasonId as string) as dynamic
   ' Get and validate TV extra features data
-  data = api.users.GetSpecialFeatures(m.global.session.user.id, seasonId)
+  data = api.users.GetSpecialFeatures(m.global.user.id, seasonId)
   if not isValid(data) then return invalid
 
   results = []

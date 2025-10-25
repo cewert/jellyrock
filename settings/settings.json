@@ -6,7 +6,7 @@
       {
         "title": "Remember Me?",
         "description": "Remember the currently logged in user and try to log them in again next time you start the JellyRock app.",
-        "settingName": "global.rememberme",
+        "settingName": "globalRememberMe",
         "type": "bool",
         "default": "false"
       }
@@ -23,14 +23,14 @@
           {
             "title": "Enable Limit",
             "description": "Enable or disable the 'Maximum Bitrate' setting.",
-            "settingName": "playback.bitrate.maxlimited",
+            "settingName": "playbackBitrateMaxLimited",
             "type": "bool",
             "default": "false"
           },
           {
             "title": "Maximum Bitrate",
             "description": "Set the maximum bitrate in Mbps. Set to 0 to use Roku's specifications. This setting must be enabled to take effect.",
-            "settingName": "playback.bitrate.limit",
+            "settingName": "playbackBitrateLimit",
             "type": "integer",
             "default": "0"
           }
@@ -39,21 +39,21 @@
       {
         "title": "Cinema Mode",
         "description": "Bring the theater experience straight to your living room with the ability to play custom intros before the main feature.",
-        "settingName": "playback.cinemamode",
+        "settingName": "playbackCinemaMode",
         "type": "bool",
         "default": "false"
       },
       {
         "title": "Custom Subtitles",
         "description": "Use custom subtitle rendering for external VTT subtitle files. Enables fallback fonts from the server and removes some formatting tags from misformatted subtitles. Note: May not fully support all Roku caption preferences.",
-        "settingName": "playback.subs.custom",
+        "settingName": "playbackSubsCustom",
         "type": "bool",
         "default": "true"
       },
       {
         "title": "Maximum Resolution",
         "description": "Configure the maximum resolution when transcoding video files to this device.",
-        "settingName": "playback.resolution.max",
+        "settingName": "playbackResolutionMax",
         "type": "radio",
         "default": "auto",
         "options": [
@@ -94,14 +94,14 @@
       {
         "title": "Next Episode Button Time",
         "description": "Set how many seconds before the end of an episode the Next Episode button should appear. Set to 0 to disable.",
-        "settingName": "playback.nextupbuttonseconds",
+        "settingName": "playbackNextUpButtonSeconds",
         "type": "integer",
         "default": "30"
       },
       {
         "title": "Play Next Episode Automatically",
         "description": "When finished playing a single episode, play the next one automatically.",
-        "settingName": "playback.playnextepisode",
+        "settingName": "playbackPlayNextEpisode",
         "type": "radio",
         "default": "webclient",
         "options": [
@@ -122,7 +122,7 @@
       {
         "title": "Preferred Audio Codec",
         "description": "Use the selected audio codec for transcodes. If the device or stream does not support it, a fallback codec will be used.",
-        "settingName": "playback.preferredAudioCodec",
+        "settingName": "playbackPreferredAudioCodec",
         "type": "radio",
         "default": "auto",
         "options": [
@@ -151,7 +151,7 @@
       {
         "title": "Text Subtitles Only",
         "description": "Only display text subtitles to minimize transcoding.",
-        "settingName": "playback.subs.onlytext",
+        "settingName": "playbackSubsOnlyText",
         "type": "bool",
         "default": "false"
       },
@@ -162,14 +162,14 @@
           {
             "title": "MPEG-2",
             "description": "Support Direct Play of MPEG-2 content (e.g., Live TV). This will prevent transcoding of MPEG-2 content, but uses significantly more bandwidth.",
-            "settingName": "playback.mpeg2",
+            "settingName": "playbackMpeg2",
             "type": "bool",
             "default": "false"
           },
           {
             "title": "MPEG-4",
             "description": "Support Direct Play of MPEG-4 content. This may need to be disabled for playback of DIVX encoded video files.",
-            "settingName": "playback.mpeg4",
+            "settingName": "playbackMpeg4",
             "type": "bool",
             "default": "true"
           }
@@ -182,14 +182,14 @@
           {
             "title": "H.264",
             "description": "Attempt Direct Play for H.264 media with unsupported profile levels before falling back to transcoding if it fails.",
-            "settingName": "playback.tryDirect.h264ProfileLevel",
+            "settingName": "playbackTryDirectH264ProfileLevel",
             "type": "bool",
             "default": "false"
           },
           {
             "title": "HEVC",
             "description": "Attempt Direct Play for HEVC media with unsupported profile levels before falling back to transcoding if it fails.",
-            "settingName": "playback.tryDirect.hevcProfileLevel",
+            "settingName": "playbackTryDirectHevcProfileLevel",
             "type": "bool",
             "default": "false"
           }
@@ -208,7 +208,7 @@
           {
             "title": "Episode Images Next Up",
             "description": "What type of images to use for Episodes shown in the 'Next Up' and 'Continue Watching' sections.",
-            "settingName": "ui.general.episodeimagesnextup",
+            "settingName": "uiGeneralEpisodeImages",
             "type": "radio",
             "default": "webclient",
             "options": [
@@ -229,35 +229,35 @@
           {
             "title": "Fallback Fonts",
             "description": "Replace Roku's system font with the fallback font provided by the Jellyfin server. Fallback fonts must be configured and enabled by the server admin for this to work. JellyRock will need to be restarted.",
-            "settingName": "ui.font.fallback",
+            "settingName": "uiFontFallback",
             "type": "bool",
             "default": "false"
           },
           {
             "title": "Hide Clock",
             "description": "Hide all clocks in JellyRock. JellyRock will need to be closed and reopened for changes to take effect.",
-            "settingName": "ui.design.hideclock",
+            "settingName": "uiDesignHideClock",
             "type": "bool",
             "default": "false"
           },
           {
             "title": "Max Days Next Up",
             "description": "Set the maximum amount of days a show should stay in the 'Next Up' list without watching it.",
-            "settingName": "ui.details.maxdaysnextup",
+            "settingName": "uiDetailsMaxDaysNextUp",
             "type": "integer",
             "default": "0"
           },
           {
             "title": "Rewatching Next Up",
             "description": "Show already watched episodes in 'Next Up' sections.",
-            "settingName": "ui.details.enablerewatchingnextup",
+            "settingName": "uiDetailsEnableRewatchingNextUp",
             "type": "bool",
             "default": "false"
           },
           {
             "title": "Row Layout",
             "description": "Choose how rows are displayed throughout the app.",
-            "settingName": "ui.row.layout",
+            "settingName": "uiRowLayout",
             "type": "radio",
             "default": "fullwidth",
             "options": [
@@ -274,14 +274,14 @@
           {
             "title": "Use Splashscreen as Home Background",
             "description": "Use generated splashscreen image as JellyRock's home background.",
-            "settingName": "ui.home.splashBackground",
+            "settingName": "uiHomeSplashBackground",
             "type": "bool",
             "default": "false"
           },
           {
             "title": "Use Web Client's Home Section Arrangement",
             "description": "Make the arrangement of the Roku home view sections match the web client's home screen. JellyRock will need to be closed and reopened for change to take effect.",
-            "settingName": "ui.home.useWebSectionArrangement",
+            "settingName": "uiHomeUseWebArrangement",
             "type": "bool",
             "default": "true"
           }
@@ -302,14 +302,14 @@
                   {
                     "title": "Item Count",
                     "description": "Show item count in the library and index of selected item.",
-                    "settingName": "itemgrid.showItemCount",
+                    "settingName": "itemGridShowItemCount",
                     "type": "bool",
                     "default": "false"
                   },
                   {
                     "title": "Item Titles",
                     "description": "Select when to show titles.",
-                    "settingName": "itemgrid.gridTitles",
+                    "settingName": "itemGridTitles",
                     "type": "radio",
                     "default": "showalways",
                     "options": [
@@ -332,14 +332,14 @@
               {
                 "title": "Hide Taglines",
                 "description": "Hides tagline text on details pages.",
-                "settingName": "ui.details.hidetagline",
+                "settingName": "uiDetailsHideTagline",
                 "type": "bool",
                 "default": "false"
               },
               {
                 "title": "Return to Top",
                 "description": "Use the replay button to slowly animate to the first item in the folder. (If disabled, the folder will reset to the first item immediately).",
-                "settingName": "itemgrid.reset",
+                "settingName": "itemGridReset",
                 "type": "bool",
                 "default": "true"
               }
@@ -352,14 +352,14 @@
               {
                 "title": "Community and Critical Ratings",
                 "description": "Ratings for how good a movie is.",
-                "settingName": "ui.movies.showRatings",
+                "settingName": "uiMoviesShowRatings",
                 "type": "bool",
                 "default": "true"
               },
               {
                 "title": "Default View",
                 "description": "Default view for Movie Libraries.",
-                "settingName": "itemgrid.movieDefaultView",
+                "settingName": "itemGridMovieDefaultView",
                 "type": "radio",
                 "default": "moviesgrid",
                 "options": [
@@ -382,28 +382,28 @@
               {
                 "title": "Blur Unwatched Episodes",
                 "description": "Blur images of unwatched episodes.",
-                "settingName": "ui.tvshows.blurunwatched",
+                "settingName": "uiTvShowsBlurUnwatched",
                 "type": "bool",
                 "default": "false"
               },
               {
                 "title": "Disable Community Rating for Episodes",
                 "description": "Hide the star and community rating for episodes of a TV show. This is to prevent spoilers of an upcoming good/bad episode.",
-                "settingName": "ui.tvshows.disableCommunityRating",
+                "settingName": "uiTvShowsDisableCommunityRating",
                 "type": "bool",
                 "default": "false"
               },
               {
                 "title": "Disable Unwatched Episode Count",
                 "description": "If enabled, the number of unwatched episodes in a series/season will be removed.",
-                "settingName": "ui.tvshows.disableUnwatchedEpisodeCount",
+                "settingName": "uiTvShowsDisableUnwatchedCount",
                 "type": "bool",
                 "default": "false"
               },
               {
                 "title": "Skip Details for Single Seasons",
                 "description": "If enabled, selecting a TV series with only one season will go straight to the episode list rather than the show details and season list.",
-                "settingName": "ui.tvshows.goStraightToEpisodeListing",
+                "settingName": "uiTvShowsGoStraightToEpisodes",
                 "type": "bool",
                 "default": "false"
               }

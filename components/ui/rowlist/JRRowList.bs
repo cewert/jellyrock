@@ -18,7 +18,7 @@ sub init()
   m.top.rowLabelFont = "font:MediumSystemFont"
   m.top.rowLabelFont.size = m.global.constants.font_sizes.medium
 
-  if m.global.session.user.settings["ui.font.fallback"] = true
+  if m.global.user.settings.uiFontFallback = true
     m.top.rowLabelFont.uri = "tmp:/font"
     applyFallbackFontScale()
   end if
@@ -34,7 +34,7 @@ sub applyFallbackFontScale()
   end if
 
   ' Apply the global scale factor
-  fontScaleFactor = m.global.session.user.fontScaleFactor
+  fontScaleFactor = m.global.user.fontScaleFactor
   if isValid(fontScaleFactor) and fontScaleFactor > 0
     scaledSize = currentSize * fontScaleFactor
     m.top.rowLabelFont.size = scaledSize

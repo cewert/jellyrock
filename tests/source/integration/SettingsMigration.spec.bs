@@ -1,0 +1,499 @@
+
+namespace tests
+
+  @suite("Settings Migration - User Registry Migration")
+  class SettingsMigrationTests extends tests.BaseTestSuite
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Basic Migration Tests")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("migrates all 42 settings from old to new names")
+    function _()
+      ' GIVEN: Mock registry with OLD setting names
+      testUserId = "test-migration-user-001"
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.0.0") ' Old version (before 1.1.0)
+
+      ' Write ALL 42 OLD setting names with sample values
+      ' Global (1)
+      reg.write("global.rememberme", "true")
+
+      ' Playback (13)
+      reg.write("playback.bitrate.maxlimited", "false")
+      reg.write("playback.bitrate.limit", "8000")
+      reg.write("playback.cinemamode", "true")
+      reg.write("playback.subs.custom", "false")
+      reg.write("playback.resolution.max", "1080")
+      reg.write("playback.nextupbuttonseconds", "30")
+      reg.write("playback.playnextepisode", "enabled")
+      reg.write("playback.preferredAudioCodec", "aac")
+      reg.write("playback.subs.onlytext", "true")
+      reg.write("playback.mpeg2", "false")
+      reg.write("playback.mpeg4", "true")
+      reg.write("playback.tryDirect.h264ProfileLevel", "false")
+      reg.write("playback.tryDirect.hevcProfileLevel", "false")
+
+      ' UI (14)
+      reg.write("ui.general.episodeimagesnextup", "always")
+      reg.write("ui.font.fallback", "false")
+      reg.write("ui.design.hideclock", "true")
+      reg.write("ui.details.maxdaysnextup", "365")
+      reg.write("ui.details.enablerewatchingnextup", "false")
+      reg.write("ui.row.layout", "landscape")
+      reg.write("ui.home.splashBackground", "true")
+      reg.write("ui.home.useWebSectionArrangement", "false")
+      reg.write("ui.details.hidetagline", "true")
+      reg.write("ui.movies.showRatings", "true")
+      reg.write("ui.tvshows.blurunwatched", "false")
+      reg.write("ui.tvshows.disableCommunityRating", "true")
+      reg.write("ui.tvshows.disableUnwatchedEpisodeCount", "false")
+      reg.write("ui.tvshows.goStraightToEpisodeListing", "true")
+
+      ' Item Grid (4)
+      reg.write("itemgrid.showItemCount", "true")
+      reg.write("itemgrid.gridTitles", "showalways")
+      reg.write("itemgrid.reset", "false")
+      reg.write("itemgrid.movieDefaultView", "moviesgrid")
+
+      ' Home Sections (7)
+      reg.write("homesection0", "librarybuttons")
+      reg.write("homesection1", "resume")
+      reg.write("homesection2", "nextup")
+      reg.write("homesection3", "latestmedia")
+      reg.write("homesection4", "livetv")
+      reg.write("homesection5", "none")
+      reg.write("homesection6", "none")
+
+      ' Display (1)
+      reg.write("display.livetv.landing", "guide")
+
+      ' Permissions (2)
+      reg.write("livetv.canrecord", "true")
+      reg.write("content.candelete", "false")
+
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations()
+
+      ' THEN: NEW setting names exist with preserved values
+      reg = CreateObject("roRegistrySection", testUserId)
+
+      ' Verify Global settings (1)
+      m.assertTrue(reg.exists("globalRememberMe"), "globalRememberMe should exist")
+      m.assertEqual(reg.read("globalRememberMe"), "true")
+
+      ' Verify Playback settings (13)
+      m.assertTrue(reg.exists("playbackBitrateMaxLimited"))
+      m.assertEqual(reg.read("playbackBitrateMaxLimited"), "false")
+      m.assertTrue(reg.exists("playbackBitrateLimit"))
+      m.assertEqual(reg.read("playbackBitrateLimit"), "8000")
+      m.assertTrue(reg.exists("playbackCinemaMode"))
+      m.assertEqual(reg.read("playbackCinemaMode"), "true")
+      m.assertTrue(reg.exists("playbackSubsCustom"))
+      m.assertEqual(reg.read("playbackSubsCustom"), "false")
+      m.assertTrue(reg.exists("playbackResolutionMax"))
+      m.assertEqual(reg.read("playbackResolutionMax"), "1080")
+      m.assertTrue(reg.exists("playbackNextUpButtonSeconds"))
+      m.assertEqual(reg.read("playbackNextUpButtonSeconds"), "30")
+      m.assertTrue(reg.exists("playbackPlayNextEpisode"))
+      m.assertEqual(reg.read("playbackPlayNextEpisode"), "enabled")
+      m.assertTrue(reg.exists("playbackPreferredAudioCodec"))
+      m.assertEqual(reg.read("playbackPreferredAudioCodec"), "aac")
+      m.assertTrue(reg.exists("playbackSubsOnlyText"))
+      m.assertEqual(reg.read("playbackSubsOnlyText"), "true")
+      m.assertTrue(reg.exists("playbackMpeg2"))
+      m.assertEqual(reg.read("playbackMpeg2"), "false")
+      m.assertTrue(reg.exists("playbackMpeg4"))
+      m.assertEqual(reg.read("playbackMpeg4"), "true")
+      m.assertTrue(reg.exists("playbackTryDirectH264ProfileLevel"))
+      m.assertEqual(reg.read("playbackTryDirectH264ProfileLevel"), "false")
+      m.assertTrue(reg.exists("playbackTryDirectHevcProfileLevel"))
+      m.assertEqual(reg.read("playbackTryDirectHevcProfileLevel"), "false")
+
+      ' Verify UI settings (14)
+      m.assertTrue(reg.exists("uiGeneralEpisodeImages"))
+      m.assertEqual(reg.read("uiGeneralEpisodeImages"), "always")
+      m.assertTrue(reg.exists("uiFontFallback"))
+      m.assertEqual(reg.read("uiFontFallback"), "false")
+      m.assertTrue(reg.exists("uiDesignHideClock"))
+      m.assertEqual(reg.read("uiDesignHideClock"), "true")
+      m.assertTrue(reg.exists("uiDetailsMaxDaysNextUp"))
+      m.assertEqual(reg.read("uiDetailsMaxDaysNextUp"), "365")
+      m.assertTrue(reg.exists("uiDetailsEnableRewatchingNextUp"))
+      m.assertEqual(reg.read("uiDetailsEnableRewatchingNextUp"), "false")
+      m.assertTrue(reg.exists("uiRowLayout"))
+      m.assertEqual(reg.read("uiRowLayout"), "landscape")
+      m.assertTrue(reg.exists("uiHomeSplashBackground"))
+      m.assertEqual(reg.read("uiHomeSplashBackground"), "true")
+      m.assertTrue(reg.exists("uiHomeUseWebArrangement"))
+      m.assertEqual(reg.read("uiHomeUseWebArrangement"), "false")
+      m.assertTrue(reg.exists("uiDetailsHideTagline"))
+      m.assertEqual(reg.read("uiDetailsHideTagline"), "true")
+      m.assertTrue(reg.exists("uiMoviesShowRatings"))
+      m.assertEqual(reg.read("uiMoviesShowRatings"), "true")
+      m.assertTrue(reg.exists("uiTvShowsBlurUnwatched"))
+      m.assertEqual(reg.read("uiTvShowsBlurUnwatched"), "false")
+      m.assertTrue(reg.exists("uiTvShowsDisableCommunityRating"))
+      m.assertEqual(reg.read("uiTvShowsDisableCommunityRating"), "true")
+      m.assertTrue(reg.exists("uiTvShowsDisableUnwatchedCount"))
+      m.assertEqual(reg.read("uiTvShowsDisableUnwatchedCount"), "false")
+      m.assertTrue(reg.exists("uiTvShowsGoStraightToEpisodes"))
+      m.assertEqual(reg.read("uiTvShowsGoStraightToEpisodes"), "true")
+
+      ' Verify Item Grid settings (4)
+      m.assertTrue(reg.exists("itemGridShowItemCount"))
+      m.assertEqual(reg.read("itemGridShowItemCount"), "true")
+      m.assertTrue(reg.exists("itemGridTitles"))
+      m.assertEqual(reg.read("itemGridTitles"), "showalways")
+      m.assertTrue(reg.exists("itemGridReset"))
+      m.assertEqual(reg.read("itemGridReset"), "false")
+      m.assertTrue(reg.exists("itemGridMovieDefaultView"))
+      m.assertEqual(reg.read("itemGridMovieDefaultView"), "moviesgrid")
+
+      ' Verify Home Section settings (7)
+      m.assertTrue(reg.exists("homeSection0"))
+      m.assertEqual(reg.read("homeSection0"), "librarybuttons")
+      m.assertTrue(reg.exists("homeSection1"))
+      m.assertEqual(reg.read("homeSection1"), "resume")
+      m.assertTrue(reg.exists("homeSection2"))
+      m.assertEqual(reg.read("homeSection2"), "nextup")
+      m.assertTrue(reg.exists("homeSection3"))
+      m.assertEqual(reg.read("homeSection3"), "latestmedia")
+      m.assertTrue(reg.exists("homeSection4"))
+      m.assertEqual(reg.read("homeSection4"), "livetv")
+      m.assertTrue(reg.exists("homeSection5"))
+      m.assertEqual(reg.read("homeSection5"), "none")
+      m.assertTrue(reg.exists("homeSection6"))
+      m.assertEqual(reg.read("homeSection6"), "none")
+
+      ' Verify Display settings (1)
+      m.assertTrue(reg.exists("displayLiveTvLanding"))
+      m.assertEqual(reg.read("displayLiveTvLanding"), "guide")
+
+      ' Verify Permission settings (2)
+      m.assertTrue(reg.exists("liveTvCanRecord"))
+      m.assertEqual(reg.read("liveTvCanRecord"), "true")
+      m.assertTrue(reg.exists("contentCanDelete"))
+      m.assertEqual(reg.read("contentCanDelete"), "false")
+
+      ' AND: OLD setting names are deleted
+      m.assertFalse(reg.exists("global.rememberme"), "Old setting name should be deleted")
+      m.assertFalse(reg.exists("ui.row.layout"), "Old setting name should be deleted")
+      m.assertFalse(reg.exists("playback.bitrate.limit"), "Old setting name should be deleted")
+      m.assertFalse(reg.exists("ui.design.hideclock"), "Old setting name should be deleted")
+      m.assertFalse(reg.exists("homesection0"), "Old setting name should be deleted")
+
+      ' Cleanup
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
+    end function
+
+    @it("preserves exact string values during migration")
+    function _()
+      ' GIVEN: Settings with various string formats
+      testUserId = "test-migration-values-001"
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.0.0")
+
+      ' Test various value formats
+      reg.write("global.rememberme", "true") ' Boolean string
+      reg.write("playback.bitrate.limit", "8000") ' Numeric string
+      reg.write("ui.row.layout", "landscape") ' Regular string
+      reg.write("ui.general.episodeimagesnextup", "") ' Empty string
+      reg.write("playback.preferredAudioCodec", "AC3/EAC3") ' String with special chars
+
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations()
+
+      ' THEN: Values are preserved exactly as-is
+      reg = CreateObject("roRegistrySection", testUserId)
+
+      m.assertEqual(reg.read("globalRememberMe"), "true", "Boolean string should be preserved")
+      m.assertEqual(reg.read("playbackBitrateLimit"), "8000", "Numeric string should be preserved")
+      m.assertEqual(reg.read("uiRowLayout"), "landscape", "Regular string should be preserved")
+      m.assertEqual(reg.read("uiGeneralEpisodeImages"), "", "Empty string should be preserved")
+      m.assertEqual(reg.read("playbackPreferredAudioCodec"), "AC3/EAC3", "Special chars should be preserved")
+
+      ' Cleanup
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Edge Cases")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("handles partial migrations gracefully (some settings missing)")
+    function _()
+      ' GIVEN: Registry with only SOME old settings
+      testUserId = "test-migration-partial-001"
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.0.0")
+
+      ' Only write 5 of 42 settings
+      reg.write("global.rememberme", "true")
+      reg.write("ui.row.layout", "landscape")
+      reg.write("playback.bitrate.limit", "8000")
+
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations()
+
+      ' THEN: Only existing settings are migrated
+      reg = CreateObject("roRegistrySection", testUserId)
+
+      m.assertTrue(reg.exists("globalRememberMe"))
+      m.assertTrue(reg.exists("uiRowLayout"))
+      m.assertTrue(reg.exists("playbackBitrateLimit"))
+
+      ' Non-existent settings should not be created
+      m.assertFalse(reg.exists("uiDesignHideClock"))
+      m.assertFalse(reg.exists("playbackCinemaMode"))
+
+      ' Old names should be deleted
+      m.assertFalse(reg.exists("global.rememberme"))
+      m.assertFalse(reg.exists("ui.row.layout"))
+
+      ' Cleanup
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
+    end function
+
+    @it("handles empty registry gracefully (no settings to migrate)")
+    function _()
+      ' GIVEN: Empty registry
+      testUserId = "test-migration-empty-001"
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.0.0")
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations()
+
+      ' THEN: No errors, no new settings created
+      reg = CreateObject("roRegistrySection", testUserId)
+
+      ' Verify LastRunVersion still exists
+      m.assertTrue(reg.exists("LastRunVersion"))
+
+      ' Verify no settings were created
+      allKeys = reg.GetKeyList()
+      m.assertEqual(allKeys.Count(), 1, "Should only have LastRunVersion key")
+
+      ' Cleanup
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
+    end function
+
+    @it("migrates multiple users independently")
+    function _()
+      ' GIVEN: Two users with different settings
+      testUserId1 = "test-migration-user1-001"
+      testUserId2 = "test-migration-user2-001"
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
+
+      ' User 1
+      reg1 = CreateObject("roRegistrySection", testUserId1)
+      reg1.write("LastRunVersion", "1.0.0")
+      reg1.write("global.rememberme", "true")
+      reg1.write("ui.row.layout", "landscape")
+      reg1.flush()
+
+      ' User 2
+      reg2 = CreateObject("roRegistrySection", testUserId2)
+      reg2.write("LastRunVersion", "1.0.0")
+      reg2.write("global.rememberme", "false")
+      reg2.write("ui.row.layout", "portrait")
+      reg2.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations()
+
+      ' THEN: Both users migrated independently with correct values
+      reg1 = CreateObject("roRegistrySection", testUserId1)
+      m.assertEqual(reg1.read("globalRememberMe"), "true")
+      m.assertEqual(reg1.read("uiRowLayout"), "landscape")
+
+      reg2 = CreateObject("roRegistrySection", testUserId2)
+      m.assertEqual(reg2.read("globalRememberMe"), "false")
+      m.assertEqual(reg2.read("uiRowLayout"), "portrait")
+
+      ' Cleanup
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
+    end function
+
+    @it("handles mixed old and new settings (partial migration scenario)")
+    function _()
+      ' GIVEN: Registry with BOTH old and new setting names
+      ' This simulates a scenario where migration partially ran or was interrupted
+      testUserId = "test-migration-mixed-001"
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.0.0")
+
+      ' Write both old and new names (migration should prefer old→new and delete old)
+      reg.write("global.rememberme", "true") ' Old name
+      reg.write("globalRememberMe", "false") ' New name (already exists!)
+      reg.write("ui.row.layout", "landscape") ' Old name only
+
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations()
+
+      ' THEN: Old values overwrite new values (migration always wins)
+      reg = CreateObject("roRegistrySection", testUserId)
+
+      m.assertEqual(reg.read("globalRememberMe"), "true", "Old value should overwrite new value")
+      m.assertEqual(reg.read("uiRowLayout"), "landscape")
+
+      ' Old names should be deleted
+      m.assertFalse(reg.exists("global.rememberme"))
+      m.assertFalse(reg.exists("ui.row.layout"))
+
+      ' Cleanup
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Version Checking")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("skips migration when version already migrated (v1.1.0+)")
+    function _()
+      ' GIVEN: User already on v1.1.0 or higher
+      testUserId = "test-migration-skip-001"
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.1.0") ' Already migrated version
+
+      ' Write OLD setting names (should NOT be migrated)
+      reg.write("global.rememberme", "true")
+      reg.write("ui.row.layout", "landscape")
+
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations()
+
+      ' THEN: No migration occurred (old names still exist)
+      reg = CreateObject("roRegistrySection", testUserId)
+
+      m.assertTrue(reg.exists("global.rememberme"), "Old setting should still exist (not migrated)")
+      m.assertTrue(reg.exists("ui.row.layout"), "Old setting should still exist (not migrated)")
+      m.assertFalse(reg.exists("globalRememberMe"), "New setting should NOT exist")
+      m.assertFalse(reg.exists("uiRowLayout"), "New setting should NOT exist")
+
+      ' Cleanup
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
+    end function
+
+    @it("runs migration for users on older versions (v1.0.0)")
+    function _()
+      ' GIVEN: User on older version
+      testUserId = "test-migration-run-001"
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.0.0") ' Old version
+
+      reg.write("global.rememberme", "true")
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations()
+
+      ' THEN: Migration occurred
+      reg = CreateObject("roRegistrySection", testUserId)
+
+      m.assertTrue(reg.exists("globalRememberMe"), "New setting should exist")
+      m.assertFalse(reg.exists("global.rememberme"), "Old setting should be deleted")
+
+      ' Cleanup
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
+    end function
+
+    @it("skips JellyRock and test-global sections (only migrates user sections)")
+    function _()
+      ' GIVEN: Settings in test-global section (for testing migration skip logic)
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
+
+      ' Write to test-global section (should be skipped by migration, like JellyRock)
+      testGlobalReg = CreateObject("roRegistrySection", "test-global")
+      testGlobalReg.write("LastRunVersion", "1.0.0")
+      testGlobalReg.write("global.rememberme", "true")
+      testGlobalReg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations()
+
+      ' THEN: test-global section is NOT migrated
+      testGlobalReg = CreateObject("roRegistrySection", "test-global")
+
+      m.assertTrue(testGlobalReg.exists("global.rememberme"), "test-global old setting should still exist")
+      m.assertFalse(testGlobalReg.exists("globalRememberMe"), "test-global should not be migrated")
+
+      ' Cleanup
+      testGlobalReg.delete("global.rememberme")
+      testGlobalReg.delete("LastRunVersion")
+      testGlobalReg.flush()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Display Settings Migration")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("does NOT migrate nested display settings (handled by transformer)")
+    function _()
+      ' Display settings with library IDs (display.libraryId.key) are NOT migrated
+      ' by runRegistryUserMigrations() - they are handled by SessionDataTransformer
+      ' This test verifies migration ONLY handles the top-level displayLiveTvLanding setting
+
+      testUserId = "test-migration-display-001"
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.0.0")
+
+      ' Top-level display setting (SHOULD be migrated)
+      reg.write("display.livetv.landing", "guide")
+
+      ' Nested display settings (should NOT be migrated by this function)
+      reg.write("display.library123.sortField", "Name")
+      reg.write("display.library123.sortAscending", "true")
+
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations()
+
+      ' THEN: Only displayLiveTvLanding is migrated
+      reg = CreateObject("roRegistrySection", testUserId)
+
+      m.assertTrue(reg.exists("displayLiveTvLanding"))
+      m.assertEqual(reg.read("displayLiveTvLanding"), "guide")
+      m.assertFalse(reg.exists("display.livetv.landing"))
+
+      ' Nested display settings should remain unchanged (transformer handles these)
+      m.assertTrue(reg.exists("display.library123.sortField"), "Nested display settings not migrated here")
+      m.assertTrue(reg.exists("display.library123.sortAscending"))
+
+      ' Cleanup
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
+    end function
+
+  end class
+
+end namespace

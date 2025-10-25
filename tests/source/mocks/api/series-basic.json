@@ -1,0 +1,7 @@
+{
+  "Id": "series123",
+  "Type": "Series",
+  "Name": "Test Series",
+  "Status": "Continuing",
+  "AirDays": ["Monday", "Wednesday"]
+}

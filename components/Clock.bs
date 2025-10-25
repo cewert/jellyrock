@@ -4,7 +4,7 @@ import "pkg:/source/utils/misc.bs"
 
 sub init()
   m.top.id = "clock"
-  if m.global.session.user.settings["ui.design.hideclock"]
+  if m.global.user.settings.uiDesignHideClock
     ' If hideclick setting is enabled, exit without setting any variables
     m.hideClock = true
     return

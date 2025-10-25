@@ -24,6 +24,6 @@
   ],
   "sourceMap": true,
   "autoImportComponentScript": true,
-  "stagingDir": "build/staging",
+  "stagingDir": "build",
   "retainStagingDir": true
 }

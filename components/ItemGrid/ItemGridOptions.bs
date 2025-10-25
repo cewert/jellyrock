@@ -118,12 +118,15 @@ sub optionsSet()
       entry = sortContent.CreateChild("ContentNode")
       entry.title = sortItem.Title
       m.sortNames.push(sortItem.Name)
-      if isValid(sortItem.Selected) and sortItem.Selected = true
+
+      ' Handle both boolean and string values for Selected and Ascending
+      ' These may come as strings when passed through Scene Graph assocarray fields
+      if isValid(sortItem.Selected) and toBoolean(sortItem.Selected) = true
         m.selectedSortIndex = index
-        if isValid(sortItem.Ascending) and sortItem.Ascending = false
-          m.top.sortAscending = 0
+        if isValid(sortItem.Ascending) and toBoolean(sortItem.Ascending) = false
+          m.top.sortAscending = false
         else
-          m.top.sortAscending = 1
+          m.top.sortAscending = true
         end if
       end if
       index = index + 1
@@ -132,7 +135,7 @@ sub optionsSet()
     m.menus[1].checkedItem = m.selectedSortIndex
 
     globalConstants = m.global.constants
-    if m.top.sortAscending = 1
+    if m.top.sortAscending = true
       m.menus[1].focusedCheckedIconUri = globalConstants.icons.arrow_up_black
       m.menus[1].checkedIconUri = globalConstants.icons.arrow_up_white
     else

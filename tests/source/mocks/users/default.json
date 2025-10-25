@@ -1,0 +1,11 @@
+{
+  "id": "test-user-123",
+  "name": "Test User",
+  "Configuration": {
+    "enableNextEpisodeAutoPlay": true
+  },
+  "Policy": {
+    "isAdministrator": false,
+    "enableContentDeletion": false
+  }
+}

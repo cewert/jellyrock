@@ -8,7 +8,7 @@
     "source/**/*.bs",
     "components/**/*.brs",
     "components/**/*.bs",
-    "unit-tests/**/*.bs",
+    "tests/**/*.bs",
     "!**/roku_modules/**/*.*"
   ]
 }

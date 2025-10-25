@@ -1,12 +1,11 @@
 {
   "files": [
+    "manifest",
     {
-      "src": "unit-tests/**/*"
-    },
-    {
-      "src": "source/**/!(Main.brs)",
+      "src": "source/**/*",
       "dest": "source"
     },
+    "!source/Main.bs",
     {
       "src": "components/**/*",
       "dest": "components"
@@ -19,13 +18,19 @@
       "src": "settings/**/*",
       "dest": "settings"
     },
+    {
+      "src": "tests/source/**/*",
+      "dest": "source/tests"
+    },
+    "!tests/source/e2e/**/*",
+    "!tests/source/**/*.md",
     "!**/*.spec.bs",
     {
       "src": "**/BaseTestSuite.spec.bs",
       "dest": "source"
     },
     {
-      "src": "**/isValid.spec.bs",
+      "src": "**/NewFeature.spec.bs",
       "dest": "source"
     }
   ],
@@ -43,6 +48,7 @@
   "rooibos": {
     "isRecordingCodeCoverage": false,
     "testsFilePattern": null,
+    "tags": null,
     "showOnlyFailures": true,
     "catchCrashes": true,
     "lineWidth": 70,

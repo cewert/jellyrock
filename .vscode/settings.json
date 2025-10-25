@@ -33,11 +33,23 @@
   "brightscript.projects": [
     {
       "path": "bsconfig.json",
-      "name": "Main Project"
+      "name": "JellyRock dev"
+    },
+    {
+      "path": "bsconfig-prod.json",
+      "name": "JellyRock prod"
     },
     {
       "path": "bsconfig-tests.json",
-      "name": "Unit Tests"
+      "name": "All Unit Tests"
+    },
+    {
+      "path": "bsconfig-tests-unit.json",
+      "name": "Unit tests (no integration)"
+    },
+    {
+      "path": "bsconfig-tests-integration.json",
+      "name": "Integration Unit tests"
     }
   ],
   "search.exclude": {

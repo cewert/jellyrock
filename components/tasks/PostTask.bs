@@ -15,7 +15,7 @@ sub postItems()
     return
   end if
 
-  if m.global.session.server.url = ""
+  if m.global.server.serverUrl = ""
     print "ERROR in PostTask. No server URL set in session"
     m.top.responseCode = -1
     m.top.failureReason = "No server URL set in session"

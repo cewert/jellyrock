@@ -10,9 +10,9 @@ sub init()
   m.textBackground = m.top.findNode("background")
   m.statusTimer = m.top.findNode("statusTimer")
   m.statusTimer.observeField("fire", "statusUpdate")
-  userSettings = m.global.session.user.settings
-  m.slideshow = userSettings["photos.slideshow"]
-  m.random = userSettings["photos.random"]
+  userSettings = m.global.user.settings
+  m.slideshow = userSettings.photosSlideshow
+  m.random = userSettings.photosRandom
 
   m.showStatusAnimation = m.top.findNode("showStatusAnimation")
   m.hideStatusAnimation = m.top.findNode("hideStatusAnimation")

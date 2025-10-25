@@ -1,0 +1,11 @@
+{
+  "Id": "ep123",
+  "Type": "Episode",
+  "Name": "Pilot",
+  "SeriesId": "series123",
+  "SeriesName": "Test Series",
+  "SeasonId": "season123",
+  "SeasonName": "Season 1",
+  "IndexNumber": 1,
+  "ParentIndexNumber": 1
+}

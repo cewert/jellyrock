@@ -45,4 +45,4 @@ jobs:
           curl -sSL "https://devtools.web.roku.com/static-channel-analysis/sca-cmd.zip" -o sca-cmd.zip
           unzip sca-cmd.zip
       - name: Run Roku Static Analysis
-        run: ./sca-cmd/bin/sca-cmd ${{ github.workspace }}/build/staging --exit error
+        run: ./sca-cmd/bin/sca-cmd ${{ github.workspace }}/build --exit error

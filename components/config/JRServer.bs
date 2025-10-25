@@ -25,11 +25,11 @@ sub init() as void
 end sub
 
 sub itemContentChanged() as void
-  server = m.top.itemContent
+  serverItem = m.top.itemContent
 
-  m.poster.uri = server.iconUrl
-  m.name.text = server.name
-  m.baseUrl.text = server.baseUrl
+  m.poster.uri = serverItem.iconUrl
+  m.name.text = serverItem.name
+  m.baseUrl.text = serverItem.baseUrl
 end sub
 
 sub onFocusPercentChange()

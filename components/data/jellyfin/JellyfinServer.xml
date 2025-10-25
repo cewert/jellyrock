@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  LOADING STATE PATTERN: EXPLICIT STATE TRACKING
+
+  This component uses EXPLICIT isLoaded/isConnected flags because:
+  - Network operations require state tracking
+  - Multiple connection states (disconnected/connecting/connected/error)
+  - Cache invalidation needed (lastConnected timestamp)
+  - Only ONE instance exists (memory overhead negligible)
+-->
+<component name="JellyfinServer" extends="ContentNode">
+  <interface>
+    <!-- Server Identity (id inherited from ContentNode) -->
+    <field id="name" type="string" value="" />
+    <field id="version" type="string" value="" />
+    <field id="productName" type="string" value="" />
+
+    <!-- Connection Info -->
+    <field id="serverUrl" type="string" value="" />
+    <field id="localURL" type="string" value="" />
+    <field id="isHTTPS" type="boolean" value="false" />
+    <field id="isLocalHTTPS" type="boolean" value="false" />
+
+    <!-- Server Status -->
+    <field id="startupWizardCompleted" type="boolean" value="false" />
+
+    <!-- Loading State -->
+    <field id="isLoaded" type="boolean" value="false" />
+    <field id="isConnected" type="boolean" value="false" />
+    <field id="lastConnected" type="longinteger" value="0" />
+
+    <!-- DEBUG ONLY: Raw server info for debugging - only populated when bs_const=debug=true -->
+    <field id="rawServerInfo" type="assocarray" />
+  </interface>
+</component>

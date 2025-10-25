@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  LOADING STATE PATTERN: STATIC INITIALIZATION
+
+  App info is static and loaded once at startup.
+  No network operations, no loading states needed.
+-->
+<component name="AppInfo" extends="ContentNode">
+  <interface>
+    <field id="appId" type="string" value="" />
+    <field id="isDev" type="boolean" value="false" />
+    <field id="version" type="string" value="" />
+    <field id="lastRunVersion" type="string" value="" />
+  </interface>
+</component>

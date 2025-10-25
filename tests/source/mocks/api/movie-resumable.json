@@ -1,0 +1,9 @@
+{
+  "Id": "movie123",
+  "Type": "Movie",
+  "Name": "Test",
+  "UserData": {
+    "Played": false,
+    "PlaybackPositionTicks": 30000000000
+  }
+}

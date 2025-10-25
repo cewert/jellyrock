@@ -1,0 +1,11 @@
+{
+  "Id": "ep123",
+  "Type": "Episode",
+  "Name": "Pilot",
+  "ParentPrimaryImageTag": "parentTag",
+  "ParentPrimaryImageItemId": "season123",
+  "ParentThumbImageTag": "parentThumb",
+  "ParentThumbItemId": "season123",
+  "SeriesPrimaryImageTag": "seriesTag",
+  "SeriesId": "series123"
+}
