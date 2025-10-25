@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- prevent bot commits from triggering changelog-sync workflow ([4e63c32](https://github.com/cewert/jellyrock/commit/4e63c32))
+- prevent fork PRs from accessing secrets in update-settings-docs workflow ([b3344ac](https://github.com/cewert/jellyrock/commit/b3344ac))
 - prevent duplicate builds on PR push ([0719eed](https://github.com/cewert/jellyrock/commit/0719eed))
 - workflows failing to commit changes due to branch protections ([6e05827](https://github.com/cewert/jellyrock/commit/6e05827))
 - run build workflow for all PR commits ([f3b37bf](https://github.com/cewert/jellyrock/commit/f3b37bf))
