@@ -7,7 +7,7 @@ JellyRock uses the Mocha-inspired Rooibos framework for robust unit and integrat
 **What you'll learn:**
 
 - Writing unit tests with Rooibos framework
-- Using JellyRock's BaseTestSuite and helper methods
+- Using JellyRock's `BaseTestSuite` and helper methods
 - Testing with mocks, stubs, and async patterns
 - Testing Scene Graph components
 - Best practices for Roku/BrightScript testing
@@ -185,7 +185,7 @@ end function
 
 ---
 
-## BaseTestSuite (JellyRock-Specific)
+## `BaseTestSuite` (JellyRock-Specific)
 
 All test suites **MUST** extend `tests.BaseTestSuite`, which provides:
 
@@ -317,7 +317,7 @@ m.assertMocks()                                   ' Verify (MUST call at end)
 
 Wait for asynchronous operations (Task nodes, field observers).
 
-### assertAsyncField
+### `assertAsyncField()`
 
 ```brighterscript
 @it("waits for task completion")
@@ -659,7 +659,7 @@ m.assertAsyncField(node, "field")
 m.assertMocks()
 ```
 
-### BaseTestSuite Helpers
+### `BaseTestSuite` Helpers
 
 ```brighterscript
 m.loadTestUser("filename")
@@ -684,4 +684,4 @@ npm run build:tdd                # Build with TDD config (see TDD guide)
 
 - [Rooibos Documentation](https://github.com/rokucommunity/rooibos/blob/master/docs/index.md)
 - [Rooibos API Reference](https://rokucommunity.github.io/rooibos/module-BaseTestSuite.html)
-- [BaseTestSuite Implementation](../../tests/source/BaseTestSuite.spec.bs)
+- [`BaseTestSuite` Implementation](../../tests/source/BaseTestSuite.spec.bs)

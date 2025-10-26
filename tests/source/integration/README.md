@@ -7,7 +7,7 @@
 - May perform real I/O (registry writes, network calls to demo servers)
 - Tests multiple components working together
 - Slower execution than unit tests
-- Requires cleanup after execution (handled by BaseTestSuite)
+- Requires cleanup after execution (handled by `BaseTestSuite`)
 
 **Build:** `npm run build:tests-integration`
 

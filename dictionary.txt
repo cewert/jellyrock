@@ -58,3 +58,17 @@ roku-log-expert
 auth
 fallbacks
 codebase.
+codebase
+gitignored
+config
+JellyRock's
+async
+Async
+params
+ContentNode
+RTA
+APIs
+namespace
+Lifecycle
+Hardcode
+Hardcoded
