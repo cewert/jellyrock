@@ -56,7 +56,6 @@ namespace nodeUtils
 
     ' Update all fields at once using setFields() - single rendezvous
     if fieldsToUpdate.Count() > 0
-      print "fieldsToUpdate =", fieldsToUpdate
       targetNode.setFields(fieldsToUpdate)
     end if
   end sub

@@ -12,7 +12,6 @@ namespace tests
     @it("saves boolean true to registry as string 'true'")
     function _()
       testUserId = "test-registry-bool-true-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       ' Mock m.global.user.id for set_user_setting()
       m.global.user.id = testUserId
@@ -26,13 +25,11 @@ namespace tests
       m.assertTrue(type(value) = "roString" or type(value) = "String")
       m.assertEqual(value, "true")
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("saves boolean false to registry as string 'false'")
     function _()
       testUserId = "test-registry-bool-false-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       m.global.user.id = testUserId
 
@@ -43,13 +40,11 @@ namespace tests
       m.assertTrue(type(value) = "roString" or type(value) = "String")
       m.assertEqual(value, "false")
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("saves integer to registry as string")
     function _()
       testUserId = "test-registry-int-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       m.global.user.id = testUserId
 
@@ -60,13 +55,11 @@ namespace tests
       m.assertTrue(type(value) = "roString" or type(value) = "String")
       m.assertEqual(value, "8000")
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("saves string to registry unchanged")
     function _()
       testUserId = "test-registry-string-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       m.global.user.id = testUserId
 
@@ -77,13 +70,11 @@ namespace tests
       m.assertTrue(type(value) = "roString" or type(value) = "String")
       m.assertEqual(value, "landscape")
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("saves empty string to registry")
     function _()
       testUserId = "test-registry-empty-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       m.global.user.id = testUserId
 
@@ -94,13 +85,11 @@ namespace tests
       m.assertTrue(type(value) = "roString" or type(value) = "String")
       m.assertEqual(value, "")
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("saves float to registry as string")
     function _()
       testUserId = "test-registry-float-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       m.global.user.id = testUserId
 
@@ -112,7 +101,6 @@ namespace tests
       m.assertTrue(type(value) = "roString" or type(value) = "String")
       m.assertTrue(value.Instr("3.14") = 0)
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -122,7 +110,6 @@ namespace tests
     @it("loads and converts registry string 'true' to boolean")
     function _()
       testUserId = "test-registry-load-bool-true-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       ' GIVEN: Registry has string "true"
       reg = CreateObject("roRegistrySection", testUserId)
@@ -138,13 +125,11 @@ namespace tests
       m.assertEqual(type(settings.uiDesignHideClock), "roBoolean")
       m.assertEqual(settings.uiDesignHideClock, true)
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("loads and converts registry string 'false' to boolean")
     function _()
       testUserId = "test-registry-load-bool-false-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       reg = CreateObject("roRegistrySection", testUserId)
       reg.write("uiFontFallback", "false")
@@ -157,13 +142,11 @@ namespace tests
       m.assertEqual(type(settings.uiFontFallback), "roBoolean")
       m.assertEqual(settings.uiFontFallback, false)
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("loads string from registry unchanged")
     function _()
       testUserId = "test-registry-load-string-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       reg = CreateObject("roRegistrySection", testUserId)
       reg.write("uiRowLayout", "landscape")
@@ -176,13 +159,11 @@ namespace tests
       m.assertEqual(type(settings.uiRowLayout), "roString")
       m.assertEqual(settings.uiRowLayout, "landscape")
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("loads empty string from registry")
     function _()
       testUserId = "test-registry-load-empty-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       reg = CreateObject("roRegistrySection", testUserId)
       reg.write("uiGeneralEpisodeImages", "")
@@ -195,7 +176,6 @@ namespace tests
       m.assertEqual(type(settings.uiGeneralEpisodeImages), "roString")
       m.assertEqual(settings.uiGeneralEpisodeImages, "")
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -205,7 +185,6 @@ namespace tests
     @it("round-trip all boolean settings maintain type and value")
     function _()
       testUserId = "test-roundtrip-booleans-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       m.global.user.id = testUserId
 
@@ -245,13 +224,11 @@ namespace tests
       globalValue = get_setting("globalRememberMe")
       m.assertEqual(globalValue, "false")
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("round-trip all string settings maintain value")
     function _()
       testUserId = "test-roundtrip-strings-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       m.global.user.id = testUserId
 
@@ -279,13 +256,11 @@ namespace tests
         m.assertEqual(settings[key], stringSettings[key], `${key} value should match`)
       end for
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("round-trip mixed settings maintain correct types")
     function _()
       testUserId = "test-roundtrip-mixed-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       m.global.user.id = testUserId
 
@@ -324,7 +299,6 @@ namespace tests
       m.assertTrue(type(globalValue) = "roString" or type(globalValue) = "String", "globalValue should be string type")
       m.assertEqual(globalValue, "true")
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -334,7 +308,6 @@ namespace tests
     @it("handles non-existent settings gracefully (returns invalid)")
     function _()
       testUserId = "test-registry-nonexistent-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       m.global.user.id = testUserId
 
@@ -343,13 +316,11 @@ namespace tests
 
       m.assertInvalid(value)
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("overwrites existing setting with new value")
     function _()
       testUserId = "test-registry-overwrite-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       m.global.user.id = testUserId
 
@@ -367,13 +338,11 @@ namespace tests
       reg = CreateObject("roRegistrySection", testUserId)
       m.assertEqual(reg.read("uiRowLayout"), "portrait")
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("deletes setting from registry")
     function _()
       testUserId = "test-registry-delete-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       m.global.user.id = testUserId
 
@@ -391,13 +360,11 @@ namespace tests
       reg = CreateObject("roRegistrySection", testUserId)
       m.assertFalse(reg.exists("uiDesignHideClock"))
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("saves multiple settings independently")
     function _()
       testUserId = "test-registry-multiple-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       m.global.user.id = testUserId
 
@@ -434,13 +401,11 @@ namespace tests
       globalReg = CreateObject("roRegistrySection", "test-global")
       m.assertTrue(globalReg.exists("globalRememberMe"))
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("handles special characters in string values via registry")
     function _()
       testUserId = "test-registry-special-chars-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       m.global.user.id = testUserId
 
@@ -462,7 +427,6 @@ namespace tests
         m.assertEqual(value, specialValues[i], `Special char value ${i} should be preserved`)
       end for
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -472,14 +436,14 @@ namespace tests
     @it("loads settings correctly after migration")
     function _()
       testUserId = "test-post-migration-load-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
-      ' GIVEN: Registry with OLD setting names (pre-migration state)
+      ' GIVEN: Registry with OLD user setting names (pre-migration state)
+      ' NOTE: global.rememberme is NOT a user setting - it belongs in the global section
       reg = CreateObject("roRegistrySection", testUserId)
       reg.write("LastRunVersion", "1.0.0")
-      reg.write("global.rememberme", "true")
       reg.write("ui.row.layout", "landscape")
       reg.write("ui.design.hideclock", "false")
+      reg.write("playback.bitrate.limit", "8000")
       reg.flush()
 
       ' WHEN: Migration runs
@@ -489,25 +453,23 @@ namespace tests
       ' Note: After migration, all settings use NEW camelCase names in registry
 
       reg = CreateObject("roRegistrySection", testUserId)
-      m.assertTrue(reg.exists("globalRememberMe"))
-      m.assertEqual(reg.read("globalRememberMe"), "true")
       m.assertTrue(reg.exists("uiRowLayout"))
       m.assertEqual(reg.read("uiRowLayout"), "landscape")
       m.assertTrue(reg.exists("uiDesignHideClock"))
       m.assertEqual(reg.read("uiDesignHideClock"), "false")
+      m.assertTrue(reg.exists("playbackBitrateLimit"))
+      m.assertEqual(reg.read("playbackBitrateLimit"), "8000")
 
       ' Old names should be deleted
-      m.assertFalse(reg.exists("global.rememberme"))
       m.assertFalse(reg.exists("ui.row.layout"))
       m.assertFalse(reg.exists("ui.design.hideclock"))
+      m.assertFalse(reg.exists("playback.bitrate.limit"))
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("saves and loads with NEW names after migration")
     function _()
       testUserId = "test-new-names-roundtrip-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       m.global.user.id = testUserId
 
@@ -534,7 +496,6 @@ namespace tests
       m.assertEqual(userReg.read("uiRowLayout"), "landscape")
       m.assertEqual(userReg.read("uiDesignHideClock"), "false")
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
   end class

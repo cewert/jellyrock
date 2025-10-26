@@ -234,8 +234,6 @@ namespace user
     ' Post-login setup
     user.SetServerDeviceName()
     user.LoadUserPreferences()
-
-    print "status of m.global.user after login =", m.global.user
   end sub
 
   ' Logout and reset to defaults

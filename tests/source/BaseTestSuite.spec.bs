@@ -162,13 +162,22 @@ namespace tests
       ' This ensures tests don't interfere with each other
       if isValid(m.global) and isValid(m.global.server)
         ' Ensure server URL is always valid for image URL generation
-        ' Reload from JSON if somehow lost during test
+        ' Reload from JSON if somehow lost during test (e.g., if test-global was cleaned)
         if not isValidAndNotEmpty(m.global.server.serverUrl)
           mockServer = MockDataLoader.LoadServer("default")
-          if isValid(mockServer) and isValid(mockServer.url)
-            m.global.server.serverUrl = mockServer.url
+          if isValid(mockServer) and isValid(mockServer.serverUrl)
+            m.global.server.serverUrl = mockServer.serverUrl
           end if
         end if
+      end if
+
+      ' Restore baseline test-global state needed for API requests
+      ' This ensures each test starts with a clean but functional test-global section
+      testGlobalReg = CreateObject("roRegistrySection", "test-global")
+      if not testGlobalReg.exists("server") and isValid(m.global.server.serverUrl)
+        ' Store server URL for API calls (mimics what production code does)
+        testGlobalReg.write("server", m.global.server.serverUrl)
+        testGlobalReg.flush()
       end if
     end function
 
@@ -179,14 +188,14 @@ namespace tests
       ' Clean up registry data written during INTEGRATION tests
       ' Unit tests (@tags("unit")) should never write to registry
       ' Integration tests (@tags("integration")) may write and need cleanup
-      ' All test users follow "test-user-*" naming pattern
-      RegistryTestUtils.CleanupTestRegistrySections("test-user-")
+      ' All test sections follow "test-*" naming pattern
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     protected override sub teardown()
       ' Final cleanup after all tests in this suite complete
       ' Clean up any remaining registry data from integration tests
-      RegistryTestUtils.CleanupTestRegistrySections("test-user-")
+      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end sub
 
     ' ===================================================================

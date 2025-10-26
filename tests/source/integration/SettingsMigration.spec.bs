@@ -9,18 +9,16 @@ namespace tests
     @describe("Basic Migration Tests")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("migrates all 42 settings from old to new names")
+    @it("migrates all 41 user settings from old to new names")
     function _()
       ' GIVEN: Mock registry with OLD setting names
       testUserId = "test-migration-user-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       reg = CreateObject("roRegistrySection", testUserId)
       reg.write("LastRunVersion", "1.0.0") ' Old version (before 1.1.0)
 
-      ' Write ALL 42 OLD setting names with sample values
-      ' Global (1)
-      reg.write("global.rememberme", "true")
+      ' Write ALL 41 OLD user setting names with sample values
+      ' NOTE: global.rememberme is NOT a user setting - it's stored in the global "JellyRock" section
 
       ' Playback (13)
       reg.write("playback.bitrate.maxlimited", "false")
@@ -82,10 +80,6 @@ namespace tests
 
       ' THEN: NEW setting names exist with preserved values
       reg = CreateObject("roRegistrySection", testUserId)
-
-      ' Verify Global settings (1)
-      m.assertTrue(reg.exists("globalRememberMe"), "globalRememberMe should exist")
-      m.assertEqual(reg.read("globalRememberMe"), "true")
 
       ' Verify Playback settings (13)
       m.assertTrue(reg.exists("playbackBitrateMaxLimited"))
@@ -182,27 +176,22 @@ namespace tests
       m.assertEqual(reg.read("contentCanDelete"), "false")
 
       ' AND: OLD setting names are deleted
-      m.assertFalse(reg.exists("global.rememberme"), "Old setting name should be deleted")
       m.assertFalse(reg.exists("ui.row.layout"), "Old setting name should be deleted")
       m.assertFalse(reg.exists("playback.bitrate.limit"), "Old setting name should be deleted")
       m.assertFalse(reg.exists("ui.design.hideclock"), "Old setting name should be deleted")
       m.assertFalse(reg.exists("homesection0"), "Old setting name should be deleted")
-
-      ' Cleanup
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("preserves exact string values during migration")
     function _()
       ' GIVEN: Settings with various string formats
       testUserId = "test-migration-values-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       reg = CreateObject("roRegistrySection", testUserId)
       reg.write("LastRunVersion", "1.0.0")
 
-      ' Test various value formats
-      reg.write("global.rememberme", "true") ' Boolean string
+      ' Test various value formats (user settings only)
+      reg.write("playback.bitrate.maxlimited", "true") ' Boolean string
       reg.write("playback.bitrate.limit", "8000") ' Numeric string
       reg.write("ui.row.layout", "landscape") ' Regular string
       reg.write("ui.general.episodeimagesnextup", "") ' Empty string
@@ -216,14 +205,11 @@ namespace tests
       ' THEN: Values are preserved exactly as-is
       reg = CreateObject("roRegistrySection", testUserId)
 
-      m.assertEqual(reg.read("globalRememberMe"), "true", "Boolean string should be preserved")
+      m.assertEqual(reg.read("playbackBitrateMaxLimited"), "true", "Boolean string should be preserved")
       m.assertEqual(reg.read("playbackBitrateLimit"), "8000", "Numeric string should be preserved")
       m.assertEqual(reg.read("uiRowLayout"), "landscape", "Regular string should be preserved")
       m.assertEqual(reg.read("uiGeneralEpisodeImages"), "", "Empty string should be preserved")
       m.assertEqual(reg.read("playbackPreferredAudioCodec"), "AC3/EAC3", "Special chars should be preserved")
-
-      ' Cleanup
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -234,15 +220,14 @@ namespace tests
     function _()
       ' GIVEN: Registry with only SOME old settings
       testUserId = "test-migration-partial-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       reg = CreateObject("roRegistrySection", testUserId)
       reg.write("LastRunVersion", "1.0.0")
 
-      ' Only write 5 of 42 settings
-      reg.write("global.rememberme", "true")
+      ' Only write 3 of 41 user settings
       reg.write("ui.row.layout", "landscape")
       reg.write("playback.bitrate.limit", "8000")
+      reg.write("ui.design.hideclock", "true")
 
       reg.flush()
 
@@ -252,27 +237,23 @@ namespace tests
       ' THEN: Only existing settings are migrated
       reg = CreateObject("roRegistrySection", testUserId)
 
-      m.assertTrue(reg.exists("globalRememberMe"))
       m.assertTrue(reg.exists("uiRowLayout"))
       m.assertTrue(reg.exists("playbackBitrateLimit"))
+      m.assertTrue(reg.exists("uiDesignHideClock"))
 
       ' Non-existent settings should not be created
-      m.assertFalse(reg.exists("uiDesignHideClock"))
       m.assertFalse(reg.exists("playbackCinemaMode"))
+      m.assertFalse(reg.exists("uiFontFallback"))
 
       ' Old names should be deleted
-      m.assertFalse(reg.exists("global.rememberme"))
       m.assertFalse(reg.exists("ui.row.layout"))
-
-      ' Cleanup
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
+      m.assertFalse(reg.exists("ui.design.hideclock"))
     end function
 
     @it("handles empty registry gracefully (no settings to migrate)")
     function _()
       ' GIVEN: Empty registry
       testUserId = "test-migration-empty-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       reg = CreateObject("roRegistrySection", testUserId)
       reg.write("LastRunVersion", "1.0.0")
@@ -290,9 +271,6 @@ namespace tests
       ' Verify no settings were created
       allKeys = reg.GetKeyList()
       m.assertEqual(allKeys.Count(), 1, "Should only have LastRunVersion key")
-
-      ' Cleanup
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("migrates multiple users independently")
@@ -300,20 +278,19 @@ namespace tests
       ' GIVEN: Two users with different settings
       testUserId1 = "test-migration-user1-001"
       testUserId2 = "test-migration-user2-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       ' User 1
       reg1 = CreateObject("roRegistrySection", testUserId1)
       reg1.write("LastRunVersion", "1.0.0")
-      reg1.write("global.rememberme", "true")
       reg1.write("ui.row.layout", "landscape")
+      reg1.write("ui.design.hideclock", "true")
       reg1.flush()
 
       ' User 2
       reg2 = CreateObject("roRegistrySection", testUserId2)
       reg2.write("LastRunVersion", "1.0.0")
-      reg2.write("global.rememberme", "false")
       reg2.write("ui.row.layout", "portrait")
+      reg2.write("ui.design.hideclock", "false")
       reg2.flush()
 
       ' WHEN: Migration runs
@@ -321,15 +298,12 @@ namespace tests
 
       ' THEN: Both users migrated independently with correct values
       reg1 = CreateObject("roRegistrySection", testUserId1)
-      m.assertEqual(reg1.read("globalRememberMe"), "true")
       m.assertEqual(reg1.read("uiRowLayout"), "landscape")
+      m.assertEqual(reg1.read("uiDesignHideClock"), "true")
 
       reg2 = CreateObject("roRegistrySection", testUserId2)
-      m.assertEqual(reg2.read("globalRememberMe"), "false")
       m.assertEqual(reg2.read("uiRowLayout"), "portrait")
-
-      ' Cleanup
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
+      m.assertEqual(reg2.read("uiDesignHideClock"), "false")
     end function
 
     @it("handles mixed old and new settings (partial migration scenario)")
@@ -337,14 +311,13 @@ namespace tests
       ' GIVEN: Registry with BOTH old and new setting names
       ' This simulates a scenario where migration partially ran or was interrupted
       testUserId = "test-migration-mixed-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       reg = CreateObject("roRegistrySection", testUserId)
       reg.write("LastRunVersion", "1.0.0")
 
       ' Write both old and new names (migration should prefer old→new and delete old)
-      reg.write("global.rememberme", "true") ' Old name
-      reg.write("globalRememberMe", "false") ' New name (already exists!)
+      reg.write("ui.design.hideclock", "true") ' Old name
+      reg.write("uiDesignHideClock", "false") ' New name (already exists!)
       reg.write("ui.row.layout", "landscape") ' Old name only
 
       reg.flush()
@@ -355,15 +328,12 @@ namespace tests
       ' THEN: Old values overwrite new values (migration always wins)
       reg = CreateObject("roRegistrySection", testUserId)
 
-      m.assertEqual(reg.read("globalRememberMe"), "true", "Old value should overwrite new value")
+      m.assertEqual(reg.read("uiDesignHideClock"), "true", "Old value should overwrite new value")
       m.assertEqual(reg.read("uiRowLayout"), "landscape")
 
       ' Old names should be deleted
-      m.assertFalse(reg.exists("global.rememberme"))
+      m.assertFalse(reg.exists("ui.design.hideclock"))
       m.assertFalse(reg.exists("ui.row.layout"))
-
-      ' Cleanup
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -374,7 +344,6 @@ namespace tests
     function _()
       ' GIVEN: User already on v1.1.0 or higher
       testUserId = "test-migration-skip-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       reg = CreateObject("roRegistrySection", testUserId)
       reg.write("LastRunVersion", "1.1.0") ' Already migrated version
@@ -395,21 +364,17 @@ namespace tests
       m.assertTrue(reg.exists("ui.row.layout"), "Old setting should still exist (not migrated)")
       m.assertFalse(reg.exists("globalRememberMe"), "New setting should NOT exist")
       m.assertFalse(reg.exists("uiRowLayout"), "New setting should NOT exist")
-
-      ' Cleanup
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("runs migration for users on older versions (v1.0.0)")
     function _()
       ' GIVEN: User on older version
       testUserId = "test-migration-run-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       reg = CreateObject("roRegistrySection", testUserId)
       reg.write("LastRunVersion", "1.0.0") ' Old version
 
-      reg.write("global.rememberme", "true")
+      reg.write("ui.row.layout", "landscape")
       reg.flush()
 
       ' WHEN: Migration runs
@@ -418,17 +383,13 @@ namespace tests
       ' THEN: Migration occurred
       reg = CreateObject("roRegistrySection", testUserId)
 
-      m.assertTrue(reg.exists("globalRememberMe"), "New setting should exist")
-      m.assertFalse(reg.exists("global.rememberme"), "Old setting should be deleted")
-
-      ' Cleanup
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
+      m.assertTrue(reg.exists("uiRowLayout"), "New setting should exist")
+      m.assertFalse(reg.exists("ui.row.layout"), "Old setting should be deleted")
     end function
 
     @it("skips JellyRock and test-global sections (only migrates user sections)")
     function _()
       ' GIVEN: Settings in test-global section (for testing migration skip logic)
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       ' Write to test-global section (should be skipped by migration, like JellyRock)
       testGlobalReg = CreateObject("roRegistrySection", "test-global")
@@ -462,7 +423,6 @@ namespace tests
       ' This test verifies migration ONLY handles the top-level displayLiveTvLanding setting
 
       testUserId = "test-migration-display-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       reg = CreateObject("roRegistrySection", testUserId)
       reg.write("LastRunVersion", "1.0.0")
@@ -489,9 +449,6 @@ namespace tests
       ' Nested display settings should remain unchanged (transformer handles these)
       m.assertTrue(reg.exists("display.library123.sortField"), "Nested display settings not migrated here")
       m.assertTrue(reg.exists("display.library123.sortAscending"))
-
-      ' Cleanup
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
   end class

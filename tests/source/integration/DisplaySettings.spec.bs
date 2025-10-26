@@ -12,8 +12,6 @@ namespace tests
 
       ' Clean up any leftover test data from previous runs/failures
       ' This ensures each suite starts with clean registry state
-      RegistryTestUtils.CleanupTestRegistrySections("test-display-")
-      RegistryTestUtils.CleanupTestRegistrySections("test-lib-")
     end sub
 
     protected override function beforeEach()
@@ -45,8 +43,6 @@ namespace tests
 
     protected override sub teardown()
       ' Final cleanup - catch any stragglers
-      RegistryTestUtils.CleanupTestRegistrySections("test-display-")
-      RegistryTestUtils.CleanupTestRegistrySections("test-lib-")
 
       super.teardown()
     end sub

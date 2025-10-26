@@ -184,7 +184,6 @@ namespace tests
     @it("round-trip boolean true: Save → Registry → Load")
     function _()
       testUserId = "test-roundtrip-bool-true-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       ' Mock user ID
       m.global.user.id = testUserId
@@ -208,13 +207,11 @@ namespace tests
       m.assertEqual(settings.uiDesignHideClock, true)
 
       ' Cleanup
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("round-trip boolean false: Save → Registry → Load")
     function _()
       testUserId = "test-roundtrip-bool-false-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       m.global.user.id = testUserId
 
@@ -232,13 +229,11 @@ namespace tests
       m.assertEqual(type(settings.uiFontFallback), "roBoolean")
       m.assertEqual(settings.uiFontFallback, false)
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("round-trip integer: Save → Registry → Load")
     function _()
       testUserId = "test-roundtrip-int-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       m.global.user.id = testUserId
 
@@ -255,13 +250,11 @@ namespace tests
       m.assertTrue(m.isStringType(value))
       m.assertEqual(value, "8000")
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("round-trip string: Save → Registry → Load")
     function _()
       testUserId = "test-roundtrip-string-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       m.global.user.id = testUserId
 
@@ -279,13 +272,11 @@ namespace tests
       m.assertEqual(type(settings.uiRowLayout), "roString")
       m.assertEqual(settings.uiRowLayout, "landscape")
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     @it("round-trip empty string: Save → Registry → Load")
     function _()
       testUserId = "test-roundtrip-empty-001"
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
 
       m.global.user.id = testUserId
 
@@ -303,7 +294,6 @@ namespace tests
       m.assertEqual(type(settings.uiGeneralEpisodeImages), "roString")
       m.assertEqual(settings.uiGeneralEpisodeImages, "")
 
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
