@@ -296,9 +296,9 @@ namespace tests
       result = transformer.transformUserInfo(userData)
 
       m.assertEqual(result.id, "admin-user-456")
-      m.assertEqual(result.enableNextEpisodeAutoPlay, true)
-      m.assertEqual(result.isAdministrator, true)
-      m.assertEqual(result.enableContentDeletion, true)
+      m.assertEqual(result.config.enableNextEpisodeAutoPlay, true)
+      m.assertEqual(result.policy.isAdministrator, true)
+      m.assertEqual(result.policy.enableContentDeletion, true)
     end function
 
     @it("transforms user settings from registry data")

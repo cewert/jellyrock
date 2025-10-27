@@ -18,31 +18,9 @@
     <field id="authToken" type="string" value="" />
     <field id="primaryImageTag" type="string" value="" />
 
-    <!-- User Configuration (flattened from API Configuration object) -->
-    <field id="audioLanguagePreference" type="string" value="" />
-    <field id="playDefaultAudioTrack" type="boolean" value="true" />
-    <field id="subtitleMode" type="string" value="Default" />
-    <field id="subtitleLanguagePreference" type="string" value="" />
-    <field id="displayMissingEpisodes" type="boolean" value="false" />
-    <field id="displayCollectionsView" type="boolean" value="false" />
-    <field id="enableLocalPassword" type="boolean" value="false" />
-    <field id="orderedViews" type="array" value="[]" />
-    <field id="latestItemsExcludes" type="array" value="[]" />
-    <field id="myMediaExcludes" type="array" value="[]" />
-    <field id="hidePlayedInLatest" type="boolean" value="true" />
-    <field id="rememberAudioSelections" type="boolean" value="false" />
-    <field id="rememberSubtitleSelections" type="boolean" value="false" />
-    <field id="enableNextEpisodeAutoPlay" type="boolean" value="false" />
-    <field id="useEpisodeImagesInNextUpAndResume" type="boolean" value="false" />
-    <field id="groupedFolders" type="array" value="[]" />
-    <field id="castReceiverId" type="string" value="" />
-
-    <!-- User Policy (flattened from API Policy object) -->
-    <field id="enableLiveTvManagement" type="boolean" value="false" />
-    <field id="enableContentDeletion" type="boolean" value="false" />
-    <field id="enablePublicSharing" type="boolean" value="false" />
-    <field id="enableMediaPlayback" type="boolean" value="true" />
-    <field id="isAdministrator" type="boolean" value="false" />
+    <!-- Server-Authoritative Data (nested content nodes, NEVER loaded from registry) -->
+    <field id="config" type="node" />
+    <field id="policy" type="node" />
 
     <!-- User Settings (nested node) -->
     <field id="settings" type="node" />
@@ -53,7 +31,5 @@
 
     <!-- DEBUG ONLY: Raw data for debugging - only populated when bs_const=debug=true -->
     <field id="rawUserData" type="assocarray" />
-    <field id="rawConfigData" type="assocarray" />
-    <field id="rawPolicyData" type="assocarray" />
   </interface>
 </component>

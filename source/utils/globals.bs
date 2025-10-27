@@ -3,8 +3,16 @@ sub setGlobals()
   ' Initialize session content nodes
   serverNode = CreateObject("roSGNode", "JellyfinServer")
   userNode = CreateObject("roSGNode", "JellyfinUser")
+
+  ' Initialize nested user nodes
   settingsNode = CreateObject("roSGNode", "JellyfinUserSettings")
+  configNode = CreateObject("roSGNode", "JellyfinUserConfiguration")
+  policyNode = CreateObject("roSGNode", "JellyfinUserPolicy")
+
   userNode.settings = settingsNode
+  userNode.config = configNode
+  userNode.policy = policyNode
+
   m.global.addFields({
     appLoaded: false,
     server: serverNode,

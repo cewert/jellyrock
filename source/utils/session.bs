@@ -4,6 +4,7 @@
 
 import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/api/userauth.bs"
+import "pkg:/source/data/SessionDataTransformer.bs"
 import "pkg:/source/migrations.bs"
 import "pkg:/source/utils/misc.bs"
 import "pkg:/source/utils/nodeUtils.bs"
@@ -119,9 +120,21 @@ namespace user
       myAuthToken = userNode.authToken
       myPrimaryImageTag = userData.PrimaryImageTag
 
+      ' Copy all fields EXCEPT Configuration and Policy (these are transformed separately)
       for each key in userData
-        userNode[key] = userData[key]
+        if key <> "Configuration" and key <> "Policy"
+          userNode[key] = userData[key]
+        end if
       end for
+
+      ' Transform Configuration and Policy to nested content nodes
+      transformer = new SessionDataTransformer()
+      if isValid(userData.Configuration)
+        userNode.config = transformer.transformUserConfiguration(userData.Configuration)
+      end if
+      if isValid(userData.Policy)
+        userNode.policy = transformer.transformUserPolicy(userData.Policy)
+      end if
 
       if saveCredentials
         if isValidAndNotEmpty(myPrimaryImageTag)
@@ -136,9 +149,21 @@ namespace user
       myPrimaryImageTag = userData.json.User.PrimaryImageTag
       myAuthToken = userData.json.AccessToken
 
+      ' Copy all fields EXCEPT Configuration and Policy (these are transformed separately)
       for each key in userData.json.User
-        userNode[key] = userData.json.User[key]
+        if key <> "Configuration" and key <> "Policy"
+          userNode[key] = userData.json.User[key]
+        end if
       end for
+
+      ' Transform Configuration and Policy to nested content nodes
+      transformer = new SessionDataTransformer()
+      if isValid(userData.json.User.Configuration)
+        userNode.config = transformer.transformUserConfiguration(userData.json.User.Configuration)
+      end if
+      if isValid(userData.json.User.Policy)
+        userNode.policy = transformer.transformUserPolicy(userData.json.User.Policy)
+      end if
 
       if saveCredentials
         if isValidAndNotEmpty(myPrimaryImageTag)
@@ -184,6 +209,13 @@ namespace user
       if not isGlobalSetting(setting) and not setting.StartsWith("display.")
         ' Check where this setting belongs based on field existence
         if userNodeFieldTypes.DoesExist(setting)
+          ' Skip node-type fields - these are server-authoritative and never loaded from registry
+          ' This prevents registry tampering of nested content nodes (policy, config, settings)
+          if userNode.getFieldType(setting) = "node"
+            print "Skipping node-type field from registry:", setting
+            continue for
+          end if
+
           print "Setting found on user node:", setting
           ' Field exists on user node - set it there
           userNode.setField(setting, userSettings[setting])
@@ -244,9 +276,14 @@ namespace user
     ' Reset ALL user fields including settings (no fields preserved)
     nodeUtils.resetNodeToDefaults(localUser, "JellyfinUser", [])
 
-    ' Create fresh settings node with XML defaults
+    ' Create fresh nested nodes with XML defaults
     freshSettings = CreateObject("roSGNode", "JellyfinUserSettings")
+    freshConfig = CreateObject("roSGNode", "JellyfinUserConfiguration")
+    freshPolicy = CreateObject("roSGNode", "JellyfinUserPolicy")
+
     localUser.settings = freshSettings
+    localUser.config = freshConfig
+    localUser.policy = freshPolicy
 
     if isValid(m.global.sceneManager)
       m.global.sceneManager.currentUser = ""
@@ -283,8 +320,8 @@ namespace user
       tmpSetting = jsonResponse.CustomPrefs.useEpisodeImagesInNextUpAndResume
       if isValid(tmpSetting)
         userNode = m.global.user
-        ' Set field directly on flattened content node structure
-        userNode.useEpisodeImagesInNextUpAndResume = toBoolean(tmpSetting)
+        ' Set field on nested config node
+        userNode.config.useEpisodeImagesInNextUpAndResume = toBoolean(tmpSetting)
       end if
 
       user.SaveUserHomeSections(jsonResponse.CustomPrefs)

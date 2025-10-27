@@ -87,7 +87,7 @@ sub processUserSections()
 
     if sectionName = "latestmedia"
       ' expect 1 row per filtered media library
-      m.filteredLatest = filterNodeArray(m.libraryData, "id", sessionUser.latestItemsExcludes)
+      m.filteredLatest = filterNodeArray(m.libraryData, "id", sessionUser.config.latestItemsExcludes)
       for each latestLibrary in m.filteredLatest
         if latestLibrary.collectionType <> "boxsets" and latestLibrary.collectionType <> "livetv" and latestLibrary.json.CollectionType <> "Program"
           m.expectedRowCount++
@@ -305,7 +305,7 @@ sub createLibraryRow(sectionType as string)
   row.imageWidth = homeRowItemSizes.MY_MEDIA[0]
   row.cursorSize = homeRowItemSizes.MY_MEDIA
 
-  filteredMedia = filterNodeArray(m.libraryData, "id", m.global.user.myMediaExcludes)
+  filteredMedia = filterNodeArray(m.libraryData, "id", m.global.user.config.myMediaExcludes)
   for each item in filteredMedia
     row.appendChild(item)
   end for

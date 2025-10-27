@@ -95,7 +95,7 @@ sub showNextEpisodeButton()
   if m.nextEpisodeButton.opacity <> 0 then return
   userSession = m.global.user
   if userSession.settings.playbackPlayNextEpisode = "disabled" then return
-  if userSession.settings.playbackPlayNextEpisode = "webclient" and not userSession.enableNextEpisodeAutoPlay then return
+  if userSession.settings.playbackPlayNextEpisode = "webclient" and not userSession.config.enableNextEpisodeAutoPlay then return
 
   m.nextEpisodeButton.visible = true
   m.showNextEpisodeButtonAnimation.control = "start"

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Jellyfin User Policy
+
+  This content node represents the Policy object from the Jellyfin server API.
+  Policy data is SERVER-AUTHORITATIVE and session-specific - it should NEVER
+  be loaded from or synced to the registry.
+
+  These permissions and restrictions are controlled by the Jellyfin server administrator
+  and may change between sessions. The server is the single source of truth for this data.
+
+  LOADING STATE PATTERN: SET ONCE AT LOGIN
+  - Populated once during user.Login() from server API response
+  - Never modified after initial load
+  - Never synced to registry
+-->
+<component name="JellyfinUserPolicy" extends="ContentNode">
+  <interface>
+    <!-- User Status -->
+    <field id="isAdministrator" type="boolean" value="false" />
+    <field id="isDisabled" type="boolean" value="false" />
+    <field id="isHidden" type="boolean" value="false" />
+
+    <!-- Authentication Settings -->
+    <field id="authenticationProviderId" type="string" value="" />
+    <field id="passwordResetProviderId" type="string" value="" />
+    <field id="invalidLoginAttemptCount" type="integer" value="0" />
+    <field id="loginAttemptsBeforeLockout" type="integer" value="-1" />
+
+    <!-- Media Playback Permissions -->
+    <field id="enableMediaPlayback" type="boolean" value="true" />
+    <field id="enableAudioPlaybackTranscoding" type="boolean" value="true" />
+    <field id="enableVideoPlaybackTranscoding" type="boolean" value="true" />
+    <field id="enablePlaybackRemuxing" type="boolean" value="true" />
+    <field id="forceRemoteSourceTranscoding" type="boolean" value="false" />
+
+    <!-- Content Access Permissions -->
+    <field id="enableAllFolders" type="boolean" value="false" />
+    <field id="enabledFolders" type="array" value="[]" />
+    <field id="enableContentDownloading" type="boolean" value="true" />
+    <field id="enableContentDeletion" type="boolean" value="false" />
+    <field id="enableContentDeletionFromFolders" type="array" value="[]" />
+
+    <!-- Live TV Permissions -->
+    <field id="enableLiveTvAccess" type="boolean" value="true" />
+    <field id="enableLiveTvManagement" type="boolean" value="false" />
+
+    <!-- Channel Permissions -->
+    <field id="enableAllChannels" type="boolean" value="false" />
+    <field id="enabledChannels" type="array" value="[]" />
+    <field id="blockedChannels" type="array" value="[]" />
+
+    <!-- Device Permissions -->
+    <field id="enableAllDevices" type="boolean" value="true" />
+    <field id="enabledDevices" type="array" value="[]" />
+    <field id="maxActiveSessions" type="integer" value="0" />
+
+    <!-- Remote Access Permissions -->
+    <field id="enableRemoteAccess" type="boolean" value="true" />
+    <field id="enableRemoteControlOfOtherUsers" type="boolean" value="false" />
+    <field id="enableSharedDeviceControl" type="boolean" value="true" />
+    <field id="remoteClientBitrateLimit" type="integer" value="0" />
+
+    <!-- Content Management Permissions -->
+    <field id="enableCollectionManagement" type="boolean" value="false" />
+    <field id="enableSubtitleManagement" type="boolean" value="false" />
+    <field id="enableLyricManagement" type="boolean" value="false" />
+
+    <!-- Sharing and Sync Permissions -->
+    <field id="enablePublicSharing" type="boolean" value="true" />
+    <field id="enableSyncTranscoding" type="boolean" value="true" />
+    <field id="enableMediaConversion" type="boolean" value="true" />
+
+    <!-- User Preferences -->
+    <field id="enableUserPreferenceAccess" type="boolean" value="true" />
+
+    <!-- Content Filtering -->
+    <field id="blockedMediaFolders" type="array" value="[]" />
+    <field id="blockedTags" type="array" value="[]" />
+    <field id="allowedTags" type="array" value="[]" />
+    <field id="blockUnratedItems" type="array" value="[]" />
+
+    <!-- Access Schedules -->
+    <field id="accessSchedules" type="array" value="[]" />
+
+    <!-- Sync Play -->
+    <field id="syncPlayAccess" type="string" value="CreateAndJoinGroups" />
+
+    <!-- DEBUG ONLY: Raw policy data for debugging - only populated when bs_const=debug=true -->
+    <field id="rawPolicyData" type="assocarray" />
+  </interface>
+</component>

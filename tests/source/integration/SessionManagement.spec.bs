@@ -60,9 +60,10 @@ namespace tests
       m.assertEqual(userNode.id, "")
       m.assertEqual(userNode.name, "")
       m.assertEqual(userNode.authToken, "")
-      m.assertEqual(userNode.enableNextEpisodeAutoPlay, false)
-      m.assertEqual(userNode.isAdministrator, false)
-      m.assertEqual(userNode.enableMediaPlayback, true)
+
+      ' Config and Policy nodes should be invalid by default
+      m.assertInvalid(userNode.config)
+      m.assertInvalid(userNode.policy)
     end function
 
     @it("uses id and authToken as sentinel values")
@@ -106,7 +107,7 @@ namespace tests
       m.assertEqual(localUser.id, "")
       m.assertEqual(localUser.authToken, "")
       m.assertEqual(localUser.name, "")
-      return m.assertEqual(localUser.isAdministrator, false)
+      return m.assertEqual(localUser.policy.isAdministrator, false)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -150,7 +150,7 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
   end if
 
   if LCase(m.top.itemType) = "episode"
-    if userSettings.playbackPlayNextEpisode = "enabled" or userSettings.playbackPlayNextEpisode = "webclient" and userSession.enableNextEpisodeAutoPlay
+    if userSettings.playbackPlayNextEpisode = "enabled" or userSettings.playbackPlayNextEpisode = "webclient" and userSession.config.enableNextEpisodeAutoPlay
       addNextEpisodesToQueue(video.showID)
     end if
   end if
@@ -279,7 +279,7 @@ end sub
 ' @return {integer} indicating the default track's server-side index. Defaults to {SubtitleSelection.none} is one is not found
 function defaultSubtitleTrackFromVid(videoID) as integer
   userSession = m.global.user
-  if userSession.subtitleMode = "None"
+  if userSession.config.subtitleMode = "None"
     return SubtitleSelection.none ' No subtitles desired: return none
   end if
 
@@ -322,20 +322,20 @@ function defaultSubtitleTrack(sortedSubtitles, selectedAudioLanguage as string, 
   ' ONE rendezvous to get user node
   localUser = m.global.user
 
-  subtitleMode = isValid(localUser.subtitleMode) ? LCase(localUser.subtitleMode) : ""
+  subtitleMode = isValid(localUser.config.subtitleMode) ? LCase(localUser.config.subtitleMode) : ""
 
   allowSmartMode = false
 
   ' Only evaluate selected audio language if we have a value
   if selectedAudioLanguage <> ""
-    allowSmartMode = selectedAudioLanguage <> localUser.subtitleLanguagePreference
+    allowSmartMode = selectedAudioLanguage <> localUser.config.subtitleLanguagePreference
   end if
 
   for each item in sortedSubtitles
     ' Only auto-select subtitle if language matches SubtitleLanguagePreference
     languageMatch = true
-    if localUser.subtitleLanguagePreference <> ""
-      languageMatch = (localUser.subtitleLanguagePreference = item.Track.Language)
+    if localUser.config.subtitleLanguagePreference <> ""
+      languageMatch = (localUser.config.subtitleLanguagePreference = item.Track.Language)
     end if
 
     ' Ensure textuality of subtitle matches preferenced passed as arg
@@ -555,7 +555,7 @@ function sortSubtitles(id as string, MediaStreams)
   tracks = { "forced": [], "default": [], "normal": [], "text": [] }
   ' ONE rendezvous to get user node
   localUser = m.global.user
-  prefered_lang = localUser.subtitleLanguagePreference
+  prefered_lang = localUser.config.subtitleLanguagePreference
   for each stream in MediaStreams
     if stream.type = "Subtitle"
 
@@ -607,8 +607,8 @@ end function
 function FindPreferredAudioStream(streams as dynamic) as integer
   ' ONE rendezvous to get user node
   localUser = m.global.user
-  preferredLanguage = localUser.audioLanguagePreference
-  playDefault = localUser.playDefaultAudioTrack
+  preferredLanguage = localUser.config.audioLanguagePreference
+  playDefault = localUser.config.playDefaultAudioTrack
 
   if isValid(playDefault) and playDefault = true
     return 1

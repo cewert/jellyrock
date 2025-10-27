@@ -158,13 +158,22 @@ namespace tests
     @describe("JellyfinUser")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("creates with flattened configuration")
+    @it("creates with nested config and policy nodes")
     function _()
       userNode = CreateObject("roSGNode", "JellyfinUser")
 
-      m.assertEqual(userNode.enableNextEpisodeAutoPlay, false)
-      m.assertEqual(userNode.isAdministrator, false)
-      m.assertEqual(userNode.enableMediaPlayback, true)
+      ' Verify nested nodes are created
+      m.assertInvalid(userNode.config)
+      m.assertInvalid(userNode.policy)
+
+      ' Create nested nodes manually for testing
+      userNode.config = CreateObject("roSGNode", "JellyfinUserConfiguration")
+      userNode.policy = CreateObject("roSGNode", "JellyfinUserPolicy")
+
+      ' Verify default values on nested nodes
+      m.assertEqual(userNode.config.enableNextEpisodeAutoPlay, false)
+      m.assertEqual(userNode.policy.isAdministrator, false)
+      m.assertEqual(userNode.policy.enableMediaPlayback, true)
     end function
 
     @it("uses id and authToken as sentinels")

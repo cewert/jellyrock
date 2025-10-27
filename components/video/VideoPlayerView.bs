@@ -576,7 +576,7 @@ sub showNextEpisodeButton()
   if m.nextEpisodeButton.opacity <> 0 then return
   userSettings = m.global.user.settings
   if userSettings.playbackPlayNextEpisode = "disabled" then return
-  if userSettings.playbackPlayNextEpisode = "webclient" and not m.global.user.enableNextEpisodeAutoPlay then return
+  if userSettings.playbackPlayNextEpisode = "webclient" and not m.global.user.config.enableNextEpisodeAutoPlay then return
 
   ' align button with bottom right edge with 5% padding
   boundingRect = m.notifyButtons.localBoundingRect()

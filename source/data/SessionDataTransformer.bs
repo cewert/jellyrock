@@ -62,40 +62,20 @@ class SessionDataTransformer
       userNode.lastRunVersion = userData.lastRunVersion ?? ""
       userNode.fontScaleFactor = userData.fontScaleFactor ?? 1.0
 
-      ' Flatten configuration fields directly into user
+      ' Transform configuration to nested content node
       if isValid(userData.Configuration)
-        userNode.audioLanguagePreference = userData.Configuration.AudioLanguagePreference ?? ""
-        userNode.playDefaultAudioTrack = userData.Configuration.PlayDefaultAudioTrack ?? true
-        userNode.subtitleMode = userData.Configuration.SubtitleMode ?? "Default"
-        userNode.subtitleLanguagePreference = userData.Configuration.SubtitleLanguagePreference ?? ""
-        userNode.displayMissingEpisodes = userData.Configuration.DisplayMissingEpisodes ?? false
-        userNode.displayCollectionsView = userData.Configuration.DisplayCollectionsView ?? false
-        userNode.enableLocalPassword = userData.Configuration.EnableLocalPassword ?? false
-        userNode.orderedViews = userData.Configuration.OrderedViews ?? []
-        userNode.latestItemsExcludes = userData.Configuration.LatestItemsExcludes ?? []
-        userNode.myMediaExcludes = userData.Configuration.MyMediaExcludes ?? []
-        userNode.hidePlayedInLatest = userData.Configuration.HidePlayedInLatest ?? true
-        userNode.rememberAudioSelections = userData.Configuration.RememberAudioSelections ?? false
-        userNode.rememberSubtitleSelections = userData.Configuration.RememberSubtitleSelections ?? false
-        userNode.enableNextEpisodeAutoPlay = userData.Configuration.EnableNextEpisodeAutoPlay ?? false
-        userNode.useEpisodeImagesInNextUpAndResume = userData.Configuration.useEpisodeImagesInNextUpAndResume ?? false
-        userNode.groupedFolders = userData.Configuration.GroupedFolders ?? []
-        userNode.castReceiverId = userData.Configuration.CastReceiverId ?? ""
-        #if debug
-          userNode.rawConfigData = userData.Configuration
-        #end if
+        userNode.config = m.transformUserConfiguration(userData.Configuration)
+      else
+        ' Create empty config node with defaults
+        userNode.config = CreateObject("roSGNode", "JellyfinUserConfiguration")
       end if
 
-      ' Flatten policy fields directly into user
+      ' Transform policy to nested content node
       if isValid(userData.Policy)
-        userNode.enableLiveTvManagement = userData.Policy.EnableLiveTvManagement ?? false
-        userNode.enableContentDeletion = userData.Policy.EnableContentDeletion ?? false
-        userNode.enablePublicSharing = userData.Policy.EnablePublicSharing ?? false
-        userNode.enableMediaPlayback = userData.Policy.EnableMediaPlayback ?? true
-        userNode.isAdministrator = userData.Policy.IsAdministrator ?? false
-        #if debug
-          userNode.rawPolicyData = userData.Policy
-        #end if
+        userNode.policy = m.transformUserPolicy(userData.Policy)
+      else
+        ' Create empty policy node with defaults
+        userNode.policy = CreateObject("roSGNode", "JellyfinUserPolicy")
       end if
 
       ' Transform user settings (nested node)
@@ -123,66 +103,66 @@ class SessionDataTransformer
 
   ' Transform user settings (from registry and API)
   function transformUserSettings(settingsData as object) as object
-    settings = CreateObject("roSGNode", "JellyfinUserSettings")
+    settingsNode = CreateObject("roSGNode", "JellyfinUserSettings")
 
     if not isValid(settingsData)
-      return settings
+      return settingsNode
     end if
 
     ' Playback Settings (13)
-    settings.playbackBitrateMaxLimited = toBoolean(settingsData["playbackBitrateMaxLimited"])
+    settingsNode.playbackBitrateMaxLimited = toBoolean(settingsData["playbackBitrateMaxLimited"])
     if settingsData.DoesExist("playbackBitrateLimit")
-      settings.playbackBitrateLimit = Val(settingsData["playbackBitrateLimit"])
+      settingsNode.playbackBitrateLimit = Val(settingsData["playbackBitrateLimit"])
     end if
-    settings.playbackCinemaMode = toBoolean(settingsData["playbackCinemaMode"])
-    settings.playbackSubsCustom = toBoolean(settingsData["playbackSubsCustom"])
-    settings.playbackResolutionMax = settingsData["playbackResolutionMax"] ?? ""
+    settingsNode.playbackCinemaMode = toBoolean(settingsData["playbackCinemaMode"])
+    settingsNode.playbackSubsCustom = toBoolean(settingsData["playbackSubsCustom"])
+    settingsNode.playbackResolutionMax = settingsData["playbackResolutionMax"] ?? ""
     if settingsData.DoesExist("playbackNextUpButtonSeconds")
-      settings.playbackNextUpButtonSeconds = Val(settingsData["playbackNextUpButtonSeconds"])
+      settingsNode.playbackNextUpButtonSeconds = Val(settingsData["playbackNextUpButtonSeconds"])
     end if
-    settings.playbackPlayNextEpisode = settingsData["playbackPlayNextEpisode"] ?? ""
-    settings.playbackPreferredAudioCodec = settingsData["playbackPreferredAudioCodec"] ?? ""
-    settings.playbackSubsOnlyText = toBoolean(settingsData["playbackSubsOnlyText"])
-    settings.playbackMpeg2 = toBoolean(settingsData["playbackMpeg2"])
-    settings.playbackMpeg4 = toBoolean(settingsData["playbackMpeg4"])
-    settings.playbackTryDirectH264ProfileLevel = toBoolean(settingsData["playbackTryDirectH264ProfileLevel"])
-    settings.playbackTryDirectHevcProfileLevel = toBoolean(settingsData["playbackTryDirectHevcProfileLevel"])
+    settingsNode.playbackPlayNextEpisode = settingsData["playbackPlayNextEpisode"] ?? ""
+    settingsNode.playbackPreferredAudioCodec = settingsData["playbackPreferredAudioCodec"] ?? ""
+    settingsNode.playbackSubsOnlyText = toBoolean(settingsData["playbackSubsOnlyText"])
+    settingsNode.playbackMpeg2 = toBoolean(settingsData["playbackMpeg2"])
+    settingsNode.playbackMpeg4 = toBoolean(settingsData["playbackMpeg4"])
+    settingsNode.playbackTryDirectH264ProfileLevel = toBoolean(settingsData["playbackTryDirectH264ProfileLevel"])
+    settingsNode.playbackTryDirectHevcProfileLevel = toBoolean(settingsData["playbackTryDirectHevcProfileLevel"])
 
     ' UI Settings (14)
-    settings.uiGeneralEpisodeImages = settingsData["uiGeneralEpisodeImages"] ?? ""
-    settings.uiFontFallback = toBoolean(settingsData["uiFontFallback"])
-    settings.uiDesignHideClock = toBoolean(settingsData["uiDesignHideClock"])
+    settingsNode.uiGeneralEpisodeImages = settingsData["uiGeneralEpisodeImages"] ?? ""
+    settingsNode.uiFontFallback = toBoolean(settingsData["uiFontFallback"])
+    settingsNode.uiDesignHideClock = toBoolean(settingsData["uiDesignHideClock"])
     if settingsData.DoesExist("uiDetailsMaxDaysNextUp")
-      settings.uiDetailsMaxDaysNextUp = Val(settingsData["uiDetailsMaxDaysNextUp"])
+      settingsNode.uiDetailsMaxDaysNextUp = Val(settingsData["uiDetailsMaxDaysNextUp"])
     end if
-    settings.uiDetailsEnableRewatchingNextUp = toBoolean(settingsData["uiDetailsEnableRewatchingNextUp"])
-    settings.uiRowLayout = settingsData["uiRowLayout"] ?? ""
-    settings.uiHomeSplashBackground = toBoolean(settingsData["uiHomeSplashBackground"])
-    settings.uiHomeUseWebArrangement = toBoolean(settingsData["uiHomeUseWebArrangement"])
-    settings.uiDetailsHideTagline = toBoolean(settingsData["uiDetailsHideTagline"])
-    settings.uiMoviesShowRatings = toBoolean(settingsData["uiMoviesShowRatings"])
-    settings.uiTvShowsBlurUnwatched = toBoolean(settingsData["uiTvShowsBlurUnwatched"])
-    settings.uiTvShowsDisableCommunityRating = toBoolean(settingsData["uiTvShowsDisableCommunityRating"])
-    settings.uiTvShowsDisableUnwatchedCount = toBoolean(settingsData["uiTvShowsDisableUnwatchedCount"])
-    settings.uiTvShowsGoStraightToEpisodes = toBoolean(settingsData["uiTvShowsGoStraightToEpisodes"])
+    settingsNode.uiDetailsEnableRewatchingNextUp = toBoolean(settingsData["uiDetailsEnableRewatchingNextUp"])
+    settingsNode.uiRowLayout = settingsData["uiRowLayout"] ?? ""
+    settingsNode.uiHomeSplashBackground = toBoolean(settingsData["uiHomeSplashBackground"])
+    settingsNode.uiHomeUseWebArrangement = toBoolean(settingsData["uiHomeUseWebArrangement"])
+    settingsNode.uiDetailsHideTagline = toBoolean(settingsData["uiDetailsHideTagline"])
+    settingsNode.uiMoviesShowRatings = toBoolean(settingsData["uiMoviesShowRatings"])
+    settingsNode.uiTvShowsBlurUnwatched = toBoolean(settingsData["uiTvShowsBlurUnwatched"])
+    settingsNode.uiTvShowsDisableCommunityRating = toBoolean(settingsData["uiTvShowsDisableCommunityRating"])
+    settingsNode.uiTvShowsDisableUnwatchedCount = toBoolean(settingsData["uiTvShowsDisableUnwatchedCount"])
+    settingsNode.uiTvShowsGoStraightToEpisodes = toBoolean(settingsData["uiTvShowsGoStraightToEpisodes"])
 
     ' Item Grid Settings (4)
-    settings.itemGridShowItemCount = toBoolean(settingsData["itemGridShowItemCount"])
-    settings.itemGridTitles = settingsData["itemGridTitles"] ?? ""
-    settings.itemGridReset = toBoolean(settingsData["itemGridReset"])
-    settings.itemGridMovieDefaultView = settingsData["itemGridMovieDefaultView"] ?? ""
+    settingsNode.itemGridShowItemCount = toBoolean(settingsData["itemGridShowItemCount"])
+    settingsNode.itemGridTitles = settingsData["itemGridTitles"] ?? ""
+    settingsNode.itemGridReset = toBoolean(settingsData["itemGridReset"])
+    settingsNode.itemGridMovieDefaultView = settingsData["itemGridMovieDefaultView"] ?? ""
 
     ' Home sections (7)
-    settings.homeSection0 = settingsData["homeSection0"] ?? ""
-    settings.homeSection1 = settingsData["homeSection1"] ?? ""
-    settings.homeSection2 = settingsData["homeSection2"] ?? ""
-    settings.homeSection3 = settingsData["homeSection3"] ?? ""
-    settings.homeSection4 = settingsData["homeSection4"] ?? ""
-    settings.homeSection5 = settingsData["homeSection5"] ?? ""
-    settings.homeSection6 = settingsData["homeSection6"] ?? ""
+    settingsNode.homeSection0 = settingsData["homeSection0"] ?? ""
+    settingsNode.homeSection1 = settingsData["homeSection1"] ?? ""
+    settingsNode.homeSection2 = settingsData["homeSection2"] ?? ""
+    settingsNode.homeSection3 = settingsData["homeSection3"] ?? ""
+    settingsNode.homeSection4 = settingsData["homeSection4"] ?? ""
+    settingsNode.homeSection5 = settingsData["homeSection5"] ?? ""
+    settingsNode.homeSection6 = settingsData["homeSection6"] ?? ""
 
     ' Display settings (1)
-    settings.displayLiveTvLanding = settingsData["displayLiveTvLanding"] ?? ""
+    settingsNode.displayLiveTvLanding = settingsData["displayLiveTvLanding"] ?? ""
 
     ' Transform display settings into nested structure
     ' Build local AA first, then assign to node field
@@ -216,25 +196,25 @@ class SessionDataTransformer
     end for
 
     ' Assign to content node field
-    settings.displaySettings = displaySettings
+    settingsNode.displaySettings = displaySettings
 
     ' Global settings are NOT loaded here - they come from "JellyRock" registry section
     ' and are loaded separately via user.settings.LoadGlobals()
 
     ' Permission settings
-    settings.liveTvCanRecord = toBoolean(settingsData["liveTvCanRecord"])
-    settings.contentCanDelete = toBoolean(settingsData["contentCanDelete"])
+    settingsNode.liveTvCanRecord = toBoolean(settingsData["liveTvCanRecord"])
+    settingsNode.contentCanDelete = toBoolean(settingsData["contentCanDelete"])
 
     ' Set loading state
-    settings.isLoaded = true
-    settings.loadedAt = CreateObject("roDateTime").AsSeconds()
+    settingsNode.isLoaded = true
+    settingsNode.loadedAt = CreateObject("roDateTime").AsSeconds()
 
     ' Debug-only: Store raw settings for debugging
     #if debug
-      settings.rawSettings = settingsData
+      settingsNode.rawSettings = settingsData
     #end if
 
-    return settings
+    return settingsNode
   end function
 
   ' Transform app info to AppInfo content node
@@ -287,6 +267,137 @@ class SessionDataTransformer
     device.modelDetails = deviceData.modelDetails ?? {}
 
     return device
+  end function
+
+  ' Transform user configuration to JellyfinUserConfiguration content node
+  ' Configuration is SERVER-AUTHORITATIVE and should never be loaded from registry
+  function transformUserConfiguration(configData as object) as object
+    config = CreateObject("roSGNode", "JellyfinUserConfiguration")
+
+    if not isValid(configData)
+      return config
+    end if
+
+    ' Audio Settings
+    config.audioLanguagePreference = configData.AudioLanguagePreference ?? ""
+    config.playDefaultAudioTrack = configData.PlayDefaultAudioTrack ?? true
+    config.rememberAudioSelections = configData.RememberAudioSelections ?? false
+
+    ' Subtitle Settings
+    config.subtitleMode = configData.SubtitleMode ?? "Default"
+    config.subtitleLanguagePreference = configData.SubtitleLanguagePreference ?? ""
+    config.rememberSubtitleSelections = configData.RememberSubtitleSelections ?? false
+
+    ' Display Settings
+    config.displayMissingEpisodes = configData.DisplayMissingEpisodes ?? false
+    config.displayCollectionsView = configData.DisplayCollectionsView ?? false
+    config.hidePlayedInLatest = configData.HidePlayedInLatest ?? true
+    config.useEpisodeImagesInNextUpAndResume = configData.useEpisodeImagesInNextUpAndResume ?? false
+
+    ' Playback Settings
+    config.enableNextEpisodeAutoPlay = configData.EnableNextEpisodeAutoPlay ?? false
+
+    ' View Organization
+    config.orderedViews = configData.OrderedViews ?? []
+    config.latestItemsExcludes = configData.LatestItemsExcludes ?? []
+    config.myMediaExcludes = configData.MyMediaExcludes ?? []
+    config.groupedFolders = configData.GroupedFolders ?? []
+
+    ' Other Settings
+    config.castReceiverId = configData.CastReceiverId ?? ""
+    config.enableLocalPassword = configData.EnableLocalPassword ?? false
+
+    #if debug
+      config.rawConfigData = configData
+    #end if
+
+    return config
+  end function
+
+  ' Transform user policy to JellyfinUserPolicy content node
+  ' Policy is SERVER-AUTHORITATIVE and should never be loaded from registry
+  function transformUserPolicy(policyData as object) as object
+    policy = CreateObject("roSGNode", "JellyfinUserPolicy")
+
+    if not isValid(policyData)
+      return policy
+    end if
+
+    ' User Status
+    policy.isAdministrator = policyData.IsAdministrator ?? false
+    policy.isDisabled = policyData.IsDisabled ?? false
+    policy.isHidden = policyData.IsHidden ?? false
+
+    ' Authentication Settings
+    policy.authenticationProviderId = policyData.AuthenticationProviderId ?? ""
+    policy.passwordResetProviderId = policyData.PasswordResetProviderId ?? ""
+    policy.invalidLoginAttemptCount = policyData.InvalidLoginAttemptCount ?? 0
+    policy.loginAttemptsBeforeLockout = policyData.LoginAttemptsBeforeLockout ?? - 1
+
+    ' Media Playback Permissions
+    policy.enableMediaPlayback = policyData.EnableMediaPlayback ?? true
+    policy.enableAudioPlaybackTranscoding = policyData.EnableAudioPlaybackTranscoding ?? true
+    policy.enableVideoPlaybackTranscoding = policyData.EnableVideoPlaybackTranscoding ?? true
+    policy.enablePlaybackRemuxing = policyData.EnablePlaybackRemuxing ?? true
+    policy.forceRemoteSourceTranscoding = policyData.ForceRemoteSourceTranscoding ?? false
+
+    ' Content Access Permissions
+    policy.enableAllFolders = policyData.EnableAllFolders ?? false
+    policy.enabledFolders = policyData.EnabledFolders ?? []
+    policy.enableContentDownloading = policyData.EnableContentDownloading ?? true
+    policy.enableContentDeletion = policyData.EnableContentDeletion ?? false
+    policy.enableContentDeletionFromFolders = policyData.EnableContentDeletionFromFolders ?? []
+
+    ' Live TV Permissions
+    policy.enableLiveTvAccess = policyData.EnableLiveTvAccess ?? true
+    policy.enableLiveTvManagement = policyData.EnableLiveTvManagement ?? false
+
+    ' Channel Permissions
+    policy.enableAllChannels = policyData.EnableAllChannels ?? false
+    policy.enabledChannels = policyData.EnabledChannels ?? []
+    policy.blockedChannels = policyData.BlockedChannels ?? []
+
+    ' Device Permissions
+    policy.enableAllDevices = policyData.EnableAllDevices ?? true
+    policy.enabledDevices = policyData.EnabledDevices ?? []
+    policy.maxActiveSessions = policyData.MaxActiveSessions ?? 0
+
+    ' Remote Access Permissions
+    policy.enableRemoteAccess = policyData.EnableRemoteAccess ?? true
+    policy.enableRemoteControlOfOtherUsers = policyData.EnableRemoteControlOfOtherUsers ?? false
+    policy.enableSharedDeviceControl = policyData.EnableSharedDeviceControl ?? true
+    policy.remoteClientBitrateLimit = policyData.RemoteClientBitrateLimit ?? 0
+
+    ' Content Management Permissions
+    policy.enableCollectionManagement = policyData.EnableCollectionManagement ?? false
+    policy.enableSubtitleManagement = policyData.EnableSubtitleManagement ?? false
+    policy.enableLyricManagement = policyData.EnableLyricManagement ?? false
+
+    ' Sharing and Sync Permissions
+    policy.enablePublicSharing = policyData.EnablePublicSharing ?? true
+    policy.enableSyncTranscoding = policyData.EnableSyncTranscoding ?? true
+    policy.enableMediaConversion = policyData.EnableMediaConversion ?? true
+
+    ' User Preferences
+    policy.enableUserPreferenceAccess = policyData.EnableUserPreferenceAccess ?? true
+
+    ' Content Filtering
+    policy.blockedMediaFolders = policyData.BlockedMediaFolders ?? []
+    policy.blockedTags = policyData.BlockedTags ?? []
+    policy.allowedTags = policyData.AllowedTags ?? []
+    policy.blockUnratedItems = policyData.BlockUnratedItems ?? []
+
+    ' Access Schedules
+    policy.accessSchedules = policyData.AccessSchedules ?? []
+
+    ' Sync Play
+    policy.syncPlayAccess = policyData.SyncPlayAccess ?? "CreateAndJoinGroups"
+
+    #if debug
+      policy.rawPolicyData = policyData
+    #end if
+
+    return policy
   end function
 
 end class

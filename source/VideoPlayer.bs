@@ -438,7 +438,7 @@ end function
 
 sub autoPlayNextEpisode(videoID as string, showID as string)
   userSession = m.global.user
-  if userSession.settings.playbackPlayNextEpisode = "enabled" or userSession.settings.playbackPlayNextEpisode = "webclient" and userSession.enableNextEpisodeAutoPlay
+  if userSession.settings.playbackPlayNextEpisode = "enabled" or userSession.settings.playbackPlayNextEpisode = "webclient" and userSession.config.enableNextEpisodeAutoPlay
     ' query API for next episode ID
     url = Substitute("Shows/{0}/Episodes", showID)
     urlParams = { "UserId": userSession.id }

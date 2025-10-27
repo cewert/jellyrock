@@ -49,23 +49,23 @@ function defaultSubtitleTrack(sorted_subtitles, require_text = false) as integer
   ' ONE rendezvous to get user node
   localUser = m.global.user
 
-  if localUser.subtitleMode = "None"
+  if localUser.config.subtitleMode = "None"
     return SubtitleSelection.none ' No subtitles desired: select none
   end if
 
   for each item in sorted_subtitles
     ' Only auto-select subtitle if language matches preference
-    languageMatch = (localUser.subtitleLanguagePreference = item.Track.Language)
+    languageMatch = (localUser.config.subtitleLanguagePreference = item.Track.Language)
     ' Ensure textuality of subtitle matches preferenced passed as arg
     matchTextReq = ((require_text and item.IsTextSubtitleStream) or not require_text)
     if languageMatch and matchTextReq
-      if localUser.subtitleMode = "Default" and (item.isForced or item.IsDefault or item.IsExternal)
+      if localUser.config.subtitleMode = "Default" and (item.isForced or item.IsDefault or item.IsExternal)
         return item.Index ' Finds first forced, or default, or external subs in sorted list
-      else if localUser.subtitleMode = "Always" and not item.IsForced
+      else if localUser.config.subtitleMode = "Always" and not item.IsForced
         return item.Index ' Select the first non-forced subtitle option in the sorted list
-      else if localUser.subtitleMode = "OnlyForced" and item.IsForced
+      else if localUser.config.subtitleMode = "OnlyForced" and item.IsForced
         return item.Index ' Select the first forced subtitle option in the sorted list
-      else if localUser.subtitleMode = "Smart" and (item.isForced or item.IsDefault or item.IsExternal)
+      else if localUser.config.subtitleMode = "Smart" and (item.isForced or item.IsDefault or item.IsExternal)
         ' Simplified "Smart" logic here mimics Default (as that is fallback behavior normally)
         ' Avoids detecting preferred audio language (as is utilized in main client)
         return item.Index
@@ -198,7 +198,7 @@ function sortSubtitles(id as string, MediaStreams)
   tracks = { "forced": [], "default": [], "normal": [] }
   ' ONE rendezvous to get user node
   localUser = m.global.user
-  prefered_lang = localUser.subtitleLanguagePreference
+  prefered_lang = localUser.config.subtitleLanguagePreference
   for each stream in MediaStreams
     if stream.type = "Subtitle"
 

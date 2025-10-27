@@ -151,7 +151,7 @@ sub itemContentChanged()
 
     if isValid(userSettings)
       if userSettings.uiGeneralEpisodeImages = "webclient"
-        tmpSetting = m.global.user.useEpisodeImagesInNextUpAndResume
+        tmpSetting = m.global.user.config.useEpisodeImagesInNextUpAndResume
         if isValid(tmpSetting) and tmpSetting
           m.itemPoster.uri = itemData.thumbnailURL
         else
