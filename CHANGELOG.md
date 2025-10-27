@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Dependencies
 
+- actions/upload-artifact action to v5 ([#118](https://github.com/cewert/jellyrock/pull/118))
 - dependency brighterscript to v0.70.2 - autoclosed ([#100](https://github.com/cewert/jellyrock/pull/100))
 - dependency @rokucommunity/bslint to v0.8.37 ([#99](https://github.com/cewert/jellyrock/pull/99))
 - dependency brighterscript-formatter to v1.7.19 ([#101](https://github.com/cewert/jellyrock/pull/101))
