@@ -12,20 +12,10 @@ sub Main (args as dynamic) as void
   m.global = m.screen.getGlobalNode()
   setGlobals()
 
-  ' Initialize session content nodes
-  serverNode = CreateObject("roSGNode", "JellyfinServer")
-  userNode = CreateObject("roSGNode", "JellyfinUser")
-  settingsNode = CreateObject("roSGNode", "JellyfinUserSettings")
-  userNode.settings = settingsNode
-  m.global.addFields({
-    server: serverNode,
-    user: userNode
-  })
-
   user.settings.SaveDefaults()
 
   ' Enable auto-sync AFTER loading defaults
-  settingsNode.callFunc("enableAutoSync")
+  m.global.user.settings.callFunc("enableAutoSync")
 
   ' migrate registry if needed
   m.wasMigrated = false

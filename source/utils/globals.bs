@@ -1,6 +1,15 @@
 ' Set all global variables that don't require an roSGNode
 sub setGlobals()
-  m.global.addFields({ appLoaded: false })
+  ' Initialize session content nodes
+  serverNode = CreateObject("roSGNode", "JellyfinServer")
+  userNode = CreateObject("roSGNode", "JellyfinUser")
+  settingsNode = CreateObject("roSGNode", "JellyfinUserSettings")
+  userNode.settings = settingsNode
+  m.global.addFields({
+    appLoaded: false,
+    server: serverNode,
+    user: userNode
+  })
   ' Save Constants
   setConstants()
   ' Save information from roAppInfo to m.global.app
