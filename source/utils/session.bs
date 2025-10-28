@@ -337,7 +337,15 @@ namespace user
         userNode.config.useEpisodeImagesInNextUpAndResume = toBoolean(tmpSetting)
       end if
 
-      user.SaveUserHomeSections(jsonResponse.CustomPrefs)
+      ' Check if CustomPrefs has any homesection data
+      if user.hasHomeSectionData(jsonResponse.CustomPrefs)
+        print "LoadUserPreferences: Using server CustomPrefs for home sections"
+        user.SaveUserHomeSections(jsonResponse.CustomPrefs)
+      else
+        ' CustomPrefs is empty or has no homesection keys - use defaults
+        print "LoadUserPreferences: CustomPrefs has no homesection data, using defaults"
+        user.SaveUserHomeSections(user.getDefaultHomeSections())
+      end if
 
       if isValid(jsonResponse.CustomPrefs["landing-livetv"])
         set_user_setting("displayLiveTvLanding", jsonResponse.CustomPrefs["landing-livetv"])
@@ -345,32 +353,44 @@ namespace user
         unset_user_setting("displayLiveTvLanding")
       end if
     else
-      user.SaveUserHomeSections({
-        homesection0: "smalllibrarytiles",
-        homesection1: "resume",
-        homesection2: "nextup",
-        homesection3: "resumeaudio",
-        homesection4: "activerecordings",
-        homesection5: "livetv",
-        homesection6: "latestmedia"
-      })
+      print "LoadUserPreferences: No valid CustomPrefs from server, using defaults"
+      user.SaveUserHomeSections(user.getDefaultHomeSections())
     end if
   end sub
+
+  ' Get default home sections configuration
+  function getDefaultHomeSections() as object
+    return {
+      homesection0: "smalllibrarytiles",
+      homesection1: "resume",
+      homesection2: "nextup",
+      homesection3: "resumeaudio",
+      homesection4: "activerecordings",
+      homesection5: "livetv",
+      homesection6: "latestmedia"
+    }
+  end function
+
+  ' Check if CustomPrefs contains any homesection data
+  function hasHomeSectionData(prefs as object) as boolean
+    if not isValid(prefs) then return false
+
+    for i = 0 to 6
+      key = "homesection" + i.toStr()
+      if prefs.DoesExist(key)
+        return true
+      end if
+    end for
+
+    return false
+  end function
 
   ' Save user home sections configuration
   sub SaveUserHomeSections(userPreferences as object)
     rowTypes = []
 
     if not isValid(userPreferences)
-      userPreferences = {
-        homesection0: "smalllibrarytiles",
-        homesection1: "resume",
-        homesection2: "nextup",
-        homesection3: "resumeaudio",
-        homesection4: "activerecordings",
-        homesection5: "livetv",
-        homesection6: "latestmedia"
-      }
+      userPreferences = user.getDefaultHomeSections()
     end if
 
     for i = 0 to 6
