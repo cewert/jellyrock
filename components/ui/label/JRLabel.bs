@@ -1,7 +1,7 @@
 import "pkg:/source/utils/misc.bs"
 
 sub init()
-  m.top.color = m.global.constants.colors.text_primary
+  m.top.color = m.global.constants.colorTextPrimary
 
   if m.global.user.settings.uiFontFallback = true
     m.top.font.uri = "tmp:/font"

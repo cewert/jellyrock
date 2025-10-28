@@ -580,10 +580,10 @@ sub onItemFocused()
     if isValid(itemData.CriticRating)
       setFieldText("criticRatingLabel", itemData.criticRating)
 
-      tomato = m.global.constants.icons.tomato_rotten
+      tomato = m.global.constants.iconTomatoRotten
 
       if itemData.CriticRating > 60
-        tomato = m.global.constants.icons.tomato_fresh
+        tomato = m.global.constants.iconTomatoFresh
       end if
 
       m.criticRatingIcon.uri = tomato

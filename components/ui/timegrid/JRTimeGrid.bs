@@ -1,24 +1,24 @@
 import "pkg:/source/utils/misc.bs"
 
 sub init()
-  colorConstants = m.global.constants.colors
+  constants = m.global.constants
 
   m.top.automaticLoadingDataFeedback = false
   m.top.showLoadingDataFeedback = true
   m.top.showPastTimeScreen = true
   m.top.focusBitmapUri = "pkg:/images/white-focus.9.png"
-  m.top.focusBitmapBlendColor = colorConstants.primary
+  m.top.focusBitmapBlendColor = constants.colorPrimary
   m.top.iconFocusedColor = "#ff0000"
 
-  m.top.pastTimeScreenBlendColor = colorConstants.text_disabled
-  m.top.currentTimeIndicatorColor = colorConstants.primary
+  m.top.pastTimeScreenBlendColor = constants.colorTextDisabled
+  m.top.currentTimeIndicatorColor = constants.colorPrimary
 
   m.top.nowBarWidth = 12
-  m.top.timeLabelColor = colorConstants.text_secondary
-  m.top.nowBarBlendColor = colorConstants.secondary
-  m.top.channelInfoTextColor = colorConstants.text_secondary
-  m.top.programTitleColor = colorConstants.text_primary
-  m.top.programTitleFocusedColor = colorConstants.text_primary
+  m.top.timeLabelColor = constants.colorTextSecondary
+  m.top.nowBarBlendColor = constants.colorSecondary
+  m.top.channelInfoTextColor = constants.colorTextSecondary
+  m.top.programTitleColor = constants.colorTextPrimary
+  m.top.programTitleFocusedColor = constants.colorTextPrimary
 
   ' disable gradient overlay
   overlayPoster = m.top.getChild(2)

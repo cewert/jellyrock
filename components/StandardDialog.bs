@@ -6,28 +6,28 @@ sub init()
   m.top.height = 900
   m.top.buttons = [tr("OK")]
 
-  colorConstants = m.global.constants.colors
+  constants = m.global.constants
 
   m.dialogStyles = {
     "default": {
       "fontSize": 27,
       "fontUri": "font:BoldSystemFontFile",
-      "color": colorConstants.text_primary
+      "color": constants.colorTextPrimary
     },
     "b": {
       "fontSize": 27,
       "fontUri": "font:SystemFontFile",
-      "color": colorConstants.text_secondary
+      "color": constants.colorTextSecondary
     },
     "header": {
       "fontSize": 35,
       "fontUri": "font:SystemFontFile",
-      "color": colorConstants.secondary
+      "color": constants.colorSecondary
     },
     "p": {
       "fontSize": 27,
       "fontUri": "font:SystemFontFile",
-      "color": colorConstants.text_primary
+      "color": constants.colorTextPrimary
     }
   }
 

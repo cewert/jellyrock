@@ -2,9 +2,9 @@ sub init()
   m.progressBar = m.top.findNode("progressBar")
   m.progressBarBackground = m.top.findNode("progressBarBackground")
 
-  colorConstants = m.global.constants.colors
-  m.progressBar.color = colorConstants.secondary
-  m.progressBarBackground.color = colorConstants.black_alpha_60
+  constants = m.global.constants
+  m.progressBar.color = constants.colorSecondary
+  m.progressBarBackground.color = "0x" + constants.colorBlack + constants.alpha60
 end sub
 
 sub onWidthChanged()

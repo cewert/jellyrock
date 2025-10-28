@@ -386,11 +386,11 @@ sub arrangeIconAndBackdropText()
     backdropText.translation = [backdropText.translation[0], ((m.backdrop.height - m.itemIcon.height) / 2) + m.itemIcon.height]
 
     ' Set font size based on text length
-    fontSizeConstants = m.global.constants.font_sizes
+    constants = m.global.constants
     if backdropText.text.len() > 12
-      backdropText.font.size = fontSizeConstants.large
+      backdropText.font.size = constants.fontSizeLarge
     else if backdropText.text.len() > 35
-      backdropText.font.size = fontSizeConstants.medium
+      backdropText.font.size = constants.fontSizeMedium
     end if
   end if
 end sub

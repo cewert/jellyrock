@@ -1,5 +1,5 @@
 sub init()
-  m.top.font.size = m.global.constants.font_sizes.smallest
+  m.top.font.size = m.global.constants.fontSizeSmallest
 
   if m.global.user.settings.uiFontFallback = true
     applyFallbackFontScale()

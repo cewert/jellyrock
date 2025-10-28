@@ -2,7 +2,7 @@ import "pkg:/source/utils/misc.bs"
 
 sub init()
   m.top.vertFocusAnimationStyle = "fixed"
-  m.top.focusBitmapBlendColor = m.global.constants.colors.primary ' color of the item selector
+  m.top.focusBitmapBlendColor = m.global.constants.colorPrimary ' color of the item selector
   m.top.itemSpacing = "[0, 45]"
 
   ' Apply fallback font scaling to section divider if fallback font is enabled

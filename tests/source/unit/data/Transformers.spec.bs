@@ -584,8 +584,8 @@ namespace tests
 
         m.assertNotInvalid(result)
         m.assertNotInvalid(result.rawUserData, "rawUserData should be populated in debug mode")
-        m.assertNotInvalid(result.rawConfigData, "rawConfigData should be populated in debug mode")
-        m.assertNotInvalid(result.rawPolicyData, "rawPolicyData should be populated in debug mode")
+        m.assertNotInvalid(result.config.rawConfigData, "rawConfigData should be populated in debug mode on config node")
+        m.assertNotInvalid(result.policy.rawPolicyData, "rawPolicyData should be populated in debug mode on policy node")
         m.assertEqual(result.rawUserData.id, "admin-user-456")
       end function
 

@@ -121,7 +121,7 @@ function createUserPoster() as object
       print "ERROR: No server URL set, cannot load user image"
     end if
   else
-    userImage.blendColor = m.global.constants.colors.text_secondary
+    userImage.blendColor = m.global.constants.colorTextSecondary
     userImage.uri = "pkg:/images/icons/person_36px.png"
   end if
 

@@ -66,16 +66,16 @@ sub init()
   m.getNextEpisodeTask = createObject("roSGNode", "GetNextEpisodeTask")
   m.getNextEpisodeTask.observeField("nextEpisodeData", "onNextEpisodeDataLoaded")
 
-  globalColors = m.global.constants.colors
+  constants = m.global.constants
 
-  m.top.retrievingBar.filledBarBlendColor = globalColors.secondary
+  m.top.retrievingBar.filledBarBlendColor = constants.colorSecondary
 
-  m.top.bufferingBar.filledBarBlendColor = globalColors.secondary
+  m.top.bufferingBar.filledBarBlendColor = constants.colorSecondary
 
-  m.top.trickPlayBar.filledBarBlendColor = globalColors.secondary
-  m.top.trickPlayBar.thumbBlendColor = globalColors.text_primary
-  m.top.trickPlayBar.textColor = globalColors.text_primary
-  m.top.trickPlayBar.currentTimeMarkerBlendColor = globalColors.text_primary
+  m.top.trickPlayBar.filledBarBlendColor = constants.colorSecondary
+  m.top.trickPlayBar.thumbBlendColor = constants.colorTextPrimary
+  m.top.trickPlayBar.textColor = constants.colorTextPrimary
+  m.top.trickPlayBar.currentTimeMarkerBlendColor = constants.colorTextPrimary
 end sub
 
 ' handleChapterSkipAction: Handles user command to skip chapters in playing video

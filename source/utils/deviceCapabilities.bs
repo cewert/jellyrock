@@ -943,7 +943,7 @@ function getMaxHeightArray(isRequired = false as boolean) as object
   if userMaxHeight = invalid or userMaxHeight = "" then userMaxHeight = "auto"
   if userMaxHeight = "off" then return {}
 
-  deviceMaxHeight = m.global.device.videoHeight.ToInt()
+  deviceMaxHeight = m.global.device.videoHeight
 
   maxVideoHeight = 1080 ' default to 1080p in case all our validation checks fail
 
@@ -1005,7 +1005,7 @@ function canPlay4k() as boolean
   ' Check if the output mode is 2160p or higher
   maxVideoHeight = m.global.device.videoHeight
   if not isValid(maxVideoHeight) then return false
-  if maxVideoHeight.ToInt() < 2160
+  if maxVideoHeight < 2160
     print "maxVideoHeight is less than 2160p. Does the TV support 4K? If yes, then go to your Roku settings and set your display type to 4K"
     return false
   end if

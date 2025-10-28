@@ -10,7 +10,7 @@ sub init()
   m.serverUrlTextbox = m.top.findNode("serverUrlTextbox")
   m.serverUrlContainer = m.top.findNode("serverUrlContainer")
   m.serverUrlOutline = m.top.findNode("serverUrlOutline")
-  m.serverUrlOutline.blendColor = m.global.constants.colors.primary
+  m.serverUrlOutline.blendColor = m.global.constants.colorPrimary
   m.buttons = m.top.findNode("buttons")
   m.buttons.callFunc("center")
 

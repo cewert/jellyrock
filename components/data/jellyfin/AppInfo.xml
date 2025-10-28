@@ -8,7 +8,7 @@
 <component name="AppInfo" extends="ContentNode">
   <interface>
     <field id="appId" type="string" value="" />
-    <field id="isDev" type="boolean" value="false" />
+    <field id="isDev" type="boolean" />
     <field id="version" type="string" value="" />
     <field id="lastRunVersion" type="string" value="" />
   </interface>

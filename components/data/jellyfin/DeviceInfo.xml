@@ -8,19 +8,37 @@
 <component name="DeviceInfo" extends="ContentNode">
   <interface>
     <!-- Device Identity (id inherited from ContentNode) -->
+    <field id="uuid" type="string" value="" />
     <field id="name" type="string" value="" />
     <field id="model" type="string" value="" />
     <field id="serial" type="string" value="" />
     <field id="friendlyName" type="string" value="" />
     <field id="serverDeviceName" type="string" value="" />
     <field id="modelType" type="string" value="" />
+    <field id="modelDetails" type="assocarray" />
+
+    <!-- System Info -->
+    <field id="osVersion" type="assocarray" />
+    <field id="locale" type="string" value="" />
+    <field id="clockFormat" type="string" value="" />
+
+    <!-- Accessibility -->
+    <field id="isAudioGuideEnabled" type="boolean" />
+    <field id="hasVoiceRemote" type="boolean" />
+
+    <!-- Display Info -->
+    <field id="displayType" type="string" value="" />
+    <field id="displayMode" type="string" value="" />
+    <field id="videoMode" type="string" value="" />
 
     <!-- Video Capabilities -->
-    <field id="videoHeight" type="integer" value="1080" />
-    <field id="videoWidth" type="integer" value="1920" />
-    <field id="maxVideoHeight" type="integer" value="1080" />
-    <field id="maxVideoWidth" type="integer" value="1920" />
-    <field id="canPlay4K" type="boolean" value="false" />
+    <field id="videoHeight" type="integer" value="0" />
+    <field id="videoWidth" type="integer" value="0" />
+    <field id="videoRefresh" type="integer" value="0" />
+    <field id="videoBitDepth" type="integer" value="0" />
+    <field id="maxVideoHeight" type="integer" value="0" />
+    <field id="maxVideoWidth" type="integer" value="0" />
+    <field id="canPlay4K" type="boolean" />
 
     <!-- Codec Support -->
     <field id="videoCodecs" type="stringarray" />
@@ -29,8 +47,5 @@
     <!-- Performance -->
     <field id="memoryLevel" type="string" value="normal" />
     <field id="memoryTotal" type="integer" value="0" />
-
-    <!-- Model Details (nested associative array) -->
-    <field id="modelDetails" type="assocarray" />
   </interface>
 </component>
