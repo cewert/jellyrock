@@ -388,9 +388,7 @@ namespace tests
         "uiTvShowsDisableUnwatchedCount",
         "uiTvShowsGoStraightToEpisodes",
         "itemGridShowItemCount",
-        "itemGridReset",
-        "liveTvCanRecord",
-        "contentCanDelete"
+        "itemGridReset"
       ]
 
       settingsNode = m.global.user.settings

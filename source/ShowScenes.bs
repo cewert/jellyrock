@@ -123,7 +123,6 @@ function LoginFlow()
           else
             print "Success! Auth token is still valid"
             user.Login(currentUser, true)
-            LoadUserAbilities()
             return true
           end if
         else
@@ -135,7 +134,6 @@ function LoginFlow()
         if isValid(userData)
           print "login success!"
           user.Login(userData, true)
-          LoadUserAbilities()
           return true
         else
           print "Auth failed. Password required"
@@ -180,7 +178,6 @@ function LoginFlow()
         if isValid(userData)
           print "login success!"
           user.Login(userData, true)
-          LoadUserAbilities()
           return true
         else
           print "Auth failed. Password required"
@@ -208,7 +205,6 @@ function LoginFlow()
     goto start_login
   end if
 
-  LoadUserAbilities()
   m.global.sceneManager.callFunc("clearScenes")
 
   return true

@@ -192,9 +192,7 @@ namespace tests
       boolSettings = {
         uiDesignHideClock: true,
         uiFontFallback: false,
-        uiHomeUseWebArrangement: true,
-        liveTvCanRecord: true,
-        contentCanDelete: false
+        uiHomeUseWebArrangement: true
       }
 
       for each key in boolSettings
@@ -376,8 +374,6 @@ namespace tests
       set_user_setting("homeSection1", "resume")
       set_user_setting("uiFontFallback", true)
       set_user_setting("displayLiveTvLanding", "guide")
-      set_user_setting("liveTvCanRecord", false)
-      set_user_setting("contentCanDelete", true)
       set_user_setting("uiHomeUseWebArrangement", false)
 
       ' Verify user settings exist in user registry section
@@ -389,13 +385,11 @@ namespace tests
       m.assertTrue(reg.exists("homeSection1"))
       m.assertTrue(reg.exists("uiFontFallback"))
       m.assertTrue(reg.exists("displayLiveTvLanding"))
-      m.assertTrue(reg.exists("liveTvCanRecord"))
-      m.assertTrue(reg.exists("contentCanDelete"))
       m.assertTrue(reg.exists("uiHomeUseWebArrangement"))
 
-      ' Verify count (9 user settings, not 10)
+      ' Verify count (7 user settings, not 8)
       allKeys = reg.GetKeyList()
-      m.assertTrue(allKeys.Count() >= 9, "Should have at least 9 user settings")
+      m.assertTrue(allKeys.Count() >= 7, "Should have at least 7 user settings")
 
       ' Verify global setting is in test-global section (debug mode)
       globalReg = CreateObject("roRegistrySection", "test-global")

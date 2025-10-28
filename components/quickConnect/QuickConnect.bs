@@ -15,7 +15,6 @@ sub monitorQuickConnect()
       currentUser = AboutMe()
       user.Login(currentUser, m.top.saveCredentials)
       user.LoadUserPreferences()
-      LoadUserAbilities()
       m.top.authenticated = 1
       return
     end if

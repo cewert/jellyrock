@@ -320,8 +320,6 @@ namespace tests
       m.assertEqual(result.homeSection1, "library-tvshows")
       m.assertEqual(result.homeSection2, "resume")
       m.assertEqual(result.displayLiveTvLanding, "guide")
-      m.assertEqual(result.liveTvCanRecord, true)
-      m.assertEqual(result.contentCanDelete, false)
     end function
 
     @it("transforms user settings with invalid/missing data")
@@ -704,10 +702,6 @@ namespace tests
       ' Display (1)
       m.assertEqual(result.displayLiveTvLanding, "guide")
 
-      ' Permissions (2)
-      m.assertEqual(result.liveTvCanRecord, true)
-      m.assertEqual(result.contentCanDelete, false)
-
       ' Display settings nested
       m.assertNotInvalid(result.displaySettings)
       m.assertTrue(result.displaySettings.DoesExist("library123"))
@@ -740,10 +734,6 @@ namespace tests
 
       ' Display should be default (empty string)
       m.assertEqual(result.displayLiveTvLanding, "")
-
-      ' Permissions should be defaults (false)
-      m.assertEqual(result.liveTvCanRecord, false)
-      m.assertEqual(result.contentCanDelete, false)
 
       ' Playback settings should be defaults
       m.assertEqual(result.playbackBitrateMaxLimited, false)
@@ -791,7 +781,6 @@ namespace tests
       m.assertEqual(result.uiDesignHideClock, false)
       m.assertEqual(result.displayLiveTvLanding, "")
       m.assertEqual(result.playbackBitrateLimit, 0)
-      m.assertEqual(result.liveTvCanRecord, false)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

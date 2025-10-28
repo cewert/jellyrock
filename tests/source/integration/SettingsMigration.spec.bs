@@ -169,12 +169,6 @@ namespace tests
       m.assertTrue(reg.exists("displayLiveTvLanding"))
       m.assertEqual(reg.read("displayLiveTvLanding"), "guide")
 
-      ' Verify Permission settings (2)
-      m.assertTrue(reg.exists("liveTvCanRecord"))
-      m.assertEqual(reg.read("liveTvCanRecord"), "true")
-      m.assertTrue(reg.exists("contentCanDelete"))
-      m.assertEqual(reg.read("contentCanDelete"), "false")
-
       ' AND: OLD setting names are deleted
       m.assertFalse(reg.exists("ui.row.layout"), "Old setting name should be deleted")
       m.assertFalse(reg.exists("playback.bitrate.limit"), "Old setting name should be deleted")
@@ -449,6 +443,44 @@ namespace tests
       ' Nested display settings should remain unchanged (transformer handles these)
       m.assertTrue(reg.exists("display.library123.sortField"), "Nested display settings not migrated here")
       m.assertTrue(reg.exists("display.library123.sortAscending"))
+    end function
+
+    @it("deletes server policy keys from registry (server-authoritative data)")
+    function _()
+      ' GIVEN: Registry with server policy keys that should never be persisted
+      testUserId = "test-migration-policy-cleanup-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.1.0") ' Already migrated
+
+      ' Write both old and new server policy keys (should all be deleted)
+      reg.write("liveTvCanRecord", "true")
+      reg.write("contentCanDelete", "false")
+      reg.write("livetv.canrecord", "true")
+      reg.write("content.candelete", "false")
+
+      ' Write valid user settings that should remain
+      reg.write("uiDesignHideClock", "true")
+      reg.write("displayLiveTvLanding", "guide")
+
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations()
+
+      ' THEN: Server policy keys are deleted
+      reg = CreateObject("roRegistrySection", testUserId)
+
+      m.assertFalse(reg.exists("liveTvCanRecord"), "liveTvCanRecord should be deleted")
+      m.assertFalse(reg.exists("contentCanDelete"), "contentCanDelete should be deleted")
+      m.assertFalse(reg.exists("livetv.canrecord"), "livetv.canrecord should be deleted")
+      m.assertFalse(reg.exists("content.candelete"), "content.candelete should be deleted")
+
+      ' Valid user settings should remain
+      m.assertTrue(reg.exists("uiDesignHideClock"), "Valid user setting should remain")
+      m.assertEqual(reg.read("uiDesignHideClock"), "true")
+      m.assertTrue(reg.exists("displayLiveTvLanding"), "Valid user setting should remain")
+      m.assertEqual(reg.read("displayLiveTvLanding"), "guide")
     end function
 
   end class

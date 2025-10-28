@@ -8,7 +8,5 @@
   "homeSection0": "library-movies",
   "homeSection1": "library-tvshows",
   "homeSection2": "resume",
-  "displayLiveTvLanding": "guide",
-  "liveTvCanRecord": "true",
-  "contentCanDelete": "false"
+  "displayLiveTvLanding": "guide"
 }

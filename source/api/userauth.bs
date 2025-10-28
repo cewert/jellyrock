@@ -114,29 +114,6 @@ function GetPublicUsers()
   return getJson(resp)
 end function
 
-sub LoadUserAbilities()
-  ' Use nested policy node
-  userNode = m.global.user
-
-  ' Check for EnableLiveTvManagement
-  canRecord = userNode.policy.enableLiveTvManagement ?? false
-
-  if canRecord
-    set_user_setting("liveTvCanRecord", "true")
-  else
-    set_user_setting("liveTvCanRecord", "false")
-  end if
-
-  ' Check for EnableContentDeletion
-  canDelete = userNode.policy.enableContentDeletion ?? false
-
-  if canDelete
-    set_user_setting("contentCanDelete", "true")
-  else
-    set_user_setting("contentCanDelete", "false")
-  end if
-end sub
-
 function initQuickConnect()
   resp = APIRequest("QuickConnect/Initiate")
   jsonResponse = getJson(resp)

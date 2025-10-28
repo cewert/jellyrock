@@ -201,10 +201,6 @@ class SessionDataTransformer
     ' Global settings are NOT loaded here - they come from "JellyRock" registry section
     ' and are loaded separately via user.settings.LoadGlobals()
 
-    ' Permission settings
-    settingsNode.liveTvCanRecord = toBoolean(settingsData["liveTvCanRecord"])
-    settingsNode.contentCanDelete = toBoolean(settingsData["contentCanDelete"])
-
     ' Set loading state
     settingsNode.isLoaded = true
     settingsNode.loadedAt = CreateObject("roDateTime").AsSeconds()

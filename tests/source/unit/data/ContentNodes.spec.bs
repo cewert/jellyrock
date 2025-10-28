@@ -260,13 +260,9 @@ namespace tests
 
       settings.displayLiveTvLanding = "guide"
       settings.globalRememberMe = true
-      settings.liveTvCanRecord = true
-      settings.contentCanDelete = true
 
       m.assertEqual(settings.displayLiveTvLanding, "guide")
       m.assertEqual(settings.globalRememberMe, true)
-      m.assertEqual(settings.liveTvCanRecord, true)
-      m.assertEqual(settings.contentCanDelete, true)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

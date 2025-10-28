@@ -70,10 +70,6 @@
     <!-- Display Settings (nested by library ID) -->
     <field id="displaySettings" type="assocarray" alwaysNotify="true" />
 
-    <!-- Permission Settings -->
-    <field id="liveTvCanRecord" type="boolean" alwaysNotify="true" />
-    <field id="contentCanDelete" type="boolean" alwaysNotify="true" />
-
     <!-- DEBUG ONLY: Raw settings for debugging - only populated when bs_const=debug=true -->
     <field id="rawSettings" type="assocarray" />
 
