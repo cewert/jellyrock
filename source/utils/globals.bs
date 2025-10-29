@@ -1,6 +1,23 @@
 ' Set all global variables that don't require an roSGNode
 sub setGlobals()
-  m.global.addFields({ appLoaded: false })
+  ' Initialize session content nodes
+  serverNode = CreateObject("roSGNode", "JellyfinServer")
+  userNode = CreateObject("roSGNode", "JellyfinUser")
+
+  ' Initialize nested user nodes
+  settingsNode = CreateObject("roSGNode", "JellyfinUserSettings")
+  configNode = CreateObject("roSGNode", "JellyfinUserConfiguration")
+  policyNode = CreateObject("roSGNode", "JellyfinUserPolicy")
+
+  userNode.settings = settingsNode
+  userNode.config = configNode
+  userNode.policy = policyNode
+
+  m.global.addFields({
+    appLoaded: false,
+    server: serverNode,
+    user: userNode
+  })
   ' Save Constants
   setConstants()
   ' Save information from roAppInfo to m.global.app
@@ -26,66 +43,26 @@ end sub
 
 ' Save Constants
 sub setConstants()
-  m.global.addFields({
-    constants: {
-      colors: {
-        primary: "0x8b5cf6FF",
-        secondary: "0x3b82f6FF",
-        text_primary: "0xf0f0f0FF",
-        text_secondary: "0xa8a8a8FF",
-        text_disabled: "0x4a4a4aFF",
-        text_error: "0xff0000FF",
-        background_primary: "0x0d1117FF",
-        background_secondary: "0x161b22FF",
+  ' Create Constants content node
+  ' All constants are initialized in the XML with their default values
+  constantsNode = CreateObject("roSGNode", "Constants")
 
-        black_alpha_0: "0x00000000",
-        black_alpha_10: "0x0000001A",
-        black_alpha_20: "0x00000033",
-        black_alpha_30: "0x0000004D",
-        black_alpha_40: "0x00000066",
-        black_alpha_50: "0x00000080",
-        black_alpha_60: "0x00000099",
-        black_alpha_70: "0x000000B3",
-        black_alpha_80: "0x000000CC",
-        black_alpha_90: "0x000000E6",
-        black_alpha_100: "0x000000FF"
-      },
-      font_sizes: {
-        smallest: 21,
-        smaller: 25,
-        small: 27,
-        medium: 32,
-        large: 42,
-        larger: 50,
-        largest: 60
-      },
-      icons: {
-        arrow_up_black: "pkg:/images/icons/arrow-up-black.png",
-        arrow_up_white: "pkg:/images/icons/arrow-up-white.png",
-        arrow_down_black: "pkg:/images/icons/arrow-down-black.png",
-        arrow_down_white: "pkg:/images/icons/arrow-down-white.png",
-        check_black: "pkg:/images/icons/check-black.png",
-        check_white: "pkg:/images/icons/check_white.png",
-        tomato_fresh: "pkg:/images/icons/tomato-fresh.png",
-        tomato_rotten: "pkg:/images/icons/tomato-rotten.png"
-      },
-      jellyfin_server_response: "jellyfin server"
-    }
-  })
+  m.global.addFields({ constants: constantsNode })
 end sub
 
 ' Save information from roAppInfo to m.global.app
 sub SaveAppToGlobal()
   appInfo = CreateObject("roAppInfo")
   lastRunVersion = get_setting("LastRunVersion")
-  m.global.addFields({
-    app: {
-      id: appInfo.GetID(),
-      isDev: appInfo.IsDev(),
-      version: appInfo.GetVersion(),
-      lastRunVersion: lastRunVersion
-    }
-  })
+
+  ' Create and populate AppInfo content node
+  appNode = CreateObject("roSGNode", "AppInfo")
+  appNode.appId = appInfo.GetID()
+  appNode.isDev = appInfo.IsDev()
+  appNode.version = appInfo.GetVersion()
+  appNode.lastRunVersion = lastRunVersion
+
+  m.global.addFields({ app: appNode })
 end sub
 
 ' Save information from roDeviceInfo to m.global.device
@@ -147,32 +124,31 @@ sub SaveDeviceToGlobal()
   if isValid(extraData) and extraData = "b10" then bitDepth = 10
   if videoHeight = "4320" then bitDepth = 12
 
-  m.global.addFields({
-    device: {
-      id: deviceInfo.getChannelClientID(),
-      uuid: deviceInfo.GetRandomUUID(),
-      name: displayName,
-      friendlyName: filteredFriendly,
-      serverDeviceName: deviceInfo.getChannelClientID(),
-      model: deviceInfo.GetModel(),
-      modelType: deviceInfo.GetModelType(),
-      modelDetails: deviceInfo.GetModelDetails(),
-      serial: deviceSerial,
-      osVersion: deviceInfo.GetOSVersion(),
-      locale: deviceInfo.GetCurrentLocale(),
-      clockFormat: deviceInfo.GetClockFormat(),
-      isAudioGuideEnabled: deviceInfo.IsAudioGuideEnabled(),
-      hasVoiceRemote: deviceInfo.HasFeature("voice_remote"),
+  ' Create and populate DeviceInfo content node
+  deviceNode = CreateObject("roSGNode", "DeviceInfo")
+  deviceNode.id = deviceInfo.getChannelClientID()
+  deviceNode.uuid = deviceInfo.GetRandomUUID()
+  deviceNode.name = displayName
+  deviceNode.friendlyName = filteredFriendly
+  deviceNode.serverDeviceName = deviceInfo.getChannelClientID()
+  deviceNode.model = deviceInfo.GetModel()
+  deviceNode.modelType = deviceInfo.GetModelType()
+  deviceNode.modelDetails = deviceInfo.GetModelDetails()
+  deviceNode.serial = deviceSerial
+  deviceNode.osVersion = deviceInfo.GetOSVersion()
+  deviceNode.locale = deviceInfo.GetCurrentLocale()
+  deviceNode.clockFormat = deviceInfo.GetClockFormat()
+  deviceNode.isAudioGuideEnabled = deviceInfo.IsAudioGuideEnabled()
+  deviceNode.hasVoiceRemote = deviceInfo.HasFeature("voice_remote")
+  deviceNode.displayType = deviceInfo.GetDisplayType()
+  deviceNode.displayMode = deviceInfo.GetDisplayMode()
+  ' video info below is based on the the Display type selected in the Roku settings which may or may not match the max playback resolution of the tv
+  ' eg. if Display type is 1080p, these settings will be based on 1080p even if the TV supports 2160p/4K
+  deviceNode.videoMode = videoMode
+  deviceNode.videoHeight = StrToI(videoHeight)
+  deviceNode.videoWidth = StrToI(videoWidth)
+  deviceNode.videoRefresh = StrToI(refreshRate)
+  deviceNode.videoBitDepth = bitDepth
 
-      displayType: deviceInfo.GetDisplayType(),
-      displayMode: deviceInfo.GetDisplayMode(),
-      ' video info below is based on the the Display type selected in the Roku settings which may or may not match the max playback resolution of the tv'
-      ' eg. if Display type is 1080p, these settings will be based on 1080p even if the TV supports 2160p/4K
-      videoMode: videoMode,
-      videoHeight: videoHeight,
-      videoWidth: videoWidth,
-      videoRefresh: StrToI(refreshRate),
-      videoBitDepth: bitDepth
-    }
-  })
+  m.global.addFields({ device: deviceNode })
 end sub

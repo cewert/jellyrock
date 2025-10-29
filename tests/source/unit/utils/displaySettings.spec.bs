@@ -1,0 +1,350 @@
+
+namespace tests
+
+  @suite("displaySettings.bs - Library Display Settings Management")
+  class DisplaySettingsTests extends tests.BaseTestSuite
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getLibraryDisplaySettings")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns empty object for non-existent library")
+    function _()
+      result = getLibraryDisplaySettings("nonexistent-lib-123")
+
+      m.assertNotInvalid(result)
+      m.assertEqual(result.Count(), 0)
+    end function
+
+    @it("returns empty object for invalid libraryId")
+    function _()
+      result = getLibraryDisplaySettings("")
+      m.assertEqual(result.Count(), 0)
+
+      result = getLibraryDisplaySettings(invalid)
+      m.assertEqual(result.Count(), 0)
+    end function
+
+    @it("returns all settings for existing library")
+    function _()
+      ' Setup: Add settings using helper
+      setLibraryDisplaySetting("test-lib-123", "sortField", "DateCreated")
+      setLibraryDisplaySetting("test-lib-123", "filter", "Favorites")
+      setLibraryDisplaySetting("test-lib-123", "landing", "Movies")
+
+      result = getLibraryDisplaySettings("test-lib-123")
+
+      m.assertNotInvalid(result)
+      m.assertEqual(result.Count(), 3)
+      m.assertEqual(result.sortField, "DateCreated")
+      m.assertEqual(result.filter, "Favorites")
+      m.assertEqual(result.landing, "Movies")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getLibraryDisplaySetting")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns value for existing setting")
+    function _()
+      ' Setup using helper
+      setLibraryDisplaySetting("test-lib", "sortField", "DateCreated")
+
+      result = getLibraryDisplaySetting("test-lib", "sortField", "SortName")
+
+      m.assertEqual(result, "DateCreated")
+    end function
+
+    @it("returns default for non-existent setting")
+    function _()
+      ' Setup using helper
+      setLibraryDisplaySetting("test-lib", "sortField", "DateCreated")
+
+      result = getLibraryDisplaySetting("test-lib", "filter", "All")
+
+      m.assertEqual(result, "All")
+    end function
+
+    @it("returns default for non-existent library")
+    function _()
+      result = getLibraryDisplaySetting("nonexistent", "sortField", "SortName")
+
+      m.assertEqual(result, "SortName")
+    end function
+
+    @it("handles invalid parameters gracefully")
+    function _()
+      result = getLibraryDisplaySetting("", "sortField", "default")
+      m.assertEqual(result, "default")
+
+      result = getLibraryDisplaySetting("lib", "", "default")
+      m.assertEqual(result, "default")
+
+      result = getLibraryDisplaySetting(invalid, "key", "default")
+      m.assertEqual(result, "default")
+    end function
+
+    @it("returns invalid when no default provided and setting missing")
+    function _()
+      result = getLibraryDisplaySetting("nonexistent", "sortField")
+
+      m.assertInvalid(result)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("setLibraryDisplaySetting")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("creates library object if doesn't exist")
+    function _()
+      setLibraryDisplaySetting("new-lib", "sortField", "DateCreated")
+
+      ' Verify via helper
+      result = getLibraryDisplaySetting("new-lib", "sortField", invalid)
+      m.assertEqual(result, "DateCreated")
+    end function
+
+    @it("updates existing setting")
+    function _()
+      ' Setup initial value
+      setLibraryDisplaySetting("test-lib", "sortField", "SortName")
+
+      ' Update it
+      setLibraryDisplaySetting("test-lib", "sortField", "DateCreated")
+
+      ' Verify via helper
+      result = getLibraryDisplaySetting("test-lib", "sortField", invalid)
+      m.assertEqual(result, "DateCreated")
+    end function
+
+    @it("updates in-memory node")
+    function _()
+      setLibraryDisplaySetting("test-lib", "filter", "Favorites")
+
+      ' Verify it's accessible via helper
+      result = getLibraryDisplaySetting("test-lib", "filter", "All")
+      m.assertEqual(result, "Favorites")
+    end function
+
+    @it("handles multiple settings for same library")
+    function _()
+      setLibraryDisplaySetting("test-lib", "sortField", "DateCreated")
+      setLibraryDisplaySetting("test-lib", "filter", "Favorites")
+      setLibraryDisplaySetting("test-lib", "landing", "Movies")
+
+      libSettings = getLibraryDisplaySettings("test-lib")
+      m.assertEqual(libSettings.Count(), 3)
+      m.assertEqual(libSettings.sortField, "DateCreated")
+      m.assertEqual(libSettings.filter, "Favorites")
+      m.assertEqual(libSettings.landing, "Movies")
+    end function
+
+    @it("handles invalid parameters gracefully")
+    function _()
+      ' Should not crash
+      setLibraryDisplaySetting("", "sortField", "value")
+      setLibraryDisplaySetting("lib", "", "value")
+      setLibraryDisplaySetting(invalid, "key", "value")
+
+      ' Verify nothing was set by checking a known library doesn't exist
+      result = getLibraryDisplaySettings("")
+      m.assertEqual(result.Count(), 0)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getLibraryDisplaySettingsBatch")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns all requested settings with values")
+    function _()
+      ' Setup using helpers - unique library ID
+      setLibraryDisplaySetting("test-lib-batch1", "sortField", "DateCreated")
+      setLibraryDisplaySetting("test-lib-batch1", "filter", "Favorites")
+
+      keys = ["sortField", "filter"]
+      defaults = { sortField: "SortName", filter: "All" }
+
+      result = getLibraryDisplaySettingsBatch("test-lib-batch1", keys, defaults)
+
+      m.assertEqual(result.Count(), 2)
+      m.assertEqual(result.sortField, "DateCreated")
+      m.assertEqual(result.filter, "Favorites")
+    end function
+
+    @it("uses defaults for missing settings")
+    function _()
+      ' Setup only sortField - unique library ID
+      setLibraryDisplaySetting("test-lib-batch2", "sortField", "DateCreated")
+
+      keys = ["sortField", "filter", "landing"]
+      defaults = { sortField: "SortName", filter: "All", landing: "Movies" }
+
+      result = getLibraryDisplaySettingsBatch("test-lib-batch2", keys, defaults)
+
+      m.assertEqual(result.Count(), 3)
+      m.assertEqual(result.sortField, "DateCreated")
+      m.assertEqual(result.filter, "All")
+      m.assertEqual(result.landing, "Movies")
+    end function
+
+    @it("returns invalid for keys without defaults")
+    function _()
+      ' Setup library - unique library ID
+      setLibraryDisplaySetting("test-lib-batch3", "sortField", "DateCreated")
+
+      keys = ["sortField", "filter", "unknownKey"]
+      defaults = { sortField: "SortName", filter: "All" }
+
+      result = getLibraryDisplaySettingsBatch("test-lib-batch3", keys, defaults)
+
+      m.assertEqual(result.Count(), 3)
+      m.assertEqual(result.sortField, "DateCreated")
+      m.assertEqual(result.filter, "All")
+      m.assertInvalid(result.unknownKey)
+    end function
+
+    @it("handles non-existent library with defaults")
+    function _()
+      keys = ["sortField", "filter"]
+      defaults = { sortField: "SortName", filter: "All" }
+
+      result = getLibraryDisplaySettingsBatch("nonexistent-lib-batch", keys, defaults)
+
+      m.assertEqual(result.Count(), 2)
+      m.assertEqual(result.sortField, "SortName")
+      m.assertEqual(result.filter, "All")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("deleteLibraryDisplaySettings")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("removes library from displaySettings")
+    function _()
+      ' Setup library with settings
+      setLibraryDisplaySetting("test-lib", "sortField", "DateCreated")
+      setLibraryDisplaySetting("test-lib", "filter", "Favorites")
+
+      ' Verify it exists
+      result = getLibraryDisplaySettings("test-lib")
+      m.assertTrue(result.Count() > 0)
+
+      deleteLibraryDisplaySettings("test-lib")
+
+      ' Verify it's gone
+      result = getLibraryDisplaySettings("test-lib")
+      m.assertEqual(result.Count(), 0)
+    end function
+
+    @it("handles invalid parameters gracefully")
+    function _()
+      ' Setup a library
+      setLibraryDisplaySetting("test-lib", "sortField", "DateCreated")
+
+      ' Should not crash
+      deleteLibraryDisplaySettings("")
+      deleteLibraryDisplaySettings(invalid)
+
+      ' Original library should still exist
+      result = getLibraryDisplaySettings("test-lib")
+      m.assertTrue(result.Count() > 0)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Cross-library isolation")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("settings are isolated between different libraries")
+    function _()
+      ' Setup two different libraries
+      setLibraryDisplaySetting("lib-movies", "sortField", "DateCreated")
+      setLibraryDisplaySetting("lib-movies", "filter", "Favorites")
+
+      setLibraryDisplaySetting("lib-tvshows", "sortField", "PremiereDate")
+      setLibraryDisplaySetting("lib-tvshows", "filter", "Unplayed")
+
+      ' Verify movies library
+      moviesSettings = getLibraryDisplaySettings("lib-movies")
+      m.assertEqual(moviesSettings.sortField, "DateCreated")
+      m.assertEqual(moviesSettings.filter, "Favorites")
+
+      ' Verify TV shows library
+      tvSettings = getLibraryDisplaySettings("lib-tvshows")
+      m.assertEqual(tvSettings.sortField, "PremiereDate")
+      m.assertEqual(tvSettings.filter, "Unplayed")
+    end function
+
+    @it("deleting one library doesn't affect others")
+    function _()
+      ' Setup two libraries
+      setLibraryDisplaySetting("lib-delete-1", "sortField", "DateCreated")
+      setLibraryDisplaySetting("lib-keep-2", "sortField", "SortName")
+
+      ' Delete one
+      deleteLibraryDisplaySettings("lib-delete-1")
+
+      ' Verify first is gone
+      result1 = getLibraryDisplaySettings("lib-delete-1")
+      m.assertEqual(result1.Count(), 0)
+
+      ' Verify second still exists
+      result2 = getLibraryDisplaySettings("lib-keep-2")
+      m.assertEqual(result2.Count(), 1)
+      m.assertEqual(result2.sortField, "SortName")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Special library IDs")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("handles livetv special library")
+    function _()
+      setLibraryDisplaySetting("livetv", "landing", "guide")
+      setLibraryDisplaySetting("livetv", "sortField", "SortName")
+
+      result = getLibraryDisplaySetting("livetv", "landing", "channels")
+      m.assertEqual(result, "guide")
+
+      result = getLibraryDisplaySetting("livetv", "sortField", invalid)
+      m.assertEqual(result, "SortName")
+    end function
+
+    @it("handles music special library")
+    function _()
+      setLibraryDisplaySetting("music", "view", "music-album")
+
+      result = getLibraryDisplaySetting("music", "view", "music-artist")
+      m.assertEqual(result, "music-album")
+    end function
+
+    @it("handles library IDs with special characters")
+    function _()
+      ' Test with GUID-like library IDs
+      setLibraryDisplaySetting("abc-123-def-456", "sortField", "DateCreated")
+
+      result = getLibraryDisplaySetting("abc-123-def-456", "sortField", "SortName")
+      m.assertEqual(result, "DateCreated")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Value types")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("handles string values")
+    function _()
+      setLibraryDisplaySetting("test-types", "sortField", "DateCreated")
+
+      result = getLibraryDisplaySetting("test-types", "sortField", invalid)
+      m.assertEqual(result, "DateCreated")
+    end function
+
+    @it("handles boolean string values")
+    function _()
+      setLibraryDisplaySetting("test-bool", "sortAscending", "true")
+
+      result = getLibraryDisplaySetting("test-bool", "sortAscending", "false")
+      m.assertEqual(result, "true")
+    end function
+
+  end class
+end namespace

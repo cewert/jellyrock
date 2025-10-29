@@ -1,0 +1,325 @@
+
+namespace tests
+
+  class BaseTestSuite extends rooibos.BaseTestSuite
+    private appController
+
+    ' Test suites that need registry access (integration tests) should set this to true
+    ' This prevents unnecessary file I/O in unit tests for better performance
+    protected needsRegistrySetup = false as boolean
+
+    protected override sub setup()
+      ' Initialize m.global if not already initialized
+      if not isValid(m.global)
+        ' In test environment, m.global needs to be created from a scene
+        ' Try to get it from the test scene if available
+        m.global = m.top?.getGlobalNode()
+        if not isValid(m.global)
+          ' Cannot continue without m.global
+          throw "Failed to initialize m.global"
+        end if
+      end if
+
+      ' ===================================================================
+      ' Use ACTUAL main app initialization functions
+      ' This ensures tests use identical global state as production
+      ' ===================================================================
+
+      try
+        ' Initialize global constants, app info, and device info
+        ' This creates: m.global.appLoaded, m.global.constants, m.global.app, m.global.device
+        setGlobals()
+      catch e
+        ' If setGlobals() fails (e.g., roAppInfo/roDeviceInfo not available in test env),
+        ' create minimal mock data to allow tests to run
+        if not m.global.doesExist("constants")
+          m.global.addFields({
+            appLoaded: false,
+            constants: {
+              colors: {
+                primary: "0x8b5cf6FF",
+                secondary: "0x3b82f6FF",
+                text_primary: "0xf0f0f0FF"
+              },
+              font_sizes: {
+                medium: 32
+              }
+            },
+            app: {
+              id: "test-app",
+              isDev: true,
+              version: "0.0.0",
+              lastRunVersion: ""
+            },
+            device: {
+              id: "test-device",
+              name: "Test Device",
+              videoHeight: "1080",
+              videoWidth: "1920"
+            }
+          })
+        end if
+      end try
+
+      ' Initialize flat global structure with content nodes
+      ' Note: We don't call user.settings.SaveDefaults() directly because it
+      ' reads from settings.json and registry, which may fail in test environment
+      ' IMPORTANT: Use addField (singular) then assign, not addFields with value
+      ' This ensures the node is referenced, not copied
+      if not m.global.doesExist("server")
+        m.global.addField("server", "node", false)
+        m.global.server = CreateObject("roSGNode", "JellyfinServer")
+      end if
+
+      if not m.global.doesExist("user")
+        m.global.addField("user", "node", false)
+        userNode = CreateObject("roSGNode", "JellyfinUser")
+        settingsNode = CreateObject("roSGNode", "JellyfinUserSettings")
+        userNode.settings = settingsNode
+        m.global.user = userNode
+      end if
+
+      ' ===================================================================
+      ' Override with test-specific mock data
+      ' Load mock data from JSON files and transform using SessionDataTransformer
+      ' This ensures mock data structure matches production transformers
+      ' ===================================================================
+
+      transformer = new SessionDataTransformer()
+
+      ' Load and transform mock server data
+      mockServerData = MockDataLoader.LoadServer("default")
+      if isValid(mockServerData)
+        ' Transform mock data to ContentNode using transformer
+        transformedServer = transformer.transformServerInfo(mockServerData)
+        if isValid(transformedServer)
+          ' Get local reference to minimize rendezvous
+          localServer = m.global.server
+
+          ' Copy all fields from transformed node (no fields skipped)
+          nodeUtils.populateNodeFromNode(localServer, transformedServer, [])
+        end if
+      end if
+
+      ' Load and transform mock user data
+      mockUserData = MockDataLoader.LoadUser("default")
+      if isValid(mockUserData)
+        ' Transform mock data to ContentNode using transformer
+        transformedUser = transformer.transformUserInfo(mockUserData)
+        if isValid(transformedUser)
+          ' Get local reference to minimize rendezvous
+          localUser = m.global.user
+
+          ' Copy all fields EXCEPT settings (settings already created above)
+          nodeUtils.populateNodeFromNode(localUser, transformedUser, ["settings"])
+        end if
+      end if
+
+      ' Initialize roku-log if not already initialized
+      ' The roku-log-bsc-plugin should auto-initialize, but we ensure it exists
+      if isValid(m.global) and not isValid(m.global.rLog)
+        ' Create a proper log_Log component for roku-log
+        rLog = CreateObject("roSGNode", "log_Log")
+        if isValid(rLog)
+          ' Set up minimal transport (PrintTransport for console output)
+          rLog.transportTypes = ["log_PrintTransport"]
+          rLog.logLevel = 3 ' VERBOSE level (0=ERROR, 1=WARN, 2=INFO, 3=VERBOSE, 4=DEBUG)
+          rLog.enabled = true
+          rLog.isFiltering = false
+          rLog.includeDate = false
+          rLog.includeFilters = {}
+          rLog.excludeFilters = {}
+          rLog.logMode = 1
+          rLog.transports = []
+
+          ' Add to global
+          m.global.addFields({ rLog: rLog })
+
+          ' Add logIndent fields that roku-log expects
+          if not m.global.doesExist("logIndent")
+            m.global.addFields({ logIndent: 0 })
+          end if
+          if not m.global.doesExist("logIndentText")
+            m.global.addFields({ logIndentText: "" })
+          end if
+        end if
+      end if
+    end sub
+
+    protected override function beforeEach()
+      ' Reset or verify server state before each test if needed
+      ' This ensures tests don't interfere with each other
+      if isValid(m.global) and isValid(m.global.server)
+        ' Ensure server URL is always valid for image URL generation
+        ' Reload from JSON if somehow lost during test (e.g., if test-global was cleaned)
+        if not isValidAndNotEmpty(m.global.server.serverUrl)
+          mockServer = MockDataLoader.LoadServer("default")
+          if isValid(mockServer) and isValid(mockServer.serverUrl)
+            m.global.server.serverUrl = mockServer.serverUrl
+          end if
+        end if
+      end if
+
+      ' Only run registry I/O for integration tests that explicitly need it
+      if m.needsRegistrySetup
+        ' Restore baseline test-global state needed for API requests
+        ' This ensures each test starts with a clean but functional test-global section
+        testGlobalReg = CreateObject("roRegistrySection", "test-global")
+        if not testGlobalReg.exists("server") and isValid(m.global.server.serverUrl)
+          ' Store server URL for API calls (mimics what production code does)
+          testGlobalReg.write("server", m.global.server.serverUrl)
+          testGlobalReg.flush()
+        end if
+      end if
+    end function
+
+    protected override function afterEach()
+      ' Clean up any test-specific modifications
+      ' Leave the base mock intact for other tests
+
+      ' Only clean up registry data for integration tests that explicitly need it
+      ' Unit tests should never write to registry, so no cleanup needed
+      if m.needsRegistrySetup
+        RegistryTestUtils.CleanupTestRegistrySections("test-")
+      end if
+    end function
+
+    protected override sub teardown()
+      ' Final cleanup after all tests in this suite complete
+      ' Only clean up registry data for integration tests that explicitly need it
+      if m.needsRegistrySetup
+        RegistryTestUtils.CleanupTestRegistrySections("test-")
+      end if
+    end sub
+
+    ' ===================================================================
+    ' TEST HELPER METHODS
+    ' Use these in individual tests to reset or access m.global safely
+    ' ===================================================================
+
+    ' Reset server to XML defaults
+    protected function resetServer()
+      localServer = m.global.server
+      nodeUtils.resetNodeToDefaults(localServer, "JellyfinServer", [])
+    end function
+
+    ' Reset user to XML defaults (INCLUDING settings reset)
+    protected function resetUser()
+      localUser = m.global.user
+      nodeUtils.resetNodeToDefaults(localUser, "JellyfinUser", [])
+
+      ' Create fresh settings node
+      freshSettings = CreateObject("roSGNode", "JellyfinUserSettings")
+      localUser.settings = freshSettings
+    end function
+
+    ' Get local reference to server (minimizes rendezvous)
+    protected function getTestServer() as object
+      return m.global.server
+    end function
+
+    ' Get local reference to user (minimizes rendezvous)
+    protected function getTestUser() as object
+      return m.global.user
+    end function
+
+    ' Get local reference to user settings (minimizes rendezvous)
+    protected function getTestUserSettings() as object
+      return m.global.user.settings
+    end function
+
+    ' ===================================================================
+    ' DISPLAY SETTINGS TEST HELPERS
+    ' ===================================================================
+
+    ' Load and apply a specific mock user configuration
+    ' @param userName - Name of user mock file (e.g., "user-with-display-settings")
+    ' @param mergeSettings - If true, merges with existing settings; if false, replaces
+    protected function loadTestUser(userName as string, mergeSettings = false as boolean) as void
+      transformer = new SessionDataTransformer()
+
+      ' Load mock user data
+      mockUserData = MockDataLoader.LoadUser(userName)
+      if not isValid(mockUserData)
+        throw "Failed to load mock user: " + userName
+      end if
+
+      ' Transform to ContentNode
+      transformedUser = transformer.transformUserInfo(mockUserData)
+      if not isValid(transformedUser)
+        throw "Failed to transform mock user: " + userName
+      end if
+
+      ' Get local reference to minimize rendezvous
+      localUser = m.global.user
+
+      if mergeSettings
+        ' Copy all fields EXCEPT settings
+        nodeUtils.populateNodeFromNode(localUser, transformedUser, ["settings"])
+
+        ' Merge settings manually
+        if isValid(transformedUser.settings)
+          localSettings = localUser.settings
+          transformedSettings = transformedUser.settings
+
+          ' Merge displaySettings
+          if isValid(transformedSettings.displaySettings)
+            currentDisplaySettings = localSettings.displaySettings
+            if not isValid(currentDisplaySettings)
+              currentDisplaySettings = {}
+            end if
+
+            ' Merge library settings
+            for each libraryId in transformedSettings.displaySettings
+              if not currentDisplaySettings.DoesExist(libraryId)
+                currentDisplaySettings[libraryId] = {}
+              end if
+
+              for each key in transformedSettings.displaySettings[libraryId]
+                currentDisplaySettings[libraryId][key] = transformedSettings.displaySettings[libraryId][key]
+              end for
+            end for
+
+            localSettings.displaySettings = currentDisplaySettings
+          end if
+        end if
+      else
+        ' Replace all fields INCLUDING settings
+        nodeUtils.populateNodeFromNode(localUser, transformedUser, ["settings"])
+
+        ' Manually copy settings node (node fields need special handling)
+        if isValid(transformedUser.settings)
+          localUser.settings = transformedUser.settings
+        end if
+      end if
+    end function
+
+    ' Set a single display setting for testing
+    ' This is the ONLY acceptable way to set individual settings in tests
+    ' Uses proper ContentNode field access, not direct assignment
+    protected function setTestDisplaySetting(libraryId as string, key as string, value as dynamic) as void
+      localUser = m.global.user
+      if not isValid(localUser) or not isValid(localUser.settings)
+        throw "User not initialized in test"
+      end if
+
+      ' Get current displaySettings
+      displaySettings = localUser.settings.displaySettings
+      if not isValid(displaySettings)
+        displaySettings = {}
+      end if
+
+      ' Create library object if doesn't exist
+      if not displaySettings.DoesExist(libraryId)
+        displaySettings[libraryId] = {}
+      end if
+
+      ' Set value
+      displaySettings[libraryId][key] = value
+
+      ' Reassign to trigger observer
+      localUser.settings.displaySettings = displaySettings
+    end function
+
+  end class
+end namespace

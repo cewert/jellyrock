@@ -13,7 +13,7 @@ sub loadProgramDetails()
   programIndex = m.top.ProgramIndex
 
   params = {
-    UserId: m.global.session.user.id
+    UserId: m.global.user.id
   }
 
   url = Substitute("LiveTv/Programs/{0}", m.top.programId)

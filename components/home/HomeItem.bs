@@ -67,8 +67,8 @@ sub itemContentChanged()
 
   ' validate to prevent crash
   userSettings = invalid
-  if isValid(m.global) and isValid(m.global.session) and isValid(m.global.session.user) and isValid(m.global.session.user.settings)
-    userSettings = m.global.session.user.settings
+  if isValid(m.global) and isValid(m.global.user) and isValid(m.global.user.settings)
+    userSettings = m.global.user.settings
   end if
 
   ' validate to prevent crash
@@ -94,7 +94,7 @@ sub itemContentChanged()
   else
     if LCase(itemData.type) = "series"
       if isValid(userSettings)
-        unwatchedEpisodeCountSetting = userSettings["ui.tvshows.disableUnwatchedEpisodeCount"]
+        unwatchedEpisodeCountSetting = userSettings.uiTvShowsDisableUnwatchedCount
         if isValid(unwatchedEpisodeCountSetting) and not unwatchedEpisodeCountSetting
           if isValid(itemData.json.UserData) and isValid(itemData.json.UserData.UnplayedItemCount)
             m.itemPoster.unplayedCount = itemData.json.UserData.UnplayedItemCount
@@ -150,16 +150,16 @@ sub itemContentChanged()
     m.itemPoster.playedPercentage = itemData.PlayedPercentage
 
     if isValid(userSettings)
-      if userSettings["ui.general.episodeimagesnextup"] = "webclient"
-        tmpSetting = m.global.session.user.Configuration.useEpisodeImagesInNextUpAndResume
+      if userSettings.uiGeneralEpisodeImages = "webclient"
+        tmpSetting = m.global.user.config.useEpisodeImagesInNextUpAndResume
         if isValid(tmpSetting) and tmpSetting
           m.itemPoster.uri = itemData.thumbnailURL
         else
           m.itemPoster.uri = itemData.widePosterURL
         end if
-      else if userSettings["ui.general.episodeimagesnextup"] = "show"
+      else if userSettings.uiGeneralEpisodeImages = "show"
         m.itemPoster.uri = itemData.widePosterURL
-      else if userSettings["ui.general.episodeimagesnextup"] = "episode"
+      else if userSettings.uiGeneralEpisodeImages = "episode"
         m.itemPoster.uri = itemData.thumbnailURL
       end if
     else
@@ -386,11 +386,11 @@ sub arrangeIconAndBackdropText()
     backdropText.translation = [backdropText.translation[0], ((m.backdrop.height - m.itemIcon.height) / 2) + m.itemIcon.height]
 
     ' Set font size based on text length
-    fontSizeConstants = m.global.constants.font_sizes
+    constants = m.global.constants
     if backdropText.text.len() > 12
-      backdropText.font.size = fontSizeConstants.large
+      backdropText.font.size = constants.fontSizeLarge
     else if backdropText.text.len() > 35
-      backdropText.font.size = fontSizeConstants.medium
+      backdropText.font.size = constants.fontSizeMedium
     end if
   end if
 end sub

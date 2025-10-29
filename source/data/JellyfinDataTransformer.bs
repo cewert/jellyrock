@@ -1,0 +1,232 @@
+import "pkg:/source/api/Image.bs"
+import "pkg:/source/utils/misc.bs"
+
+' Transforms Jellyfin API responses to content nodes
+' Handles server version differences automatically
+class JellyfinDataTransformer
+
+  sub new()
+  end sub
+
+  ' Transform BaseItemDto to JellyfinBaseItem content node
+  ' Server version is automatically retrieved from m.global.server.version
+  ' Only pass serverVersion explicitly for testing or when global session isn't available
+  function transformBaseItem(apiData as object, serverVersion = "" as string) as object
+    if not isValid(apiData)
+      return invalid
+    end if
+
+    ' Get server version from global session if not provided
+    ' Note: In classes, we can't access m.global directly, so serverVersion must be passed explicitly
+    ' or retrieved from GetGlobalAA() at call time
+    if not isValidAndNotEmpty(serverVersion)
+      globalAA = GetGlobalAA()
+      if isValid(globalAA) and isValid(globalAA.session) and isValid(globalAA.session.server) and isValidAndNotEmpty(globalAA.session.server.version)
+        serverVersion = globalAA.session.server.version
+      else
+        serverVersion = "unknown"
+      end if
+    end if
+
+    try
+      item = CreateObject("roSGNode", "JellyfinBaseItem")
+
+      ' Core identity fields
+      item.id = apiData.Id ?? ""
+      item.type = apiData.Type ?? ""
+      item.name = apiData.Name ?? ""
+      item.originalTitle = apiData.OriginalTitle ?? ""
+      item.sortName = apiData.SortName ?? ""
+
+      ' Parent/Container info
+      item.serverId = apiData.ServerId ?? ""
+      item.parentId = apiData.ParentId ?? ""
+      item.channelId = apiData.ChannelId ?? ""
+      item.collectionType = apiData.CollectionType ?? ""
+
+      ' Media metadata
+      item.overview = apiData.Overview ?? ""
+      item.tagline = apiData.Tagline ?? ""
+      item.runTimeTicks = apiData.RunTimeTicks ?? 0
+      item.premiereDate = apiData.PremiereDate ?? ""
+      item.endDate = apiData.EndDate ?? ""
+      item.productionYear = apiData.ProductionYear ?? 0
+
+      ' Ratings
+      item.officialRating = apiData.OfficialRating ?? ""
+      item.communityRating = apiData.CommunityRating ?? 0.0
+      item.criticRating = apiData.CriticRating ?? 0.0
+
+      ' Arrays (handle missing gracefully)
+      if isValid(apiData.Genres)
+        item.genres = apiData.Genres
+      end if
+      if isValid(apiData.Studios)
+        item.studios = m.extractStudioNames(apiData.Studios)
+      end if
+      if isValid(apiData.Tags)
+        item.tags = apiData.Tags
+      end if
+
+      ' Transform user data (most important for UI state)
+      m.transformUserDataFields(item, apiData.UserData)
+
+      ' Type-specific transformations
+      if apiData.Type = "Episode"
+        m.transformEpisodeFields(item, apiData)
+      else if apiData.Type = "Series"
+        m.transformSeriesFields(item, apiData)
+      else if apiData.Type = "Program"
+        m.transformProgramFields(item, apiData)
+      end if
+
+      ' Store image tags only (URLs generated on-demand in components)
+      m.transformImageTags(item, apiData)
+
+      ' Store media sources for playback (if present)
+      if isValid(apiData.MediaSources)
+        item.mediaSourcesData = { mediaSources: apiData.MediaSources }
+      end if
+
+      ' Set loading state
+      item.isLoaded = true
+      item.loadedAt = CreateObject("roDateTime").AsSeconds()
+
+      ' Metadata
+      item.serverVersion = serverVersion
+      #if debug
+        item.rawApiData = apiData
+      #end if
+      item.transformedAt = CreateObject("roDateTime").AsSeconds()
+
+      return item
+
+    catch error
+      return invalid
+    end try
+  end function
+
+  ' Transform array of BaseItemDto objects
+  ' Server version is automatically retrieved from global session
+  function transformBaseItemArray(apiArray as object, serverVersion = "" as string) as object
+    if not isValid(apiArray) or apiArray.Count() = 0
+      return []
+    end if
+
+    ' Get server version from global session if not provided
+    if not isValidAndNotEmpty(serverVersion)
+      globalAA = GetGlobalAA()
+      if isValid(globalAA) and isValid(globalAA.session) and isValid(globalAA.session.server) and isValidAndNotEmpty(globalAA.session.server.version)
+        serverVersion = globalAA.session.server.version
+      else
+        serverVersion = "unknown"
+      end if
+    end if
+
+    results = []
+    for each apiItem in apiArray
+      transformedItem = m.transformBaseItem(apiItem, serverVersion)
+      if isValid(transformedItem)
+        results.push(transformedItem)
+      end if
+    end for
+
+    return results
+  end function
+
+  ' Transform user data fields onto item (flattened for performance)
+  private sub transformUserDataFields(item as object, userData as object)
+    if not isValid(userData)
+      return
+    end if
+
+    ' Core user data
+    item.playbackPositionTicks = userData.PlaybackPositionTicks ?? 0
+    item.playedPercentage = userData.PlayedPercentage ?? 0.0
+    item.isWatched = userData.Played ?? false
+    item.isFavorite = userData.IsFavorite ?? false
+    item.playCount = userData.PlayCount ?? 0
+    item.lastPlayedDate = userData.LastPlayedDate ?? ""
+
+    ' Derived fields
+    item.isResumable = (item.playbackPositionTicks > 0) and (not item.isWatched)
+
+    ' Unplayed count for series
+    if isValid(userData.UnplayedItemCount)
+      item.unplayedItemCount = userData.UnplayedItemCount
+    end if
+  end sub
+
+  ' Transform episode-specific fields
+  private sub transformEpisodeFields(item as object, apiData as object)
+    item.seriesId = apiData.SeriesId ?? ""
+    item.seriesName = apiData.SeriesName ?? ""
+    item.seasonId = apiData.SeasonId ?? ""
+    item.seasonName = apiData.SeasonName ?? ""
+    item.episodeTitle = apiData.EpisodeTitle ?? ""
+    item.indexNumber = apiData.IndexNumber ?? 0
+    item.parentIndexNumber = apiData.ParentIndexNumber ?? 0
+  end sub
+
+  ' Transform series-specific fields
+  private sub transformSeriesFields(item as object, apiData as object)
+    ' Series-specific handling if needed
+  end sub
+
+  ' Transform program (Live TV) specific fields
+  private sub transformProgramFields(item as object, apiData as object)
+    item.channelName = apiData.ChannelName ?? ""
+    item.isLive = apiData.IsLive ?? false
+    item.isNews = apiData.IsNews ?? false
+    item.isSports = apiData.IsSports ?? false
+    item.isKids = apiData.IsKids ?? false
+    item.isPremiere = apiData.IsPremiere ?? false
+  end sub
+
+  ' Store image tags only - URLs generated on-demand
+  private sub transformImageTags(item as object, apiData as object)
+    ' Primary image tag
+    if isValid(apiData.ImageTags)
+      item.primaryImageTag = apiData.ImageTags.Primary ?? ""
+      item.thumbImageTag = apiData.ImageTags.Thumb ?? ""
+      item.logoImageTag = apiData.ImageTags.Logo ?? ""
+    end if
+
+    ' Backdrop image tags
+    if isValid(apiData.BackdropImageTags) and apiData.BackdropImageTags.Count() > 0
+      item.backdropImageTags = apiData.BackdropImageTags
+    end if
+
+    ' Parent/fallback image tags (for episodes, music, etc.)
+    item.parentPrimaryImageTag = apiData.ParentPrimaryImageTag ?? ""
+    item.parentPrimaryImageItemId = apiData.ParentPrimaryImageItemId ?? ""
+    item.parentThumbImageTag = apiData.ParentThumbImageTag ?? ""
+    item.parentThumbItemId = apiData.ParentThumbItemId ?? ""
+
+    if isValid(apiData.ParentBackdropImageTags) and apiData.ParentBackdropImageTags.Count() > 0
+      item.parentBackdropImageTags = apiData.ParentBackdropImageTags
+      item.parentBackdropItemId = apiData.ParentBackdropItemId ?? ""
+    end if
+
+    item.seriesPrimaryImageTag = apiData.SeriesPrimaryImageTag ?? ""
+  end sub
+
+  ' Extract studio names from Studios array (can be objects or strings)
+  private function extractStudioNames(studios as object) as object
+    if not isValid(studios) or studios.Count() = 0
+      return []
+    end if
+
+    names = []
+    for each studio in studios
+      if type(studio) = "roAssociativeArray" and isValid(studio.Name)
+        names.push(studio.Name)
+      else if type(studio) = "String" or type(studio) = "roString"
+        names.push(studio)
+      end if
+    end for
+
+    return names
+  end function
+
+end class

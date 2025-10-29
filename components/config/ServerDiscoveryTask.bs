@@ -43,10 +43,10 @@ sub execute()
   m.log.debug("Jellyfin servers found", m.servers[0], m.servers[1], m.servers[2])
 end sub
 
-sub AddServer(server)
-  if not isValid(m.serverUrlMap[server.baseUrl])
-    m.serverUrlMap[server.baseUrl] = true
-    m.servers.push(server)
+sub AddServer(serverItem)
+  if not isValid(m.serverUrlMap[serverItem.baseUrl])
+    m.serverUrlMap[serverItem.baseUrl] = true
+    m.servers.push(serverItem)
   end if
 end sub
 
@@ -70,16 +70,16 @@ sub ProcessClientDiscoveryResponse(message)
   if Type(message) = "roSocketEvent" and message.GetSocketId() = m.clientDiscovery.socket.GetId() and m.clientDiscovery.socket.IsReadable()
     try
       responseJson = m.clientDiscovery.socket.ReceiveStr(4096)
-      server = ParseJson(responseJson)
+      serverData = ParseJson(responseJson)
       AddServer({
-        name: server.Name,
-        baseUrl: server.Address,
+        name: serverData.Name,
+        baseUrl: serverData.Address,
         'hardcoded icon since this service doesn't include them
         iconUrl: "pkg:/images/branding/logo-icon120.jpg",
         iconWidth: 120,
         iconHeight: 120
       })
-      m.log.info("Found Jellyfin server using client discovery", server.Address)
+      m.log.info("Found Jellyfin server using client discovery", serverData.Address)
     catch e
       m.log.error("Error scanning for jellyfin server", message)
     end try
@@ -144,7 +144,7 @@ sub ProcessSSDPResponse(message)
     if lcase(manufacturer) = "jellyfin"
       'find the largest icon
       width = 0
-      server = invalid
+      serverData = invalid
       icons = deviceNode.GetNamedElementsCi("iconList")[0].GetNamedElementsCi("icon")
       dlnaRegex = CreateObject("roRegex", "(.*?)\/dlna\/", "i")
       for each iconNode in icons
@@ -163,11 +163,11 @@ sub ProcessSSDPResponse(message)
         }
         if isValid(baseUrl) and loopResult.iconWidth > width
           width = loopResult.iconWidth
-          server = loopResult
+          serverData = loopResult
         end if
       end for
-      AddServer(server)
-      m.log.info("Found jellyfin server using SSDP and DLNA", server.baseUrl)
+      AddServer(serverData)
+      m.log.info("Found jellyfin server using SSDP and DLNA", serverData.baseUrl)
     end if
   end if
 end sub

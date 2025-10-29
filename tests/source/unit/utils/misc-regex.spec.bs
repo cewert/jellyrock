@@ -1,0 +1,107 @@
+
+namespace tests
+
+  @suite("misc.bs - Regex and URL Utilities")
+  class MiscRegexTests extends tests.BaseTestSuite
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("parseUrl(urlString)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("parses URL with protocol, host, and path but no port")
+    function _()
+      demoNoPort = "https://demo.jellyfin.org/stable"
+      m.assertEqual(parseUrl(demoNoPort), [demoNoPort, "https:", "demo.jellyfin.org", "", "/stable"])
+    end function
+
+    @it("parses URL with protocol, host, and port but no path")
+    function _()
+      localNoSubdir = "http://192.168.0.2:8097"
+      m.assertEqual(parseUrl(localNoSubdir), [localNoSubdir, "http:", "192.168.0.2", ":8097", ""])
+    end function
+
+    @it("parses URL with protocol, host, port, and path")
+    function _()
+      localWithSubdir = "http://192.168.0.2:80/jellyfin"
+      m.assertEqual(parseUrl(localWithSubdir), [localWithSubdir, "http:", "192.168.0.2", ":80", "/jellyfin"])
+    end function
+
+    @it("parses incomplete IP address with protocol")
+    function _()
+      badIP = "http://192.168.2"
+      m.assertEqual(parseUrl(badIP), [badIP, "http:", "192.168.2", "", ""])
+    end function
+
+    @it("returns empty array when protocol is missing")
+    function _()
+      noProto = "192.168.0.2"
+      m.assertEqual(parseUrl(noProto), [])
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("isLocalhost(address)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns true for localhost hostname")
+    @params("localhost", true)
+    function _(value, expectedResult)
+      m.assertEqual(isLocalhost(value), expectedResult)
+    end function
+
+    @it("returns true for IPv4 loopback addresses")
+    @params("127.0.0.1", true)
+    @params("127.1.1.1", true)
+    @params("127.0.0.127", true)
+    function _(value, expectedResult)
+      m.assertEqual(isLocalhost(value), expectedResult)
+    end function
+
+    @it("returns false for non-loopback IPv4 addresses")
+    @params("1.0.0.127", false)
+    @params("126.0.0.1", false)
+    function _(value, expectedResult)
+      m.assertEqual(isLocalhost(value), expectedResult)
+    end function
+
+    @it("returns true for IPv6 loopback addresses")
+    @params("0:0:0:0:0:0:0:1", true)
+    @params("::1", true)
+    function _(value, expectedResult)
+      m.assertEqual(isLocalhost(value), expectedResult)
+    end function
+
+    @it("returns false for non-loopback IPv6 addresses")
+    @params("::2", false)
+    @params("2001:4860:4860::8888", false)
+    @params("2001:4860:4860:0:0:0:0:8888", false)
+    @params("2001:4860:4860:0000:0000:0000:0000:8888", false)
+    function _(value, expectedResult)
+      m.assertEqual(isLocalhost(value), expectedResult)
+    end function
+
+    @it("returns false for public domain names")
+    @params("google.com", false)
+    function _(value, expectedResult)
+      m.assertEqual(isLocalhost(value), expectedResult)
+    end function
+
+    @it("returns false for empty or invalid strings")
+    @params("", false)
+    @params("             ", false)
+    @params("~!@#$%^&*()_-+=`\|]}';:.,/?", false)
+    @params("true", false)
+    @params("false", false)
+    @params("invalid", false)
+    function _(value, expectedResult)
+      m.assertEqual(isLocalhost(value), expectedResult)
+    end function
+
+    @it("returns false for very long strings")
+    @params("This is a very long string that should not be considered localhost. It contains many characters and spans multiple lines when displayed. The purpose is to test edge cases where extremely long input strings are provided to the isLocalhost function. We want to ensure the function handles these gracefully and returns false since this is clearly not a valid localhost address. Testing with long strings helps verify robustness and prevents potential issues with string length limits or buffer overflows in the underlying implementation.", false)
+    function _(value, expectedResult)
+      m.assertEqual(isLocalhost(value), expectedResult)
+    end function
+
+  end class
+
+end namespace

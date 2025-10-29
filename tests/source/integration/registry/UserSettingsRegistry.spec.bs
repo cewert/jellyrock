@@ -1,0 +1,473 @@
+
+namespace tests
+
+  @suite("User Settings - Registry Integration")
+  @tags("registry")
+  class UserSettingsRegistryTests extends tests.BaseTestSuite
+
+    protected override sub setup()
+      m.needsRegistrySetup = true
+      super.setup()
+    end sub
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Save to Registry - Type Conversion")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("saves boolean true to registry as string 'true'")
+    function _()
+      testUserId = "test-registry-bool-true-001"
+
+      ' Mock m.global.user.id for set_user_setting()
+      m.global.user.id = testUserId
+
+      ' WHEN: Save boolean setting
+      set_user_setting("uiDesignHideClock", true)
+
+      ' THEN: Registry contains string "true"
+      reg = CreateObject("roRegistrySection", testUserId)
+      value = reg.read("uiDesignHideClock")
+      m.assertTrue(type(value) = "roString" or type(value) = "String")
+      m.assertEqual(value, "true")
+
+    end function
+
+    @it("saves boolean false to registry as string 'false'")
+    function _()
+      testUserId = "test-registry-bool-false-001"
+
+      m.global.user.id = testUserId
+
+      set_user_setting("uiFontFallback", false)
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      value = reg.read("uiFontFallback")
+      m.assertTrue(type(value) = "roString" or type(value) = "String")
+      m.assertEqual(value, "false")
+
+    end function
+
+    @it("saves integer to registry as string")
+    function _()
+      testUserId = "test-registry-int-001"
+
+      m.global.user.id = testUserId
+
+      set_user_setting("playbackBitrateLimit", 8000)
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      value = reg.read("playbackBitrateLimit")
+      m.assertTrue(type(value) = "roString" or type(value) = "String")
+      m.assertEqual(value, "8000")
+
+    end function
+
+    @it("saves string to registry unchanged")
+    function _()
+      testUserId = "test-registry-string-001"
+
+      m.global.user.id = testUserId
+
+      set_user_setting("uiRowLayout", "landscape")
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      value = reg.read("uiRowLayout")
+      m.assertTrue(type(value) = "roString" or type(value) = "String")
+      m.assertEqual(value, "landscape")
+
+    end function
+
+    @it("saves empty string to registry")
+    function _()
+      testUserId = "test-registry-empty-001"
+
+      m.global.user.id = testUserId
+
+      set_user_setting("displayLiveTvLanding", "")
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      value = reg.read("displayLiveTvLanding")
+      m.assertTrue(type(value) = "roString" or type(value) = "String")
+      m.assertEqual(value, "")
+
+    end function
+
+    @it("saves float to registry as string")
+    function _()
+      testUserId = "test-registry-float-001"
+
+      m.global.user.id = testUserId
+
+      ' Custom setting (not in standard 42)
+      set_user_setting("testFloat", 3.14)
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      value = reg.read("testFloat")
+      m.assertTrue(type(value) = "roString" or type(value) = "String")
+      m.assertTrue(value.Instr("3.14") = 0)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Load from Registry - Type Conversion")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("loads and converts registry string 'true' to boolean")
+    function _()
+      testUserId = "test-registry-load-bool-true-001"
+
+      ' GIVEN: Registry has string "true"
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("uiDesignHideClock", "true")
+      reg.flush()
+
+      ' WHEN: Load via transformer
+      registryData = RegistryReadAll(testUserId)
+      transformer = new SessionDataTransformer()
+      settings = transformer.transformUserSettings(registryData)
+
+      ' THEN: Setting is boolean true
+      m.assertEqual(type(settings.uiDesignHideClock), "roBoolean")
+      m.assertEqual(settings.uiDesignHideClock, true)
+
+    end function
+
+    @it("loads and converts registry string 'false' to boolean")
+    function _()
+      testUserId = "test-registry-load-bool-false-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("uiFontFallback", "false")
+      reg.flush()
+
+      registryData = RegistryReadAll(testUserId)
+      transformer = new SessionDataTransformer()
+      settings = transformer.transformUserSettings(registryData)
+
+      m.assertEqual(type(settings.uiFontFallback), "roBoolean")
+      m.assertEqual(settings.uiFontFallback, false)
+
+    end function
+
+    @it("loads string from registry unchanged")
+    function _()
+      testUserId = "test-registry-load-string-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("uiRowLayout", "landscape")
+      reg.flush()
+
+      registryData = RegistryReadAll(testUserId)
+      transformer = new SessionDataTransformer()
+      settings = transformer.transformUserSettings(registryData)
+
+      m.assertEqual(type(settings.uiRowLayout), "roString")
+      m.assertEqual(settings.uiRowLayout, "landscape")
+
+    end function
+
+    @it("loads empty string from registry")
+    function _()
+      testUserId = "test-registry-load-empty-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("uiGeneralEpisodeImages", "")
+      reg.flush()
+
+      registryData = RegistryReadAll(testUserId)
+      transformer = new SessionDataTransformer()
+      settings = transformer.transformUserSettings(registryData)
+
+      m.assertEqual(type(settings.uiGeneralEpisodeImages), "roString")
+      m.assertEqual(settings.uiGeneralEpisodeImages, "")
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Round-Trip Integration - Save → Load → Verify")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("round-trip all boolean settings maintain type and value")
+    function _()
+      testUserId = "test-roundtrip-booleans-001"
+
+      m.global.user.id = testUserId
+
+      ' Save all boolean settings (excluding global settings)
+      boolSettings = {
+        uiDesignHideClock: true,
+        uiFontFallback: false,
+        uiHomeUseWebArrangement: true
+      }
+
+      for each key in boolSettings
+        set_user_setting(key, boolSettings[key])
+      end for
+
+      ' Save global setting (goes to test-global when user ID starts with "test-")
+      set_setting("globalRememberMe", false)
+
+      ' Load and transform
+      registryData = RegistryReadAll(testUserId)
+      transformer = new SessionDataTransformer()
+      settings = transformer.transformUserSettings(registryData)
+
+      ' Verify user settings maintained
+      for each key in boolSettings
+        m.assertEqual(type(settings[key]), "roBoolean", `${key} should be boolean`)
+        m.assertEqual(settings[key], boolSettings[key], `${key} value should match`)
+      end for
+
+      ' Global settings have XML default values (false for boolean) when not loaded from registry
+      ' The transformer doesn't load global settings - they come from LoadGlobals()
+      m.assertEqual(type(settings.globalRememberMe), "roBoolean", "globalRememberMe should have XML default type")
+      m.assertEqual(settings.globalRememberMe, false, "globalRememberMe should have XML default value (false)")
+
+      ' Verify global setting is in test-global section (debug mode)
+      globalValue = get_setting("globalRememberMe")
+      m.assertEqual(globalValue, "false")
+
+    end function
+
+    @it("round-trip all string settings maintain value")
+    function _()
+      testUserId = "test-roundtrip-strings-001"
+
+      m.global.user.id = testUserId
+
+      ' Save all string settings
+      stringSettings = {
+        uiRowLayout: "landscape",
+        uiGeneralEpisodeImages: "always",
+        homeSection0: "librarybuttons",
+        homeSection1: "resume",
+        displayLiveTvLanding: "guide"
+      }
+
+      for each key in stringSettings
+        set_user_setting(key, stringSettings[key])
+      end for
+
+      ' Load and transform
+      registryData = RegistryReadAll(testUserId)
+      transformer = new SessionDataTransformer()
+      settings = transformer.transformUserSettings(registryData)
+
+      ' Verify all values maintained
+      for each key in stringSettings
+        m.assertEqual(type(settings[key]), "roString", `${key} should be string`)
+        m.assertEqual(settings[key], stringSettings[key], `${key} value should match`)
+      end for
+
+    end function
+
+    @it("round-trip mixed settings maintain correct types")
+    function _()
+      testUserId = "test-roundtrip-mixed-001"
+
+      m.global.user.id = testUserId
+
+      ' Save mixed types
+      set_user_setting("uiDesignHideClock", true) ' Boolean
+      set_user_setting("uiRowLayout", "landscape") ' String
+      set_user_setting("uiFontFallback", false) ' Boolean
+      set_user_setting("homeSection0", "librarybuttons") ' String
+      set_setting("globalRememberMe", true) ' Boolean - global setting (goes to test-global when user ID starts with "test-")
+
+      ' Load and transform
+      registryData = RegistryReadAll(testUserId)
+      transformer = new SessionDataTransformer()
+      settings = transformer.transformUserSettings(registryData)
+
+      ' Verify types and values
+      m.assertEqual(type(settings.uiDesignHideClock), "roBoolean")
+      m.assertEqual(settings.uiDesignHideClock, true)
+
+      m.assertEqual(type(settings.uiRowLayout), "roString")
+      m.assertEqual(settings.uiRowLayout, "landscape")
+
+      m.assertEqual(type(settings.uiFontFallback), "roBoolean")
+      m.assertEqual(settings.uiFontFallback, false)
+
+      m.assertEqual(type(settings.homeSection0), "roString")
+      m.assertEqual(settings.homeSection0, "librarybuttons")
+
+      ' Global settings have XML default values when not loaded from registry
+      ' The transformer doesn't load global settings - they come from LoadGlobals()
+      m.assertEqual(type(settings.globalRememberMe), "roBoolean", "globalRememberMe should have XML default type")
+      m.assertEqual(settings.globalRememberMe, false, "globalRememberMe should have XML default value (false)")
+
+      ' Verify global setting is in test-global section (debug mode)
+      globalValue = get_setting("globalRememberMe")
+      m.assertTrue(type(globalValue) = "roString" or type(globalValue) = "String", "globalValue should be string type")
+      m.assertEqual(globalValue, "true")
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Edge Cases - Registry Behavior")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("handles non-existent settings gracefully (returns invalid)")
+    function _()
+      testUserId = "test-registry-nonexistent-001"
+
+      m.global.user.id = testUserId
+
+      ' Read non-existent setting
+      value = get_user_setting("nonExistentSetting")
+
+      m.assertInvalid(value)
+
+    end function
+
+    @it("overwrites existing setting with new value")
+    function _()
+      testUserId = "test-registry-overwrite-001"
+
+      m.global.user.id = testUserId
+
+      ' Save initial value
+      set_user_setting("uiRowLayout", "landscape")
+
+      ' Verify initial value
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read("uiRowLayout"), "landscape")
+
+      ' Overwrite with new value
+      set_user_setting("uiRowLayout", "portrait")
+
+      ' Verify new value
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read("uiRowLayout"), "portrait")
+
+    end function
+
+    @it("deletes setting from registry")
+    function _()
+      testUserId = "test-registry-delete-001"
+
+      m.global.user.id = testUserId
+
+      ' Save setting
+      set_user_setting("uiDesignHideClock", true)
+
+      ' Verify it exists
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertTrue(reg.exists("uiDesignHideClock"))
+
+      ' Delete setting
+      unset_user_setting("uiDesignHideClock")
+
+      ' Verify it's deleted
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertFalse(reg.exists("uiDesignHideClock"))
+
+    end function
+
+    @it("saves multiple settings independently")
+    function _()
+      testUserId = "test-registry-multiple-001"
+
+      m.global.user.id = testUserId
+
+      ' Save 9 user settings and 1 global setting
+      set_setting("globalRememberMe", true) ' Global setting (goes to test-global in debug mode)
+      set_user_setting("uiDesignHideClock", false)
+      set_user_setting("uiRowLayout", "landscape")
+      set_user_setting("homeSection0", "librarybuttons")
+      set_user_setting("homeSection1", "resume")
+      set_user_setting("uiFontFallback", true)
+      set_user_setting("displayLiveTvLanding", "guide")
+      set_user_setting("uiHomeUseWebArrangement", false)
+
+      ' Verify user settings exist in user registry section
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertFalse(reg.exists("globalRememberMe")) ' Global setting should NOT be in user section
+      m.assertTrue(reg.exists("uiDesignHideClock"))
+      m.assertTrue(reg.exists("uiRowLayout"))
+      m.assertTrue(reg.exists("homeSection0"))
+      m.assertTrue(reg.exists("homeSection1"))
+      m.assertTrue(reg.exists("uiFontFallback"))
+      m.assertTrue(reg.exists("displayLiveTvLanding"))
+      m.assertTrue(reg.exists("uiHomeUseWebArrangement"))
+
+      ' Verify count (7 user settings, not 8)
+      allKeys = reg.GetKeyList()
+      m.assertTrue(allKeys.Count() >= 7, "Should have at least 7 user settings")
+
+      ' Verify global setting is in test-global section (debug mode)
+      globalReg = CreateObject("roRegistrySection", "test-global")
+      m.assertTrue(globalReg.exists("globalRememberMe"))
+
+    end function
+
+    @it("handles special characters in string values via registry")
+    function _()
+      testUserId = "test-registry-special-chars-001"
+
+      m.global.user.id = testUserId
+
+      specialValues = [
+        "AC3/EAC3",
+        "path/to/file",
+        "100%",
+        "test@example.com",
+        "price: $9.99"
+      ]
+
+      for i = 0 to specialValues.Count() - 1
+        settingName = "testSpecial" + i.ToStr()
+        set_user_setting(settingName, specialValues[i])
+
+        ' Verify in registry
+        reg = CreateObject("roRegistrySection", testUserId)
+        value = reg.read(settingName)
+        m.assertEqual(value, specialValues[i], `Special char value ${i} should be preserved`)
+      end for
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Delete and Reset Operations")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("user.settings.Delete() resets field to default and saves default to registry")
+    function _()
+      testUserId = "test-delete-reset-001"
+      m.global.user.id = testUserId
+
+      ' Test with an XML-defined field (all fields should be in XML now)
+      localSettings = m.getTestUserSettings()
+      localUser = m.getTestUser()
+
+      ' Enable auto-sync so observers write to registry
+      localSettings.callFunc("enableAutoSync")
+
+      ' Set a non-default value
+      user.settings.Save("playbackCinemaMode", "true")
+      m.assertEqual(localSettings.playbackCinemaMode, true)
+
+      ' Verify it was written to registry
+      reg = CreateObject("roRegistrySection", localUser.id)
+      m.assertTrue(reg.exists("playbackCinemaMode"), "Setting should exist in registry after Save")
+      m.assertEqual(reg.read("playbackCinemaMode"), "true")
+
+      ' Delete the setting (resets to default)
+      user.settings.Delete("playbackCinemaMode")
+
+      ' Field should still exist (XML field) but be reset to default (false)
+      m.assertTrue(localSettings.hasField("playbackCinemaMode"), "XML field should still exist")
+      m.assertEqual(localSettings.playbackCinemaMode, false, "Field should be reset to default (false)")
+
+      ' Registry entry should still exist but with default value (false)
+      ' Observer always saves - this preserves user intent
+      regAfterDelete = CreateObject("roRegistrySection", localUser.id)
+      m.assertTrue(regAfterDelete.exists("playbackCinemaMode"), "Setting should still exist in registry")
+      m.assertEqual(regAfterDelete.read("playbackCinemaMode"), "false", "Should save default value (false) to registry")
+
+    end function
+
+  end class
+
+end namespace

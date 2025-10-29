@@ -570,7 +570,7 @@ end sub
 function isJellyfinServer(systemInfo as object) as boolean
   data = ParseJson(systemInfo)
   if isValid(data) and isValid(data.ProductName)
-    return LCase(data.ProductName) = m.global.constants.jellyfin_server_response
+    return LCase(data.ProductName) = m.global.constants.jellyfinServerResponse
   end if
   return false
 end function
@@ -598,12 +598,20 @@ end function
 ' convert value to boolean and return value
 function toBoolean(value as dynamic) as dynamic
   if not isValid(value) then return invalid
-  if Type(value) = "Boolean" then return value
-  if Type(value) <> "String" then return value
 
-  if value = "true"
+  valueType = Type(value)
+
+  ' Return booleans unchanged
+  if valueType = "roBoolean" or valueType = "Boolean" then return value
+
+  ' Only process strings - handle both "roString" (runtime) and "String" (compile-time)
+  if valueType <> "roString" and valueType <> "String" then return value
+
+  ' Case-insensitive comparison for string boolean values
+  lowerValue = LCase(value)
+  if lowerValue = "true"
     return true
-  else if value = "false"
+  else if lowerValue = "false"
     return false
   else
     return value

@@ -1,0 +1,392 @@
+namespace tests
+
+  @suite("Display Settings - Registry Integration")
+  @tags("registry")
+  class DisplaySettingsRegistryTests extends tests.BaseTestSuite
+
+    private testUserId as string
+    private testLibraryId as string
+    private settingsNode as object
+
+    protected override sub setup()
+      m.needsRegistrySetup = true
+      super.setup()
+
+      ' Clean up any leftover test data from previous runs/failures
+      ' This ensures each suite starts with clean registry state
+    end sub
+
+    protected override function beforeEach()
+      ' Generate unique test user ID to avoid conflicts between tests
+      testId = CreateObject("roDateTime").AsSeconds().toStr()
+      m.testUserId = "test-display-" + testId
+      m.testLibraryId = "test-lib-" + testId
+
+      ' Setup test user in m.global
+      m.global.user.id = m.testUserId
+
+      ' Create fresh settings node
+      m.settingsNode = CreateObject("roSGNode", "JellyfinUserSettings")
+      m.global.user.settings = m.settingsNode
+    end function
+
+    protected override function afterEach()
+      ' Clean up test-specific registry data after each test
+      ' Use specific cleanup to only remove this test's data
+      if isValid(m.testUserId)
+        reg = CreateObject("roRegistrySection", m.testUserId)
+        keyList = reg.GetKeyList()
+        for each key in keyList
+          reg.delete(key)
+        end for
+        reg.flush()
+      end if
+    end function
+
+    protected override sub teardown()
+      ' Final cleanup - catch any stragglers
+
+      super.teardown()
+    end sub
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Save Display Settings to Registry")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("saves new library display settings to registry with correct keys")
+    function _()
+      ' Enable auto-sync to trigger observers
+      m.settingsNode.callFunc("enableAutoSync")
+
+      ' Create display settings for a library
+      ' IMPORTANT: Make AA case-sensitive BEFORE adding keys to preserve casing
+      displaySettings = {}
+      displaySettings.SetModeCaseSensitive()
+
+      librarySettings = {}
+      librarySettings.SetModeCaseSensitive()
+      librarySettings["sortField"] = "SortName"
+      librarySettings["sortAscending"] = true
+      librarySettings["filter"] = "All"
+      librarySettings["landing"] = "MoviesGrid"
+
+      displaySettings[m.testLibraryId] = librarySettings
+
+      ' Set display settings on node (should trigger observer)
+      m.settingsNode.displaySettings = displaySettings
+
+      ' Verify settings were written to registry with correct format
+      reg = CreateObject("roRegistrySection", m.testUserId)
+
+      ' Check each setting individually
+      sortFieldKey = "display." + m.testLibraryId + ".sortField"
+      sortAscendingKey = "display." + m.testLibraryId + ".sortAscending"
+      filterKey = "display." + m.testLibraryId + ".filter"
+      landingKey = "display." + m.testLibraryId + ".landing"
+
+      m.assertTrue(reg.exists(sortFieldKey), "sortField should exist in registry")
+      m.assertEqual(reg.read(sortFieldKey), "SortName", "sortField value should match")
+
+      m.assertTrue(reg.exists(sortAscendingKey), "sortAscending should exist in registry")
+      m.assertEqual(reg.read(sortAscendingKey), "true", "sortAscending should be stored as string 'true'")
+
+      m.assertTrue(reg.exists(filterKey), "filter should exist in registry")
+      m.assertEqual(reg.read(filterKey), "All", "filter value should match")
+
+      m.assertTrue(reg.exists(landingKey), "landing should exist in registry")
+      m.assertEqual(reg.read(landingKey), "MoviesGrid", "landing value should match")
+    end function
+
+    @it("updates existing library display settings in registry")
+    function _()
+      ' Enable auto-sync
+      m.settingsNode.callFunc("enableAutoSync")
+
+      ' Set initial display settings
+      displaySettings = {}
+      displaySettings.SetModeCaseSensitive()
+      librarySettings = {}
+      librarySettings.SetModeCaseSensitive()
+      librarySettings["sortField"] = "SortName"
+      librarySettings["sortAscending"] = true
+      displaySettings[m.testLibraryId] = librarySettings
+      m.settingsNode.displaySettings = displaySettings
+
+      ' Update display settings
+      updatedSettings = {}
+      updatedSettings.SetModeCaseSensitive()
+      updatedLibSettings = {}
+      updatedLibSettings.SetModeCaseSensitive()
+      updatedLibSettings["sortField"] = "DateCreated"
+      updatedLibSettings["sortAscending"] = false
+      updatedSettings[m.testLibraryId] = updatedLibSettings
+      m.settingsNode.displaySettings = updatedSettings
+
+      ' Verify updated values in registry
+      reg = CreateObject("roRegistrySection", m.testUserId)
+      sortFieldKey = "display." + m.testLibraryId + ".sortField"
+      sortAscendingKey = "display." + m.testLibraryId + ".sortAscending"
+
+      m.assertEqual(reg.read(sortFieldKey), "DateCreated", "sortField should be updated")
+      m.assertEqual(reg.read(sortAscendingKey), "false", "sortAscending should be updated")
+    end function
+
+    @it("handles multiple libraries in display settings")
+    function _()
+      ' Enable auto-sync
+      m.settingsNode.callFunc("enableAutoSync")
+
+      library1 = "lib-123"
+      library2 = "lib-456"
+
+      ' Set display settings for multiple libraries
+      displaySettings = {}
+      displaySettings.SetModeCaseSensitive()
+
+      lib1Settings = {}
+      lib1Settings.SetModeCaseSensitive()
+      lib1Settings["sortField"] = "SortName"
+      lib1Settings["filter"] = "All"
+      displaySettings[library1] = lib1Settings
+
+      lib2Settings = {}
+      lib2Settings.SetModeCaseSensitive()
+      lib2Settings["sortField"] = "Random"
+      lib2Settings["filter"] = "Favorites"
+      displaySettings[library2] = lib2Settings
+
+      m.settingsNode.displaySettings = displaySettings
+
+      ' Verify both libraries were saved correctly
+      reg = CreateObject("roRegistrySection", m.testUserId)
+
+      m.assertEqual(reg.read("display." + library1 + ".sortField"), "SortName")
+      m.assertEqual(reg.read("display." + library1 + ".filter"), "All")
+      m.assertEqual(reg.read("display." + library2 + ".sortField"), "Random")
+      m.assertEqual(reg.read("display." + library2 + ".filter"), "Favorites")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Load Display Settings from Registry")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("loads display settings from registry on user login")
+    function _()
+      ' Pre-populate registry with display settings
+      reg = CreateObject("roRegistrySection", m.testUserId)
+      reg.write("display." + m.testLibraryId + ".sortField", "SortName")
+      reg.write("display." + m.testLibraryId + ".sortAscending", "true")
+      reg.write("display." + m.testLibraryId + ".filter", "All")
+      reg.write("display." + m.testLibraryId + ".landing", "MoviesGrid")
+      reg.flush()
+
+      ' Load ALL registry data
+      userSettings = RegistryReadAll(m.testUserId)
+
+      ' Transform display settings using ACTUAL app code (this is what user.Login() does)
+      displaySettings = user.settings.TransformDisplaySettings(userSettings)
+
+      ' Verify display settings were transformed correctly
+      m.assertTrue(isValid(displaySettings), "displaySettings should be valid")
+      m.assertTrue(displaySettings.DoesExist(m.testLibraryId), "library should exist in displaySettings")
+
+      librarySettings = displaySettings[m.testLibraryId]
+      m.assertEqual(librarySettings.sortField, "SortName", "sortField should match")
+      m.assertEqual(librarySettings.sortAscending, true, "sortAscending should be boolean true")
+      m.assertEqual(librarySettings.filter, "All", "filter should match")
+      m.assertEqual(librarySettings.landing, "MoviesGrid", "landing should match")
+    end function
+
+    @it("loads multiple libraries from registry")
+    function _()
+      library1 = "lib-123"
+      library2 = "lib-456"
+
+      ' Pre-populate registry with multiple libraries
+      reg = CreateObject("roRegistrySection", m.testUserId)
+      reg.write("display." + library1 + ".sortField", "SortName")
+      reg.write("display." + library1 + ".filter", "All")
+      reg.write("display." + library2 + ".sortField", "Random")
+      reg.write("display." + library2 + ".filter", "Favorites")
+      reg.flush()
+
+      ' Load and transform using ACTUAL app code
+      userSettings = RegistryReadAll(m.testUserId)
+      displaySettings = user.settings.TransformDisplaySettings(userSettings)
+
+      ' Verify both libraries loaded
+      m.assertTrue(displaySettings.DoesExist(library1))
+      m.assertTrue(displaySettings.DoesExist(library2))
+      m.assertEqual(displaySettings[library1].sortField, "SortName")
+      m.assertEqual(displaySettings[library2].sortField, "Random")
+    end function
+
+    @it("handles empty display settings gracefully")
+    function _()
+      ' No display settings in registry
+      userSettings = RegistryReadAll(m.testUserId)
+      displaySettings = user.settings.TransformDisplaySettings(userSettings)
+
+      ' Should return empty object, not invalid
+      m.assertTrue(isValid(displaySettings), "displaySettings should be valid (empty object)")
+      m.assertEqual(displaySettings.Count(), 0, "displaySettings should be empty")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Round-trip Display Settings (Save → Restart → Load)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("persists display settings across app restart simulation")
+    function _()
+      ' === SAVE PHASE (first app session) ===
+
+      ' Enable auto-sync
+      m.settingsNode.callFunc("enableAutoSync")
+
+      ' User changes library view preferences
+      displaySettings = {}
+      displaySettings.SetModeCaseSensitive()
+      librarySettings = {}
+      librarySettings.SetModeCaseSensitive()
+      librarySettings["sortField"] = "DateCreated"
+      librarySettings["sortAscending"] = false
+      librarySettings["filter"] = "Favorites"
+      librarySettings["landing"] = "MoviesGrid"
+      displaySettings[m.testLibraryId] = librarySettings
+      m.settingsNode.displaySettings = displaySettings
+
+      ' === RESTART PHASE (simulate app restart) ===
+
+      ' Create NEW settings node (simulates app restart)
+      freshSettingsNode = CreateObject("roSGNode", "JellyfinUserSettings")
+      m.global.user.settings = freshSettingsNode
+
+      ' Load settings from registry using ACTUAL app code (what happens on login)
+      userSettings = RegistryReadAll(m.testUserId)
+      loadedDisplaySettings = user.settings.TransformDisplaySettings(userSettings)
+
+      ' Apply loaded settings to fresh node
+      freshSettingsNode.displaySettings = loadedDisplaySettings
+
+      ' === VERIFY PHASE ===
+
+      ' Verify loaded settings match what was saved
+      m.assertTrue(isValid(freshSettingsNode.displaySettings), "displaySettings should be valid after reload")
+      m.assertTrue(freshSettingsNode.displaySettings.DoesExist(m.testLibraryId), "library should exist after reload")
+
+      reloadedLibrary = freshSettingsNode.displaySettings[m.testLibraryId]
+      m.assertEqual(reloadedLibrary.sortField, "DateCreated", "sortField should persist")
+      m.assertEqual(reloadedLibrary.sortAscending, false, "sortAscending should persist")
+      m.assertEqual(reloadedLibrary.filter, "Favorites", "filter should persist")
+      m.assertEqual(reloadedLibrary.landing, "MoviesGrid", "landing should persist")
+    end function
+
+    @it("persists display settings when modified multiple times")
+    function _()
+      ' Enable auto-sync
+      m.settingsNode.callFunc("enableAutoSync")
+
+      ' Change 1
+      displaySettings1 = {}
+      displaySettings1.SetModeCaseSensitive()
+      lib1 = {}
+      lib1.SetModeCaseSensitive()
+      lib1["sortField"] = "SortName"
+      displaySettings1[m.testLibraryId] = lib1
+      m.settingsNode.displaySettings = displaySettings1
+
+      ' Change 2
+      displaySettings2 = {}
+      displaySettings2.SetModeCaseSensitive()
+      lib2 = {}
+      lib2.SetModeCaseSensitive()
+      lib2["sortField"] = "DateCreated"
+      displaySettings2[m.testLibraryId] = lib2
+      m.settingsNode.displaySettings = displaySettings2
+
+      ' Change 3
+      displaySettings3 = {}
+      displaySettings3.SetModeCaseSensitive()
+      lib3 = {}
+      lib3.SetModeCaseSensitive()
+      lib3["sortField"] = "Random"
+      displaySettings3[m.testLibraryId] = lib3
+      m.settingsNode.displaySettings = displaySettings3
+
+      ' Verify final value persisted
+      reg = CreateObject("roRegistrySection", m.testUserId)
+      finalValue = reg.read("display." + m.testLibraryId + ".sortField")
+      m.assertEqual(finalValue, "Random", "Final value should be 'Random'")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Edge Cases")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("handles display settings before enableAutoSync is called")
+    function _()
+      ' Set display settings WITHOUT enabling auto-sync first
+      ' This simulates loading initial data
+      displaySettings = {}
+      displaySettings.SetModeCaseSensitive()
+      libSettings = {}
+      libSettings.SetModeCaseSensitive()
+      libSettings["sortField"] = "SortName"
+      displaySettings[m.testLibraryId] = libSettings
+      m.settingsNode.displaySettings = displaySettings
+
+      ' Should NOT write to registry yet
+      reg = CreateObject("roRegistrySection", m.testUserId)
+      m.assertFalse(reg.exists("display." + m.testLibraryId + ".sortField"), "Should NOT save before enableAutoSync")
+
+      ' Now enable auto-sync
+      m.settingsNode.callFunc("enableAutoSync")
+
+      ' Modify settings AFTER enabling auto-sync
+      modifiedSettings = {}
+      modifiedSettings.SetModeCaseSensitive()
+      modifiedLibSettings = {}
+      modifiedLibSettings.SetModeCaseSensitive()
+      modifiedLibSettings["sortField"] = "DateCreated"
+      modifiedSettings[m.testLibraryId] = modifiedLibSettings
+      m.settingsNode.displaySettings = modifiedSettings
+
+      ' NOW it should save
+      m.assertTrue(reg.exists("display." + m.testLibraryId + ".sortField"), "Should save after enableAutoSync")
+    end function
+
+    @it("handles invalid display settings gracefully")
+    function _()
+      ' Enable auto-sync
+      m.settingsNode.callFunc("enableAutoSync")
+
+      ' Try to set invalid display settings
+      m.settingsNode.displaySettings = invalid
+
+      ' Should not crash, just skip
+      ' No assertions needed - test passes if no crash
+      m.assertTrue(true, "Should handle invalid displaySettings without crashing")
+    end function
+
+    @it("correctly handles boolean type conversion for sortAscending")
+    function _()
+      ' Pre-populate registry with boolean as string
+      reg = CreateObject("roRegistrySection", m.testUserId)
+      reg.write("display." + m.testLibraryId + ".sortAscending", "false")
+      reg.flush()
+
+      ' Load and transform using ACTUAL app code
+      userSettings = RegistryReadAll(m.testUserId)
+      displaySettings = user.settings.TransformDisplaySettings(userSettings)
+
+      ' Verify type conversion
+      librarySettings = displaySettings[m.testLibraryId]
+      sortAscending = librarySettings.sortAscending
+
+      ' Should be boolean false, not string "false"
+      m.assertEqual(type(sortAscending), "roBoolean", "sortAscending should be boolean type")
+      m.assertEqual(sortAscending, false, "sortAscending should be boolean false")
+    end function
+
+  end class
+end namespace

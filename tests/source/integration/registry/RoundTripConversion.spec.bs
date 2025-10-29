@@ -1,0 +1,140 @@
+
+namespace tests
+
+  @suite("Type Conversion - Registry Round-Trip Tests")
+  @tags("registry")
+  class RoundTripConversionTests extends tests.BaseTestSuite
+
+    protected override sub setup()
+      m.needsRegistrySetup = true
+      super.setup()
+    end sub
+
+    ' Helper to check if type is string (handles both "String" and "roString")
+    private function isStringType(value as dynamic) as boolean
+      typeStr = type(value)
+      return typeStr = "String" or typeStr = "roString"
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Round-Trip Tests - Save → Registry → Load → Verify")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("round-trip boolean true: Save → Registry → Load")
+    function _()
+      testUserId = "test-roundtrip-bool-true-001"
+
+      ' Mock user ID
+      m.global.user.id = testUserId
+
+      ' GIVEN: Save boolean true
+      set_user_setting("uiDesignHideClock", true)
+
+      ' THEN: Registry contains string "true"
+      reg = CreateObject("roRegistrySection", testUserId)
+      registryValue = reg.read("uiDesignHideClock")
+      m.assertTrue(m.isStringType(registryValue))
+      m.assertEqual(registryValue, "true")
+
+      ' WHEN: Load from registry and transform
+      registryData = RegistryReadAll(testUserId)
+      transformer = new SessionDataTransformer()
+      settings = transformer.transformUserSettings(registryData)
+
+      ' THEN: Value is boolean true
+      m.assertEqual(type(settings.uiDesignHideClock), "roBoolean")
+      m.assertEqual(settings.uiDesignHideClock, true)
+
+      ' Cleanup
+    end function
+
+    @it("round-trip boolean false: Save → Registry → Load")
+    function _()
+      testUserId = "test-roundtrip-bool-false-001"
+
+      m.global.user.id = testUserId
+
+      set_user_setting("uiFontFallback", false)
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      registryValue = reg.read("uiFontFallback")
+      m.assertTrue(m.isStringType(registryValue))
+      m.assertEqual(registryValue, "false")
+
+      registryData = RegistryReadAll(testUserId)
+      transformer = new SessionDataTransformer()
+      settings = transformer.transformUserSettings(registryData)
+
+      m.assertEqual(type(settings.uiFontFallback), "roBoolean")
+      m.assertEqual(settings.uiFontFallback, false)
+
+    end function
+
+    @it("round-trip integer: Save → Registry → Load")
+    function _()
+      testUserId = "test-roundtrip-int-001"
+
+      m.global.user.id = testUserId
+
+      set_user_setting("playbackBitrateLimit", 8000)
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      registryValue = reg.read("playbackBitrateLimit")
+      m.assertTrue(m.isStringType(registryValue))
+      m.assertEqual(registryValue, "8000")
+
+      ' Note: SessionDataTransformer does not handle playback settings yet
+      ' This test verifies registry I/O only
+      value = get_user_setting("playbackBitrateLimit")
+      m.assertTrue(m.isStringType(value))
+      m.assertEqual(value, "8000")
+
+    end function
+
+    @it("round-trip string: Save → Registry → Load")
+    function _()
+      testUserId = "test-roundtrip-string-001"
+
+      m.global.user.id = testUserId
+
+      set_user_setting("uiRowLayout", "landscape")
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      registryValue = reg.read("uiRowLayout")
+      m.assertTrue(m.isStringType(registryValue))
+      m.assertEqual(registryValue, "landscape")
+
+      registryData = RegistryReadAll(testUserId)
+      transformer = new SessionDataTransformer()
+      settings = transformer.transformUserSettings(registryData)
+
+      m.assertEqual(type(settings.uiRowLayout), "roString")
+      m.assertEqual(settings.uiRowLayout, "landscape")
+
+    end function
+
+    @it("round-trip empty string: Save → Registry → Load")
+    function _()
+      testUserId = "test-roundtrip-empty-001"
+
+      m.global.user.id = testUserId
+
+      set_user_setting("uiGeneralEpisodeImages", "")
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      registryValue = reg.read("uiGeneralEpisodeImages")
+      m.assertTrue(m.isStringType(registryValue))
+      m.assertEqual(registryValue, "")
+
+      registryData = RegistryReadAll(testUserId)
+      transformer = new SessionDataTransformer()
+      settings = transformer.transformUserSettings(registryData)
+
+      m.assertEqual(type(settings.uiGeneralEpisodeImages), "roString")
+      m.assertEqual(settings.uiGeneralEpisodeImages, "")
+
+    end function
+
+  end class
+
+end namespace

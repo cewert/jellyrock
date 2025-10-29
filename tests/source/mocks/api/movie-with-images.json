@@ -1,0 +1,10 @@
+{
+  "Id": "movie123",
+  "Type": "Movie",
+  "Name": "Test",
+  "ImageTags": {
+    "Primary": "abc123",
+    "Thumb": "def456"
+  },
+  "BackdropImageTags": ["ghi789", "jkl012"]
+}

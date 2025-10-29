@@ -1,0 +1,358 @@
+
+namespace tests
+
+  @suite("Type Conversion - Registry ↔ Settings Node")
+  class TypeConversionTests extends tests.BaseTestSuite
+
+    ' Helper to check if type is string (handles both "String" and "roString")
+    private function isStringType(value as dynamic) as boolean
+      typeStr = type(value)
+      return typeStr = "String" or typeStr = "roString"
+    end function
+
+    ' Helper to check if type is boolean
+    private function isBooleanType(value as dynamic) as boolean
+      typeStr = type(value)
+      return typeStr = "Boolean" or typeStr = "roBoolean"
+    end function
+
+    ' Helper to check if type is integer
+    private function isIntegerType(value as dynamic) as boolean
+      typeStr = type(value)
+      return typeStr = "Integer" or typeStr = "roInteger" or typeStr = "roInt"
+    end function
+
+    ' Helper to check if type is float
+    private function isFloatType(value as dynamic) as boolean
+      typeStr = type(value)
+      return typeStr = "Float" or typeStr = "roFloat" or typeStr = "Double" or typeStr = "roDouble"
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("valueToString() - Conversion to Registry Format")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("converts boolean true to string 'true'")
+    function _()
+      result = valueToString(true)
+      m.assertTrue(m.isStringType(result))
+      m.assertEqual(result, "true")
+    end function
+
+    @it("converts boolean false to string 'false'")
+    function _()
+      result = valueToString(false)
+      m.assertTrue(m.isStringType(result))
+      m.assertEqual(result, "false")
+    end function
+
+    @it("converts integer to string")
+    function _()
+      result = valueToString(42)
+      m.assertTrue(m.isStringType(result))
+      m.assertEqual(result, "42")
+    end function
+
+    @it("converts negative integer to string")
+    function _()
+      result = valueToString(-100)
+      m.assertTrue(m.isStringType(result))
+      m.assertEqual(result, "-100")
+    end function
+
+    @it("converts zero to string")
+    function _()
+      result = valueToString(0)
+      m.assertTrue(m.isStringType(result))
+      m.assertEqual(result, "0")
+    end function
+
+    @it("converts float to string")
+    function _()
+      result = valueToString(3.14)
+      m.assertTrue(m.isStringType(result))
+      ' Float conversion may have precision differences
+      m.assertTrue(result.Instr("3.14") = 0)
+    end function
+
+    @it("converts string to string (unchanged)")
+    function _()
+      result = valueToString("hello")
+      m.assertTrue(m.isStringType(result))
+      m.assertEqual(result, "hello")
+    end function
+
+    @it("converts empty string to empty string")
+    function _()
+      result = valueToString("")
+      m.assertTrue(m.isStringType(result))
+      m.assertEqual(result, "")
+    end function
+
+    @it("converts invalid to empty string")
+    function _()
+      result = valueToString(invalid)
+      m.assertTrue(m.isStringType(result))
+      m.assertEqual(result, "")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("user.settings.Save() - Type Conversion on Update")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("converts string to boolean when updating existing boolean field")
+    function _()
+      settingsNode = m.global.user.settings
+
+      ' Use existing XML boolean field
+      user.settings.Save("playbackCinemaMode", true)
+
+      ' Update with string "false"
+      user.settings.Save("playbackCinemaMode", "false")
+
+      ' Should convert string to boolean
+      value = settingsNode.playbackCinemaMode
+      m.assertEqual(type(value), "roBoolean")
+      m.assertEqual(value, false)
+
+      user.settings.Delete("playbackCinemaMode")
+    end function
+
+    @it("converts string to integer when updating existing integer field")
+    function _()
+      settingsNode = m.global.user.settings
+
+      ' Use existing XML integer field
+      user.settings.Save("playbackBitrateLimit", 100)
+
+      ' Update with string "200"
+      user.settings.Save("playbackBitrateLimit", "200")
+
+      ' Should convert string to integer
+      value = settingsNode.playbackBitrateLimit
+      m.assertTrue(type(value) = "roInt" or type(value) = "roInteger" or type(value) = "Integer")
+      m.assertEqual(value, 200)
+
+      user.settings.Delete("playbackBitrateLimit")
+    end function
+
+    @it("converts integer to boolean when updating existing boolean field")
+    function _()
+      settingsNode = m.global.user.settings
+
+      ' Use existing XML boolean field
+      user.settings.Save("uiFontFallback", false)
+
+      ' Update with integer 1 (should become true)
+      user.settings.Save("uiFontFallback", 1)
+
+      value = settingsNode.uiFontFallback
+      m.assertEqual(type(value), "roBoolean")
+      m.assertEqual(value, true)
+
+      ' Update with integer 0 (should become false)
+      user.settings.Save("uiFontFallback", 0)
+
+      value = settingsNode.uiFontFallback
+      m.assertEqual(type(value), "roBoolean")
+      m.assertEqual(value, false)
+
+      user.settings.Delete("uiFontFallback")
+    end function
+
+    @it("converts boolean to string when updating existing string field")
+    function _()
+      settingsNode = m.global.user.settings
+
+      ' Use existing XML string field
+      user.settings.Save("uiRowLayout", "initial")
+
+      ' Update with boolean true
+      user.settings.Save("uiRowLayout", true)
+
+      value = settingsNode.uiRowLayout
+      m.assertTrue(m.isStringType(value))
+      m.assertEqual(value, "true")
+
+      user.settings.Delete("uiRowLayout")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Edge Cases - Type Safety")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("handles special characters in string values")
+    function _()
+      settingsNode = m.global.user.settings
+
+      ' Use real XML string field for testing special characters
+      specialStrings = [
+        "AC3/EAC3",
+        "user-test-name",
+        "path/to/file"
+      ]
+
+      for each specialString in specialStrings
+        ' Use playbackPreferredAudioCodec (string field)
+        user.settings.Save("playbackPreferredAudioCodec", specialString)
+
+        value = settingsNode.playbackPreferredAudioCodec
+        m.assertEqual(value, specialString, `Special string value should match: ${specialString}`)
+      end for
+
+      ' Cleanup
+      user.settings.Delete("playbackPreferredAudioCodec")
+    end function
+
+    @it("handles case-insensitive boolean strings")
+    function _()
+      settingsNode = m.global.user.settings
+
+      ' Test various case formats for "true" and "false"
+      testCases = [
+        { input: "true", expected: true },
+        { input: "TRUE", expected: true },
+        { input: "True", expected: true },
+        { input: "false", expected: false },
+        { input: "FALSE", expected: false },
+        { input: "False", expected: false }
+      ]
+
+      for each testCase in testCases
+        ' Use playbackCinemaMode (boolean field) for each test
+        user.settings.Save("playbackCinemaMode", testCase.input)
+
+        value = settingsNode.playbackCinemaMode
+        m.assertEqual(type(value), "roBoolean", `Failed for input: ${testCase.input}`)
+        m.assertEqual(value, testCase.expected, `Failed for input: ${testCase.input}`)
+      end for
+
+      ' Cleanup
+      user.settings.Delete("playbackCinemaMode")
+    end function
+
+    @it("handles invalid type gracefully (should not crash)")
+    function _()
+      ' Saving invalid should be handled gracefully (early return, no crash)
+      user.settings.Save("playbackCinemaMode", invalid)
+
+      ' Should not crash - Save() returns early for invalid values
+      m.assertTrue(true, "Should not crash when saving invalid")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("All 42 Settings Type Validation")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("validates all boolean settings convert correctly")
+    function _()
+      ' All boolean settings from JellyfinUserSettings.xml
+      booleanSettings = [
+        "globalRememberMe",
+        "playbackBitrateMaxLimited",
+        "playbackCinemaMode",
+        "playbackSubsCustom",
+        "playbackSubsOnlyText",
+        "playbackMpeg2",
+        "playbackMpeg4",
+        "playbackTryDirectH264ProfileLevel",
+        "playbackTryDirectHevcProfileLevel",
+        "uiFontFallback",
+        "uiDesignHideClock",
+        "uiDetailsEnableRewatchingNextUp",
+        "uiHomeSplashBackground",
+        "uiHomeUseWebArrangement",
+        "uiDetailsHideTagline",
+        "uiMoviesShowRatings",
+        "uiTvShowsBlurUnwatched",
+        "uiTvShowsDisableCommunityRating",
+        "uiTvShowsDisableUnwatchedCount",
+        "uiTvShowsGoStraightToEpisodes",
+        "itemGridShowItemCount",
+        "itemGridReset"
+      ]
+
+      settingsNode = m.global.user.settings
+
+      for each setting in booleanSettings
+        ' Test with string "true"
+        user.settings.Save(setting, "true")
+        value = settingsNode[setting]
+        m.assertEqual(type(value), "roBoolean", `${setting} should be boolean`)
+        m.assertEqual(value, true, `${setting} should be true`)
+
+        ' Test with string "false"
+        user.settings.Save(setting, "false")
+        value = settingsNode[setting]
+        m.assertEqual(type(value), "roBoolean", `${setting} should be boolean`)
+        m.assertEqual(value, false, `${setting} should be false`)
+
+        user.settings.Delete(setting)
+      end for
+    end function
+
+    @it("validates all integer settings convert correctly")
+    function _()
+      ' All integer settings from JellyfinUserSettings.xml
+      integerSettings = [
+        { name: "playbackBitrateLimit", testValue: "8000" },
+        { name: "playbackNextUpButtonSeconds", testValue: "30" },
+        { name: "uiDetailsMaxDaysNextUp", testValue: "365" }
+      ]
+
+      settingsNode = m.global.user.settings
+
+      for each setting in integerSettings
+        user.settings.Save(setting.name, setting.testValue)
+        value = settingsNode[setting.name]
+        m.assertTrue(type(value) = "roInt" or type(value) = "roInteger" or type(value) = "Integer", `${setting.name} should be integer`)
+        m.assertEqual(value, setting.testValue.ToInt(), `${setting.name} value should match`)
+
+        user.settings.Delete(setting.name)
+      end for
+    end function
+
+    @it("validates all string settings remain strings")
+    function _()
+      ' All string settings from JellyfinUserSettings.xml
+      stringSettings = [
+        { name: "playbackResolutionMax", testValue: "1080" },
+        { name: "playbackPlayNextEpisode", testValue: "enabled" },
+        { name: "playbackPreferredAudioCodec", testValue: "aac" },
+        { name: "uiGeneralEpisodeImages", testValue: "always" },
+        { name: "uiRowLayout", testValue: "landscape" },
+        { name: "itemGridTitles", testValue: "showalways" },
+        { name: "itemGridMovieDefaultView", testValue: "moviesgrid" },
+        { name: "homeSection0", testValue: "librarybuttons" },
+        { name: "homeSection1", testValue: "resume" },
+        { name: "homeSection2", testValue: "nextup" },
+        { name: "homeSection3", testValue: "latestmedia" },
+        { name: "homeSection4", testValue: "livetv" },
+        { name: "homeSection5", testValue: "none" },
+        { name: "homeSection6", testValue: "none" },
+        { name: "displayLiveTvLanding", testValue: "guide" }
+      ]
+
+      for each setting in stringSettings
+        ' Verify settings node is valid before each iteration
+        m.assertNotInvalid(m.global.user.settings, "m.global.user.settings should be valid")
+
+        user.settings.Save(setting.name, setting.testValue)
+
+        ' Get fresh reference to settings node for each iteration
+        settingsNode = m.global.user.settings
+        m.assertNotInvalid(settingsNode, "settingsNode should be valid after Save")
+        m.assertTrue(settingsNode.hasField(setting.name), `${setting.name} should exist on node after Save`)
+
+        value = settingsNode[setting.name]
+        valueType = type(value)
+        m.assertTrue(valueType = "String" or valueType = "roString", `${setting.name} should be string, got ${valueType}`)
+        m.assertEqual(value, setting.testValue, `${setting.name} value should match`)
+
+        user.settings.Delete(setting.name)
+      end for
+    end function
+
+  end class
+
+end namespace

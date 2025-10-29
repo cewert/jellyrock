@@ -21,6 +21,26 @@ sub registry_write(key, value, section = invalid)
   reg.flush()
 end sub
 
+' Convert dynamic value to string for registry storage
+function valueToString(value as dynamic) as string
+  if not isValid(value) then return ""
+
+  valueType = type(value)
+
+  if valueType = "roString" or valueType = "String"
+    return value
+  else if valueType = "roBoolean" or valueType = "Boolean"
+    if value then return "true" else return "false"
+  else if valueType = "roInt" or valueType = "roInteger" or valueType = "Integer"
+    return value.toStr()
+  else if valueType = "roFloat" or valueType = "Float" or valueType = "roDouble" or valueType = "Double"
+    return value.toStr()
+  else
+    ' Fallback - try toStr() method
+    return value.toStr()
+  end if
+end function
+
 sub registry_delete(key, section = invalid)
   if not isValid(section) then return
   reg = CreateObject("roRegistrySection", section)
@@ -50,39 +70,79 @@ function getRegistrySections() as object
   return registry.GetSectionList()
 end function
 
+' Helper to get the global registry section name
+' Returns "test-global" during tests, "JellyRock" in production
+function getGlobalRegistrySection() as string
+  ' Detect test mode by checking if m.global.user.id starts with "test-"
+  ' This is more reliable than compile-time flags since test user IDs always use this pattern
+  if isValid(m.global) and isValid(m.global.user) and isValid(m.global.user.id)
+    userId = m.global.user.id
+    if type(userId) = "roString" or type(userId) = "String"
+      if userId.StartsWith("test-")
+        return "test-global"
+      end if
+    end if
+  end if
+  return "JellyRock"
+end function
+
 ' "JellyRock" registry accessors for the default global settings
 function get_setting(key, defaultValue = invalid)
-  value = registry_read(key, "JellyRock")
+  value = registry_read(key, getGlobalRegistrySection())
   if not isValid(value) then return defaultValue
   return value
 end function
 
 sub set_setting(key, value)
-  registry_write(key, value, "JellyRock")
+  ' Registry only accepts strings - convert value to string
+  registry_write(key, valueToString(value), getGlobalRegistrySection())
 end sub
 
 sub unset_setting(key)
-  registry_delete(key, "JellyRock")
+  registry_delete(key, getGlobalRegistrySection())
 end sub
 
 ' User registry accessors for the currently active user
 function get_user_setting(key as string) as dynamic
-  if key = "" or not isValid(m.global.session.user.id) then return invalid
-  value = registry_read(key, m.global.session.user.id)
+  if key = "" or not isValid(m.global.user.id) then return invalid
+  value = registry_read(key, m.global.user.id)
   return value
 end function
 
 sub set_user_setting(key as string, value as dynamic)
-  if not isValid(m.global.session.user.id) then return
-  session.user.settings.Save(key, value)
-  registry_write(key, value, m.global.session.user.id)
+  if not isValid(m.global.user.id) then return
+
+  ' Get local reference to minimize rendezvous
+  localUser = m.global.user
+
+  ' Use node structure as source of truth - check where this field belongs
+  if localUser.hasField(key)
+    ' Field exists on user node - set it there
+    localUser.setField(key, value)
+  else if localUser.settings.hasField(key)
+    ' Field exists on settings node - use settings system
+    user.settings.Save(key, value)
+  else
+    ' Unknown field - registry-only (backward compatibility, or keys like "serverId")
+    ' Don't set on any node, just persist to registry
+  end if
+
+  ' Always persist to registry for all keys
+  registry_write(key, valueToString(value), localUser.id)
 end sub
 
 sub unset_user_setting(key as string)
-  if not isValid(m.global.session.user.id) then return
-  session.user.settings.Delete(key)
-  registry_delete(key, m.global.session.user.id)
+  if not isValid(m.global.user.id) then return
+  ' Delete from registry only (for sensitive data like token, username)
+  ' These fields are excluded from the observer, so deleting from registry
+  ' won't trigger the observer to re-save them
+  registry_delete(key, m.global.user.id)
 end sub
+
+' Helper to determine if a setting is global (applies to all users)
+function isGlobalSetting(key as string) as boolean
+  return key.StartsWith("global")
+end function
 
 ' Recursivly search the config tree for entry with settingname equal to key
 function findConfigTreeKey(key as string, tree)
@@ -105,7 +165,7 @@ function getSavedUsers() as object
 
   savedUsers = []
   for each section in registrySections
-    if LCase(section) <> "JellyRock"
+    if LCase(section) <> "jellyrock"
       savedUsers.push(section)
     end if
   end for
@@ -115,7 +175,7 @@ function getSavedUsers() as object
     userArray = {
       id: userId
     }
-    token = registry_read("token", userId)
+    token = registry_read("authToken", userId)
 
     username = registry_read("username", userId)
     if isValid(username)
@@ -127,13 +187,13 @@ function getSavedUsers() as object
       userArray["serverId"] = serverId
     end if
 
-    primaryImageTag = registry_read("primaryimagetag", userId)
+    primaryImageTag = registry_read("primaryImageTag", userId)
     if isValid(primaryImageTag)
       print "Found Saved Primary Image Tag: ", primaryImageTag, " for user: ", userId
       userArray["primaryImageTag"] = primaryImageTag
     end if
 
-    if isValid(username) and isValid(token) and isValid(serverId) and serverId = m.global.session.server.id
+    if isValid(username) and isValid(token) and isValid(serverId) and serverId = m.global.server.id
       savedServerUsers.push(userArray)
     end if
   end for

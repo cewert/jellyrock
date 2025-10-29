@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Jellyfin User Configuration
+
+  This content node represents the Configuration object from the Jellyfin server API.
+  Configuration data is SERVER-AUTHORITATIVE and session-specific - it should NEVER
+  be loaded from or synced to the registry.
+
+  These settings are controlled by the Jellyfin server and may change between sessions.
+  The server is the single source of truth for this data.
+
+  LOADING STATE PATTERN: SET ONCE AT LOGIN
+  - Populated once during user.Login() from server API response
+  - Never modified after initial load
+  - Never synced to registry
+-->
+<component name="JellyfinUserConfiguration" extends="ContentNode">
+  <interface>
+    <!-- Audio Settings -->
+    <field id="audioLanguagePreference" type="string" value="" />
+    <field id="playDefaultAudioTrack" type="boolean" value="true" />
+    <field id="rememberAudioSelections" type="boolean" value="false" />
+
+    <!-- Subtitle Settings -->
+    <field id="subtitleMode" type="string" value="Default" />
+    <field id="subtitleLanguagePreference" type="string" value="" />
+    <field id="rememberSubtitleSelections" type="boolean" value="false" />
+
+    <!-- Display Settings -->
+    <field id="displayMissingEpisodes" type="boolean" value="false" />
+    <field id="displayCollectionsView" type="boolean" value="false" />
+    <field id="hidePlayedInLatest" type="boolean" value="true" />
+    <field id="useEpisodeImagesInNextUpAndResume" type="boolean" value="false" />
+
+    <!-- Playback Settings -->
+    <field id="enableNextEpisodeAutoPlay" type="boolean" value="false" />
+
+    <!-- View Organization -->
+    <field id="orderedViews" type="array" value="[]" />
+    <field id="latestItemsExcludes" type="array" value="[]" />
+    <field id="myMediaExcludes" type="array" value="[]" />
+    <field id="groupedFolders" type="array" value="[]" />
+
+    <!-- Other Settings -->
+    <field id="castReceiverId" type="string" value="" />
+    <field id="enableLocalPassword" type="boolean" value="false" />
+
+    <!-- DEBUG ONLY: Raw configuration data for debugging - only populated when bs_const=debug=true -->
+    <field id="rawConfigData" type="assocarray" />
+  </interface>
+</component>

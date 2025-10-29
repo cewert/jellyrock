@@ -9,7 +9,7 @@ sub init() as void
 
   ' Set focus border color to primary color and size it to cover the entire component
   if isValid(m.focusBorder)
-    m.focusBorder.blendColor = m.global.constants.colors.primary
+    m.focusBorder.blendColor = m.global.constants.colorPrimary
     ' Size the border to cover the entire component with some padding
     ' get the itemSize of the parent MarkupList
     parentList = m.top.getParent()
@@ -25,11 +25,11 @@ sub init() as void
 end sub
 
 sub itemContentChanged() as void
-  server = m.top.itemContent
+  serverItem = m.top.itemContent
 
-  m.poster.uri = server.iconUrl
-  m.name.text = server.name
-  m.baseUrl.text = server.baseUrl
+  m.poster.uri = serverItem.iconUrl
+  m.name.text = serverItem.name
+  m.baseUrl.text = serverItem.baseUrl
 end sub
 
 sub onFocusPercentChange()

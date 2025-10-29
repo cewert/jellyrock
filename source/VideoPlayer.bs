@@ -13,16 +13,16 @@ function VideoPlayer(id as string, mediaSourceId = invalid as dynamic, audio_str
     return invalid
   end if
 
-  globalColors = m.global.constants.colors
+  constants = m.global.constants
 
-  video.retrievingBar.filledBarBlendColor = globalColors.secondary
+  video.retrievingBar.filledBarBlendColor = constants.colorSecondary
 
-  video.bufferingBar.filledBarBlendColor = globalColors.secondary
+  video.bufferingBar.filledBarBlendColor = constants.colorSecondary
 
-  video.trickPlayBar.filledBarBlendColor = globalColors.secondary
-  video.trickPlayBar.thumbBlendColor = globalColors.text_primary
-  video.trickPlayBar.textColor = globalColors.text_primary
-  video.trickPlayBar.currentTimeMarkerBlendColor = globalColors.text_primary
+  video.trickPlayBar.filledBarBlendColor = constants.colorSecondary
+  video.trickPlayBar.thumbBlendColor = constants.colorTextPrimary
+  video.trickPlayBar.textColor = constants.colorTextPrimary
+  video.trickPlayBar.currentTimeMarkerBlendColor = constants.colorTextPrimary
 
   return video
 end function
@@ -88,7 +88,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
           params = {
             ids: video.Id
           }
-          url = Substitute("Users/{0}/Items/", m.global.session.user.id)
+          url = Substitute("Users/{0}/Items/", m.global.user.id)
           resp = APIRequest(url, params)
           data = getJson(resp)
           for each item in data.Items
@@ -98,7 +98,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
           params = {
             ids: m.series_id
           }
-          url = Substitute("Users/{0}/Items/", m.global.session.user.id)
+          url = Substitute("Users/{0}/Items/", m.global.user.id)
           resp = APIRequest(url, params)
           data = getJson(resp)
           for each item in data.Items
@@ -115,7 +115,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
           params = {
             ids: video.Id
           }
-          url = Substitute("Users/{0}/Items/", m.global.session.user.id)
+          url = Substitute("Users/{0}/Items/", m.global.user.id)
           resp = APIRequest(url, params)
           data = getJson(resp)
           for each item in data.Items
@@ -126,7 +126,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
           params = {
             ids: m.season_id
           }
-          url = Substitute("Users/{0}/Items/", m.global.session.user.id)
+          url = Substitute("Users/{0}/Items/", m.global.user.id)
           resp = APIRequest(url, params)
           data = getJson(resp)
           for each item in data.Items
@@ -136,7 +136,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
           params = {
             ids: m.series_id
           }
-          url = Substitute("Users/{0}/Items/", m.global.session.user.id)
+          url = Substitute("Users/{0}/Items/", m.global.user.id)
           resp = APIRequest(url, params)
           data = getJson(resp)
           for each item in data.Items
@@ -153,7 +153,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
           params = {
             ids: video.Id
           }
-          url = Substitute("Users/{0}/Items/", m.global.session.user.id)
+          url = Substitute("Users/{0}/Items/", m.global.user.id)
           resp = APIRequest(url, params)
           data = getJson(resp)
           for each item in data.Items
@@ -198,7 +198,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
     end if
   end if
 
-  m.playbackInfo = ItemPostPlaybackInfo(video.id, mediaSourceId, audio_stream_idx, subtitle_idx, playbackPosition)
+  m.playbackInfo = ItemPostPlaybackInfo(video.id, mediaSourceId, audio_stream_idx, subtitle_idx, playbackPosition, false, meta)
   video.videoId = video.id
   video.mediaSourceId = mediaSourceId
   video.audioIndex = audio_stream_idx
@@ -223,7 +223,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
   end if
 
   subtitles = sortSubtitles(meta.id, m.playbackInfo.MediaSources[0].MediaStreams)
-  if m.global.session.user.settings["playback.subs.onlytext"] = true
+  if m.global.user.settings.playbackSubsOnlyText = true
     safesubs = []
     for each subtitle in subtitles["all"]
       if subtitle["IsTextSubtitleStream"]
@@ -255,8 +255,8 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
   ' transcode is that the Encoding Level is not supported, then try to direct play but silently
   ' fall back to the transcode if that fails.
   if m.playbackInfo.MediaSources[0].MediaStreams.Count() > 0 and meta.live = false
-    tryDirectPlay = m.global.session.user.settings["playback.tryDirect.h264ProfileLevel"] = true and m.playbackInfo.MediaSources[0].MediaStreams[0].codec = "h264"
-    tryDirectPlay = tryDirectPlay or (m.global.session.user.settings["playback.tryDirect.hevcProfileLevel"] = true and m.playbackInfo.MediaSources[0].MediaStreams[0].codec = "hevc")
+    tryDirectPlay = m.global.user.settings.playbackTryDirectH264ProfileLevel = true and m.playbackInfo.MediaSources[0].MediaStreams[0].codec = "h264"
+    tryDirectPlay = tryDirectPlay or (m.global.user.settings.playbackTryDirectHevcProfileLevel = true and m.playbackInfo.MediaSources[0].MediaStreams[0].codec = "hevc")
     if tryDirectPlay and isValid(m.playbackInfo.MediaSources[0].TranscodingUrl) and forceTranscoding = false
       transcodingReasons = getTranscodeReasons(m.playbackInfo.MediaSources[0].TranscodingUrl)
       if transcodingReasons.Count() = 1 and transcodingReasons[0] = "VideoLevelNotSupported"
@@ -324,7 +324,7 @@ end sub
 
 function PlayIntroVideo(video_id, audio_stream_idx) as boolean
   ' Intro videos only play if user has cinema mode setting enabled
-  if m.global.session.user.settings["playback.cinemamode"] = true
+  if m.global.user.settings.playbackCinemaMode = true
     ' Check if server has intro videos setup and available
     introVideos = GetIntroVideos(video_id)
 
@@ -437,8 +437,8 @@ function getAudioInfo(meta as object) as object
 end function
 
 sub autoPlayNextEpisode(videoID as string, showID as string)
-  userSession = m.global.session.user
-  if userSession.settings["playback.playnextepisode"] = "enabled" or userSession.settings["playback.playnextepisode"] = "webclient" and userSession.Configuration.EnableNextEpisodeAutoPlay
+  userSession = m.global.user
+  if userSession.settings.playbackPlayNextEpisode = "enabled" or userSession.settings.playbackPlayNextEpisode = "webclient" and userSession.config.enableNextEpisodeAutoPlay
     ' query API for next episode ID
     url = Substitute("Shows/{0}/Episodes", showID)
     urlParams = { "UserId": userSession.id }

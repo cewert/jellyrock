@@ -1,12 +1,11 @@
 {
   "files": [
+    "manifest",
     {
-      "src": "unit-tests/**/*"
-    },
-    {
-      "src": "source/**/!(Main.brs)",
+      "src": "source/**/*",
       "dest": "source"
     },
+    "!source/Main.bs",
     {
       "src": "components/**/*",
       "dest": "components"
@@ -19,13 +18,18 @@
       "src": "settings/**/*",
       "dest": "settings"
     },
-    "manifest"
+    {
+      "src": "tests/source/**/*",
+      "dest": "source/tests"
+    },
+    "!tests/source/e2e/**/*",
+    "!tests/source/**/*.md"
   ],
   "diagnosticFilters": [
     "node_modules/**/*",
     "**/roku_modules/**/*",
     {
-      "src": "unit-tests/**/*",
+      "src": "tests/**/*",
       "codes": [
         1026,
         "LINT3008"
@@ -40,13 +44,15 @@
     "@rokucommunity/bslint"
   ],
   "rooibos": {
-    "isRecordingCodeCoverage": false,
+    "isRecordingCodeCoverage": true,
     "testsFilePattern": null,
-    "showOnlyFailures": true,
+    "tags": ["!migration", "!registry"],
+    "showOnlyFailures": false,
     "catchCrashes": true,
     "lineWidth": 70,
     "failFast": false,
-    "sendHomeOnFinish": false
+    "sendHomeOnFinish": false,
+    "printTestTimes": true
   },
   "sourceMap": true
 }

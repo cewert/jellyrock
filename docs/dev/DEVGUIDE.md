@@ -1,4 +1,4 @@
-# Dev Guide For The JellyRock Roku App
+# Dev Guide
 
 Follow the steps below to install the app on your personal Roku device. This will enable you to write code for the app, install the latest beta release, as well as provide app logs to the developers if you encounter a bug.
 

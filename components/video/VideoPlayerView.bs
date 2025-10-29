@@ -8,7 +8,7 @@ sub init()
   m.log = log.Logger("VideoPlayerView")
   ' Hide the overhang on init to prevent showing 2 clocks
   m.top.getScene().findNode("overhang").visible = false
-  userSettings = m.global.session.user.settings
+  userSettings = m.global.user.settings
   m.currentItem = m.global.queueManager.callFunc("getCurrentItem")
   m.originalClosedCaptionState = invalid
 
@@ -48,7 +48,7 @@ sub init()
   m.top.transcodeReasons = []
   m.bufferCheckTimer.duration = 30
 
-  if userSettings["ui.design.hideclock"] = true
+  if userSettings.uiDesignHideClock = true
     clockNode = findNodeBySubtype(m.top, "clock")
     if isValid(clockNode[0]) then clockNode[0].parent.removeChild(clockNode[0].node)
   end if
@@ -57,7 +57,7 @@ sub init()
   m.notifyButtons = m.top.findNode("notifyButtons")
   m.nextEpisodeButton = m.top.findNode("nextEpisode")
   m.nextEpisodeButton.setFocus(false)
-  m.nextupbuttonseconds = userSettings["playback.nextupbuttonseconds"].ToInt()
+  m.nextupbuttonseconds = userSettings.playbackNextUpButtonSeconds
 
   m.showNextEpisodeButtonAnimation = m.top.findNode("showNextEpisodeButton")
   m.hideNextEpisodeButtonAnimation = m.top.findNode("hideNextEpisodeButton")
@@ -66,16 +66,16 @@ sub init()
   m.getNextEpisodeTask = createObject("roSGNode", "GetNextEpisodeTask")
   m.getNextEpisodeTask.observeField("nextEpisodeData", "onNextEpisodeDataLoaded")
 
-  globalColors = m.global.constants.colors
+  constants = m.global.constants
 
-  m.top.retrievingBar.filledBarBlendColor = globalColors.secondary
+  m.top.retrievingBar.filledBarBlendColor = constants.colorSecondary
 
-  m.top.bufferingBar.filledBarBlendColor = globalColors.secondary
+  m.top.bufferingBar.filledBarBlendColor = constants.colorSecondary
 
-  m.top.trickPlayBar.filledBarBlendColor = globalColors.secondary
-  m.top.trickPlayBar.thumbBlendColor = globalColors.text_primary
-  m.top.trickPlayBar.textColor = globalColors.text_primary
-  m.top.trickPlayBar.currentTimeMarkerBlendColor = globalColors.text_primary
+  m.top.trickPlayBar.filledBarBlendColor = constants.colorSecondary
+  m.top.trickPlayBar.thumbBlendColor = constants.colorTextPrimary
+  m.top.trickPlayBar.textColor = constants.colorTextPrimary
+  m.top.trickPlayBar.currentTimeMarkerBlendColor = constants.colorTextPrimary
 end sub
 
 ' handleChapterSkipAction: Handles user command to skip chapters in playing video
@@ -114,7 +114,6 @@ sub handleItemSkipAction(action as string)
     ' If there is something next in the queue, play it
     if queueManager.callFunc("getPosition") < queueManager.callFunc("getCount") - 1
       m.top.control = "stop"
-      session.video.Delete()
       m.global.sceneManager.callFunc("clearPreviousScene")
       queueManager.callFunc("moveForward")
       queueManager.callFunc("playQueue")
@@ -129,7 +128,6 @@ sub handleItemSkipAction(action as string)
     ' If there is something previous in the queue, play it
     if queueManager.callFunc("getPosition") > 0
       m.top.control = "stop"
-      session.video.Delete()
       m.global.sceneManager.callFunc("clearPreviousScene")
       queueManager.callFunc("moveBack")
       queueManager.callFunc("playQueue")
@@ -278,7 +276,7 @@ end sub
 ' Custom subtitles should only be used for external subtitles when the user has enabled the setting
 function shouldUseCustomSubtitlesForCurrentSelection() as boolean
   ' First check if the user has enabled custom subtitles at all
-  if not m.global.session.user.settings["playback.subs.custom"]
+  if not m.global.user.settings.playbackSubsCustom
     m.log.debug("Custom subtitles disabled by user setting")
     return false
   end if
@@ -415,7 +413,6 @@ sub onPlaybackErrorDialogClosed(msg)
   sourceNode.unobserveField("buttonSelected")
   sourceNode.unobserveField("wasClosed")
 
-  session.video.Delete()
   m.global.sceneManager.callFunc("popScene")
 end sub
 
@@ -577,9 +574,9 @@ sub showNextEpisodeButton()
   if m.top.content.contenttype <> 4 then return ' only display when content is type "Episode"
   if m.nextupbuttonseconds = 0 then return ' is the button disabled?
   if m.nextEpisodeButton.opacity <> 0 then return
-  userSettings = m.global.session.user.settings
-  if userSettings["playback.playnextepisode"] = "disabled" then return
-  if userSettings["playback.playnextepisode"] = "webclient" and not m.global.session.user.Configuration.EnableNextEpisodeAutoPlay then return
+  userSettings = m.global.user.settings
+  if userSettings.playbackPlayNextEpisode = "disabled" then return
+  if userSettings.playbackPlayNextEpisode = "webclient" and not m.global.user.config.enableNextEpisodeAutoPlay then return
 
   ' align button with bottom right edge with 5% padding
   boundingRect = m.notifyButtons.localBoundingRect()
@@ -735,7 +732,6 @@ sub onState()
   else if m.top.state = "finished"
     m.playbackTimer.control = "stop"
     ReportPlayback("finished")
-    session.video.Delete()
   else
     m.log.warning("Unhandled state", m.top.state, m.playReported, m.playFinished)
   end if
@@ -869,7 +865,6 @@ function onKeyEvent(key as string, press as boolean) as boolean
   if key = "OK" and m.nextEpisodeButton.hasfocus() and not m.top.trickPlayBar.visible
     m.top.control = "stop"
     m.top.state = "finished"
-    session.video.Delete()
     hideNextEpisodeButton()
     return true
   else
@@ -935,7 +930,6 @@ function onKeyEvent(key as string, press as boolean) as boolean
 
   if key = "back"
     m.top.control = "stop"
-    session.video.Delete()
   end if
 
   return false

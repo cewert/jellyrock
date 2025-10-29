@@ -44,9 +44,9 @@
       }
     },
     {
-      "label": "build-tests",
+      "label": "build-tdd",
       "type": "shell",
-      "command": "npm run build:tests",
+      "command": "npm run build:tdd",
       "problemMatcher": [],
       "presentation": {
         "echo": true,
@@ -62,9 +62,45 @@
       }
     },
     {
-      "label": "build-tdd",
+      "label": "build-tests-unit",
       "type": "shell",
-      "command": "npm run build:tdd",
+      "command": "npm run build:tests-unit",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "build-tests-integration",
+      "type": "shell",
+      "command": "npm run build:tests-integration",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "build-tests-all",
+      "type": "shell",
+      "command": "npm run build:tests",
       "problemMatcher": [],
       "presentation": {
         "echo": true,

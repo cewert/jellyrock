@@ -17,20 +17,20 @@ sub loadFromRegistry(id as string)
   m.top.id = id
 
   m.top.username = get_user_setting("username")
-  m.top.token = get_user_setting("token")
+  m.top.token = get_user_setting("authToken")
 end sub
 
 sub saveToRegistry()
   users = parseJson(get_setting("available_users", "[]"))
   this_user = invalid
-  for each user in users
-    if user.id = m.top.id then this_user = user
+  for each userItem in users
+    if userItem.id = m.top.id then this_user = userItem
   end for
   if not isValid(this_user)
     users.push({
       id: m.top.id,
       username: m.top.username,
-      server: m.global.session.server.url
+      server: m.global.server.serverUrl ' Note: 'server' here is a property name, not variable
     })
     set_setting("available_users", formatJson(users))
   end if
@@ -39,8 +39,8 @@ end sub
 sub removeFromRegistry()
   new_users = []
   users = parseJson(get_setting("available_users", "[]"))
-  for each user in users
-    if m.top.id <> user.id then new_users.push(user)
+  for each userItem in users
+    if m.top.id <> userItem.id then new_users.push(userItem)
   end for
 
   set_setting("available_users", formatJson(new_users))

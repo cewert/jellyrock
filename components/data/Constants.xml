@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  LOADING STATE PATTERN: STATIC INITIALIZATION
+
+  Constants are static and loaded once at startup.
+  No network operations, no loading states needed.
+
+  COLORS: All colors are 6 hex digits (no alpha), no "0x" prefix
+  ALPHAS: All alpha values are 2 hex digits
+  Usage: node.color = constants.colorPrimary (direct use)
+         node.color = constants.colorBlack + constants.alpha60 (with alpha)
+-->
+<component name="Constants" extends="ContentNode">
+  <interface>
+    <!-- Theme Colors (6 hex digits, no alpha) -->
+    <field id="colorPrimary" type="string" value="0x8b5cf6" />
+    <field id="colorSecondary" type="string" value="0x3b82f6" />
+
+    <!-- Text Colors (6 hex digits, no alpha) -->
+    <field id="colorTextPrimary" type="string" value="0xf0f0f0" />
+    <field id="colorTextSecondary" type="string" value="0xa8a8a8" />
+    <field id="colorTextDisabled" type="string" value="0x4a4a4a" />
+    <field id="colorTextError" type="string" value="0xff0000" />
+
+    <!-- Background Colors (6 hex digits, no alpha) -->
+    <field id="colorBackgroundPrimary" type="string" value="0x0d1117" />
+    <field id="colorBackgroundSecondary" type="string" value="0x161b22" />
+
+    <!-- Black for Alpha Assembly (6 hex digits) -->
+    <field id="colorBlack" type="string" value="0x000000" />
+
+    <!-- Alpha Values (2 hex digits) -->
+    <field id="alpha0" type="string" value="00" />
+    <field id="alpha10" type="string" value="1A" />
+    <field id="alpha20" type="string" value="33" />
+    <field id="alpha30" type="string" value="4D" />
+    <field id="alpha40" type="string" value="66" />
+    <field id="alpha50" type="string" value="80" />
+    <field id="alpha60" type="string" value="99" />
+    <field id="alpha70" type="string" value="B3" />
+    <field id="alpha80" type="string" value="CC" />
+    <field id="alpha90" type="string" value="E6" />
+    <field id="alpha100" type="string" value="FF" />
+
+    <!-- Font Sizes -->
+    <field id="fontSizeSmallest" type="integer" value="21" />
+    <field id="fontSizeSmaller" type="integer" value="25" />
+    <field id="fontSizeSmall" type="integer" value="27" />
+    <field id="fontSizeMedium" type="integer" value="32" />
+    <field id="fontSizeLarge" type="integer" value="42" />
+    <field id="fontSizeLarger" type="integer" value="50" />
+    <field id="fontSizeLargest" type="integer" value="60" />
+
+    <!-- Icon Paths -->
+    <field id="iconArrowUpBlack" type="string" value="pkg:/images/icons/arrow-up-black.png" />
+    <field id="iconArrowUpWhite" type="string" value="pkg:/images/icons/arrow-up-white.png" />
+    <field id="iconArrowDownBlack" type="string" value="pkg:/images/icons/arrow-down-black.png" />
+    <field id="iconArrowDownWhite" type="string" value="pkg:/images/icons/arrow-down-white.png" />
+    <field id="iconCheckBlack" type="string" value="pkg:/images/icons/check-black.png" />
+    <field id="iconCheckWhite" type="string" value="pkg:/images/icons/check_white.png" />
+    <field id="iconTomatoFresh" type="string" value="pkg:/images/icons/tomato-fresh.png" />
+    <field id="iconTomatoRotten" type="string" value="pkg:/images/icons/tomato-rotten.png" />
+
+    <!-- Other Constants -->
+    <field id="jellyfinServerResponse" type="string" value="jellyfin server" />
+  </interface>
+</component>

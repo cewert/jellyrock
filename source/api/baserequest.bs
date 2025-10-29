@@ -57,8 +57,9 @@ function APIRequest(url as string, params = {} as object) as dynamic
   full_url = buildURL(url, params)
   if not isValid(full_url) then return invalid
 
-  serverURL = m.global.session.server.url
-  if not isValid(serverURL) then return invalid
+  serverURL = m.global.server.serverUrl
+  ' ContentNode fields return "" instead of invalid, so check both
+  if not isValid(serverURL) or serverURL = "" then return invalid
 
   req = createObject("roUrlTransfer")
   req.setUrl(full_url)
@@ -72,6 +73,9 @@ function APIRequest(url as string, params = {} as object) as dynamic
 end function
 
 function getJson(req)
+  ' Handle case where server URL is not set or invalid
+  if not isValid(req) then return invalid
+
   'req.retainBodyOnError(True)
   data = req.GetToString()
   if not isValid(data) or data = ""
@@ -82,6 +86,9 @@ function getJson(req)
 end function
 
 function postVoid(req, data = "" as string) as boolean
+  ' Handle case where server URL is not set or invalid
+  if not isValid(req) then return false
+
   req.setMessagePort(CreateObject("roMessagePort"))
   req.AddHeader("Content-Type", "application/json")
   req.AsyncPostFromString(data)
@@ -98,6 +105,9 @@ function postVoid(req, data = "" as string) as boolean
 end function
 
 function headVoid(req) as boolean
+  ' Handle case where server URL is not set or invalid
+  if not isValid(req) then return false
+
   req.setMessagePort(CreateObject("roMessagePort"))
   req.AddHeader("Content-Type", "application/json")
   req.AsyncHead()
@@ -131,6 +141,9 @@ function getVoid(req) as boolean
 end function
 
 function postJson(req, data = "" as string)
+  ' Handle case where server URL is not set or invalid
+  if not isValid(req) then return invalid
+
   req.setMessagePort(CreateObject("roMessagePort"))
   req.AddHeader("Content-Type", "application/json")
   req.AsyncPostFromString(data)
@@ -149,6 +162,9 @@ function postJson(req, data = "" as string)
 end function
 
 function deleteVoid(req)
+  ' Handle case where server URL is not set or invalid
+  if not isValid(req) then return false
+
   req.setMessagePort(CreateObject("roMessagePort"))
   req.AddHeader("Content-Type", "application/json")
   req.SetRequest("DELETE")
@@ -158,26 +174,36 @@ function deleteVoid(req)
 end function
 
 function get_url()
-  serverURL = m.global.session.server.url
-  if isValid(serverURL)
-    if serverURL.right(1) = "/"
-      serverURL = serverURL.left(serverURL.len() - 1)
-    end if
+  serverURL = m.global.server.serverUrl
 
-    ' append http:// to the start if not specified
-    if serverURL.left(7) <> "http://" and serverURL.left(8) <> "https://"
-      serverURL = "http://" + serverURL
-    end if
+  ' Check if URL is valid AND not empty
+  ' ContentNode fields return "" instead of invalid, so we must check both
+  if not isValid(serverURL) or serverURL = "" then return invalid
+
+  if serverURL.right(1) = "/"
+    serverURL = serverURL.left(serverURL.len() - 1)
   end if
+
+  ' append http:// to the start if not specified
+  if serverURL.left(7) <> "http://" and serverURL.left(8) <> "https://"
+    serverURL = "http://" + serverURL
+  end if
+
   return serverURL
 end function
 
 function getString(req)
+  ' Handle case where server URL is not set or invalid
+  if not isValid(req) then return invalid
+
   data = req.GetToString()
   return data
 end function
 
 function postString(req, data = "" as string)
+  ' Handle case where server URL is not set or invalid
+  if not isValid(req) then return invalid
+
   req.setMessagePort(CreateObject("roMessagePort"))
   req.AddHeader("Content-Type", "application/json")
   req.AsyncPostFromString(data)
@@ -207,14 +233,14 @@ function buildAuthHeader() as string
   auth = auth + ", Device=" + QUOTE + m.global.device.name + " (" + m.global.device.model + ")" + QUOTE
   auth = auth + ", Version=" + QUOTE + m.global.app.version + QUOTE
 
-  if isValid(m.global.session.user.id)
-    auth = auth + ", UserId=" + QUOTE + m.global.session.user.id + QUOTE
+  if isValid(m.global.user.id)
+    auth = auth + ", UserId=" + QUOTE + m.global.user.id + QUOTE
   end if
 
   auth = auth + ", DeviceId=" + QUOTE + m.global.device.serverDeviceName + QUOTE
 
-  if isValid(m.global.session.user.authToken)
-    auth = auth + ", Token=" + QUOTE + m.global.session.user.authToken + QUOTE
+  if isValid(m.global.user.authToken)
+    auth = auth + ", Token=" + QUOTE + m.global.user.authToken + QUOTE
   end if
 
   return auth

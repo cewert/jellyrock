@@ -13,8 +13,8 @@ sub init()
   m.top.transcodeReasons = []
   m.bufferCheckTimer.duration = 30
 
-  userSettings = m.global.session.user.settings
-  if userSettings["ui.design.hideclock"]
+  userSettings = m.global.user.settings
+  if userSettings.uiDesignHideClock
     clockNode = findNodeBySubtype(m.top, "clock")
     if isValid(clockNode[0]) then clockNode[0].parent.removeChild(clockNode[0].node)
   end if
@@ -22,7 +22,7 @@ sub init()
   'Play Next Episode button
   m.nextEpisodeButton = m.top.findNode("nextEpisode")
   m.nextEpisodeButton.setFocus(false)
-  m.nextupbuttonseconds = userSettings["playback.nextupbuttonseconds"].ToInt()
+  m.nextupbuttonseconds = userSettings.playbackNextUpButtonSeconds
 
   m.showNextEpisodeButtonAnimation = m.top.findNode("showNextEpisodeButton")
   m.hideNextEpisodeButtonAnimation = m.top.findNode("hideNextEpisodeButton")
@@ -44,7 +44,7 @@ sub onAllowCaptionsChange()
   m.captionTask.observeField("useThis", "checkCaptionMode")
   m.top.observeField("currentSubtitleTrack", "loadCaption")
   m.top.observeField("globalCaptionMode", "toggleCaption")
-  if m.global.session.user.settings["playback.subs.custom"] = false
+  if m.global.user.settings.playbackSubsCustom = false
     m.top.suppressCaptions = false
   else
     m.top.suppressCaptions = true
@@ -93,9 +93,9 @@ sub showNextEpisodeButton()
   if m.top.content.contenttype <> 4 then return ' only display when content is type "Episode"
   if m.nextupbuttonseconds = 0 then return ' is the button disabled?
   if m.nextEpisodeButton.opacity <> 0 then return
-  userSession = m.global.session.user
-  if userSession.settings["playback.playnextepisode"] = "disabled" then return
-  if userSession.settings["playback.playnextepisode"] = "webclient" and not userSession.Configuration.EnableNextEpisodeAutoPlay then return
+  userSession = m.global.user
+  if userSession.settings.playbackPlayNextEpisode = "disabled" then return
+  if userSession.settings.playbackPlayNextEpisode = "webclient" and not userSession.config.enableNextEpisodeAutoPlay then return
 
   m.nextEpisodeButton.visible = true
   m.showNextEpisodeButtonAnimation.control = "start"

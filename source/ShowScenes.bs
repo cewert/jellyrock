@@ -5,7 +5,7 @@ function LoginFlow()
   serverUrl = get_setting("server")
   if isValid(serverUrl)
     print "Previous server connection saved to registry"
-    startOver = not session.server.UpdateURL(serverUrl)
+    startOver = not server.UpdateURL(serverUrl)
     if startOver
       print "Could not connect to previously saved server."
     end if
@@ -35,6 +35,8 @@ function LoginFlow()
     SaveServerList()
   end if
 
+  localUser = m.global.user
+
   activeUser = get_setting("active_user")
   if not isValid(activeUser)
     print "No active user found in registry"
@@ -54,34 +56,34 @@ function LoginFlow()
       ' load public users
       if numPubUsers > 0
         for each item in publicUsers
-          user = CreateObject("roSGNode", "PublicUserData")
-          user.id = item.Id
-          user.name = item.Name
+          userData = CreateObject("roSGNode", "PublicUserData")
+          userData.id = item.Id
+          userData.name = item.Name
           if isValid(item.PrimaryImageTag)
-            user.ImageURL = UserImageURL(user.id, { "tag": item.PrimaryImageTag })
+            userData.ImageURL = UserImageURL(userData.id, { "tag": item.PrimaryImageTag })
           end if
-          publicUsersNodes.push(user)
-          publicUserIds.push(user.id)
+          publicUsersNodes.push(userData)
+          publicUserIds.push(userData.id)
         end for
       end if
       ' load saved users for this server id
       if numSavedUsers > 0
         for each savedUser in savedUsers
-          if isValid(savedUser.serverId) and savedUser.serverId = m.global.session.server.id
+          if isValid(savedUser.serverId) and savedUser.serverId = m.global.server.id
             ' only show unique userids on screen.
             if not arrayHasValue(publicUserIds, savedUser.Id)
-              user = CreateObject("roSGNode", "PublicUserData")
-              user.id = savedUser.Id
+              userData = CreateObject("roSGNode", "PublicUserData")
+              userData.id = savedUser.Id
 
               if isValid(savedUser.username)
-                user.name = savedUser.username
+                userData.name = savedUser.username
               end if
 
               if isValid(savedUser.primaryImageTag)
-                user.ImageURL = UserImageURL(user.id, { "tag": savedUser.primaryImageTag })
+                userData.ImageURL = UserImageURL(userData.id, { "tag": savedUser.primaryImageTag })
               end if
 
-              publicUsersNodes.push(user)
+              publicUsersNodes.push(userData)
             end if
           end if
         end for
@@ -90,41 +92,37 @@ function LoginFlow()
       userSelected = CreateUserSelectGroup(publicUsersNodes)
       SendPerformanceBeacon("AppDialogComplete") ' Roku Performance monitoring - Dialog Closed
       if userSelected = "backPressed"
-        session.server.Delete()
+        server.Delete()
         unset_setting("server")
         goto start_login
       else if userSelected <> ""
         startLoadingSpinner()
         print "A public user was selected with username=" + userSelected
-        session.user.Update("name", userSelected)
+        localUser.name = userSelected
 
         ' save userid to session
-        for each user in publicUsersNodes
-          if user.name = userSelected
-            session.user.Update("id", user.id)
+        for each userData in publicUsersNodes
+          if userData.name = userSelected
+            localUser.id = userData.id
             exit for
           end if
         end for
         ' try to login with token from registry
-        myToken = get_user_setting("token")
-        myPrimaryImageTag = get_user_setting("primaryimagetag")
+        myToken = get_user_setting("authToken")
         if isValid(myToken)
           ' check if token is valid
           print "Auth token found in registry for selected user"
-          session.user.Update("authToken", myToken)
+          localUser.authToken = myToken
           print "Attempting to use API with auth token"
           currentUser = AboutMe()
           if not isValid(currentUser)
             print "Auth token is no longer valid - deleting token"
-            unset_user_setting("token")
+            unset_user_setting("authToken")
             unset_user_setting("username")
-            if isValid(myPrimaryImageTag)
-              unset_user_setting("primaryimagetag")
-            end if
+            unset_user_setting("primaryImageTag")
           else
             print "Success! Auth token is still valid"
-            session.user.Login(currentUser, true)
-            LoadUserAbilities()
+            user.Login(currentUser, true)
             return true
           end if
         else
@@ -135,8 +133,7 @@ function LoginFlow()
         userData = get_token(userSelected, "")
         if isValid(userData)
           print "login success!"
-          session.user.Login(userData, true)
-          LoadUserAbilities()
+          user.Login(userData, true)
           return true
         else
           print "Auth failed. Password required"
@@ -152,26 +149,25 @@ function LoginFlow()
       if numPubUsers > 0
         goto user_select
       else
-        session.server.Delete()
+        server.Delete()
         unset_setting("server")
         goto start_login
       end if
     end if
   else
     print "Active user found in registry"
-    session.user.Update("id", activeUser)
+    localUser.id = activeUser
 
     myUsername = get_user_setting("username")
-    myAuthToken = get_user_setting("token")
-    myPrimaryImageTag = get_user_setting("primaryimagetag")
+    myAuthToken = get_user_setting("authToken")
+    myPrimaryImageTag = get_user_setting("primaryImageTag")
     if isValid(myAuthToken) and isValid(myUsername)
       print "Auth token found in registry"
-      session.user.Update("authToken", myAuthToken)
-      session.user.Update("name", myUsername)
-      if isValid(myPrimaryImageTag)
-        session.user.Update("primaryImageTag", myPrimaryImageTag)
+      localUser.authToken = myAuthToken
+      localUser.name = myUsername
+      if isValidAndNotEmpty(myPrimaryImageTag)
+        localUser.primaryImageTag = myPrimaryImageTag
       end if
-
       print "Attempting to use API with auth token"
       currentUser = AboutMe()
       if not isValid(currentUser)
@@ -181,36 +177,34 @@ function LoginFlow()
         userData = get_token(myUsername, "")
         if isValid(userData)
           print "login success!"
-          session.user.Login(userData, true)
-          LoadUserAbilities()
+          user.Login(userData, true)
           return true
         else
           print "Auth failed. Password required"
           print "delete token and restart login flow"
-          unset_user_setting("token")
+          unset_user_setting("authToken")
           unset_user_setting("username")
           if isValid(myPrimaryImageTag)
-            unset_user_setting("primaryimagetag")
+            unset_user_setting("primaryImageTag")
           end if
           goto start_login
         end if
       else
         print "Success! Auth token is still valid"
-        session.user.Login(currentUser, true)
+        user.Login(currentUser, true)
       end if
     else
       print "No auth token found in registry"
     end if
   end if
 
-  if not isValid(m.global.session.user.id) or not isValid(m.global.session.user.authToken)
+  if not isValid(localUser.id) or not isValid(localUser.authToken)
     print "Login failed, restart flow"
     unset_setting("active_user")
-    session.user.Logout()
+    user.Logout()
     goto start_login
   end if
 
-  LoadUserAbilities()
   m.global.sceneManager.callFunc("clearScenes")
 
   return true
@@ -218,10 +212,10 @@ end function
 
 sub SaveServerList()
   'Save off this server to our list of saved servers for easier navigation between servers
-  server = m.global.session.server.url
+  serverUrl = m.global.server.serverUrl
   saved = get_setting("saved_servers")
-  if isValid(server)
-    server = LCase(server)'Saved server data is always lowercase
+  if isValid(serverUrl)
+    serverUrl = LCase(serverUrl)'Saved server data is always lowercase
   end if
   entryCount = 0
   addNewEntry = true
@@ -231,7 +225,7 @@ sub SaveServerList()
     entryCount = savedServers.serverList.Count()
     if isValid(savedServers.serverList) and entryCount > 0
       for each item in savedServers.serverList
-        if item.baseUrl = server
+        if item.baseUrl = serverUrl
           addNewEntry = false
           exit for
         end if
@@ -241,9 +235,9 @@ sub SaveServerList()
 
   if addNewEntry
     if entryCount = 0
-      set_setting("saved_servers", FormatJson({ serverList: [{ name: m.serverSelection, baseUrl: server, iconUrl: "pkg:/images/branding/logo-icon120.jpg", iconWidth: 120, iconHeight: 120 }] }))
+      set_setting("saved_servers", FormatJson({ serverList: [{ name: m.serverSelection, baseUrl: serverUrl, iconUrl: "pkg:/images/branding/logo-icon120.jpg", iconWidth: 120, iconHeight: 120 }] }))
     else
-      savedServers.serverList.Push({ name: m.serverSelection, baseUrl: server, iconUrl: "pkg:/images/branding/logo-icon120.jpg", iconWidth: 120, iconHeight: 120 })
+      savedServers.serverList.Push({ name: m.serverSelection, baseUrl: serverUrl, iconUrl: "pkg:/images/branding/logo-icon120.jpg", iconWidth: 120, iconHeight: 120 })
       set_setting("saved_servers", FormatJson(savedServers))
     end if
   end if
@@ -279,8 +273,8 @@ function CreateServerGroup()
   m.global.sceneManager.callFunc("pushScene", screen)
   port = CreateObject("roMessagePort")
 
-  if isValid(m.global.session.server.url)
-    screen.serverUrl = m.global.session.server.url
+  if isValid(m.global.server.serverUrl)
+    screen.serverUrl = m.global.server.serverUrl
   end if
 
   buttons = screen.findNode("buttons")
@@ -327,13 +321,13 @@ function CreateServerGroup()
 
           serverUrl = inferServerUrl(screen.serverUrl)
 
-          isConnected = session.server.UpdateURL(serverUrl)
+          isConnected = server.UpdateURL(serverUrl)
           serverInfoResult = invalid
           if isConnected
             set_setting("server", serverUrl)
             serverInfoResult = ServerInfo()
             'If this is a different server from what we know, reset username/password setting
-            if m.global.session.server.url <> serverUrl
+            if m.global.server.serverUrl <> serverUrl
               set_setting("username", "")
               set_setting("password", "")
             end if
@@ -354,7 +348,7 @@ function CreateServerGroup()
               if isValid(serverInfoResult.UpdatedUrl)
                 serverUrl = serverInfoResult.UpdatedUrl
 
-                isConnected = session.server.UpdateURL(serverUrl)
+                isConnected = server.UpdateURL(serverUrl)
                 if isConnected
                   set_setting("server", serverUrl)
                   screen.visible = false
@@ -436,7 +430,7 @@ function CreateUserSelectGroup(users = [])
   return ""
 end function
 
-function CreateSigninGroup(user = "")
+function CreateSigninGroup(userName = "")
   ' Get and Save Jellyfin user login credentials
   group = CreateObject("roSGNode", "LoginScene")
   m.global.sceneManager.callFunc("pushScene", group)
@@ -449,10 +443,10 @@ function CreateSigninGroup(user = "")
   username_field.label = tr("Username")
   username_field.field = "username"
   username_field.type = "string"
-  if user = "" and isValid(get_setting("username"))
+  if userName = "" and isValid(get_setting("username"))
     username_field.value = get_setting("username")
   else
-    username_field.value = user
+    username_field.value = userName
   end if
   password_field = CreateObject("roSGNode", "ConfigData")
   password_field.label = tr("Password")
@@ -473,7 +467,7 @@ function CreateSigninGroup(user = "")
   checkbox.checkedState = [true]
   quickConnect = group.findNode("quickConnect")
   ' Quick Connect only supported for server version 10.8+ right now...
-  if versionChecker(m.global.session.server.version, "10.8.0")
+  if versionChecker(m.global.server.version, "10.8.0")
     ' Add option for Quick Connect
     quickConnect.text = tr("Quick Connect")
     quickConnect.observeField("buttonSelected", port)
@@ -489,7 +483,7 @@ function CreateSigninGroup(user = "")
 
   config = group.findNode("configOptions")
 
-  username = config.content.getChild(0)
+  userName = config.content.getChild(0)
   password = config.content.getChild(1)
 
   group.observeField("backPressed", port)
@@ -518,19 +512,19 @@ function CreateSigninGroup(user = "")
         if buttonSelected.id = "submit"
           startLoadingSpinner()
           ' Validate credentials
-          activeUser = get_token(username.value, password.value)
+          activeUser = get_token(userName.value, password.value)
           if isValid(activeUser)
             print "activeUser=", activeUser
             if checkbox.checkedState[0] = true
               ' save credentials
-              session.user.Login(activeUser, true)
-              set_user_setting("token", activeUser.token)
-              set_user_setting("username", username.value)
+              user.Login(activeUser, true)
+              set_user_setting("authToken", activeUser.token)
+              set_user_setting("username", userName.value)
               if isValid(activeUser.json.PrimaryImageTag)
-                set_user_setting("primaryimagetag", activeUser.json.PrimaryImageTag)
+                set_user_setting("primaryImageTag", activeUser.json.PrimaryImageTag)
               end if
             else
-              session.user.Login(activeUser)
+              user.Login(activeUser)
             end if
             return "true"
           end if
@@ -661,7 +655,7 @@ function CreateMovieDetailsGroup(movie as object) as dynamic
   m.global.sceneManager.callFunc("pushScene", group)
   group.itemContent = movieMetaData
   ' local trailers
-  trailerData = api.users.GetLocalTrailers(m.global.session.user.id, movie.id)
+  trailerData = api.users.GetLocalTrailers(m.global.user.id, movie.id)
   if isValid(trailerData)
     group.trailerAvailable = trailerData.Count() > 0
   end if
@@ -692,7 +686,7 @@ function CreateSeriesDetailsGroup(seriesID as string) as dynamic
   ' Get season data early in the function so we can check number of seasons.
   seasonData = TVSeasons(seriesID)
   ' Divert to season details if user setting goStraightToEpisodeListing is enabled and only one season exists.
-  if isValid(seasonData) and m.global.session.user.settings["ui.tvshows.goStraightToEpisodeListing"] and seasonData.Items.Count() = 1
+  if isValid(seasonData) and m.global.user.settings.uiTvShowsGoStraightToEpisodes and seasonData.Items.Count() = 1
     stopLoadingSpinner()
     return CreateSeasonDetailsGroupByID(seriesID, seasonData.Items[0].id)
   end if

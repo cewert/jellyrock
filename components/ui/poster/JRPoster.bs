@@ -7,7 +7,7 @@ sub init()
   m.top.loadDisplayMode = "scaleToZoom"
   m.disableWatchBadge = false
 
-  if m.global.session.user.settings["ui.tvshows.disableUnwatchedEpisodeCount"]
+  if m.global.user.settings.uiTvShowsDisableUnwatchedCount
     m.disableWatchBadge = true
   end if
 

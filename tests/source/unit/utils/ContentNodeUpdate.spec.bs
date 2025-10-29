@@ -1,0 +1,128 @@
+
+namespace tests
+  @suite("ContentNode - update() Method Tests")
+  class ContentNodeUpdateTests extends tests.BaseTestSuite
+
+    @describe("update() method existence and behavior")
+
+    @it("can call update() method on ContentNode")
+    function _()
+      ' Create a ContentNode
+      node = CreateObject("roSGNode", "ContentNode")
+
+      ' Try to call update() method
+      testData = { testField: "testValue" }
+
+      ' Check if update method exists by trying to call it
+      try
+        node.update(testData, true) ' true = add fields if they don't exist
+        m.assertTrue(true, "update() method exists and can be called")
+      catch e
+        m.fail("update() method does NOT exist: " + e.message)
+      end try
+    end function
+
+    @it("update() can add new fields to ContentNode")
+    function _()
+      node = CreateObject("roSGNode", "ContentNode")
+
+      ' Update with new fields
+      testData = {
+        field1: "value1",
+        field2: "value2",
+        field3: 123
+      }
+
+      node.update(testData, true) ' true = add fields if they don't exist
+
+      ' Verify fields were added
+      m.assertEqual(node.field1, "value1", "field1 should be set")
+      m.assertEqual(node.field2, "value2", "field2 should be set")
+      m.assertEqual(node.field3, 123, "field3 should be set")
+    end function
+
+    @it("update() can modify existing fields on JellyfinServer")
+    function _()
+      ' Create JellyfinServer node (has XML-defined fields)
+      serverNode = CreateObject("roSGNode", "JellyfinServer")
+
+      ' Set initial values using setField
+      serverNode.setField("serverUrl", "https://old-url.com")
+      serverNode.setField("name", "Old Name")
+      serverNode.setField("isConnected", true)
+
+      ' Create update data
+      updateData = {
+        serverUrl: "https://new-url.com",
+        name: "New Name",
+        isConnected: false
+      }
+
+      ' Apply update
+      serverNode.update(updateData, false) ' false = don't add new fields
+
+      ' Verify fields were updated
+      m.assertEqual(serverNode.getField("serverUrl"), "https://new-url.com", "url should be updated")
+      m.assertEqual(serverNode.getField("name"), "New Name", "name should be updated")
+      m.assertEqual(serverNode.getField("isConnected"), false, "isConnected should be updated")
+    end function
+
+    @it("update() with getFields() can reset node to defaults")
+    function _()
+      ' Create server and set some values
+      serverNode = CreateObject("roSGNode", "JellyfinServer")
+      serverNode.setField("serverUrl", "https://test.com")
+      serverNode.setField("name", "Test Server")
+      serverNode.setField("isConnected", true)
+
+      ' Create fresh server and get its fields
+      freshServer = CreateObject("roSGNode", "JellyfinServer")
+      defaultFields = freshServer.getFields()
+
+      ' Apply defaults to existing server
+      serverNode.update(defaultFields, false)
+
+      ' Verify fields were reset to defaults
+      m.assertEqual(serverNode.getField("serverUrl"), "", "url should be reset to empty")
+      m.assertEqual(serverNode.getField("name"), "", "name should be reset to empty")
+      m.assertEqual(serverNode.getField("isConnected"), false, "isConnected should be reset to false")
+    end function
+
+    @it("can set fields on m.global.server using dot notation")
+    function _()
+      ' Get local reference to minimize rendezvous
+      localServer = m.getTestServer()
+
+      ' Set value
+      localServer.serverUrl = "https://test-global.com"
+
+      ' Read it back
+      result = localServer.serverUrl
+
+      ' Verify
+      m.assertEqual(result, "https://test-global.com", "Should be able to set and read serverUrl")
+    end function
+
+    @it("can reset m.global.server using update()")
+    function _()
+      ' Get local reference to minimize rendezvous
+      localServer = m.getTestServer()
+
+      ' Set some values
+      localServer.serverUrl = "https://before-reset.com"
+      localServer.name = "Before Reset"
+
+      ' Create fresh server and get defaults
+      freshServer = CreateObject("roSGNode", "JellyfinServer")
+      defaultFields = freshServer.getFields()
+
+      ' Apply update
+      localServer.update(defaultFields, false)
+
+      ' Verify reset
+      m.assertEqual(localServer.serverUrl, "", "url should be reset")
+      m.assertEqual(localServer.name, "", "name should be reset")
+    end function
+
+  end class
+end namespace

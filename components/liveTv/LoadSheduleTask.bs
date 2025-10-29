@@ -11,7 +11,7 @@ sub loadSchedule()
   results = []
 
   params = {
-    UserId: m.global.session.user.id,
+    UserId: m.global.user.id,
     SortBy: "startDate",
     EnableImages: false,
     EnableTotalRecordCount: false,

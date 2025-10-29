@@ -1,24 +1,24 @@
 import "pkg:/source/utils/misc.bs"
 
 sub init()
-  colorConstants = m.global.constants.colors
+  constants = m.global.constants
 
   m.top.showRowLabel = [true]
   m.top.showRowCounter = [true]
   m.top.rowFocusAnimationStyle = "fixedFocusWrap"
   m.top.vertFocusAnimationStyle = "fixedFocusWrap"
-  m.top.focusBitmapBlendColor = colorConstants.primary ' color of the item selector
+  m.top.focusBitmapBlendColor = constants.colorPrimary ' color of the item selector
   m.top.itemSpacing = [0, 105] ' spacing between rows
   m.top.rowItemSpacing = [27, 0] ' spacing between items in a row
 
   m.top.focusXOffset = [96] ' align item selector with edge of "action" safe zone
 
   m.top.rowLabelOffset = [96, 21] ' align row label with edge of "action" safe zone
-  m.top.rowLabelColor = colorConstants.text_primary
+  m.top.rowLabelColor = constants.colorTextPrimary
   m.top.rowLabelFont = "font:MediumSystemFont"
-  m.top.rowLabelFont.size = m.global.constants.font_sizes.medium
+  m.top.rowLabelFont.size = constants.fontSizeMedium
 
-  if m.global.session.user.settings["ui.font.fallback"] = true
+  if m.global.user.settings.uiFontFallback = true
     m.top.rowLabelFont.uri = "tmp:/font"
     applyFallbackFontScale()
   end if
@@ -34,7 +34,7 @@ sub applyFallbackFontScale()
   end if
 
   ' Apply the global scale factor
-  fontScaleFactor = m.global.session.user.fontScaleFactor
+  fontScaleFactor = m.global.user.fontScaleFactor
   if isValid(fontScaleFactor) and fontScaleFactor > 0
     scaledSize = currentSize * fontScaleFactor
     m.top.rowLabelFont.size = scaledSize

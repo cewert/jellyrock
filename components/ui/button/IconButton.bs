@@ -19,17 +19,17 @@ sub init()
 end sub
 
 sub applyTheme()
-  colorConstants = m.global.constants.colors
+  constants = m.global.constants
 
   ' Set default colors
-  m.top.background = colorConstants.background_secondary
-  m.top.iconBackground = colorConstants.text_primary
-  m.top.focusBackground = colorConstants.background_primary
-  m.top.iconFocusBackground = colorConstants.text_primary
+  m.top.background = constants.colorBackgroundSecondary
+  m.top.iconBackground = constants.colorTextPrimary
+  m.top.focusBackground = constants.colorBackgroundPrimary
+  m.top.iconFocusBackground = constants.colorTextPrimary
 end sub
 
 sub onFocusChanged()
-  colorConstants = m.global.constants.colors
+  constants = m.global.constants
 
   if m.top.focus
     ' Button background
@@ -42,7 +42,7 @@ sub onFocusChanged()
     end if
     ' Focus border
     if m.top.enableBorder
-      m.buttonFocusBorder.blendColor = colorConstants.primary
+      m.buttonFocusBorder.blendColor = constants.colorPrimary
       m.buttonFocusBorder.visible = true
     end if
   else
@@ -110,14 +110,14 @@ sub onPaddingChanged()
 end sub
 
 sub onEnabledChanged()
-  colorConstants = m.global.constants.colors
+  constants = m.global.constants
 
   if m.top.enabled
-    m.top.background = colorConstants.background_secondary
-    m.top.iconBackground = colorConstants.text_primary
+    m.top.background = constants.colorBackgroundSecondary
+    m.top.iconBackground = constants.colorTextPrimary
   else
-    m.top.background = colorConstants.background_primary
-    m.top.iconBackground = colorConstants.text_disabled
+    m.top.background = constants.colorBackgroundPrimary
+    m.top.iconBackground = constants.colorTextDisabled
   end if
 end sub
 

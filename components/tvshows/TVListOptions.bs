@@ -17,9 +17,9 @@ sub init()
   m.audioNames = []
 
   ' Set button colors to global
-  globalConstants = m.global.constants
-  m.top.findNode("videoMenu").focusBitmapBlendColor = globalConstants.colors.secondary
-  m.top.findNode("audioMenu").focusBitmapBlendColor = globalConstants.colors.secondary
+  constants = m.global.constants
+  m.top.findNode("videoMenu").focusBitmapBlendColor = constants.colorSecondary
+  m.top.findNode("audioMenu").focusBitmapBlendColor = constants.colorSecondary
 
   ' Animation
   m.fadeAnim = m.top.findNode("fadeAnim")

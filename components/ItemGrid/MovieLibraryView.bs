@@ -2,6 +2,7 @@ import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/api/Image.bs"
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/deviceCapabilities.bs"
+import "pkg:/source/utils/displaySettings.bs"
 import "pkg:/source/utils/misc.bs"
 
 sub setupNodes()
@@ -30,11 +31,11 @@ end sub
 
 sub init()
   setupNodes()
-  userSettings = m.global.session.user.settings
+  userSettings = m.global.user.settings
 
   m.overhang.isVisible = false
 
-  m.showItemCount = userSettings["itemgrid.showItemCount"]
+  m.showItemCount = userSettings.itemGridShowItemCount
 
   m.swapAnimation.observeField("state", "swapDone")
 
@@ -84,7 +85,7 @@ sub init()
   m.loadItemsTask.totalRecordCount = 0
 
   'Get reset folder setting
-  m.resetGrid = userSettings["itemgrid.reset"]
+  m.resetGrid = userSettings.itemGridReset
 end sub
 
 sub OnScreenHidden()
@@ -110,7 +111,7 @@ end sub
 sub loadInitialItems()
   m.loadItemsTask.control = "stop"
   startLoadingSpinner(false)
-  userSettings = m.global.session.user.settings
+  userSettings = m.global.user.settings
 
   if m.top.parentItem.json.Type = "CollectionFolder"
     m.top.HomeLibraryItem = m.top.parentItem.Id
@@ -122,24 +123,20 @@ sub loadInitialItems()
     SetBackground("")
   end if
 
-  m.sortField = userSettings["display." + m.top.parentItem.Id + ".sortField"]
-  m.filter = userSettings["display." + m.top.parentItem.Id + ".filter"]
-  m.filterOptions = userSettings["display." + m.top.parentItem.Id + ".filterOptions"]
-  m.view = userSettings["display." + m.top.parentItem.Id + ".landing"]
-  m.sortAscending = userSettings["display." + m.top.parentItem.Id + ".sortAscending"]
+  ' Load saved display settings for this library
+  libraryId = m.top.parentItem.Id
+  m.sortField = getLibraryDisplaySetting(libraryId, "sortField", "SortName")
+  m.filter = getLibraryDisplaySetting(libraryId, "filter", "All")
+  m.filterOptions = parseJson(getLibraryDisplaySetting(libraryId, "filterOptions", "{}"))
+  m.view = getLibraryDisplaySetting(libraryId, "landing", invalid)
+  m.sortAscending = getLibraryDisplaySetting(libraryId, "sortAscending", true)
 
   ' If user has not set a preferred view for this folder, check if they've set a default view
   if not isValid(m.view)
-    m.view = userSettings["itemgrid.movieDefaultView"]
+    m.view = userSettings.itemGridMovieDefaultView
   end if
 
-  if not isValid(m.sortField) then m.sortField = "SortName"
-  if not isValid(m.filter) then m.filter = "All"
-  if not isValid(m.filterOptions) then m.filterOptions = "{}"
   if not isValid(m.view) then m.view = "Movies"
-  if not isValid(m.sortAscending) then m.sortAscending = true
-
-  m.filterOptions = ParseJson(m.filterOptions)
 
   if m.top.parentItem.json.type = "Studio"
     m.loadItemsTask.studioIds = m.top.parentItem.id
@@ -199,7 +196,7 @@ sub loadInitialItems()
     m.itemGrid.numRows = "3"
     m.selectedMovieOverview.visible = false
     m.infoGroup.visible = false
-    m.top.showItemTitles = userSettings["itemgrid.gridTitles"]
+    m.top.showItemTitles = userSettings.itemGridTitles
     if LCase(m.top.showItemTitles) = "hidealways"
       m.itemGrid.itemSize = "[230, 315]"
       m.itemGrid.rowHeights = "[315]"
@@ -221,7 +218,7 @@ sub loadInitialItems()
 
   m.getFiltersTask.observeField("filters", "FilterDataLoaded")
   m.getFiltersTask.params = {
-    userid: m.global.session.user.id,
+    userid: m.global.user.id,
     parentid: m.top.parentItem.Id,
     includeitemtypes: "Movie"
   }
@@ -574,7 +571,7 @@ sub onItemFocused()
 
   m.star.uri = "pkg:/images/icons/sharp_star_white_18dp.png"
 
-  if m.global.session.user.settings["ui.movies.showRatings"]
+  if m.global.user.settings.uiMoviesShowRatings
     if isValid(itemData.communityRating)
       setFieldText("communityRating", int(itemData.communityRating * 10) / 10)
       m.communityRatingGroup.visible = true
@@ -583,10 +580,10 @@ sub onItemFocused()
     if isValid(itemData.CriticRating)
       setFieldText("criticRatingLabel", itemData.criticRating)
 
-      tomato = m.global.constants.icons.tomato_rotten
+      tomato = m.global.constants.iconTomatoRotten
 
       if itemData.CriticRating > 60
-        tomato = m.global.constants.icons.tomato_fresh
+        tomato = m.global.constants.iconTomatoFresh
       end if
 
       m.criticRatingIcon.uri = tomato
@@ -797,14 +794,16 @@ sub optionsClosed()
       sortAscendingStr = "false"
     end if
 
-    set_user_setting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
-    set_user_setting("display." + m.top.parentItem.Id + ".sortAscending", sortAscendingStr)
+    libraryId = m.top.parentItem.Id
+    setLibraryDisplaySetting(libraryId, "sortField", m.sortField)
+    setLibraryDisplaySetting(libraryId, "sortAscending", sortAscendingStr)
   end if
 
   if m.options.filter <> m.filter
     m.filter = m.options.filter
     reload = true
-    set_user_setting("display." + m.top.parentItem.Id + ".filter", m.options.filter)
+    libraryId = m.top.parentItem.Id
+    setLibraryDisplaySetting(libraryId, "filter", m.options.filter)
   end if
 
   if not isValid(m.options.filterOptions)
@@ -814,14 +813,17 @@ sub optionsClosed()
   if not AssocArrayEqual(m.options.filterOptions, m.filterOptions)
     m.filterOptions = m.options.filterOptions
     reload = true
-    set_user_setting("display." + m.top.parentItem.Id + ".filterOptions", FormatJson(m.options.filterOptions))
+    libraryId = m.top.parentItem.Id
+    setLibraryDisplaySetting(libraryId, "filterOptions", FormatJson(m.options.filterOptions))
   end if
 
-  m.view = m.global.session.user.settings["display." + m.top.parentItem.Id + ".landing"]
+  ' Load current view setting (may have changed on another screen)
+  libraryId = m.top.parentItem.Id
+  m.view = getLibraryDisplaySetting(libraryId, "landing", invalid)
 
   if m.options.view <> m.view
     m.view = m.options.view
-    set_user_setting("display." + m.top.parentItem.Id + ".landing", m.view)
+    setLibraryDisplaySetting(libraryId, "landing", m.view)
 
     ' Reset any filtering or search terms
     m.top.alphaSelected = ""
@@ -833,10 +835,10 @@ sub optionsClosed()
     m.sortAscending = true
 
     ' Reset view to defaults
-    set_user_setting("display." + m.top.parentItem.Id + ".sortField", m.sortField)
-    set_user_setting("display." + m.top.parentItem.Id + ".sortAscending", "true")
-    set_user_setting("display." + m.top.parentItem.Id + ".filter", m.filter)
-    set_user_setting("display." + m.top.parentItem.Id + ".filterOptions", FormatJson(m.filterOptions))
+    setLibraryDisplaySetting(libraryId, "sortField", m.sortField)
+    setLibraryDisplaySetting(libraryId, "sortAscending", "true")
+    setLibraryDisplaySetting(libraryId, "filter", m.filter)
+    setLibraryDisplaySetting(libraryId, "filterOptions", FormatJson(m.filterOptions))
 
     reload = true
   end if

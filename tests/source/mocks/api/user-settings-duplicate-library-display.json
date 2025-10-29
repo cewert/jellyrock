@@ -1,0 +1,8 @@
+{
+  "ui.row.layout": "landscape",
+  "display.sameLib.sortField": "Name",
+  "display.sameLib.sortAscending": "true",
+  "display.sameLib.filter": "all",
+  "display.sameLib.view": "Movies",
+  "display.sameLib.landing": "movies"
+}

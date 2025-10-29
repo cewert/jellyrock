@@ -1,0 +1,12 @@
+{
+  "uiRowLayout": "landscape",
+  "uiDesignHideClock": "true",
+  "uiGeneralEpisodeImages": "always",
+  "uiTvShowsDisableUnwatchedCount": "false",
+  "uiHomeUseWebArrangement": "true",
+  "uiFontFallback": "false",
+  "homeSection0": "library-movies",
+  "homeSection1": "library-tvshows",
+  "homeSection2": "resume",
+  "displayLiveTvLanding": "guide"
+}
