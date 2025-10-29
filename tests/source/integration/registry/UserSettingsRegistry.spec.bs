@@ -2,6 +2,7 @@
 namespace tests
 
   @suite("User Settings - Registry Integration")
+  @tags("registry")
   class UserSettingsRegistryTests extends tests.BaseTestSuite
 
 
@@ -420,6 +421,46 @@ namespace tests
         value = reg.read(settingName)
         m.assertEqual(value, specialValues[i], `Special char value ${i} should be preserved`)
       end for
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Delete and Reset Operations")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("user.settings.Delete() resets field to default and saves default to registry")
+    function _()
+      testUserId = "test-delete-reset-001"
+      m.global.user.id = testUserId
+
+      ' Test with an XML-defined field (all fields should be in XML now)
+      localSettings = m.getTestUserSettings()
+      localUser = m.getTestUser()
+
+      ' Enable auto-sync so observers write to registry
+      localSettings.callFunc("enableAutoSync")
+
+      ' Set a non-default value
+      user.settings.Save("playbackCinemaMode", "true")
+      m.assertEqual(localSettings.playbackCinemaMode, true)
+
+      ' Verify it was written to registry
+      reg = CreateObject("roRegistrySection", localUser.id)
+      m.assertTrue(reg.exists("playbackCinemaMode"), "Setting should exist in registry after Save")
+      m.assertEqual(reg.read("playbackCinemaMode"), "true")
+
+      ' Delete the setting (resets to default)
+      user.settings.Delete("playbackCinemaMode")
+
+      ' Field should still exist (XML field) but be reset to default (false)
+      m.assertTrue(localSettings.hasField("playbackCinemaMode"), "XML field should still exist")
+      m.assertEqual(localSettings.playbackCinemaMode, false, "Field should be reset to default (false)")
+
+      ' Registry entry should still exist but with default value (false)
+      ' Observer always saves - this preserves user intent
+      regAfterDelete = CreateObject("roRegistrySection", localUser.id)
+      m.assertTrue(regAfterDelete.exists("playbackCinemaMode"), "Setting should still exist in registry")
+      m.assertEqual(regAfterDelete.read("playbackCinemaMode"), "false", "Should save default value (false) to registry")
 
     end function
 

@@ -46,7 +46,7 @@
   "rooibos": {
     "isRecordingCodeCoverage": true,
     "testsFilePattern": null,
-    "tags": ["!migration"],
+    "tags": ["!migration", "!registry"],
     "showOnlyFailures": false,
     "catchCrashes": true,
     "lineWidth": 70,

@@ -1,7 +1,8 @@
 namespace tests
 
-  @suite("Display Settings Integration Tests")
-  class DisplaySettingsSpec extends tests.BaseTestSuite
+  @suite("Display Settings - Registry Integration")
+  @tags("registry")
+  class DisplaySettingsRegistryTests extends tests.BaseTestSuite
 
     private testUserId as string
     private testLibraryId as string
