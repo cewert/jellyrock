@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Use `ContentNode` instead of AA for `m.global` + refactor tests ([#116](https://github.com/cewert/jellyrock/pull/116))
 - Use SubtitleSelection enum instead of magic numbers ([#113](https://github.com/cewert/jellyrock/pull/113))
 
 ### Fixed
