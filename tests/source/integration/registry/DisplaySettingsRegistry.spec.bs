@@ -9,6 +9,7 @@ namespace tests
     private settingsNode as object
 
     protected override sub setup()
+      m.needsRegistrySetup = true
       super.setup()
 
       ' Clean up any leftover test data from previous runs/failures

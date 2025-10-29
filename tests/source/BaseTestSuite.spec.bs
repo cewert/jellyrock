@@ -4,6 +4,10 @@ namespace tests
   class BaseTestSuite extends rooibos.BaseTestSuite
     private appController
 
+    ' Test suites that need registry access (integration tests) should set this to true
+    ' This prevents unnecessary file I/O in unit tests for better performance
+    protected needsRegistrySetup = false as boolean
+
     protected override sub setup()
       ' Initialize m.global if not already initialized
       if not isValid(m.global)
@@ -140,21 +144,6 @@ namespace tests
           end if
         end if
       end if
-
-      ' Clean up old globalRememberMe data from test user sections (legacy from before global/user separation)
-      ' This only targets user sections (test-*), NOT the test-global section
-      registry = CreateObject("roRegistry")
-      allSections = registry.GetSectionList()
-      for each sectionName in allSections
-        ' Only clean user sections: starts with "test-" but NOT "test-global"
-        if sectionName <> "JellyRock" and sectionName <> "test-global"
-          userReg = CreateObject("roRegistrySection", sectionName)
-          if isValid(userReg) and userReg.exists("globalRememberMe")
-            userReg.delete("globalRememberMe")
-            userReg.flush()
-          end if
-        end if
-      end for
     end sub
 
     protected override function beforeEach()
@@ -171,13 +160,16 @@ namespace tests
         end if
       end if
 
-      ' Restore baseline test-global state needed for API requests
-      ' This ensures each test starts with a clean but functional test-global section
-      testGlobalReg = CreateObject("roRegistrySection", "test-global")
-      if not testGlobalReg.exists("server") and isValid(m.global.server.serverUrl)
-        ' Store server URL for API calls (mimics what production code does)
-        testGlobalReg.write("server", m.global.server.serverUrl)
-        testGlobalReg.flush()
+      ' Only run registry I/O for integration tests that explicitly need it
+      if m.needsRegistrySetup
+        ' Restore baseline test-global state needed for API requests
+        ' This ensures each test starts with a clean but functional test-global section
+        testGlobalReg = CreateObject("roRegistrySection", "test-global")
+        if not testGlobalReg.exists("server") and isValid(m.global.server.serverUrl)
+          ' Store server URL for API calls (mimics what production code does)
+          testGlobalReg.write("server", m.global.server.serverUrl)
+          testGlobalReg.flush()
+        end if
       end if
     end function
 
@@ -185,17 +177,19 @@ namespace tests
       ' Clean up any test-specific modifications
       ' Leave the base mock intact for other tests
 
-      ' Clean up registry data written during INTEGRATION tests
-      ' Unit tests (@tags("unit")) should never write to registry
-      ' Integration tests (@tags("integration")) may write and need cleanup
-      ' All test sections follow "test-*" naming pattern
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
+      ' Only clean up registry data for integration tests that explicitly need it
+      ' Unit tests should never write to registry, so no cleanup needed
+      if m.needsRegistrySetup
+        RegistryTestUtils.CleanupTestRegistrySections("test-")
+      end if
     end function
 
     protected override sub teardown()
       ' Final cleanup after all tests in this suite complete
-      ' Clean up any remaining registry data from integration tests
-      RegistryTestUtils.CleanupTestRegistrySections("test-")
+      ' Only clean up registry data for integration tests that explicitly need it
+      if m.needsRegistrySetup
+        RegistryTestUtils.CleanupTestRegistrySections("test-")
+      end if
     end sub
 
     ' ===================================================================

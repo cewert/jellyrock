@@ -5,6 +5,10 @@ namespace tests
   @tags("migration")
   class SettingsMigrationTests extends tests.BaseTestSuite
 
+    protected override sub setup()
+      m.needsRegistrySetup = true
+      super.setup()
+    end sub
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("Basic Migration Tests")

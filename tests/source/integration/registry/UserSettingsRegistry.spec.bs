@@ -5,6 +5,10 @@ namespace tests
   @tags("registry")
   class UserSettingsRegistryTests extends tests.BaseTestSuite
 
+    protected override sub setup()
+      m.needsRegistrySetup = true
+      super.setup()
+    end sub
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("Save to Registry - Type Conversion")

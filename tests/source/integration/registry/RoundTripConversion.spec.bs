@@ -5,6 +5,11 @@ namespace tests
   @tags("registry")
   class RoundTripConversionTests extends tests.BaseTestSuite
 
+    protected override sub setup()
+      m.needsRegistrySetup = true
+      super.setup()
+    end sub
+
     ' Helper to check if type is string (handles both "String" and "roString")
     private function isStringType(value as dynamic) as boolean
       typeStr = type(value)
