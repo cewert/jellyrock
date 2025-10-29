@@ -116,6 +116,8 @@ namespace user
     ' Create fresh settings node for this user
     freshSettings = CreateObject("roSGNode", "JellyfinUserSettings")
     userNode.settings = freshSettings
+    ' Load defaults from settings.json
+    user.settings.SaveDefaults()
 
     ' Process user data
     if not isValid(userData.json)
