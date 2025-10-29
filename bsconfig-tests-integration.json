@@ -45,7 +45,7 @@
     "@rokucommunity/bslint"
   ],
   "rooibos": {
-    "tags": null,
+    "tags": ["!migration"],
     "isRecordingCodeCoverage": false,
     "showOnlyFailures": true,
     "catchCrashes": true,
