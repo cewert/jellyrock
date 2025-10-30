@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Dependencies
 
+- dependency roku-deploy to v3.14.4 ([#122](https://github.com/cewert/jellyrock/pull/122))
 - dependency rimraf to v6.1.0 ([#123](https://github.com/cewert/jellyrock/pull/123))
 - dependency roku-deploy to v3.14.2 ([#121](https://github.com/cewert/jellyrock/pull/121))
 - actions/upload-artifact action to v5 ([#118](https://github.com/cewert/jellyrock/pull/118))
