@@ -105,8 +105,11 @@ function createUserPoster() as object
   end if
 
   userImage.id = "userImage"
-  userImage.width = "36"
-  userImage.height = "36"
+  userImage.width = 36
+  userImage.loadWidth = 36
+  userImage.height = 36
+  userImage.loadHeight = 36
+  userImage.loadDisplayMode = "limitSize"
   userImage.addFields({
     userId: localUser.id
   })
