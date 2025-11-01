@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Auto scale user image to preserve texture memory ([#129](https://github.com/cewert/jellyrock/pull/129))
 - support for Direct Playing HDR videos ([#128](https://github.com/cewert/jellyrock/pull/128))
 - Use `ContentNode` instead of AA for `m.global` + refactor tests ([#116](https://github.com/cewert/jellyrock/pull/116))
 - Use SubtitleSelection enum instead of magic numbers ([#113](https://github.com/cewert/jellyrock/pull/113))
