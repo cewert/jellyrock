@@ -524,53 +524,36 @@ function getCodecProfiles() as object
   end for
 
   ' HDR SUPPORT
-  h264VideoRangeTypes = "SDR"
-  hevcVideoRangeTypes = "SDR"
+  h264VideoRangeTypes = "SDR|DOVIWithSDR"
+  hevcVideoRangeTypes = "SDR|DOVIWithSDR"
   vp9VideoRangeTypes = "SDR"
-  av1VideoRangeTypes = "SDR"
-  canPlayDovi = false
+  av1VideoRangeTypes = "SDR|DOVIWithSDR"
 
   if canPlay4k()
     print "This device supports 4k video"
     dp = di.GetDisplayProperties()
 
     if dp.DolbyVision
-      canPlayDovi = true
-
-      h264VideoRangeTypes = h264VideoRangeTypes + "|DOVI|DOVIWithSDR"
-      hevcVideoRangeTypes = hevcVideoRangeTypes + "|DOVI|DOVIWithSDR"
-      av1VideoRangeTypes = av1VideoRangeTypes + "|DOVI|DOVIWithSDR"
+      h264VideoRangeTypes = h264VideoRangeTypes + "|DOVI"
+      hevcVideoRangeTypes = hevcVideoRangeTypes + "|DOVI"
+      av1VideoRangeTypes = av1VideoRangeTypes + "|DOVI"
     end if
 
     if dp.Hdr10
-      hevcVideoRangeTypes = hevcVideoRangeTypes + "|HDR10"
+      hevcVideoRangeTypes = hevcVideoRangeTypes + "|HDR10|DOVIWithHDR10"
       vp9VideoRangeTypes = vp9VideoRangeTypes + "|HDR10"
-      av1VideoRangeTypes = av1VideoRangeTypes + "|HDR10"
-
-      if canPlayDovi
-        hevcVideoRangeTypes = hevcVideoRangeTypes + "|DOVIWithHDR10"
-        av1VideoRangeTypes = av1VideoRangeTypes + "|DOVIWithHDR10"
-      end if
+      av1VideoRangeTypes = av1VideoRangeTypes + "|HDR10|DOVIWithHDR10"
     end if
 
     if dp.Hdr10Plus
-      av1VideoRangeTypes = av1VideoRangeTypes + "|HDR10Plus"
-
-      if canPlayDovi
-        hevcVideoRangeTypes = hevcVideoRangeTypes + "|DOVIWithHDR10Plus"
-        av1VideoRangeTypes = av1VideoRangeTypes + "|DOVIWithHDR10Plus"
-      end if
+      av1VideoRangeTypes = av1VideoRangeTypes + "|HDR10Plus|DOVIWithHDR10Plus"
+      hevcVideoRangeTypes = hevcVideoRangeTypes + "|HDR10Plus|DOVIWithHDR10Plus"
     end if
 
     if dp.HLG
-      hevcVideoRangeTypes = hevcVideoRangeTypes + "|HLG"
+      hevcVideoRangeTypes = hevcVideoRangeTypes + "|HLG|DOVIWithHLG"
       vp9VideoRangeTypes = vp9VideoRangeTypes + "|HLG"
-      av1VideoRangeTypes = av1VideoRangeTypes + "|HLG"
-
-      if canPlayDovi
-        hevcVideoRangeTypes = hevcVideoRangeTypes + "|DOVIWithHLG"
-        av1VideoRangeTypes = av1VideoRangeTypes + "|DOVIWithHLG"
-      end if
+      av1VideoRangeTypes = av1VideoRangeTypes + "|HLG|DOVIWithHLG"
     end if
   end if
 
