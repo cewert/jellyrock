@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Set button focusBackground to colorBackgroundSecondary ([05d5cc4](https://github.com/cewert/jellyrock/commit/05d5cc4))
 - Make OSD "Ends At" text bold ([54f313d](https://github.com/cewert/jellyrock/commit/54f313d))
 - Auto scale user image to preserve texture memory ([#129](https://github.com/cewert/jellyrock/pull/129))
 - support for Direct Playing HDR videos ([#128](https://github.com/cewert/jellyrock/pull/128))
