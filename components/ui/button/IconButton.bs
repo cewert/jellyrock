@@ -24,7 +24,7 @@ sub applyTheme()
   ' Set default colors
   m.top.background = constants.colorBackgroundSecondary
   m.top.iconBackground = constants.colorTextPrimary
-  m.top.focusBackground = constants.colorBackgroundPrimary
+  m.top.focusBackground = constants.colorBackgroundSecondary
   m.top.iconFocusBackground = constants.colorTextPrimary
 end sub
 
