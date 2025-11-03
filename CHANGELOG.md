@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- consolidate duplicate dependency entries in changelog ([a29c0b2](https://github.com/cewert/jellyrock/commit/a29c0b2))
 - Set button focusBackground to colorBackgroundSecondary ([05d5cc4](https://github.com/cewert/jellyrock/commit/05d5cc4))
 - Make OSD "Ends At" text bold ([54f313d](https://github.com/cewert/jellyrock/commit/54f313d))
 - Auto scale user image to preserve texture memory ([#129](https://github.com/cewert/jellyrock/pull/129))
@@ -31,18 +32,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Dependencies
 
-- dependency roku-deploy to v3.14.4 ([#122](https://github.com/cewert/jellyrock/pull/122))
-- dependency rimraf to v6.1.0 ([#123](https://github.com/cewert/jellyrock/pull/123))
-- dependency roku-deploy to v3.14.2 ([#121](https://github.com/cewert/jellyrock/pull/121))
-- actions/upload-artifact action to v5 ([#118](https://github.com/cewert/jellyrock/pull/118))
-- dependency brighterscript to v0.70.2 - autoclosed ([#100](https://github.com/cewert/jellyrock/pull/100))
-- dependency @rokucommunity/bslint to v0.8.37 ([#99](https://github.com/cewert/jellyrock/pull/99))
-- dependency brighterscript-formatter to v1.7.19 ([#101](https://github.com/cewert/jellyrock/pull/101))
-- dependency ropm to v0.11.1 ([#102](https://github.com/cewert/jellyrock/pull/102))
+- dependency roku-deploy from v3.13.0 to v3.14.4 ([#121](https://github.com/cewert/jellyrock/pull/121), [#122](https://github.com/cewert/jellyrock/pull/122))
+- dependency rimraf from v6.0.1 to v6.1.0 ([#123](https://github.com/cewert/jellyrock/pull/123))
+- dependency actions/upload-artifact to v5 ([#118](https://github.com/cewert/jellyrock/pull/118))
+- dependency brighterscript from v0.70.1 to v0.70.2 ([#100](https://github.com/cewert/jellyrock/pull/100))
+- dependency @rokucommunity/bslint from v0.8.35 to v0.8.37 ([#99](https://github.com/cewert/jellyrock/pull/99))
+- dependency brighterscript-formatter from v1.7.18 to v1.7.19 ([#101](https://github.com/cewert/jellyrock/pull/101))
+- dependency ropm from v0.11.0 to v0.11.1 ([#102](https://github.com/cewert/jellyrock/pull/102))
+- dependency peter-evans/repository-dispatch to v4 ([#98](https://github.com/cewert/jellyrock/pull/98))
 - github actions (major) ([#109](https://github.com/cewert/jellyrock/pull/109))
 - pin dependencies ([#108](https://github.com/cewert/jellyrock/pull/108))
 - github actions ([#97](https://github.com/cewert/jellyrock/pull/97))
-- peter-evans/repository-dispatch action to v4 ([#98](https://github.com/cewert/jellyrock/pull/98))
 
 ## [1.0.4](https://github.com/cewert/jellyrock/compare/v1.0.3...v1.0.4) - 2025-10-06
 
