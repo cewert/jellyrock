@@ -11,6 +11,8 @@
 
 import { execSync } from 'child_process';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { resolve } from 'path';
 
 class ChangelogSyncer {
   constructor() {
@@ -154,7 +156,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
   updateUnreleasedSection(changelog, commits) {
     const sections = this.categorizeCommits(commits);
-    const unreleasedContent = this.buildUnreleasedContent(sections);
+    const latestTag = this.getLatestTag();
+    const unreleasedContent = this.buildUnreleasedContent(sections, latestTag);
 
     // More robust removal of unreleased section
     const lines = changelog.split('\n');
@@ -213,7 +216,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
     } else {
       // No unreleased section, create new release entry
       const sections = this.categorizeCommits(commits);
-      const releaseContent = this.buildReleaseContent(version, compareUrl, date, sections);
+      const releaseContent = this.buildReleaseContent(version, compareUrl, date, sections, previousTag);
 
       // Insert after header
       const headerMatch = changelog.match(/((?:<!-- markdownlint-disable -->\s*\n)?# Changelog\s*\n\nAll notable changes.*?\n\nThe format is based on.*?\n\n)/s);
@@ -246,10 +249,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
     for (const commit of commits) {
       // Check if this is a dependency-related PR
       let category = commit.isDependency ? 'Dependencies' : this.categorizeCommit(commit.message);
-      
+
       if (category && category !== 'Chore') {
-        const entry = this.formatCommitEntry(commit);
-        sections[category].push(entry);
+        if (category === 'Dependencies') {
+          // Store raw commit object for dependencies (will be consolidated later)
+          sections[category].push(commit);
+        } else {
+          // Format other entries normally
+          const entry = this.formatCommitEntry(commit);
+          sections[category].push(entry);
+        }
       }
     }
 
@@ -341,14 +350,200 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
     return clean;
   }
 
-  buildUnreleasedContent(sections) {
+  /**
+   * Parse dependency information from commit message
+   * @param {string} message - Commit message
+   * @returns {Object} - { packageName, version, message, isVersioned }
+   */
+  parseDependencyInfo(message) {
+    const cleanMsg = this.cleanMessage(message);
+
+    // Try to match versioned dependency pattern: "dependency package-name to v1.2.3"
+    // Also matches: "package-name action to v1.2.3"
+    const versionMatch = cleanMsg.match(/^(?:dependency\s+)?(.+?)\s+(?:action\s+)?to\s+v?([\d.]+)/i);
+
+    if (versionMatch) {
+      return {
+        packageName: versionMatch[1].trim(),
+        version: versionMatch[2],
+        message: cleanMsg,
+        isVersioned: true
+      };
+    }
+
+    // Not a versioned dependency, return as-is
+    return {
+      packageName: null,
+      version: null,
+      message: cleanMsg,
+      isVersioned: false
+    };
+  }
+
+  /**
+   * Compare two semantic versions
+   * @param {string} v1 - First version
+   * @param {string} v2 - Second version
+   * @returns {number} - Negative if v1 < v2, positive if v1 > v2, 0 if equal
+   */
+  compareVersions(v1, v2) {
+    const parts1 = v1.split('.').map(Number);
+    const parts2 = v2.split('.').map(Number);
+
+    for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+      const part1 = parts1[i] || 0;
+      const part2 = parts2[i] || 0;
+
+      if (part1 !== part2) {
+        return part1 - part2;
+      }
+    }
+
+    return 0;
+  }
+
+  /**
+   * Get dependency version from package.json at a specific tag
+   * @param {string} packageName - Name of the package
+   * @param {string} tag - Git tag to check
+   * @returns {string|null} - Version or null if not found
+   */
+  getDependencyVersionAtTag(packageName, tag) {
+    try {
+      const packageJson = execSync(`git show ${tag}:package.json`, { encoding: 'utf8' });
+      const parsed = JSON.parse(packageJson);
+
+      // Check both dependencies and devDependencies
+      const deps = { ...parsed.dependencies, ...parsed.devDependencies };
+
+      // Handle scoped packages and regular packages
+      const version = deps[packageName];
+      if (version) {
+        // Extract version number (remove ^ ~ npm: etc)
+        const match = version.match(/[\d.]+/);
+        return match ? match[0] : null;
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Consolidate dependency commits into unique entries
+   * @param {Array} dependencyCommits - Array of commit objects
+   * @param {string} fromTag - Starting tag to check initial versions
+   * @returns {Array} - Array of formatted changelog entries
+   */
+  consolidateDependencies(dependencyCommits, fromTag = null) {
+    if (!dependencyCommits || dependencyCommits.length === 0) {
+      return [];
+    }
+
+    // Parse all dependencies
+    const parsedDeps = dependencyCommits.map(commit => ({
+      commit,
+      parsed: this.parseDependencyInfo(commit.message)
+    }));
+
+    // Separate versioned and non-versioned dependencies
+    const versionedDeps = parsedDeps.filter(d => d.parsed.isVersioned);
+    const nonVersionedDeps = parsedDeps.filter(d => !d.parsed.isVersioned);
+
+    const consolidatedEntries = [];
+
+    // Group versioned dependencies by package name
+    const versionedGroups = {};
+    for (const dep of versionedDeps) {
+      const pkg = dep.parsed.packageName;
+      if (!versionedGroups[pkg]) {
+        versionedGroups[pkg] = [];
+      }
+      versionedGroups[pkg].push(dep);
+    }
+
+    // Create consolidated entries for versioned dependencies
+    for (const [packageName, deps] of Object.entries(versionedGroups)) {
+      // Sort by version
+      deps.sort((a, b) => this.compareVersions(a.parsed.version, b.parsed.version));
+
+      const versions = deps.map(d => d.parsed.version);
+      const commits = deps.map(d => d.commit);
+
+      // Try to get the starting version from the previous tag
+      let fromVersion = versions[0];
+      if (fromTag) {
+        const tagVersion = this.getDependencyVersionAtTag(packageName, fromTag);
+        if (tagVersion && this.compareVersions(tagVersion, versions[0]) < 0) {
+          fromVersion = tagVersion;
+        }
+      }
+
+      // Generate PR/commit links
+      const links = commits.map(commit => {
+        if (commit.prNumber) {
+          return `[#${commit.prNumber}](${this.repositoryUrl}/pull/${commit.prNumber})`;
+        } else {
+          return `[${commit.hash.substring(0, 7)}](${this.repositoryUrl}/commit/${commit.hash})`;
+        }
+      });
+
+      // Format entry
+      const toVersion = versions[versions.length - 1];
+      if (fromVersion === toVersion) {
+        // Single version update with no history
+        consolidatedEntries.push(`- dependency ${packageName} to v${toVersion} (${links.join(', ')})`);
+      } else {
+        // Version range
+        consolidatedEntries.push(`- dependency ${packageName} from v${fromVersion} to v${toVersion} (${links.join(', ')})`);
+      }
+    }
+
+    // Group non-versioned dependencies by exact message
+    const nonVersionedGroups = {};
+    for (const dep of nonVersionedDeps) {
+      const msg = dep.parsed.message;
+      if (!nonVersionedGroups[msg]) {
+        nonVersionedGroups[msg] = [];
+      }
+      nonVersionedGroups[msg].push(dep);
+    }
+
+    // Create consolidated entries for non-versioned dependencies
+    for (const [message, deps] of Object.entries(nonVersionedGroups)) {
+      const commits = deps.map(d => d.commit);
+
+      // Generate PR/commit links
+      const links = commits.map(commit => {
+        if (commit.prNumber) {
+          return `[#${commit.prNumber}](${this.repositoryUrl}/pull/${commit.prNumber})`;
+        } else {
+          return `[${commit.hash.substring(0, 7)}](${this.repositoryUrl}/commit/${commit.hash})`;
+        }
+      });
+
+      // Format entry
+      consolidatedEntries.push(`- ${message} (${links.join(', ')})`);
+    }
+
+    return consolidatedEntries;
+  }
+
+  buildUnreleasedContent(sections, fromTag = null) {
     let content = '\n## [Unreleased]\n';
 
     // Define the order of sections to maintain consistency
     const sectionOrder = ['Added', 'Changed', 'Fixed', 'Removed', 'Security', 'Deprecated', 'Dependencies'];
 
     for (const sectionName of sectionOrder) {
-      const items = sections[sectionName];
+      let items = sections[sectionName];
+
+      // Consolidate dependencies before adding to content
+      if (sectionName === 'Dependencies' && items && items.length > 0) {
+        items = this.consolidateDependencies(items, fromTag);
+      }
+
       if (items && items.length > 0) {
         content += `\n### ${sectionName}\n\n`;
         content += items.join('\n') + '\n';
@@ -358,14 +553,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
     return content;
   }
 
-  buildReleaseContent(version, compareUrl, date, sections) {
+  buildReleaseContent(version, compareUrl, date, sections, fromTag = null) {
     let content = `\n## [${version}](${compareUrl}) - ${date}\n`;
 
     // Define the order of sections to maintain consistency
     const sectionOrder = ['Added', 'Changed', 'Fixed', 'Removed', 'Security', 'Deprecated', 'Dependencies'];
 
     for (const sectionName of sectionOrder) {
-      const items = sections[sectionName];
+      let items = sections[sectionName];
+
+      // Consolidate dependencies before adding to content
+      if (sectionName === 'Dependencies' && items && items.length > 0) {
+        items = this.consolidateDependencies(items, fromTag);
+      }
+
       if (items && items.length > 0) {
         content += `\n### ${sectionName}\n\n`;
         content += items.join('\n') + '\n';
@@ -503,7 +704,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 }
 
 // CLI Interface
-if (import.meta.url === `file://${process.argv[1]}`) {
+const __filename = fileURLToPath(import.meta.url);
+const scriptPath = resolve(process.argv[1]);
+const currentPath = resolve(__filename);
+
+if (scriptPath === currentPath) {
   const syncer = new ChangelogSyncer();
   const command = process.argv[2];
 
