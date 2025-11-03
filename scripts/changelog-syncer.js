@@ -338,44 +338,120 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
     }
   }
 
+  /**
+   * Clean commit message by removing conventional commit prefixes and action words,
+   * while preserving scope information for better changelog context.
+   *
+   * This function ONLY affects list item display text, NOT section categorization.
+   * Section categorization uses the original message via categorizeCommit().
+   *
+   * @param {string} message - Raw commit message
+   * @returns {string} Cleaned message with scope preserved
+   *
+   * @example
+   * // Conventional commits with scope
+   * cleanMessage('feat(api): Add user endpoint') // Returns: '(api) Add user endpoint'
+   * cleanMessage('fix(auth): broken login') // Returns: '(auth) broken login'
+   *
+   * @example
+   * // Action words with scope
+   * cleanMessage('update(docs): Add stuff to readme') // Returns: '(docs) Add stuff to readme'
+   * cleanMessage('improve(ui): better animations') // Returns: '(ui) better animations'
+   *
+   * @example
+   * // Without scope
+   * cleanMessage('fix: broken button') // Returns: 'broken button'
+   * cleanMessage('update: Set button text') // Returns: 'Set button text'
+   *
+   * @example
+   * // No prefix at all
+   * cleanMessage('Add new feature') // Returns: 'Add new feature'
+   */
   cleanMessage(message) {
-    // Remove conventional commit prefixes and action words
-    let clean = message
-      .replace(/^(feat|fix|docs|style|refactor|test|chore|build|ci)(\([^)]*\))?:\s*/i, '')
-      .replace(/^(add|remove|update|change|improve|implement|create|delete|fix)\s*(\([^)]*\))?\s*:?\s*/i, '');
+    // Single comprehensive regex that captures all parts in one pass:
+    // - Conventional types: feat, fix, docs, style, refactor, perf, test, chore, build, ci, revert
+    // - Action words: add, remove, update, change, improve, enhance, implement, create, delete
+    // - Optional scope: (scope)
+    // - Required message: everything after the colon or the whole message if no prefix
+    const pattern = /^(?:(?:feat|fix|docs|style|refactor|perf|test|chore|build|ci|revert|add|remove|update|change|improve|enhance|implement|create|delete)(\([^)]+\))?:\s*)?(.+)$/i;
 
-    // Remove action words from the start of the message using word boundaries
-    clean = clean.replace(/^(add|remove|update|change|improve|implement|create|delete|fix)\b\s*/i, '');
+    const match = message.match(pattern);
 
-    return clean;
+    if (!match) {
+      // Fallback: return original message if pattern doesn't match (edge case)
+      return message;
+    }
+
+    const scope = match[1]; // Capturing group 1: (scope) or undefined
+    const cleanedMessage = match[2]; // Capturing group 2: the actual message
+
+    // If scope exists, prepend it to the cleaned message for context
+    if (scope) {
+      return `${scope} ${cleanedMessage}`;
+    }
+
+    return cleanedMessage;
   }
 
   /**
-   * Parse dependency information from commit message
-   * @param {string} message - Commit message
-   * @returns {Object} - { packageName, version, message, isVersioned }
+   * Parse dependency information from commit message.
+   * Extracts the action word from the MESSAGE content (not the commit type prefix).
+   *
+   * @param {string} message - Raw commit message
+   * @returns {Object} - { action, packageName, version, message, isVersioned }
+   *
+   * @example
+   * // "chore" is the commit type, "update" is extracted from message content
+   * parseDependencyInfo('chore(deps): update dependency package-name to v1.2.3')
+   * // Returns: { action: 'Update', packageName: 'package-name', version: '1.2.3', message: 'package-name to v1.2.3', isVersioned: true }
+   *
+   * @example
+   * // "add" action extracted from message content
+   * parseDependencyInfo('chore(deps): add dependency new-package to v1.0.0')
+   * // Returns: { action: 'Add', packageName: 'new-package', version: '1.0.0', message: 'new-package to v1.0.0', isVersioned: true }
+   *
+   * @example
+   * // Non-versioned dependency
+   * parseDependencyInfo('chore(deps): pin dependencies')
+   * // Returns: { action: null, packageName: null, version: null, message: 'pin dependencies', isVersioned: false }
    */
   parseDependencyInfo(message) {
     const cleanMsg = this.cleanMessage(message);
 
-    // Try to match versioned dependency pattern: "dependency package-name to v1.2.3"
-    // Also matches: "package-name action to v1.2.3"
-    const versionMatch = cleanMsg.match(/^(?:dependency\s+)?(.+?)\s+(?:action\s+)?to\s+v?([\d.]+)/i);
+    // Strip any scope prefix like "(deps)" from the beginning
+    let withoutScope = cleanMsg.replace(/^\([^)]+\)\s*/, '');
+
+    // Extract action word (add, remove, update, etc.) before removing it
+    const actionMatch = withoutScope.match(/^(add|remove|update|upgrade|bump|change|improve|enhance|implement|create|delete)\b/i);
+    const action = actionMatch ? actionMatch[1].charAt(0).toUpperCase() + actionMatch[1].slice(1).toLowerCase() : null;
+
+    // Remove "dependency" keyword and action word for cleaner parsing
+    // First remove "action dependency package-name" -> "package-name"
+    withoutScope = withoutScope.replace(/^(add|remove|update|upgrade|bump|change|improve|enhance|implement|create|delete)?\s*dependency\s+/i, '');
+    // Then remove just the action word if it's still at the start (handles cases without "dependency" keyword)
+    // "implement new-logger" -> "new-logger"
+    withoutScope = withoutScope.replace(/^(add|remove|update|upgrade|bump|change|improve|enhance|implement|create|delete)\s+/i, '');
+
+    // Try to match versioned dependency patterns:
+    // Pattern: "package-name to v1.2.3" or "package-name from v1.0.0 to v1.2.3"
+    const versionMatch = withoutScope.match(/^(.+?)\s+(?:from\s+v?[\d.]+\s+)?to\s+v?([\d.]+)/i);
 
     if (versionMatch) {
       return {
+        action,
         packageName: versionMatch[1].trim(),
         version: versionMatch[2],
-        message: cleanMsg,
+        message: withoutScope,
         isVersioned: true
       };
     }
 
-    // Not a versioned dependency, return as-is
+    // Not a versioned dependency, return without scope
     return {
+      action,
       packageName: null,
       version: null,
-      message: cleanMsg,
+      message: withoutScope,
       isVersioned: false
     };
   }
@@ -491,12 +567,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
       // Format entry
       const toVersion = versions[versions.length - 1];
+      // Use the action from the first (or any) commit - they should all be the same action for the same package
+      const action = deps[0].parsed.action || 'Update';
+
       if (fromVersion === toVersion) {
-        // Single version update with no history
-        consolidatedEntries.push(`- dependency ${packageName} to v${toVersion} (${links.join(', ')})`);
+        // Single version update
+        consolidatedEntries.push(`- ${action} ${packageName} to v${toVersion} (${links.join(', ')})`);
       } else {
         // Version range
-        consolidatedEntries.push(`- dependency ${packageName} from v${fromVersion} to v${toVersion} (${links.join(', ')})`);
+        consolidatedEntries.push(`- ${action} ${packageName} from v${fromVersion} to v${toVersion} (${links.join(', ')})`);
       }
     }
 
@@ -523,8 +602,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
         }
       });
 
-      // Format entry
-      consolidatedEntries.push(`- ${message} (${links.join(', ')})`);
+      // Format entry - capitalize first letter for consistency
+      const capitalizedMessage = message.charAt(0).toUpperCase() + message.slice(1);
+      consolidatedEntries.push(`- ${capitalizedMessage} (${links.join(', ')})`);
     }
 
     return consolidatedEntries;
