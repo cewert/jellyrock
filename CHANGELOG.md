@@ -13,11 +13,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- preserve scopes in changelog entries and use message action words for dependencies ([195e1f6](https://github.com/cewert/jellyrock/commit/195e1f6))
 - consolidate duplicate dependency entries in changelog ([a29c0b2](https://github.com/cewert/jellyrock/commit/a29c0b2))
 - Set button focusBackground to colorBackgroundSecondary ([05d5cc4](https://github.com/cewert/jellyrock/commit/05d5cc4))
 - Make OSD "Ends At" text bold ([54f313d](https://github.com/cewert/jellyrock/commit/54f313d))
 - Auto scale user image to preserve texture memory ([#129](https://github.com/cewert/jellyrock/pull/129))
-- support for Direct Playing HDR videos ([#128](https://github.com/cewert/jellyrock/pull/128))
+- Improve support for Direct Playing HDR videos ([#128](https://github.com/cewert/jellyrock/pull/128))
 - Use `ContentNode` instead of AA for `m.global` + refactor tests ([#116](https://github.com/cewert/jellyrock/pull/116))
 - Use SubtitleSelection enum instead of magic numbers ([#113](https://github.com/cewert/jellyrock/pull/113))
 
@@ -32,17 +33,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Dependencies
 
-- dependency @rokucommunity/bslint from v0.8.35 to v0.8.38 ([#99](https://github.com/cewert/jellyrock/pull/99), [#124](https://github.com/cewert/jellyrock/pull/124))
-- dependency brighterscript from v0.70.1 to v0.70.3 ([#100](https://github.com/cewert/jellyrock/pull/100), [#125](https://github.com/cewert/jellyrock/pull/125))
-- dependency ropm from v0.11.0 to v0.11.2 ([#102](https://github.com/cewert/jellyrock/pull/102), [#127](https://github.com/cewert/jellyrock/pull/127))
-- dependency roku-deploy from v3.13.0 to v3.14.4 ([#121](https://github.com/cewert/jellyrock/pull/121), [#122](https://github.com/cewert/jellyrock/pull/122))
-- dependency rimraf from v6.0.1 to v6.1.0 ([#123](https://github.com/cewert/jellyrock/pull/123))
-- dependency actions/upload-artifact to v5 ([#118](https://github.com/cewert/jellyrock/pull/118))
-- dependency brighterscript-formatter from v1.7.18 to v1.7.19 ([#101](https://github.com/cewert/jellyrock/pull/101))
-- dependency peter-evans/repository-dispatch to v4 ([#98](https://github.com/cewert/jellyrock/pull/98))
-- github actions (major) ([#109](https://github.com/cewert/jellyrock/pull/109))
-- pin dependencies ([#108](https://github.com/cewert/jellyrock/pull/108))
-- github actions ([#97](https://github.com/cewert/jellyrock/pull/97))
+- Update @rokucommunity/bslint from v0.8.35 to v0.8.38 ([#99](https://github.com/cewert/jellyrock/pull/99), [#124](https://github.com/cewert/jellyrock/pull/124))
+- Update brighterscript from v0.70.1 to v0.70.3 ([#100](https://github.com/cewert/jellyrock/pull/100), [#125](https://github.com/cewert/jellyrock/pull/125))
+- Update ropm from v0.11.0 to v0.11.2 ([#102](https://github.com/cewert/jellyrock/pull/102), [#127](https://github.com/cewert/jellyrock/pull/127))
+- Update roku-deploy from v3.13.0 to v3.14.4 ([#121](https://github.com/cewert/jellyrock/pull/121), [#122](https://github.com/cewert/jellyrock/pull/122))
+- Update rimraf from v6.0.1 to v6.1.0 ([#123](https://github.com/cewert/jellyrock/pull/123))
+- Update actions/upload-artifact action to v5 ([#118](https://github.com/cewert/jellyrock/pull/118))
+- Update brighterscript-formatter from v1.7.18 to v1.7.19 ([#101](https://github.com/cewert/jellyrock/pull/101))
+- Update peter-evans/repository-dispatch action to v4 ([#98](https://github.com/cewert/jellyrock/pull/98))
+- Github actions (major) ([#109](https://github.com/cewert/jellyrock/pull/109))
+- Pin dependencies ([#108](https://github.com/cewert/jellyrock/pull/108))
+- Github actions ([#97](https://github.com/cewert/jellyrock/pull/97))
 
 ## [1.0.4](https://github.com/cewert/jellyrock/compare/v1.0.3...v1.0.4) - 2025-10-06
 
