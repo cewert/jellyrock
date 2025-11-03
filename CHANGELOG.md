@@ -32,13 +32,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Dependencies
 
+- dependency brighterscript from v0.70.1 to v0.70.3 ([#100](https://github.com/cewert/jellyrock/pull/100), [#125](https://github.com/cewert/jellyrock/pull/125))
+- dependency ropm from v0.11.0 to v0.11.2 ([#102](https://github.com/cewert/jellyrock/pull/102), [#127](https://github.com/cewert/jellyrock/pull/127))
 - dependency roku-deploy from v3.13.0 to v3.14.4 ([#121](https://github.com/cewert/jellyrock/pull/121), [#122](https://github.com/cewert/jellyrock/pull/122))
 - dependency rimraf from v6.0.1 to v6.1.0 ([#123](https://github.com/cewert/jellyrock/pull/123))
 - dependency actions/upload-artifact to v5 ([#118](https://github.com/cewert/jellyrock/pull/118))
-- dependency brighterscript from v0.70.1 to v0.70.2 ([#100](https://github.com/cewert/jellyrock/pull/100))
 - dependency @rokucommunity/bslint from v0.8.35 to v0.8.37 ([#99](https://github.com/cewert/jellyrock/pull/99))
 - dependency brighterscript-formatter from v1.7.18 to v1.7.19 ([#101](https://github.com/cewert/jellyrock/pull/101))
-- dependency ropm from v0.11.0 to v0.11.1 ([#102](https://github.com/cewert/jellyrock/pull/102))
 - dependency peter-evans/repository-dispatch to v4 ([#98](https://github.com/cewert/jellyrock/pull/98))
 - github actions (major) ([#109](https://github.com/cewert/jellyrock/pull/109))
 - pin dependencies ([#108](https://github.com/cewert/jellyrock/pull/108))
