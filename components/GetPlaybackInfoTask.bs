@@ -1,43 +1,18 @@
-import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/api/sdk.bs"
 import "pkg:/source/utils/config.bs"
-import "pkg:/source/utils/deviceCapabilities.bs"
 import "pkg:/source/utils/misc.bs"
 
 sub init()
   m.top.functionName = "getPlaybackInfoTask"
 end sub
 
-function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioTrackIndex = -1 as integer, startTimeTicks = 0 as longinteger)
-  currentView = m.global.sceneManager.callFunc("getActiveScene")
-  currentItem = m.global.queueManager.callFunc("getCurrentItem")
-
-  body = {
-    "DeviceProfile": getDeviceProfile()
-  }
-  params = {
-    "UserId": m.global.user.id,
-    "StartTimeTicks": currentItem.startingPoint,
-    "IsPlayback": true,
-    "AutoOpenLiveStream": true,
-    "MaxStreamingBitrate": "140000000",
-    "MaxStaticBitrate": "140000000",
-    "SubtitleStreamIndex": currentView.selectedSubtitle,
-    "MediaSourceId": currentItem.id,
-    "AudioStreamIndex": currentItem.selectedAudioStreamIndex
-  }
-
-  req = APIRequest(Substitute("Items/{0}/PlaybackInfo", id), params)
-  req.SetRequest("POST")
-  return postJson(req, FormatJson(body))
-end function
-
 ' Returns an array of playback info to be displayed during playback.
 ' In the future, with a custom playback info view, we can return an associated array.
 sub getPlaybackInfoTask()
   sessions = api.sessions.Get({ "deviceId": m.global.device.serverDeviceName })
 
-  m.playbackInfo = ItemPostPlaybackInfo(m.top.videoID)
+  ' Use cached playback info instead of making redundant API call
+  m.playbackInfo = m.top.cachedPlaybackInfo
 
   if isValid(sessions) and sessions.Count() > 0
     m.top.data = { playbackInfo: GetTranscodingStats(sessions[0]) }

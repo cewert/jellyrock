@@ -3,6 +3,7 @@
 <component name="GetPlaybackInfoTask" extends="Task">
   <interface>
     <field id="videoID" type="string" />
+    <field id="cachedPlaybackInfo" type="assocarray" />
     <field id="data" type="assocarray" />
   </interface>
 </component>

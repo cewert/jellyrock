@@ -27,6 +27,7 @@ sub CreateVideoPlayerView()
 
   m.getPlaybackInfoTask = createObject("roSGNode", "GetPlaybackInfoTask")
   m.getPlaybackInfoTask.videoID = mediaSourceId
+  m.getPlaybackInfoTask.cachedPlaybackInfo = m.view.cachedPlaybackInfo
   m.getPlaybackInfoTask.observeField("data", "onPlaybackInfoLoaded")
 
   m.global.sceneManager.callFunc("pushScene", m.view)
