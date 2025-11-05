@@ -612,7 +612,9 @@ function sortSubtitles(id as string, MediaStreams)
   return { "all": tracks["forced"], "text": tracks["text"] }
 end function
 
-' Helper function to find the first audio stream's Jellyfin index
+' Returns the Jellyfin index of the first audio stream in the given streams array.
+' @param streams {dynamic} Array of media streams to search.
+' @return {integer} The Jellyfin index of the first audio stream, or 0 if no audio stream is found.
 function getFirstAudioStreamIndex(streams as dynamic) as integer
   if not isValid(streams) then return 0
 
