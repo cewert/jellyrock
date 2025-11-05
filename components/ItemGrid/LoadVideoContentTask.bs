@@ -294,7 +294,14 @@ function defaultSubtitleTrackFromVid(videoID) as integer
   subtitles = sortSubtitles(meta.id, meta.json.MediaSources[0].MediaStreams)
 
   selectedAudioLanguage = ""
-  audioMediaStream = meta.json.MediaSources[0].MediaStreams[m.top.selectedAudioStreamIndex]
+  ' Find the audio stream with the matching Jellyfin index
+  audioMediaStream = invalid
+  for each stream in meta.json.MediaSources[0].MediaStreams
+    if isValid(stream.index) and stream.index = m.top.selectedAudioStreamIndex
+      audioMediaStream = stream
+      exit for
+    end if
+  end for
 
   ' Ensure audio media stream is valid before using language property
   if isValid(audioMediaStream)
@@ -605,15 +612,26 @@ function sortSubtitles(id as string, MediaStreams)
   return { "all": tracks["forced"], "text": tracks["text"] }
 end function
 
+' Helper function to find the first audio stream's Jellyfin index
+function getFirstAudioStreamIndex(streams as dynamic) as integer
+  if not isValid(streams) then return 0
+
+  for i = 0 to streams.Count() - 1
+    if LCase(streams[i].Type) = "audio"
+      if isValid(streams[i].index)
+        return streams[i].index
+      end if
+    end if
+  end for
+
+  return 0
+end function
+
 function FindPreferredAudioStream(streams as dynamic) as integer
   ' ONE rendezvous to get user node
   localUser = m.global.user
   preferredLanguage = localUser.config.audioLanguagePreference
   playDefault = localUser.config.playDefaultAudioTrack
-
-  if isValid(playDefault) and playDefault = true
-    return 1
-  end if
 
   ' Do we already have the MediaStreams or not?
   if not isValid(streams)
@@ -621,20 +639,29 @@ function FindPreferredAudioStream(streams as dynamic) as integer
     resp = APIRequest(url)
     jsonResponse = getJson(resp)
 
-    if not isValid(jsonResponse) or not isValid(jsonResponse.MediaStreams) then return 1
+    if not isValid(jsonResponse) or not isValid(jsonResponse.MediaStreams) then return 0
 
     streams = jsonResponse.MediaStreams
   end if
 
+  ' If playDefault is true, return first audio stream's Jellyfin index
+  if isValid(playDefault) and playDefault = true
+    return getFirstAudioStreamIndex(streams)
+  end if
+
+  ' Search for preferred language audio stream and return its Jellyfin index
   if isValid(preferredLanguage)
     for i = 0 to streams.Count() - 1
       if LCase(streams[i].Type) = "audio"
         if isValid(streams[i].Language) and LCase(streams[i].Language) = LCase(preferredLanguage)
-          return i
+          if isValid(streams[i].index)
+            return streams[i].index
+          end if
         end if
       end if
     end for
   end if
 
-  return 1
+  ' Fallback: return first audio stream's Jellyfin index
+  return getFirstAudioStreamIndex(streams)
 end function
