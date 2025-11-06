@@ -12,7 +12,12 @@ sub getPlaybackInfoTask()
   sessions = api.sessions.Get({ "deviceId": m.global.device.serverDeviceName })
 
   ' Use cached playback info instead of making redundant API call
-  m.playbackInfo = m.top.cachedPlaybackInfo
+  if isValid(m.top.cachedPlaybackInfo)
+    m.playbackInfo = m.top.cachedPlaybackInfo
+  else
+    ' No cached data available - set to invalid
+    m.playbackInfo = invalid
+  end if
 
   if isValid(sessions) and sessions.Count() > 0
     m.top.data = { playbackInfo: GetTranscodingStats(sessions[0]) }
