@@ -621,7 +621,7 @@ function getRokuAudioTrackPosition(jellyfinAudioIndex as integer, audioStreamsAr
   if not isValid(audioStreamsArray) then return "1"
 
   for i = 0 to audioStreamsArray.Count() - 1
-    if isValid(audioStreamsArray[i].Index) and audioStreamsArray[i].Index = jellyfinAudioIndex
+    if isValid(audioStreamsArray[i].index) and audioStreamsArray[i].index = jellyfinAudioIndex
       return (i + 1).ToStr() ' Convert 0-indexed position to 1-indexed string
     end if
   end for
