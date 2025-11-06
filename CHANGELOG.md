@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Fixed
+
+- Fix OSD playback info showing incorrect stream data ([#136](https://github.com/cewert/jellyrock/pull/136))
+
 ## [1.1.0](https://github.com/cewert/jellyrock/compare/v1.0.4...v1.1.0) - 2025-11-03
 
 ### Added
