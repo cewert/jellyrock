@@ -267,7 +267,8 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
   end if
 
   setCertificateAuthority(video.content)
-  video.audioTrack = (audio_stream_idx + 1).ToStr() ' Roku's track indexes count from 1. Our index is zero based
+  ' Convert Jellyfin audio stream index to Roku's 1-indexed audio track position
+  video.audioTrack = getRokuAudioTrackPosition(audio_stream_idx, video.fullAudioData)
 
   if not fully_external
     video.content = authRequest(video.content)
@@ -610,6 +611,22 @@ function sortSubtitles(id as string, MediaStreams)
   tracks["forced"].append(tracks["default"])
 
   return { "all": tracks["forced"], "text": tracks["text"] }
+end function
+
+' Converts Jellyfin audio stream index to Roku's 1-indexed audio track position.
+' @param jellyfinAudioIndex {integer} The Jellyfin audio stream index.
+' @param audioStreamsArray {dynamic} Array of audio stream objects (from fullAudioData).
+' @return {string} The 1-indexed position as a string for Roku's audioTrack field, or "1" if not found.
+function getRokuAudioTrackPosition(jellyfinAudioIndex as integer, audioStreamsArray as dynamic) as string
+  if not isValid(audioStreamsArray) then return "1"
+
+  for i = 0 to audioStreamsArray.Count() - 1
+    if isValid(audioStreamsArray[i].Index) and audioStreamsArray[i].Index = jellyfinAudioIndex
+      return (i + 1).ToStr() ' Convert 0-indexed position to 1-indexed string
+    end if
+  end for
+
+  return "1" ' Default to first audio track if not found
 end function
 
 ' Returns the Jellyfin index of the first audio stream in the given streams array.

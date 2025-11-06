@@ -432,6 +432,22 @@ sub showPlaybackErrorDialog(errorMessage = "" as string)
   m.top.getScene().dialog = dialog
 end sub
 
+' Helper function to convert Jellyfin audio stream index to Roku's 1-indexed audio track position
+' @param {integer} jellyfinAudioIndex - The Jellyfin audio stream index
+' @param {array} audioStreamsArray - Array of audio stream objects (from fullAudioData)
+' @return {string} The 1-indexed position as a string for Roku's audioTrack field, or "1" if not found
+function getRokuAudioTrackPosition(jellyfinAudioIndex as integer, audioStreamsArray as dynamic) as string
+  if not isValid(audioStreamsArray) then return "1"
+
+  for i = 0 to audioStreamsArray.Count() - 1
+    if isValid(audioStreamsArray[i].Index) and audioStreamsArray[i].Index = jellyfinAudioIndex
+      return (i + 1).ToStr() ' Convert 0-indexed position to 1-indexed string
+    end if
+  end for
+
+  return "1" ' Default to first audio track if not found
+end function
+
 sub onVideoContentLoaded()
   m.LoadMetaDataTask.unobserveField("content")
   m.LoadMetaDataTask.control = "STOP"
@@ -518,9 +534,10 @@ sub onVideoContentLoaded()
   m.top.observeField("selectedSubtitle", "onSubtitleChange")
 
   if isValid(m.top.audioIndex)
-    m.top.audioTrack = (m.top.audioIndex + 1).toStr()
+    ' Convert Jellyfin audio stream index to Roku's 1-indexed audio track position
+    m.top.audioTrack = getRokuAudioTrackPosition(m.top.audioIndex, m.top.fullAudioData)
   else
-    m.top.audioTrack = "2"
+    m.top.audioTrack = "1"
   end if
 
   stopLoadingSpinner()

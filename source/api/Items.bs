@@ -29,7 +29,14 @@ function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioT
   end if
 
   if audioTrackIndex > -1 and isValid(videoMetadata) and isValid(videoMetadata.MediaStreams)
-    selectedAudioStream = videoMetadata.MediaStreams[audioTrackIndex]
+    ' Find the audio stream with the matching Jellyfin index
+    selectedAudioStream = invalid
+    for each stream in videoMetadata.MediaStreams
+      if isValid(stream.index) and stream.index = audioTrackIndex
+        selectedAudioStream = stream
+        exit for
+      end if
+    end for
 
     if isValid(selectedAudioStream)
       params.AudioStreamIndex = audioTrackIndex
