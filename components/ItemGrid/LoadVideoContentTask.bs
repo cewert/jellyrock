@@ -471,13 +471,16 @@ function directPlaySupported(meta as object) as boolean
     return false
   end if
 
-  if not isValid(meta.json.MediaStreams[0])
+  ' Get the first video stream instead of blindly using MediaStreams[0]
+  ' which could be a subtitle or audio stream
+  videoStream = getFirstVideoStream(meta.json.MediaStreams)
+  if not isValid(videoStream)
     return false
   end if
 
-  streamInfo = { Codec: meta.json.MediaStreams[0].codec }
-  if isValid(meta.json.MediaStreams[0].Profile) and meta.json.MediaStreams[0].Profile.len() > 0
-    streamInfo.Profile = LCase(meta.json.MediaStreams[0].Profile)
+  streamInfo = { Codec: videoStream.codec }
+  if isValid(videoStream.Profile) and videoStream.Profile.len() > 0
+    streamInfo.Profile = LCase(videoStream.Profile)
   end if
   if isValid(meta.json.MediaSources[0].container) and meta.json.MediaSources[0].container.len() > 0
     'CanDecodeVideo() requires the .container to be format: “mp4”, “hls”, “mkv”, “ism”, “dash”, “ts” if its to direct stream
