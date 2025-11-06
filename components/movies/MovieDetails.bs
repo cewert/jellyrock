@@ -223,6 +223,8 @@ sub SetUpVideoOptions(streams)
         videoStream = getFirstVideoStream(streams[i].mediaStreams)
         if isValid(videoStream) and isValid(videoStream.displayTitle)
           codec = videoStream.displayTitle
+        else
+          codec = tr("N/A")
         end if
       end if
 
