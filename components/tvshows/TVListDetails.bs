@@ -98,13 +98,17 @@ sub itemContentChanged()
   m.videoCodec.visible = false
   if isValid(itemData.MediaSources)
     for i = 0 to itemData.MediaSources.Count() - 1
-      if item.selectedVideoStreamId = itemData.MediaSources[i].id and isValid(itemData.MediaSources[i].MediaStreams[0])
+      if item.selectedVideoStreamId = itemData.MediaSources[i].id and isValid(itemData.MediaSources[i].MediaStreams)
         m.videoCodec.text = tr("Video") + ": "
-        if isValid(itemData.MediaSources[i].MediaStreams[0].DisplayTitle)
-          m.videoCodec.text = m.videoCodec.text + itemData.MediaSources[i].MediaStreams[0].DisplayTitle
+
+        ' Find first video stream - MediaStreams[0] might be subtitle/audio
+        videoStream = getFirstVideoStream(itemData.MediaSources[i].MediaStreams)
+        if isValid(videoStream) and isValid(videoStream.DisplayTitle)
+          m.videoCodec.text = m.videoCodec.text + videoStream.DisplayTitle
         else
           m.videoCodec.text = m.videoCodec.text + tr("N/A")
         end if
+
         SetupAudioDisplay(itemData.MediaSources[i].MediaStreams, item.selectedAudioStreamIndex)
         exit for
       end if

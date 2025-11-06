@@ -22,13 +22,22 @@ sub SetUpVideoOptions(streams as object)
 
   for i = 0 to streams.Count() - 1
     if LCase(streams[i].VideoType) = "videofile"
+      ' Find first video stream - MediaStreams[0] might be subtitle/audio
+      videoCodec = ""
+      videoStream = getFirstVideoStream(streams[i].mediaStreams)
+      if isValid(videoStream) and isValid(videoStream.displayTitle)
+        videoCodec = videoStream.displayTitle
+      else
+        videoCodec = tr("N/A")
+      end if
+
       ' Create options for user to switch between video tracks
       videos.push({
         "Title": streams[i].Name,
         "Description": tr("Video"),
         "Selected": m.top.objects.items[m.currentSelected].selectedVideoStreamId = streams[i].id,
         "StreamID": streams[i].id,
-        "video_codec": streams[i].mediaStreams[0].displayTitle
+        "video_codec": videoCodec
       })
     end if
   end for
