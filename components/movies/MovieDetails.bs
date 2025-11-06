@@ -219,7 +219,11 @@ sub SetUpVideoOptions(streams)
           end for
         end if
 
-        codec = streams[i].mediaStreams[0].displayTitle
+        ' Find first video stream - MediaStreams[0] might be subtitle/audio
+        videoStream = getFirstVideoStream(streams[i].mediaStreams)
+        if isValid(videoStream) and isValid(videoStream.displayTitle)
+          codec = videoStream.displayTitle
+        end if
       end if
 
       ' Create options for user to switch between video tracks
