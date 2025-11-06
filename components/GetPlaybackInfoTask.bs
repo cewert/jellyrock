@@ -1,8 +1,10 @@
 import "pkg:/source/api/sdk.bs"
+import "pkg:/source/roku_modules/log/LogMixin.brs"
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/misc.bs"
 
 sub init()
+  m.log = log.Logger("GetPlaybackInfoTask")
   m.top.functionName = "getPlaybackInfoTask"
 end sub
 
@@ -15,7 +17,10 @@ sub getPlaybackInfoTask()
   if isValid(m.top.cachedPlaybackInfo)
     m.playbackInfo = m.top.cachedPlaybackInfo
   else
-    ' No cached data available - set to invalid
+    ' No cached data available - this represents an unexpected error condition
+    m.log.warn("cachedPlaybackInfo is invalid - Stream Information will not be displayed", {
+      videoID: m.top.videoID
+    })
     m.playbackInfo = invalid
   end if
 
