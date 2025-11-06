@@ -613,39 +613,7 @@ function sortSubtitles(id as string, MediaStreams)
   return { "all": tracks["forced"], "text": tracks["text"] }
 end function
 
-' Converts Jellyfin audio stream index to Roku's 1-indexed audio track position.
-' @param jellyfinAudioIndex {integer} The Jellyfin audio stream index.
-' @param audioStreamsArray {dynamic} Array of audio stream objects (from fullAudioData).
-' @return {string} The 1-indexed position as a string for Roku's audioTrack field, or "1" if not found.
-function getRokuAudioTrackPosition(jellyfinAudioIndex as integer, audioStreamsArray as dynamic) as string
-  if not isValid(audioStreamsArray) then return "1"
-
-  for i = 0 to audioStreamsArray.Count() - 1
-    if isValid(audioStreamsArray[i].index) and audioStreamsArray[i].index = jellyfinAudioIndex
-      return (i + 1).ToStr() ' Convert 0-indexed position to 1-indexed string
-    end if
-  end for
-
-  return "1" ' Default to first audio track if not found
-end function
-
-' Returns the Jellyfin index of the first audio stream in the given streams array.
-' @param streams {dynamic} Array of media streams to search.
-' @return {integer} The Jellyfin index of the first audio stream, or 0 if no audio stream is found.
-function getFirstAudioStreamIndex(streams as dynamic) as integer
-  if not isValid(streams) then return 0
-
-  for i = 0 to streams.Count() - 1
-    if LCase(streams[i].Type) = "audio"
-      if isValid(streams[i].index)
-        return streams[i].index
-      end if
-    end if
-  end for
-
-  return 0
-end function
-
+' Thin wrapper that handles optional API fetch then calls utility function
 function FindPreferredAudioStream(streams as dynamic) as integer
   ' ONE rendezvous to get user node
   localUser = m.global.user
@@ -663,24 +631,6 @@ function FindPreferredAudioStream(streams as dynamic) as integer
     streams = jsonResponse.MediaStreams
   end if
 
-  ' If playDefault is true, return first audio stream's Jellyfin index
-  if isValid(playDefault) and playDefault = true
-    return getFirstAudioStreamIndex(streams)
-  end if
-
-  ' Search for preferred language audio stream and return its Jellyfin index
-  if isValid(preferredLanguage)
-    for i = 0 to streams.Count() - 1
-      if LCase(streams[i].Type) = "audio"
-        if isValid(streams[i].Language) and LCase(streams[i].Language) = LCase(preferredLanguage)
-          if isValid(streams[i].index)
-            return streams[i].index
-          end if
-        end if
-      end if
-    end for
-  end if
-
-  ' Fallback: return first audio stream's Jellyfin index
-  return getFirstAudioStreamIndex(streams)
+  ' Call utility function with user settings
+  return findPreferredAudioStreamIndex(streams, playDefault, preferredLanguage)
 end function
