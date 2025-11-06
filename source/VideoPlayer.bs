@@ -524,7 +524,14 @@ function GetTranscodingStats(deviceSession)
   end if
 
   if havePlaybackInfo()
-    stream = m.playbackInfo.mediaSources[0].MediaStreams[0]
+    ' Find the first video stream (MediaStreams[0] might be subtitle/audio)
+    videoStream = getFirstVideoStream(m.playbackInfo.mediaSources[0].MediaStreams)
+    if not isValid(videoStream)
+      ' No video stream found - skip Stream Information section
+      return sessionStats
+    end if
+
+    stream = videoStream
     sessionStats.push("** " + tr("Stream Information") + " **")
     if isValid(stream.Container)
       data = tr("Container") + ": " + stream.Container
@@ -597,4 +604,21 @@ function getDisplayBitrate(bitrate)
   else
     return Str(Fix(bitrate / 1000)) + " Kbps"
   end if
+end function
+
+' getFirstVideoStream: Finds the first video stream in MediaStreams array
+' MediaStreams[0] is not always a video stream - it could be subtitle or audio
+'
+' @param {array} mediaStreams - Array of media streams from playback info
+' @return {object} First video stream object, or invalid if not found
+function getFirstVideoStream(mediaStreams as object) as dynamic
+  if not isValid(mediaStreams) then return invalid
+
+  for each stream in mediaStreams
+    if isValid(stream.Type) and LCase(stream.Type) = "video"
+      return stream
+    end if
+  end for
+
+  return invalid
 end function
