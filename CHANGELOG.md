@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- Fix directPlaySupported() checking wrong stream type ([#142](https://github.com/cewert/jellyrock/pull/142))
 - Fix OSD playback info showing incorrect stream data ([#136](https://github.com/cewert/jellyrock/pull/136))
 
 ## [1.1.0](https://github.com/cewert/jellyrock/compare/v1.0.4...v1.1.0) - 2025-11-03
