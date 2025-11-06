@@ -358,6 +358,93 @@ namespace tests
       m.assertEqual(isChainValid(invalid, "one"), false)
     end function
 
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getFirstVideoStream(mediaStreams)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns first video stream when video is first in array")
+    function _()
+      mediaStreams = [
+        { Type: "Video", codec: "h264", Profile: "high" },
+        { Type: "Audio", codec: "aac" },
+        { Type: "Subtitle", codec: "srt" }
+      ]
+      result = getFirstVideoStream(mediaStreams)
+      m.assertEqual(isValid(result), true)
+      m.assertEqual(result.Type, "Video")
+      m.assertEqual(result.codec, "h264")
+    end function
+
+    @it("returns first video stream when video is not first in array")
+    function _()
+      mediaStreams = [
+        { Type: "Subtitle", codec: "srt" },
+        { Type: "Audio", codec: "aac" },
+        { Type: "Video", codec: "h264", Profile: "main" }
+      ]
+      result = getFirstVideoStream(mediaStreams)
+      m.assertEqual(isValid(result), true)
+      m.assertEqual(result.Type, "Video")
+      m.assertEqual(result.codec, "h264")
+    end function
+
+    @it("returns first video stream when audio is first")
+    function _()
+      mediaStreams = [
+        { Type: "Audio", codec: "aac" },
+        { Type: "Video", codec: "hevc", Profile: "main" },
+        { Type: "Video", codec: "h264", Profile: "high" }
+      ]
+      result = getFirstVideoStream(mediaStreams)
+      m.assertEqual(isValid(result), true)
+      m.assertEqual(result.Type, "Video")
+      m.assertEqual(result.codec, "hevc")
+    end function
+
+    @it("handles case-insensitive type matching")
+    function _()
+      mediaStreams = [
+        { Type: "SUBTITLE", codec: "srt" },
+        { Type: "video", codec: "h264" }
+      ]
+      result = getFirstVideoStream(mediaStreams)
+      m.assertEqual(isValid(result), true)
+      m.assertEqual(result.Type, "video")
+    end function
+
+    @it("returns invalid when no video stream exists")
+    function _()
+      mediaStreams = [
+        { Type: "Audio", codec: "aac" },
+        { Type: "Subtitle", codec: "srt" }
+      ]
+      result = getFirstVideoStream(mediaStreams)
+      m.assertEqual(isValid(result), false)
+    end function
+
+    @it("returns invalid when mediaStreams is invalid")
+    function _()
+      result = getFirstVideoStream(invalid)
+      m.assertEqual(isValid(result), false)
+    end function
+
+    @it("returns invalid when mediaStreams is empty array")
+    function _()
+      result = getFirstVideoStream([])
+      m.assertEqual(isValid(result), false)
+    end function
+
+    @it("returns invalid when stream has no Type field")
+    function _()
+      mediaStreams = [
+        { codec: "h264" },
+        { Type: "Video", codec: "hevc" }
+      ]
+      result = getFirstVideoStream(mediaStreams)
+      m.assertEqual(isValid(result), true)
+      m.assertEqual(result.codec, "hevc")
+    end function
+
   end class
 
 end namespace
