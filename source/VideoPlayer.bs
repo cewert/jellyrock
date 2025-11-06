@@ -605,20 +605,3 @@ function getDisplayBitrate(bitrate)
     return Str(Fix(bitrate / 1000)) + " Kbps"
   end if
 end function
-
-' getFirstVideoStream: Finds the first video stream in MediaStreams array
-' MediaStreams[0] is not always a video stream - it could be subtitle or audio
-'
-' @param {array} mediaStreams - Array of media streams from playback info
-' @return {object} First video stream object, or invalid if not found
-function getFirstVideoStream(mediaStreams as object) as dynamic
-  if not isValid(mediaStreams) then return invalid
-
-  for each stream in mediaStreams
-    if isValid(stream.Type) and LCase(stream.Type) = "video"
-      return stream
-    end if
-  end for
-
-  return invalid
-end function
