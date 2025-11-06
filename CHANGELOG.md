@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- Fix MaxVideoDecodeResolution and codec checks using wrong stream ([#144](https://github.com/cewert/jellyrock/pull/144))
 - Fix audio track selection: return Jellyfin stream index instead of array position ([#135](https://github.com/cewert/jellyrock/pull/135))
 - Fix directPlaySupported() checking wrong stream type ([#142](https://github.com/cewert/jellyrock/pull/142))
 - Fix OSD playback info showing incorrect stream data ([#136](https://github.com/cewert/jellyrock/pull/136))
