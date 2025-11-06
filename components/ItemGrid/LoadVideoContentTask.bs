@@ -243,10 +243,10 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
   ' fall back to the transcode if that fails.
   if m.playbackInfo.MediaSources[0].MediaStreams.Count() > 0 and meta.live = false
     ' Find first video stream - MediaStreams[0] might be subtitle/audio
-    firstVideoStream = getFirstVideoStream(m.playbackInfo.MediaSources[0].MediaStreams)
-    if isValid(firstVideoStream) and isValid(firstVideoStream.codec)
-      tryDirectPlay = userSettings.playbackTryDirectH264ProfileLevel and firstVideoStream.codec = "h264"
-      tryDirectPlay = tryDirectPlay or (userSettings.playbackTryDirectHevcProfileLevel and firstVideoStream.codec = "hevc")
+    videoStream = getFirstVideoStream(m.playbackInfo.MediaSources[0].MediaStreams)
+    if isValid(videoStream) and isValid(videoStream.codec)
+      tryDirectPlay = userSettings.playbackTryDirectH264ProfileLevel and videoStream.codec = "h264"
+      tryDirectPlay = tryDirectPlay or (userSettings.playbackTryDirectHevcProfileLevel and videoStream.codec = "hevc")
     else
       tryDirectPlay = false
     end if
