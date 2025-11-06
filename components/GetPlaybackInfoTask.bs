@@ -1,43 +1,28 @@
-import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/api/sdk.bs"
+import "pkg:/source/roku_modules/log/LogMixin.brs"
 import "pkg:/source/utils/config.bs"
-import "pkg:/source/utils/deviceCapabilities.bs"
 import "pkg:/source/utils/misc.bs"
 
 sub init()
+  m.log = log.Logger("GetPlaybackInfoTask")
   m.top.functionName = "getPlaybackInfoTask"
 end sub
-
-function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioTrackIndex = -1 as integer, startTimeTicks = 0 as longinteger)
-  currentView = m.global.sceneManager.callFunc("getActiveScene")
-  currentItem = m.global.queueManager.callFunc("getCurrentItem")
-
-  body = {
-    "DeviceProfile": getDeviceProfile()
-  }
-  params = {
-    "UserId": m.global.user.id,
-    "StartTimeTicks": currentItem.startingPoint,
-    "IsPlayback": true,
-    "AutoOpenLiveStream": true,
-    "MaxStreamingBitrate": "140000000",
-    "MaxStaticBitrate": "140000000",
-    "SubtitleStreamIndex": currentView.selectedSubtitle,
-    "MediaSourceId": currentItem.id,
-    "AudioStreamIndex": currentItem.selectedAudioStreamIndex
-  }
-
-  req = APIRequest(Substitute("Items/{0}/PlaybackInfo", id), params)
-  req.SetRequest("POST")
-  return postJson(req, FormatJson(body))
-end function
 
 ' Returns an array of playback info to be displayed during playback.
 ' In the future, with a custom playback info view, we can return an associated array.
 sub getPlaybackInfoTask()
   sessions = api.sessions.Get({ "deviceId": m.global.device.serverDeviceName })
 
-  m.playbackInfo = ItemPostPlaybackInfo(m.top.videoID)
+  ' Use cached playback info instead of making redundant API call
+  if isValid(m.top.cachedPlaybackInfo)
+    m.playbackInfo = m.top.cachedPlaybackInfo
+  else
+    ' No cached data available - this represents an unexpected error condition
+    m.log.warn("cachedPlaybackInfo is invalid - Stream Information will not be displayed", {
+      videoID: m.top.videoID
+    })
+    m.playbackInfo = invalid
+  end if
 
   if isValid(sessions) and sessions.Count() > 0
     m.top.data = { playbackInfo: GetTranscodingStats(sessions[0]) }
@@ -94,7 +79,14 @@ function GetTranscodingStats(deviceSession)
   end if
 
   if havePlaybackInfo()
-    stream = m.playbackInfo.mediaSources[0].MediaStreams[0]
+    ' Find the first video stream (MediaStreams[0] might be subtitle/audio)
+    videoStream = getFirstVideoStream(m.playbackInfo.mediaSources[0].MediaStreams)
+    if not isValid(videoStream)
+      ' No video stream found - skip Stream Information section
+      return sessionStats
+    end if
+
+    stream = videoStream
     sessionStats.data.push("<header>" + tr("Stream Information") + "</header>")
     if isValid(stream.Container)
       data = "<b>• " + tr("Container") + ":</b> " + stream.Container

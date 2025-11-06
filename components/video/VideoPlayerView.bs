@@ -460,6 +460,7 @@ sub onVideoContentLoaded()
   m.top.transcodeParams = videoContent[0].transcodeparams
   m.chapters = videoContent[0].chapters
   m.top.showID = videoContent[0].showID
+  m.top.cachedPlaybackInfo = videoContent[0].playbackInfo
 
   if isValidAndNotEmpty(videoContent[0].json)
     m.osd.json = formatJson(videoContent[0].json)

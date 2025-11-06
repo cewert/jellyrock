@@ -524,7 +524,14 @@ function GetTranscodingStats(deviceSession)
   end if
 
   if havePlaybackInfo()
-    stream = m.playbackInfo.mediaSources[0].MediaStreams[0]
+    ' Find the first video stream (MediaStreams[0] might be subtitle/audio)
+    videoStream = getFirstVideoStream(m.playbackInfo.mediaSources[0].MediaStreams)
+    if not isValid(videoStream)
+      ' No video stream found - skip Stream Information section
+      return sessionStats
+    end if
+
+    stream = videoStream
     sessionStats.push("** " + tr("Stream Information") + " **")
     if isValid(stream.Container)
       data = tr("Container") + ": " + stream.Container

@@ -205,6 +205,8 @@ sub onSelectPlaybackInfoPressed()
     return
   end if
 
+  ' Set cached playback info right before running (when it's actually available)
+  m.getPlaybackInfoTask.cachedPlaybackInfo = m.view.cachedPlaybackInfo
   m.getPlaybackInfoTask.control = "RUN"
 end sub
 
