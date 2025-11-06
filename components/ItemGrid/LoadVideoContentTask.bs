@@ -267,7 +267,8 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
   end if
 
   setCertificateAuthority(video.content)
-  video.audioTrack = (audio_stream_idx + 1).ToStr() ' Roku's track indexes count from 1. Our index is zero based
+  ' Convert Jellyfin audio stream index to Roku's 1-indexed audio track position
+  video.audioTrack = getRokuAudioTrackPosition(audio_stream_idx, video.fullAudioData)
 
   if not fully_external
     video.content = authRequest(video.content)
@@ -294,7 +295,14 @@ function defaultSubtitleTrackFromVid(videoID) as integer
   subtitles = sortSubtitles(meta.id, meta.json.MediaSources[0].MediaStreams)
 
   selectedAudioLanguage = ""
-  audioMediaStream = meta.json.MediaSources[0].MediaStreams[m.top.selectedAudioStreamIndex]
+  ' Find the audio stream with the matching Jellyfin index
+  audioMediaStream = invalid
+  for each stream in meta.json.MediaSources[0].MediaStreams
+    if isValid(stream.index) and stream.index = m.top.selectedAudioStreamIndex
+      audioMediaStream = stream
+      exit for
+    end if
+  end for
 
   ' Ensure audio media stream is valid before using language property
   if isValid(audioMediaStream)
@@ -608,15 +616,12 @@ function sortSubtitles(id as string, MediaStreams)
   return { "all": tracks["forced"], "text": tracks["text"] }
 end function
 
+' Thin wrapper that handles optional API fetch then calls utility function
 function FindPreferredAudioStream(streams as dynamic) as integer
   ' ONE rendezvous to get user node
   localUser = m.global.user
   preferredLanguage = localUser.config.audioLanguagePreference
   playDefault = localUser.config.playDefaultAudioTrack
-
-  if isValid(playDefault) and playDefault = true
-    return 1
-  end if
 
   ' Do we already have the MediaStreams or not?
   if not isValid(streams)
@@ -624,20 +629,11 @@ function FindPreferredAudioStream(streams as dynamic) as integer
     resp = APIRequest(url)
     jsonResponse = getJson(resp)
 
-    if not isValid(jsonResponse) or not isValid(jsonResponse.MediaStreams) then return 1
+    if not isValid(jsonResponse) or not isValid(jsonResponse.MediaStreams) then return 0
 
     streams = jsonResponse.MediaStreams
   end if
 
-  if isValid(preferredLanguage)
-    for i = 0 to streams.Count() - 1
-      if LCase(streams[i].Type) = "audio"
-        if isValid(streams[i].Language) and LCase(streams[i].Language) = LCase(preferredLanguage)
-          return i
-        end if
-      end if
-    end for
-  end if
-
-  return 1
+  ' Call utility function with user settings
+  return findPreferredAudioStreamIndex(streams, playDefault, preferredLanguage)
 end function

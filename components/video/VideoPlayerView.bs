@@ -518,9 +518,10 @@ sub onVideoContentLoaded()
   m.top.observeField("selectedSubtitle", "onSubtitleChange")
 
   if isValid(m.top.audioIndex)
-    m.top.audioTrack = (m.top.audioIndex + 1).toStr()
+    ' Convert Jellyfin audio stream index to Roku's 1-indexed audio track position
+    m.top.audioTrack = getRokuAudioTrackPosition(m.top.audioIndex, m.top.fullAudioData)
   else
-    m.top.audioTrack = "2"
+    m.top.audioTrack = "1"
   end if
 
   stopLoadingSpinner()
