@@ -703,6 +703,7 @@ sub onState()
     else
       ' If an error was encountered, Display dialog
       m.top.unobserveField("state")
+      m.playbackTimer.control = "stop"
       showPlaybackErrorDialog(tr("Error During Playback"))
     end if
   else if m.top.state = "playing"
