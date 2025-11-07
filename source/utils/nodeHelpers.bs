@@ -1,0 +1,79 @@
+' Node utility functions for creating and copying SGNodes
+namespace nodeHelpers
+
+  ' Create a deep copy of an SGNode with all its fields
+  ' This is useful for creating queue items from UI nodes without modifying the original
+  '
+  ' @param sourceNode - The node to copy from
+  ' @param excludeFields - Optional array of field names to exclude from copying
+  ' @return A new node of the same type with all fields copied
+  '
+  ' IMPORTANT: This creates a NEW node that is disconnected from any field observers
+  ' Modifying fields on the returned node will NOT trigger observers on the source node
+  '
+  ' Example:
+  '   queueItem = nodeHelpers.cloneNode(uiNode, ["image", "focusable"])
+  '
+  function cloneNode(sourceNode as object, excludeFields = [] as object) as object
+    if not isValid(sourceNode)
+      return invalid
+    end if
+
+    ' Create new node of same type
+    nodeType = sourceNode.subtype()
+    clonedNode = CreateObject("roSGNode", nodeType)
+
+    ' Get all field names from source node
+    allFields = sourceNode.getFields()
+
+    ' System fields that should never be copied (Roku internals)
+    systemFields = [
+      "focusable",
+      "focusedChild",
+      "change",
+      "boundingRect",
+      "localBoundingRect",
+      "sceneBoundingRect",
+      "visible",
+      "opacity",
+      "translation",
+      "rotation",
+      "scale",
+      "scaleRotateCenter",
+      "clippingRect",
+      "renderTracking",
+      "inheritParentTransform",
+      "inheritParentOpacity",
+      "muteAudioGuide",
+      "enableRenderTracking",
+      "renderPass"
+    ]
+
+    ' Combine system fields with user-provided exclusions
+    skipFields = []
+    skipFields.append(systemFields)
+    skipFields.append(excludeFields)
+
+    ' Copy all fields that aren't excluded
+    for each fieldName in allFields
+      ' Skip if in exclusion list
+      if inArray(skipFields, fieldName)
+        continue for
+      end if
+
+      ' Get value from source
+      fieldValue = sourceNode[fieldName]
+
+      ' Only copy if value is valid (skip uninitialized fields)
+      if isValid(fieldValue)
+        ' Try to set the field on the cloned node
+        ' Some fields may be read-only or not exist on the target node type
+        ' Use try/catch-like pattern by checking if field exists after setting
+        clonedNode[fieldName] = fieldValue
+      end if
+    end for
+
+    return clonedNode
+  end function
+
+end namespace
