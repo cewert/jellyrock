@@ -700,8 +700,6 @@ sub onState()
       m.LoadMetaDataTask.observeField("content", "onVideoContentLoaded")
 
       m.LoadMetaDataTask.control = "RUN"
-    else if m.top.errorStr = "player: only one playing instance supported."
-      m.global.sceneManager.callfunc("popScene")
     else
       ' If an error was encountered, Display dialog
       m.top.unobserveField("state")
@@ -729,10 +727,12 @@ sub onState()
     ReportPlayback()
   else if m.top.state = "stopped"
     m.playbackTimer.control = "stop"
+    m.playbackTimer.unobserveField("fire")
     ReportPlayback("stop")
     m.playReported = false
   else if m.top.state = "finished"
     m.playbackTimer.control = "stop"
+    m.playbackTimer.unobserveField("fire")
     ReportPlayback("finished")
   else
     m.log.warning("Unhandled state", m.top.state, m.playReported, m.playFinished)
