@@ -200,7 +200,7 @@ jobs:
             echo "ℹ️ No changes to commit"
             echo "has_changes=false" >> $GITHUB_ENV
           else
-            git commit -m "chore: bump version to ${{ needs.validate-and-prepare.outputs.version }} [skip ci]"
+            git commit -m "chore: bump version to ${{ needs.validate-and-prepare.outputs.version }}"
             echo "has_changes=true" >> $GITHUB_ENV
           fi
 
