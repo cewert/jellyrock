@@ -1,0 +1,31 @@
+{
+  "id": "movie-quickplay-resumable-002",
+  "type": "Movie",
+  "name": "Resumable Movie",
+  "MediaStreams": [
+    {
+      "Type": "Audio",
+      "Index": 0,
+      "IsDefault": true,
+      "channels": 2,
+      "codec": "aac"
+    }
+  ],
+  "MediaSources": [
+    {
+      "id": "source-1",
+      "MediaStreams": [
+        {
+          "Type": "Audio",
+          "Index": 0,
+          "IsDefault": true
+        }
+      ]
+    }
+  ],
+  "UserData": {
+    "PlaybackPositionTicks": 30000000000,
+    "isFavorite": false,
+    "played": false
+  }
+}

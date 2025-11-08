@@ -1,4 +1,5 @@
 import "pkg:/source/classes/VideoDefaults.bs"
+import "pkg:/source/utils/nodeHelpers.bs"
 
 ' All of the Quick Play logic seperated by media type
 namespace quickplay
@@ -20,23 +21,30 @@ namespace quickplay
 
   ' A single video file.
   sub video(itemNode as object)
-    if not isValid(itemNode) or not isValid(itemNode.id) or not isValid(itemNode.json) then return
+    if not isValid(itemNode) or not isValid(itemNode.id) or itemNode.id = "" or not isValid(itemNode.json) then return
+
+    ' Create a queue-specific copy to avoid modifying the UI node
+    ' This prevents the quickPlayNode field observer from firing twice
+    queueItem = nodeHelpers.cloneNode(itemNode)
+    if not isValid(queueItem) then return
 
     defaults = new VideoDefaults(itemNode)
 
     ' set default video stream
 
     ' set default audio stream
-    itemNode.selectedAudioStreamIndex = defaults.getDefaultAudioStreamIndex()
+    audioStreamIndex = defaults.getDefaultAudioStreamIndex()
 
     ' resume playback if possible
-    playbackPosition = 0
-    if isValid(itemNode.json.userdata) and isValid(itemNode.json.userdata.PlaybackPositionTicks)
-      playbackPosition = itemNode.json.userdata.PlaybackPositionTicks
+    playbackPosition = 0&
+    if isValid(itemNode.json.UserData) and isValid(itemNode.json.UserData.PlaybackPositionTicks)
+      playbackPosition = itemNode.json.UserData.PlaybackPositionTicks
     end if
-    itemNode.startingPoint = playbackPosition
 
-    m.global.queueManager.callFunc("push", itemNode)
+    queueItem.selectedAudioStreamIndex = audioStreamIndex
+    queueItem.startingPoint = playbackPosition
+
+    m.global.queueManager.callFunc("push", queueItem)
   end sub
 
   ' A single audio file.

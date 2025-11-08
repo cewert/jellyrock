@@ -104,14 +104,10 @@ sub Main (args as dynamic) as void
       group = m.global.sceneManager.callFunc("getActiveScene")
       reportingNode = msg.getRoSGNode()
       itemNode = invalid
-      if isValid(reportingNode)
+      if isValid(reportingNode) and isValid(reportingNode.quickPlayNode)
         itemNode = reportingNode.quickPlayNode
         reportingNodeType = reportingNode.subtype()
         print "Quick Play reporting node type=", reportingNodeType
-        ' prevent double fire bug
-        if isValid(reportingNodeType) and (reportingNodeType = "Home" or reportingNodeType = "TVEpisodes")
-          reportingNode.quickPlayNode = invalid
-        end if
       end if
       print "Quick Play started. itemNode=", itemNode
       if isValid(itemNode) and isValid(itemNode.id) and itemNode.id <> ""
@@ -128,7 +124,6 @@ sub Main (args as dynamic) as void
             itemType = Lcase(itemNode.json.type)
           end if
         end if
-        print "Quick Play itemNode type=", itemType
 
         ' can't play the item without knowing what type it is
         if isValid(itemType)

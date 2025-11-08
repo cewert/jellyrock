@@ -1,0 +1,30 @@
+{
+  "id": "movie-quickplay-independent-004",
+  "type": "Movie",
+  "name": "Independence Test Movie",
+  "MediaStreams": [
+    {
+      "Type": "Audio",
+      "Index": 0,
+      "IsDefault": true,
+      "channels": 2,
+      "codec": "aac"
+    }
+  ],
+  "MediaSources": [
+    {
+      "id": "source-1",
+      "MediaStreams": [
+        {
+          "Type": "Audio",
+          "Index": 0,
+          "IsDefault": true
+        }
+      ]
+    }
+  ],
+  "UserData": {
+    "isFavorite": false,
+    "played": false
+  }
+}

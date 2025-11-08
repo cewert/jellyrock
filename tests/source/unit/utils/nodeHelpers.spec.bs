@@ -1,0 +1,181 @@
+
+namespace tests
+
+  @suite("nodeHelpers.bs - cloneNode Utility")
+  class NodeHelpersCloneTests extends tests.BaseTestSuite
+
+    protected override function setup()
+      super.setup()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("cloneNode(sourceNode) - basic behavior")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns invalid when sourceNode is invalid")
+    function _()
+      result = nodeHelpers.cloneNode(invalid)
+      m.assertInvalid(result)
+    end function
+
+    @it("creates a new node of the same type")
+    function _()
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      clonedNode = nodeHelpers.cloneNode(sourceNode)
+
+      m.assertNotInvalid(clonedNode)
+      m.assertEqual(clonedNode.subtype(), "ContentNode")
+      ' Verify they are different instances
+      ' Note: ContentNode id defaults to empty string for both, which is expected
+      m.assertEqual(clonedNode.id, sourceNode.id)
+    end function
+
+    @it("copies all valid fields from source to clone")
+    function _()
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      ' Add custom fields (ContentNode doesn't have title/description by default)
+      sourceNode.addFields({
+        customId: "test-123",
+        title: "Test Movie",
+        description: "Test Description"
+      })
+
+      clonedNode = nodeHelpers.cloneNode(sourceNode)
+
+      m.assertEqual(clonedNode.customId, "test-123")
+      m.assertEqual(clonedNode.title, "Test Movie")
+      m.assertEqual(clonedNode.description, "Test Description")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("cloneNode(sourceNode) - field exclusion")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("excludes system fields by default")
+    function _()
+      ' Create a node with UI fields
+      ' Note: Rectangle width/height are Float type in XML, not Integer
+      sourceNode = CreateObject("roSGNode", "Rectangle")
+      sourceNode.width = 100.0
+      sourceNode.height = 200.0
+
+      clonedNode = nodeHelpers.cloneNode(sourceNode)
+
+      ' Data fields should be copied
+      m.assertEqual(clonedNode.width, 100.0)
+      m.assertEqual(clonedNode.height, 200.0)
+    end function
+
+    @it("excludes user-specified fields from excludeFields array")
+    function _()
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.addFields({
+        customId: "test-123",
+        title: "Test Movie",
+        description: "Should not copy"
+      })
+
+      clonedNode = nodeHelpers.cloneNode(sourceNode, ["description"])
+
+      m.assertEqual(clonedNode.customId, "test-123")
+      m.assertEqual(clonedNode.title, "Test Movie")
+      ' Description should be excluded (will be empty string, not the source value)
+      m.assertNotEqual(clonedNode.description, "Should not copy")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("cloneNode(sourceNode) - independence")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("creates disconnected node that doesn't affect source when modified")
+    function _()
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.addFields({
+        customId: "original",
+        title: "Original Title"
+      })
+
+      clonedNode = nodeHelpers.cloneNode(sourceNode)
+
+      ' Modify the clone
+      clonedNode.customId = "modified"
+      clonedNode.title = "Modified Title"
+
+      ' Source should remain unchanged
+      m.assertEqual(sourceNode.customId, "original")
+      m.assertEqual(sourceNode.title, "Original Title")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("cloneNode(sourceNode) - data type handling")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("handles nested associative array fields")
+    function _()
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.addFields({
+        json: {
+          id: "123",
+          name: "Test",
+          nested: {
+            value: 456
+          }
+        }
+      })
+
+      clonedNode = nodeHelpers.cloneNode(sourceNode)
+
+      m.assertNotInvalid(clonedNode.json)
+      m.assertEqual(clonedNode.json.id, "123")
+      m.assertEqual(clonedNode.json.name, "Test")
+      m.assertEqual(clonedNode.json.nested.value, 456)
+    end function
+
+    @it("handles integer and float fields")
+    function _()
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.addFields({
+        intField: 42,
+        floatField: 3.14159,
+        longIntField: 9876543210&
+      })
+
+      clonedNode = nodeHelpers.cloneNode(sourceNode)
+
+      m.assertEqual(clonedNode.intField, 42)
+      m.assertEqual(clonedNode.floatField, 3.14159)
+      m.assertEqual(clonedNode.longIntField, 9876543210&)
+    end function
+
+    @it("handles boolean fields")
+    function _()
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.addFields({
+        boolTrue: true,
+        boolFalse: false
+      })
+
+      clonedNode = nodeHelpers.cloneNode(sourceNode)
+
+      m.assertTrue(clonedNode.boolTrue)
+      m.assertFalse(clonedNode.boolFalse)
+    end function
+
+    @it("handles array fields")
+    function _()
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.addFields({
+        arrayField: ["item1", "item2", "item3"]
+      })
+
+      clonedNode = nodeHelpers.cloneNode(sourceNode)
+
+      m.assertNotInvalid(clonedNode.arrayField)
+      m.assertEqual(clonedNode.arrayField.count(), 3)
+      m.assertEqual(clonedNode.arrayField[0], "item1")
+      m.assertEqual(clonedNode.arrayField[2], "item3")
+    end function
+
+  end class
+
+end namespace
