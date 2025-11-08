@@ -32,15 +32,11 @@ namespace nodeHelpers
     ' Get all fields from source node (returns AA with fieldName: value pairs)
     allFields = sourceNode.getFields()
 
-    ' user-provided exclusions
-    skipFields = []
-    skipFields.append(excludeFields)
-
     ' Build associative array of fields to copy (excluding excluded fields)
     fieldsToCopy = {}
     for each fieldName in allFields
       ' Skip if in exclusion list
-      if inArray(skipFields, fieldName) then continue for
+      if inArray(excludeFields, fieldName) then continue for
 
       ' Get value from source - use allFields AA for efficiency
       fieldValue = allFields[fieldName]
