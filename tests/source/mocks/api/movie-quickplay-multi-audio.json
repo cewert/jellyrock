@@ -1,0 +1,42 @@
+{
+  "id": "movie-quickplay-multi-audio-003",
+  "type": "Movie",
+  "name": "Multi Audio Movie",
+  "MediaStreams": [
+    {
+      "Type": "Audio",
+      "Index": 0,
+      "IsDefault": false,
+      "channels": 2,
+      "codec": "aac"
+    },
+    {
+      "Type": "Audio",
+      "Index": 1,
+      "IsDefault": true,
+      "channels": 6,
+      "codec": "ac3"
+    }
+  ],
+  "MediaSources": [
+    {
+      "id": "source-1",
+      "MediaStreams": [
+        {
+          "Type": "Audio",
+          "Index": 0,
+          "IsDefault": false
+        },
+        {
+          "Type": "Audio",
+          "Index": 1,
+          "IsDefault": true
+        }
+      ]
+    }
+  ],
+  "UserData": {
+    "isFavorite": false,
+    "played": false
+  }
+}

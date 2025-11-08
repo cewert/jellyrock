@@ -1,0 +1,179 @@
+
+namespace tests
+
+  @suite("quickplay.video() - Video Quick Play Integration")
+  class QuickPlayVideoTests extends tests.BaseTestSuite
+
+    protected override function setup()
+      super.setup()
+
+      ' Initialize QueueManager with actual component
+      if not m.global.doesExist("queueManager")
+        m.global.addField("queueManager", "node", false)
+        m.global.queueManager = CreateObject("roSGNode", "QueueManager")
+      else
+        ' Clear the queue for each test
+        m.global.queueManager.callFunc("clear")
+      end if
+    end function
+
+    protected override function teardown()
+      ' Clear queue after each test
+      if isValid(m.global.queueManager)
+        m.global.queueManager.callFunc("clear")
+      end if
+      super.teardown()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("input validation")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("does nothing when itemNode is invalid")
+    function doNothingWhenInvalid()
+      quickplay.video(invalid)
+      ' Queue should be empty
+      m.assertEqual(m.global.queueManager.callFunc("getCount"), 0)
+    end function
+
+    @it("does nothing when itemNode.id is invalid")
+    function doNothingWhenIdInvalid()
+      itemNode = CreateObject("roSGNode", "ContentNode")
+      itemNode.addFields({
+        json: { Name: "Test" }
+      })
+      quickplay.video(itemNode)
+      m.assertEqual(m.global.queueManager.callFunc("getCount"), 0)
+    end function
+
+    @it("does nothing when itemNode.json is invalid")
+    function doNothingWhenJsonInvalid()
+      itemNode = CreateObject("roSGNode", "ContentNode")
+      itemNode.id = "test-123"
+      quickplay.video(itemNode)
+      m.assertEqual(m.global.queueManager.callFunc("getCount"), 0)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("queue item creation")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("creates queue item from valid movie node")
+    function createsQueueItemFromValidMovie()
+      ' Load mock data from JSON file
+      mockData = MockDataLoader.LoadApiData("movie-quickplay-basic")
+
+      ' Use MovieData which has all fields defined in XML (matches production)
+      itemNode = CreateObject("roSGNode", "MovieData")
+      itemNode.id = mockData.id
+      itemNode.json = mockData
+
+      quickplay.video(itemNode)
+
+      ' Verify item was added to queue
+      m.assertEqual(m.global.queueManager.callFunc("getCount"), 1)
+
+      queueItem = m.global.queueManager.callFunc("getItemByIndex", 0)
+      m.assertNotInvalid(queueItem)
+      m.assertEqual(queueItem.id, mockData.id)
+    end function
+
+    @it("does not modify original UI node")
+    function doesNotModifyOriginalNode()
+      ' Load mock data and modify for this test
+      mockData = MockDataLoader.LoadApiData("movie-quickplay-resumable")
+      ' Modify the existing UserData object's property using bracket notation
+      userData = mockData.UserData
+      userData["PlaybackPositionTicks"] = 15260000000&
+
+      ' Use MovieData which has all fields defined in XML (matches production)
+      itemNode = CreateObject("roSGNode", "MovieData")
+      itemNode.id = mockData.id
+      itemNode.json = mockData
+      itemNode.startingPoint = 0
+      itemNode.selectedAudioStreamIndex = 0
+
+      quickplay.video(itemNode)
+
+      ' Verify original node was not modified by quickplay
+      m.assertEqual(itemNode.startingPoint, 0&)
+      m.assertEqual(itemNode.selectedAudioStreamIndex, 0)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("resume position and audio stream handling")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("sets resume position from userdata on queue item")
+    function setsResumePositionOnQueueItem()
+      ' Load mock data from JSON file
+      mockData = MockDataLoader.LoadApiData("movie-quickplay-resumable")
+
+      ' Use MovieData which has all fields defined in XML (matches production)
+      itemNode = CreateObject("roSGNode", "MovieData")
+      itemNode.id = mockData.id
+      itemNode.json = mockData
+      itemNode.startingPoint = 0
+
+      quickplay.video(itemNode)
+
+      queueItem = m.global.queueManager.callFunc("getItemByIndex", 0)
+      ' Queue item should have resume position
+      m.assertEqual(queueItem.startingPoint, 30000000000&)
+      ' Original should still be 0
+      m.assertEqual(itemNode.startingPoint, 0&)
+    end function
+
+    @it("sets default audio stream on queue item")
+    function setsDefaultAudioStreamOnQueueItem()
+      ' Load mock data from JSON file
+      mockData = MockDataLoader.LoadApiData("movie-quickplay-multi-audio")
+
+      ' Use MovieData which has all fields defined in XML (matches production)
+      itemNode = CreateObject("roSGNode", "MovieData")
+      itemNode.id = mockData.id
+      itemNode.json = mockData
+      itemNode.selectedAudioStreamIndex = 0
+
+      quickplay.video(itemNode)
+
+      queueItem = m.global.queueManager.callFunc("getItemByIndex", 0)
+      ' Queue item should have audio stream set (by VideoDefaults)
+      m.assertNotInvalid(queueItem.selectedAudioStreamIndex)
+      ' Original should be unchanged
+      m.assertEqual(itemNode.selectedAudioStreamIndex, 0)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("node independence verification")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("creates independent queue item that can be modified without affecting UI")
+    function createsIndependentQueueItem()
+      ' Load mock data from JSON file
+      mockData = MockDataLoader.LoadApiData("movie-quickplay-independent")
+
+      ' Use MovieData which has all fields defined in XML (matches production)
+      itemNode = CreateObject("roSGNode", "MovieData")
+      itemNode.id = mockData.id
+      itemNode.json = mockData
+      itemNode.title = mockData.name
+      itemNode.startingPoint = 0
+      itemNode.selectedAudioStreamIndex = 0
+
+      quickplay.video(itemNode)
+
+      queueItem = m.global.queueManager.callFunc("getItemByIndex", 0)
+
+      ' Modify queue item further
+      queueItem.startingPoint = 99999999999&
+      queueItem.selectedAudioStreamIndex = 5
+      queueItem.title = "Modified Title"
+
+      ' Original should be completely unchanged
+      m.assertEqual(itemNode.startingPoint, 0&)
+      m.assertEqual(itemNode.selectedAudioStreamIndex, 0)
+      m.assertEqual(itemNode.title, mockData.name)
+    end function
+  end class
+end namespace
