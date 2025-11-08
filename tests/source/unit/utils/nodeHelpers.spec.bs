@@ -87,7 +87,7 @@ namespace tests
     @describe("cloneNode(sourceNode) - independence")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("creates disconnected node that doesnt affect source when modified")
+    @it("creates disconnected node that doesn't affect source when modified")
     function _()
       sourceNode = CreateObject("roSGNode", "ContentNode")
       sourceNode.addFields({
