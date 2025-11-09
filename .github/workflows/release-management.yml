@@ -133,14 +133,13 @@ jobs:
           GH_TOKEN: ${{ secrets.JELLYROCK_BOT_TOKEN }}
         run: |
           BRANCH_NAME="${{ steps.extract_version.outputs.branch_name }}"
-          PR_INFO=$(gh pr list --head "$BRANCH_NAME" --base main --json number,state | jq -r '.[0]')
+          PR_COUNT=$(gh pr list --head "$BRANCH_NAME" --base main --state open --json number 2>/dev/null | jq 'length')
 
-          if [[ "$PR_INFO" != "null" ]]; then
-            PR_NUMBER=$(echo "$PR_INFO" | jq -r '.number')
-            PR_STATE=$(echo "$PR_INFO" | jq -r '.state')
+          if [[ "$PR_COUNT" -gt 0 ]]; then
+            PR_NUMBER=$(gh pr list --head "$BRANCH_NAME" --base main --state open --json number 2>/dev/null | jq -r '.[0].number')
             echo "pr_exists=true" >> $GITHUB_OUTPUT
             echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
-            echo "✅ Found existing PR #$PR_NUMBER with state: $PR_STATE"
+            echo "✅ Found existing PR #$PR_NUMBER"
           else
             echo "pr_exists=false" >> $GITHUB_OUTPUT
             echo "pr_number=" >> $GITHUB_OUTPUT
