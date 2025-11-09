@@ -1,5 +1,5 @@
 <!-- markdownlint-disable MD041 -->
-![JellyRock](resources/branding/release/channel-poster_sd.png "JellyRock")
+[![JellyRock](resources/branding/release/channel-poster_sd.png "Download JellyRock ")](https://channelstore.roku.com/details/232f9e82db11ce628e3fe7e01382a330:a85d6e9e520567806e8dae1c0cabadd5/jellyrock)
 
 [![Current Release](https://img.shields.io/github/release/cewert/jellyrock.svg?logo=github "Current Release")](https://github.com/cewert/jellyrock/releases)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/cewert/jellyrock/build.yml?logo=github&branch=main "Build Status")](https://github.com/cewert/jellyrock/actions/workflows/build.yml?query=branch%3Amain)
