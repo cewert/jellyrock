@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- Fix audio stream selection regression ([#151](https://github.com/cewert/jellyrock/pull/151))
 - Fix duplicate video player creation on quickPlay ([#148](https://github.com/cewert/jellyrock/pull/148))
 
 ## [1.1.1](https://github.com/cewert/jellyrock/compare/v1.1.0...v1.1.1) - 2025-11-07
