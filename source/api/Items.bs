@@ -4,17 +4,18 @@ import "pkg:/source/enums/SubtitleSelection.bs"
 import "pkg:/source/utils/deviceCapabilities.bs"
 import "pkg:/source/utils/misc.bs"
 
-function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioTrackIndex = -1 as integer, subtitleTrackIndex = SubtitleSelection.none as integer, startTimeTicks = 0 as longinteger, forceMp3 = false as boolean, videoMetadata = invalid as dynamic)
-  params = {
+function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioTrackIndex = -1 as integer, subtitleTrackIndex = SubtitleSelection.none as integer, startTimeTicks = 0& as longinteger, videoMetadata = invalid as dynamic)
+  postData = {
     "UserId": m.global.user.id,
     "StartTimeTicks": startTimeTicks,
-    "IsPlayback": true,
-    "AutoOpenLiveStream": true,
-    "MaxStreamingBitrate": "140000000",
-    "MaxStaticBitrate": "140000000",
-    "SubtitleStreamIndex": subtitleTrackIndex
+    "AutoOpenLiveStream": true
+    ' "AlwaysBurnInSubtitleWhenTranscoding": true
   }
-  deviceProfile = getDeviceProfile()
+  postData.DeviceProfile = getDeviceProfile()
+
+  if subtitleTrackIndex <> SubtitleSelection.none and subtitleTrackIndex <> SubtitleSelection.notset
+    postData.SubtitleStreamIndex = subtitleTrackIndex
+  end if
 
   ' Note: Jellyfin v10.9+ now remuxs LiveTV and does not allow DirectPlay anymore.
   ' Because of this, we need to tell the server "EnableDirectPlay = false" so that we receive the
@@ -22,40 +23,39 @@ function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioT
   ' The web handles this by disabling EnableDirectPlay on a Retry, but we don't currently Retry a Live
   ' TV stream, thus we just turn it off on the first try here.
   if mediaSourceId <> ""
-    params.MediaSourceId = mediaSourceId
+    postData.MediaSourceId = mediaSourceId
   else
     ' No mediaSourceId? Must be LiveTV...
-    params.EnableDirectPlay = false
+    postData.EnableDirectPlay = false
   end if
 
-  if audioTrackIndex > -1 and isValid(videoMetadata) and isValid(videoMetadata.json) and isValid(videoMetadata.json.MediaStreams)
-    ' Find the audio stream with the matching Jellyfin index
-    selectedAudioStream = invalid
-    for each stream in videoMetadata.json.MediaStreams
-      if isValid(stream.index) and stream.index = audioTrackIndex
-        selectedAudioStream = stream
-        exit for
-      end if
-    end for
+  if audioTrackIndex > -1
+    if isValid(videoMetadata) and isValid(videoMetadata.json) and isValid(videoMetadata.json.MediaStreams)
+      ' Find the audio stream with the matching Jellyfin index
+      selectedAudioStream = invalid
+      for each stream in videoMetadata.json.MediaStreams
+        if isValid(stream.index) and stream.index = audioTrackIndex
+          selectedAudioStream = stream
+          exit for
+        end if
+      end for
 
-    if isValid(selectedAudioStream)
-      params.AudioStreamIndex = audioTrackIndex
-
-      ' force the server to transcode AAC profiles we don't support to MP3 instead of the usual AAC
-      ' TODO: Remove this after server adds support for transcoding AAC from one profile to another
-      if isValid(selectedAudioStream.Codec) and LCase(selectedAudioStream.Codec) = "aac"
-        if isValid(selectedAudioStream.Profile) and LCase(selectedAudioStream.Profile) = "main" or LCase(selectedAudioStream.Profile) = "he-aac"
-          forceMp3 = true
+      if isValid(selectedAudioStream)
+        postData.AudioStreamIndex = audioTrackIndex
+        ' force the server to transcode AAC profiles we don't support to MP3 instead of the usual AAC
+        ' TODO: Remove this after server adds support for transcoding AAC from one profile to another
+        if isValid(selectedAudioStream.Codec) and LCase(selectedAudioStream.Codec) = "aac"
+          if isValid(selectedAudioStream.Profile) and LCase(selectedAudioStream.Profile) = "main" or LCase(selectedAudioStream.Profile) = "he-aac"
+            forceMp3Audio(postData.DeviceProfile)
+          end if
         end if
       end if
     end if
   end if
 
-  if forceMp3 then forceMp3Audio(deviceProfile)
-
-  req = APIRequest(Substitute("Items/{0}/PlaybackInfo", id), params)
+  req = APIRequest(Substitute("Items/{0}/PlaybackInfo", id))
   req.SetRequest("POST")
-  return postJson(req, FormatJson({ "DeviceProfile": deviceProfile }))
+  return postJson(req, FormatJson(postData))
 end function
 
 ' Search across all libraries

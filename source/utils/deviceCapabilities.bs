@@ -16,7 +16,7 @@ function getDeviceCapabilities() as object
     "SupportsContentUploading": false,
     "SupportsSync": false,
     "DeviceProfile": getDeviceProfile(),
-    "AppStoreUrl": ""
+    "AppStoreUrl": "https://channelstore.roku.com/details/232f9e82db11ce628e3fe7e01382a330:a85d6e9e520567806e8dae1c0cabadd5/jellyrock"
   }
 
   return deviceProfile
@@ -30,20 +30,14 @@ function getDeviceProfile() as object
     "Identification": {
       "FriendlyName": globalDevice.friendlyName,
       "ModelNumber": globalDevice.model,
-      "SerialNumber": "string",
       "ModelName": globalDevice.name,
       "ModelDescription": "Type: " + globalDevice.modelType,
       "Manufacturer": globalDevice.modelDetails.VendorName
     },
-    "FriendlyName": globalDevice.friendlyName,
-    "Manufacturer": globalDevice.modelDetails.VendorName,
-    "ModelName": globalDevice.name,
-    "ModelDescription": "Type: " + globalDevice.modelType,
-    "ModelNumber": globalDevice.model,
-    "SerialNumber": globalDevice.serial,
     "MaxStreamingBitrate": 120000000,
     "MaxStaticBitrate": 100000000,
-    "MusicStreamingTranscodingBitrate": 192000,
+    "MusicStreamingTranscodingBitrate": 320000, ' 320 kbps
+    "MaxStaticMusicBitrate": 500000, ' 500 kbps - max bitrate for OGG files
     "DirectPlayProfiles": GetDirectPlayProfiles(),
     "TranscodingProfiles": getTranscodingProfiles(),
     "ContainerProfiles": getContainerProfiles(),

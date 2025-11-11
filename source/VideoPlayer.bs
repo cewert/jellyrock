@@ -198,7 +198,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
     end if
   end if
 
-  m.playbackInfo = ItemPostPlaybackInfo(video.id, mediaSourceId, audio_stream_idx, subtitle_idx, playbackPosition, false, meta)
+  m.playbackInfo = ItemPostPlaybackInfo(video.id, mediaSourceId, audio_stream_idx, subtitle_idx, playbackPosition, meta)
   video.videoId = video.id
   video.mediaSourceId = mediaSourceId
   video.audioIndex = audio_stream_idx
