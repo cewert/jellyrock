@@ -688,18 +688,8 @@ sub onState()
     print m.top.errorInfo
 
     if not m.playReported and m.top.transcodeAvailable
+      m.log.info("retrying with transcoding", m.currentItem.id, m.top.SelectedSubtitle, m.top.audioIndex)
       m.top.retryWithTranscoding = true ' If playback was not reported, retry with transcoding
-    else if m.top.errorStr = "decoder:pump:Unsupported AAC stream."
-      m.log.info("retrying video with mp3 audio stream", m.currentItem.id, m.top.SelectedSubtitle, m.top.audioIndex)
-
-      m.top.unobserveField("state")
-      m.LoadMetaDataTask.forceMp3 = true
-      m.LoadMetaDataTask.selectedSubtitleIndex = m.top.SelectedSubtitle
-      m.LoadMetaDataTask.selectedAudioStreamIndex = m.top.audioIndex
-      m.LoadMetaDataTask.itemId = m.currentItem.id
-      m.LoadMetaDataTask.observeField("content", "onVideoContentLoaded")
-
-      m.LoadMetaDataTask.control = "RUN"
     else
       ' If an error was encountered, Display dialog
       m.top.unobserveField("state")
