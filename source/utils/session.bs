@@ -198,8 +198,9 @@ namespace user
       userNode.authToken = myAuthToken
     end if
 
-    ' Create friendly name
-    regex = CreateObject("roRegex", "[^a-zA-Z0-9\ \-\_]", "")
+    ' Create friendly name (URL-safe, no spaces or special chars)
+    ' Used for serverDeviceName which appears in URLs and HTTP headers
+    regex = CreateObject("roRegex", "[^a-zA-Z0-9\-\_]", "")
     friendlyName = regex.ReplaceAll(userNode.name, "")
     userNode.friendlyName = friendlyName
 
