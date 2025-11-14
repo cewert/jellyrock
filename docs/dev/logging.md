@@ -52,11 +52,11 @@ end class
 Use these methods for structured logging:
 
 | Level | Use For | Examples |
-|-------|---------|----------|
+| ------- | --------- | ---------- |
 | `m.log.error` | **Crashes & Critical Failures** | Auth failure, server unreachable, video won't play |
 | `m.log.warn` | **Issues with Fallbacks** | Missing data (using defaults), retry attempts, deprecated usage |
 | `m.log.info` | **Important User Events** | Major app state changes, video start/stop, login success, etc. |
-| `m.log.verbose` | **Detailed Operations** | function entry/exit, API calls, data processing  |
+| `m.log.verbose` | **Detailed Operations** | function entry/exit, API calls, data processing |
 | `m.log.debug` | **Variable Values & Logic** | Loop contents, conditional branches, object dumps |
 
 All accept a message and up to 9 values:
