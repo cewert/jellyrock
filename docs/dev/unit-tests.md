@@ -77,7 +77,7 @@ All tests in JellyRock:
 ### Essential Annotations
 
 | Annotation | Purpose | Example |
-|-----------|---------|---------|
+| ----------- | --------- | --------- |
 | `@suite("name")` | Define test suite (required) | `@suite("User Tests")` |
 | `@describe("name")` | Group related tests | `@describe("Authentication")` |
 | `@it("description")` | Individual test case | `@it("validates input")` |
@@ -145,7 +145,7 @@ All assertions are called on `m`: `m.assertSomething(actual, expected)`.
 ### Most Common Assertions
 
 | Assertion | Purpose | Example |
-|-----------|---------|---------|
+| ----------- | --------- | --------- |
 | `assertTrue(val)` | Assert true | `m.assertTrue(isValid(obj))` |
 | `assertFalse(val)` | Assert false | `m.assertFalse(isEmpty)` |
 | `assertEqual(act, exp)` | Values equal | `m.assertEqual(result, 42)` |
@@ -196,7 +196,7 @@ All test suites **MUST** extend `tests.BaseTestSuite`, which provides:
 ### Helper Methods
 
 | Method | Purpose |
-|--------|---------|
+| -------- | --------- |
 | `loadTestUser(userName)` | Load mock user from JSON file in `tests/source/mocks/users/` |
 | `setTestDisplaySetting(libId, key, val)` | Set single display setting for testing |
 | `getTestServer()` | Get local server reference (minimizes rendezvous) |
