@@ -685,14 +685,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   getCommitsSince(fromTag, toTag = 'HEAD') {
     try {
       const range = fromTag ? `${fromTag}..${toTag}` : toTag;
+      // Use custom delimiter to separate commits, then extract hash and first line of message
+      // %h = abbreviated hash, %B = full commit message
       const gitLog = execSync(
-        `git log ${range} --oneline --first-parent`,
+        `git log ${range} --pretty=format:"COMMIT_START%h%nCOMMIT_MSG_START%n%B%nCOMMIT_END" --first-parent`,
         { encoding: 'utf8' }
       ).trim();
 
       if (!gitLog) return [];
 
-      return gitLog.split('\n').map(line => {
+      // Split by commit delimiter and process each commit
+      const commits = gitLog.split('COMMIT_START').filter(c => c.trim());
+
+      return commits.map(commitBlock => {
+        // Extract hash and message
+        const lines = commitBlock.split('\n');
+        const commitHash = lines[0].trim();
+        const msgStartIndex = lines.findIndex(l => l === 'COMMIT_MSG_START');
+        const msgEndIndex = lines.findIndex(l => l === 'COMMIT_END');
+
+        if (msgStartIndex === -1 || msgEndIndex === -1) return null;
+
+        // Get all message lines between markers, filter empty lines, take first non-empty line
+        const messageLines = lines.slice(msgStartIndex + 1, msgEndIndex).filter(l => l.trim());
+        const firstLine = messageLines[0] || '';
+
+        // Now process this first line as before
+        const line = `${commitHash} ${firstLine}`;
+
         // Parse PR merges
         const mergeMatch = line.match(/^([a-f0-9]+)\s+Merge pull request #(\d+) from .+$/);
         if (mergeMatch) {
@@ -729,10 +749,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
         }
 
         // Parse regular commits
-        const prMatch = line.match(/\(#(\d+)\)$/);
+        const prMatch = firstLine.match(/\(#(\d+)\)$/);
         const prNumber = prMatch ? prMatch[1] : null;
-        const message = prMatch ? line.replace(/\s*\(#\d+\)$/, '') : line;
-        const [hash, ...messageParts] = message.split(' ');
+        const commitMessage = prMatch ? firstLine.replace(/\s*\(#\d+\)$/, '') : firstLine;
 
         let isDependency = false;
         let isReleasePrep = false;
@@ -743,10 +762,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
               { encoding: 'utf8', stdio: 'pipe' }
             ).trim();
             const parsed = JSON.parse(prInfo);
-            isDependency = parsed.labels && parsed.labels.some(label => 
+            isDependency = parsed.labels && parsed.labels.some(label =>
               label.toLowerCase().includes('depend') || label.toLowerCase().includes('deps')
             );
-            isReleasePrep = parsed.labels && parsed.labels.some(label => 
+            isReleasePrep = parsed.labels && parsed.labels.some(label =>
               label.toLowerCase().includes('release-prep')
             );
           } catch (error) {
@@ -758,13 +777,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
         }
 
         return {
-          hash: hash,
-          message: messageParts.join(' ').trim(),
+          hash: commitHash,
+          message: commitMessage,
           prNumber: prNumber,
           isDependency: isDependency,
           isReleasePrep: isReleasePrep
         };
       }).filter(commit => {
+        // Filter out null commits (malformed)
+        if (!commit) return false;
+
         // Filter out automated commits and merge commits
         const msg = commit.message.toLowerCase();
         return !msg.match(/^(bump version|release v|version bump|docs: sync changelog|docs: update changelog)/) &&
