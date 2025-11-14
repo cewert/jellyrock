@@ -34,10 +34,10 @@ function getDeviceProfile() as object
       "ModelDescription": "Type: " + globalDevice.modelType,
       "Manufacturer": globalDevice.modelDetails.VendorName
     },
-    "MaxStreamingBitrate": 120000000,
-    "MaxStaticBitrate": 100000000,
-    "MusicStreamingTranscodingBitrate": 320000, ' 320 kbps
-    "MaxStaticMusicBitrate": 500000, ' 500 kbps - max bitrate for OGG files
+    "MaxStreamingBitrate": 140000000,
+    "MaxStaticBitrate": 140000000,
+    "MusicStreamingTranscodingBitrate": 192000, ' 192 kbps
+    ' "MaxStaticMusicBitrate": 500000,
     "DirectPlayProfiles": GetDirectPlayProfiles(),
     "TranscodingProfiles": getTranscodingProfiles(),
     "ContainerProfiles": getContainerProfiles(),
