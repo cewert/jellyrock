@@ -18,6 +18,10 @@ sub setData()
     m.top.CollectionType = datum.CollectionType
   end if
 
+  if isValid(datum.UserData) and isValid(datum.UserData.Played)
+    m.top.isWatched = datum.UserData.Played
+  end if
+
   ' Set appropriate Images for Wide and Tall based on type
 
   if LCase(datum.type) = "collectionfolder" or LCase(datum.type) = "userview"
@@ -38,11 +42,8 @@ sub setData()
     end if
 
   else if datum.type = "Episode" or LCase(datum.type) = "recording" or datum.type = "MusicVideo"
-    m.top.isWatched = datum.UserData.Played
-
-    imgParams = {}
-    imgParams.Append({ "maxHeight": 261 })
-    imgParams.Append({ "maxWidth": 464 })
+    ' Add Tall Poster (Episode Thumbnail)
+    imgParams = { "maxHeight": 261, "maxWidth": 464 }
 
     if isValid(datum.ImageTags) and isValidAndNotEmpty(datum.ImageTags.Primary)
       param = { "Tag": datum.ImageTags.Primary }
@@ -67,9 +68,7 @@ sub setData()
     end if
 
   else if datum.type = "Series"
-    m.top.isWatched = datum.UserData.Played
-    imgParams = { "maxHeight": 261 }
-    imgParams.Append({ "maxWidth": 464 })
+    imgParams = { "maxHeight": 261, "maxWidth": 464 }
 
     if isValid(datum.ImageTags) and isValidAndNotEmpty(datum.ImageTags.Primary)
       imgParams["Tag"] = datum.ImageTags.Primary
@@ -90,11 +89,7 @@ sub setData()
     end if
 
   else if datum.type = "Movie"
-    m.top.isWatched = datum.UserData.Played
-
-    imgParams = {}
-    imgParams.Append({ "maxHeight": 261 })
-    imgParams.Append({ "maxWidth": 175 })
+    imgParams = { "maxHeight": 261, "maxWidth": 175 }
 
     if isValid(datum.ImageTags) and isValidAndNotEmpty(datum.ImageTags.Primary)
       param = { "Tag": datum.ImageTags.Primary }
@@ -117,12 +112,7 @@ sub setData()
       m.top.thumbnailUrl = ""
     end if
   else if datum.type = "Video"
-    m.top.isWatched = datum.UserData.Played
-
-    imgParams = {
-      "maxHeight": 261,
-      "maxWidth": 464
-    }
+    imgParams = { "maxHeight": 261, "maxWidth": 464 }
 
     if isValid(datum.ImageTags) and isValidAndNotEmpty(datum.ImageTags.Primary)
       imgParams.Append({ "Tag": datum.ImageTags.Primary })
