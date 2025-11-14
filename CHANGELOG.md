@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- Fix runtime crash when accessing `UserData` in `HomeData` ([#157](https://github.com/cewert/jellyrock/pull/157))
 - Fix transcoding errors for usernames with spaces (Jellyfin 10.11.x) ([#155](https://github.com/cewert/jellyrock/pull/155))
 
 ## [1.1.2](https://github.com/cewert/jellyrock/compare/v1.1.1...v1.1.2) - 2025-11-09
