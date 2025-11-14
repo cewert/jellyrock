@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- revert out of scope changes from #154 - revert changes to music bitrate - move max bitrate values from postinfo to main device profile ([62b82fb](https://github.com/cewert/jellyrock/commit/62b82fb))
 - Move AAC profile detection to playback initialization ([#154](https://github.com/cewert/jellyrock/pull/154))
 
 ### Fixed
