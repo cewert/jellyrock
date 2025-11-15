@@ -125,7 +125,7 @@ namespace tests
     @it("uses hardware optimization when multiple language matches exist")
     function _()
       streams = [
-        { Type: "audio", index: 1, Language: "eng", index: 1, Language: "eng", channels: 6, codec: "ac3", IsDefault: false },
+        { Type: "audio", index: 1, Language: "eng", channels: 6, codec: "ac3", IsDefault: false },
         { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: true }
       ]
       ' Both match language, ignore IsDefault flag, pick higher quality (6-channel)
