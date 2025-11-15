@@ -15,6 +15,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Fix audio/subtitle stream selection for LoadVideoContentTask ([#168](https://github.com/cewert/jellyrock/pull/168))
 
+### Dependencies
+
+- Update spellchecker-cli from v7.0.0 to v7.0.1 ([#170](https://github.com/cewert/jellyrock/pull/170))
+
 ## [1.1.3](https://github.com/cewert/jellyrock/compare/v1.1.2...v1.1.3) - 2025-11-14
 
 ### Changed
