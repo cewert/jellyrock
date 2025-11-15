@@ -297,7 +297,7 @@ end sub
 '
 ' @param {object} meta - metadata object containing MediaStreams
 ' @param {integer} selectedAudioIndex - index of selected audio stream
-' @return {integer} indicating the default track's server-side index. Defaults to {SubtitleSelection.none} is one is not found
+' @return {integer} indicating the default track's server-side index. Defaults to {SubtitleSelection.none} if one is not found
 function defaultSubtitleTrackFromVid(meta as object, selectedAudioIndex as integer) as integer
   userSession = m.global.user
   if userSession.config.subtitleMode = "None"

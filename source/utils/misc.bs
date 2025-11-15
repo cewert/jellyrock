@@ -734,7 +734,9 @@ function findPreferredAudioStreamIndex(streams as dynamic, playDefault as dynami
     end if
     ' Fallback: return first default audio stream's Jellyfin index
     if defaultStreams.Count() > 0
-      return defaultStreams[0].index
+      if isValid(defaultStreams[0].index)
+        return defaultStreams[0].index
+      end if
     end if
   end if
 
