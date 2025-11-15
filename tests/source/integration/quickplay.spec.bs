@@ -138,7 +138,7 @@ namespace tests
       quickplay.video(itemNode)
 
       queueItem = m.global.queueManager.callFunc("getItemByIndex", 0)
-      ' Queue item should have audio stream set (by VideoDefaults)
+      ' Queue item should have audio stream set (by streamSelection logic)
       m.assertNotInvalid(queueItem.selectedAudioStreamIndex)
       ' Original should be unchanged
       m.assertEqual(itemNode.selectedAudioStreamIndex, 0)

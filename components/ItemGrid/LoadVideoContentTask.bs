@@ -8,6 +8,7 @@ import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/deviceCapabilities.bs"
 import "pkg:/source/utils/misc.bs"
 import "pkg:/source/utils/session.bs"
+import "pkg:/source/utils/streamSelection.bs"
 
 sub init()
   m.top.functionName = "loadItems"
@@ -80,7 +81,7 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
   ' Task field > 0 means user manually selected from MovieDetails/TVListDetails - preserve it
   if m.top.selectedAudioStreamIndex = 0
     if isValid(meta.json) and isValid(meta.json.MediaStreams)
-      audio_stream_idx = findPreferredAudioStreamIndex(meta.json.MediaStreams, userSettings.playbackPlayDefaultAudioTrack, userSession.config.audioLanguagePreference)
+      audio_stream_idx = findBestAudioStreamIndex(meta.json.MediaStreams, userSettings.playbackPlayDefaultAudioTrack, userSession.config.audioLanguagePreference)
     else
       ' MediaStreams not available - keep existing behavior of using 0
       ' This should never happen since ItemMetaData() just fetched metadata
