@@ -37,13 +37,6 @@ sub loadItems()
     end if
   end if
 
-  if m.top.selectedAudioStreamIndex = 0
-    currentItem = queueManager.callFunc("getCurrentItem")
-    if isValid(currentItem) and isValid(currentItem.json)
-      m.top.selectedAudioStreamIndex = FindPreferredAudioStream(currentItem.json.MediaStreams)
-    end if
-  end if
-
   id = m.top.itemId
   mediaSourceId = invalid
   audio_stream_idx = m.top.selectedAudioStreamIndex
@@ -81,6 +74,19 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
   queueManager = m.global.queueManager
   userSession = m.global.user
   userSettings = userSession.settings
+
+  ' Re-determine audio stream index if no manual selection was made
+  ' Task field = 0 means no manual selection (default value)
+  ' Task field > 0 means user manually selected from MovieDetails/TVListDetails - preserve it
+  if m.top.selectedAudioStreamIndex = 0
+    if isValid(meta.json) and isValid(meta.json.MediaStreams)
+      audio_stream_idx = findPreferredAudioStreamIndex(meta.json.MediaStreams, userSettings.playbackPlayDefaultAudioTrack, userSession.config.audioLanguagePreference)
+    else
+      ' MediaStreams not available - keep existing behavior of using 0
+      ' This should never happen since ItemMetaData() just fetched metadata
+      audio_stream_idx = 0
+    end if
+  end if
 
   if isValid(meta.json.MediaSources[0].RunTimeTicks)
     if meta.json.MediaSources[0].RunTimeTicks = 0
@@ -179,11 +185,14 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
     return
   end if
 
+  ' Playback info can be logged here for debugging playback issues
+  print "LoadItems_AddVideoContent() m.playbackInfo =", m.playbackInfo
+
   addSubtitlesToVideo(video, meta)
 
   ' Enable default subtitle track
   if subtitle_idx = SubtitleSelection.notset
-    defaultSubtitleIndex = defaultSubtitleTrackFromVid(video.id)
+    defaultSubtitleIndex = defaultSubtitleTrackFromVid(meta, audio_stream_idx)
 
     if defaultSubtitleIndex <> SubtitleSelection.none
       video.SelectedSubtitle = defaultSubtitleIndex
@@ -198,7 +207,7 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
 
       addSubtitlesToVideo(video, meta)
     else
-      video.SelectedSubtitle = subtitle_idx
+      video.SelectedSubtitle = SubtitleSelection.none
     end if
   else
     video.SelectedSubtitle = subtitle_idx
@@ -284,17 +293,16 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
   end if
 end sub
 
-' defaultSubtitleTrackFromVid: Identifies the default subtitle track given video id
+' defaultSubtitleTrackFromVid: Identifies the default subtitle track given metadata and audio index
 '
-' @param {dynamic} videoID - id of video user is playing
+' @param {object} meta - metadata object containing MediaStreams
+' @param {integer} selectedAudioIndex - index of selected audio stream
 ' @return {integer} indicating the default track's server-side index. Defaults to {SubtitleSelection.none} is one is not found
-function defaultSubtitleTrackFromVid(videoID) as integer
+function defaultSubtitleTrackFromVid(meta as object, selectedAudioIndex as integer) as integer
   userSession = m.global.user
   if userSession.config.subtitleMode = "None"
     return SubtitleSelection.none ' No subtitles desired: return none
   end if
-
-  meta = ItemMetaData(videoID)
 
   if not isValid(meta) then return SubtitleSelection.none
   if not isValid(meta.json) then return SubtitleSelection.none
@@ -307,7 +315,7 @@ function defaultSubtitleTrackFromVid(videoID) as integer
   ' Find the audio stream with the matching Jellyfin index
   audioMediaStream = invalid
   for each stream in meta.json.MediaSources[0].MediaStreams
-    if isValid(stream.index) and stream.index = m.top.selectedAudioStreamIndex
+    if isValid(stream.index) and stream.index = selectedAudioIndex
       audioMediaStream = stream
       exit for
     end if
@@ -558,13 +566,16 @@ sub addNextEpisodesToQueue(showID)
   end if
 
   url = Substitute("Shows/{0}/Episodes", showID)
-  urlParams = { "UserId": m.global.user.id }
-  urlParams.Append({ "StartItemId": videoID })
-  urlParams.Append({ "Limit": 50 })
+  urlParams = {
+    "UserId": m.global.user.id,
+    "StartItemId": videoID,
+    "Limit": 50
+  }
   resp = APIRequest(url, urlParams)
   data = getJson(resp)
 
   if isValid(data) and data.Items.Count() > 1
+    ' Start at index 1 to skip the current episode
     for i = 1 to data.Items.Count() - 1
       queueManager.callFunc("push", data.Items[i])
     end for
@@ -623,26 +634,4 @@ function sortSubtitles(id as string, MediaStreams)
   tracks["forced"].append(tracks["default"])
 
   return { "all": tracks["forced"], "text": tracks["text"] }
-end function
-
-' Thin wrapper that handles optional API fetch then calls utility function
-function FindPreferredAudioStream(streams as dynamic) as integer
-  ' ONE rendezvous to get user node
-  localUser = m.global.user
-  preferredLanguage = localUser.config.audioLanguagePreference
-  playDefault = localUser.config.playDefaultAudioTrack
-
-  ' Do we already have the MediaStreams or not?
-  if not isValid(streams)
-    url = Substitute("Users/{0}/Items/{1}", localUser.id, m.top.itemId)
-    resp = APIRequest(url)
-    jsonResponse = getJson(resp)
-
-    if not isValid(jsonResponse) or not isValid(jsonResponse.MediaStreams) then return 0
-
-    streams = jsonResponse.MediaStreams
-  end if
-
-  ' Call utility function with user settings
-  return findPreferredAudioStreamIndex(streams, playDefault, preferredLanguage)
 end function
