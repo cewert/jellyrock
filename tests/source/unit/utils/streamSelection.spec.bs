@@ -9,19 +9,28 @@ namespace tests
       super.setup()
     end function
 
+    ' Helper to create mock hardware capabilities for deterministic testing
+    private function createMockCapabilities(maxChannels as integer, supports8Channel as boolean) as object
+      return {
+        maxChannels: maxChannels,
+        supports8Channel: supports8Channel,
+        _isMock: true ' Flag to indicate testing mode - skip real hardware checks
+      }
+    end function
+
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("Edge cases")
+    @describe("Edge cases - hardware independent")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("returns 0 when streams is invalid")
     function _()
-      result = findBestAudioStreamIndex(invalid, false, "eng")
+      result = findBestAudioStreamIndex(invalid, false, "eng", m.createMockCapabilities(2, false))
       m.assertEqual(result, 0)
     end function
 
     @it("returns 0 when streams is empty array")
     function _()
-      result = findBestAudioStreamIndex([], false, "eng")
+      result = findBestAudioStreamIndex([], false, "eng", m.createMockCapabilities(2, false))
       m.assertEqual(result, 0)
     end function
 
@@ -31,7 +40,7 @@ namespace tests
         { Type: "Video", index: 0 },
         { Type: "Subtitle", index: 1 }
       ]
-      result = findBestAudioStreamIndex(streams, false, "eng")
+      result = findBestAudioStreamIndex(streams, false, "eng", m.createMockCapabilities(2, false))
       m.assertEqual(result, 0)
     end function
 
@@ -42,57 +51,45 @@ namespace tests
         { Type: "audio", index: 1, Language: "jpn", channels: 2, codec: "aac", IsDefault: false },
         { Type: "Subtitle", index: 2 }
       ]
-      result = findBestAudioStreamIndex(streams, false, "eng")
+      result = findBestAudioStreamIndex(streams, false, "eng", m.createMockCapabilities(2, false))
       m.assertEqual(result, 1)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("playDefault = true (IsDefault flag priority)")
+    @describe("playDefault = true (IsDefault flag priority) - stereo hardware")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("returns only IsDefault stream when exactly one exists")
     function _()
       streams = [
-        { Type: "audio", index: 1, Language: "jpn", channels: 6, codec: "ac3", IsDefault: false },
+        { Type: "audio", index: 1, Language: "jpn", channels: 2, codec: "aac", IsDefault: false },
         { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: true }
       ]
-      ' Should return English even though Japanese has more channels, because IsDefault = true
-      result = findBestAudioStreamIndex(streams, true, "eng")
+      ' Should return English because IsDefault = true, regardless of language preference
+      result = findBestAudioStreamIndex(streams, true, "jpn", m.createMockCapabilities(2, false))
       m.assertEqual(result, 2)
     end function
 
     @it("uses language preference as tiebreaker when multiple IsDefault streams exist")
     function _()
       streams = [
-        { Type: "audio", index: 1, Language: "jpn", channels: 6, codec: "ac3", IsDefault: true },
+        { Type: "audio", index: 1, Language: "jpn", channels: 2, codec: "aac", IsDefault: true },
         { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: true },
         { Type: "audio", index: 3, Language: "spa", channels: 2, codec: "aac", IsDefault: false }
       ]
       ' Two IsDefault streams - language preference should break the tie
-      result = findBestAudioStreamIndex(streams, true, "eng")
+      result = findBestAudioStreamIndex(streams, true, "eng", m.createMockCapabilities(2, false))
       m.assertEqual(result, 2)
-    end function
-
-    @it("uses hardware optimization when multiple IsDefault streams and no language match")
-    function _()
-      streams = [
-        { Type: "audio", index: 1, Language: "jpn", channels: 6, codec: "ac3", IsDefault: true },
-        { Type: "audio", index: 2, Language: "kor", channels: 2, codec: "aac", IsDefault: true },
-        { Type: "audio", index: 3, Language: "spa", channels: 2, codec: "aac", IsDefault: false }
-      ]
-      ' Two IsDefault streams, neither match English preference - should pick higher quality (6-channel)
-      result = findBestAudioStreamIndex(streams, true, "eng")
-      m.assertEqual(result, 1)
     end function
 
     @it("falls back to language preference when no IsDefault streams exist")
     function _()
       streams = [
-        { Type: "audio", index: 1, Language: "jpn", channels: 6, codec: "ac3", IsDefault: false },
+        { Type: "audio", index: 1, Language: "jpn", channels: 2, codec: "aac", IsDefault: false },
         { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
       ]
       ' No IsDefault streams - should fall back to language preference
-      result = findBestAudioStreamIndex(streams, true, "eng")
+      result = findBestAudioStreamIndex(streams, true, "eng", m.createMockCapabilities(2, false))
       m.assertEqual(result, 2)
     end function
 
@@ -100,10 +97,10 @@ namespace tests
     function _()
       streams = [
         { Type: "audio", index: 1, Language: "jpn", channels: 2, codec: "aac", IsDefault: true },
-        { Type: "audio", index: 2, Language: "eng", channels: 6, codec: "ac3", IsDefault: false }
+        { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
       ]
       ' User prefers English, but Japanese is IsDefault - should return Japanese
-      result = findBestAudioStreamIndex(streams, true, "eng")
+      result = findBestAudioStreamIndex(streams, true, "eng", m.createMockCapabilities(2, false))
       m.assertEqual(result, 1)
     end function
 
@@ -118,7 +115,7 @@ namespace tests
         { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
       ]
       ' Language preference should win, IsDefault should be completely ignored
-      result = findBestAudioStreamIndex(streams, false, "eng")
+      result = findBestAudioStreamIndex(streams, false, "eng", m.createMockCapabilities(6, false))
       m.assertEqual(result, 2)
     end function
 
@@ -129,7 +126,7 @@ namespace tests
         { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: true }
       ]
       ' Both match language, ignore IsDefault flag, pick higher quality (6-channel)
-      result = findBestAudioStreamIndex(streams, false, "eng")
+      result = findBestAudioStreamIndex(streams, false, "eng", m.createMockCapabilities(6, false))
       m.assertEqual(result, 1)
     end function
 
@@ -140,7 +137,7 @@ namespace tests
         { Type: "audio", index: 2, Language: "kor", channels: 2, codec: "aac", IsDefault: false }
       ]
       ' No English streams - should pick best quality (6-channel Japanese)
-      result = findBestAudioStreamIndex(streams, false, "eng")
+      result = findBestAudioStreamIndex(streams, false, "eng", m.createMockCapabilities(6, false))
       m.assertEqual(result, 1)
     end function
 
@@ -158,7 +155,7 @@ namespace tests
         { Type: "audio", index: 1, Language: streamLang, channels: 2, codec: "aac", IsDefault: false },
         { Type: "audio", index: 2, Language: "jpn", channels: 2, codec: "aac", IsDefault: false }
       ]
-      result = findBestAudioStreamIndex(streams, false, prefLang)
+      result = findBestAudioStreamIndex(streams, false, prefLang, m.createMockCapabilities(2, false))
       m.assertEqual(result, 1)
     end function
 
@@ -169,22 +166,22 @@ namespace tests
     @it("handles empty string language preference")
     function _()
       streams = [
-        { Type: "audio", index: 1, Language: "jpn", channels: 6, codec: "ac3", IsDefault: false },
+        { Type: "audio", index: 1, Language: "jpn", channels: 2, codec: "aac", IsDefault: false },
         { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
       ]
-      ' Empty language preference should use hardware optimization
-      result = findBestAudioStreamIndex(streams, false, "")
+      ' Empty language preference should use hardware optimization (picks first on stereo)
+      result = findBestAudioStreamIndex(streams, false, "", m.createMockCapabilities(2, false))
       m.assertEqual(result, 1)
     end function
 
     @it("handles invalid language preference")
     function _()
       streams = [
-        { Type: "audio", index: 1, Language: "jpn", channels: 6, codec: "ac3", IsDefault: false },
+        { Type: "audio", index: 1, Language: "jpn", channels: 2, codec: "aac", IsDefault: false },
         { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
       ]
       ' Invalid language preference should use hardware optimization
-      result = findBestAudioStreamIndex(streams, false, invalid)
+      result = findBestAudioStreamIndex(streams, false, invalid, m.createMockCapabilities(2, false))
       m.assertEqual(result, 1)
     end function
 
@@ -195,22 +192,22 @@ namespace tests
     @it("handles streams with missing Language field")
     function _()
       streams = [
-        { Type: "audio", index: 1, channels: 6, codec: "ac3", IsDefault: false },
+        { Type: "audio", index: 1, channels: 2, codec: "aac", IsDefault: false },
         { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
       ]
       ' Stream 1 has no Language field - should still match English preference
-      result = findBestAudioStreamIndex(streams, false, "eng")
+      result = findBestAudioStreamIndex(streams, false, "eng", m.createMockCapabilities(2, false))
       m.assertEqual(result, 2)
     end function
 
     @it("handles streams with invalid Language field")
     function _()
       streams = [
-        { Type: "audio", index: 1, Language: invalid, channels: 6, codec: "ac3", IsDefault: false },
+        { Type: "audio", index: 1, Language: invalid, channels: 2, codec: "aac", IsDefault: false },
         { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
       ]
       ' Stream 1 has invalid Language - should still match English preference
-      result = findBestAudioStreamIndex(streams, false, "eng")
+      result = findBestAudioStreamIndex(streams, false, "eng", m.createMockCapabilities(2, false))
       m.assertEqual(result, 2)
     end function
 
@@ -223,54 +220,126 @@ namespace tests
       streams = [
         { Type: "audio", Language: "eng", channels: 2, codec: "aac", IsDefault: false }
       ]
-      ' Only stream has no index field - should return 0
-      result = findBestAudioStreamIndex(streams, false, "eng")
+      ' Only stream has no index field - filtered out early, returns 0
+      result = findBestAudioStreamIndex(streams, false, "eng", m.createMockCapabilities(2, false))
       m.assertEqual(result, 0)
     end function
 
     @it("skips streams without index and returns next valid stream")
     function _()
       streams = [
-        { Type: "audio", Language: "eng", channels: 6, codec: "ac3", IsDefault: false },
+        { Type: "audio", Language: "eng", channels: 2, codec: "aac", IsDefault: false },
         { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
       ]
-      ' First match has no index - should return second match
-      result = findBestAudioStreamIndex(streams, false, "eng")
+      ' First match has no index - filtered out, should return second match
+      result = findBestAudioStreamIndex(streams, false, "eng", m.createMockCapabilities(2, false))
       m.assertEqual(result, 2)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("Complex real-world scenarios")
+    @describe("Hardware optimization - 5.1 surround (6-channel)")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("handles anime with Japanese default and English dub")
+    @it("prefers 6-channel over stereo when device supports it")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, Language: "eng", channels: 2, codec: "aac", IsDefault: false },
+        { Type: "audio", index: 2, Language: "eng", channels: 6, codec: "ac3", IsDefault: false }
+      ]
+      ' Both match language, should pick 6-channel on surround-capable device
+      result = findBestAudioStreamIndex(streams, false, "eng", m.createMockCapabilities(6, false))
+      m.assertEqual(result, 2)
+    end function
+
+    @it("uses IsDefault flag first then hardware optimization")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, Language: "eng", channels: 2, codec: "aac", IsDefault: true },
+        { Type: "audio", index: 2, Language: "eng", channels: 6, codec: "ac3", IsDefault: false }
+      ]
+      ' With playDefault=true, should pick IsDefault even if lower quality
+      result = findBestAudioStreamIndex(streams, true, "eng", m.createMockCapabilities(6, false))
+      m.assertEqual(result, 1)
+    end function
+
+    @it("applies hardware optimization to multiple IsDefault streams")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, Language: "jpn", channels: 2, codec: "aac", IsDefault: true },
+        { Type: "audio", index: 2, Language: "eng", channels: 6, codec: "ac3", IsDefault: true }
+      ]
+      ' Both IsDefault, no language match, should pick higher quality (6-channel)
+      result = findBestAudioStreamIndex(streams, true, "spa", m.createMockCapabilities(6, false))
+      m.assertEqual(result, 2)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Hardware optimization - 7.1 passthrough (8-channel)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("prefers 8-channel over 6-channel when passthrough supported")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, Language: "eng", channels: 6, codec: "ac3", IsDefault: false },
+        { Type: "audio", index: 2, Language: "eng", channels: 8, codec: "dts", IsDefault: false }
+      ]
+      ' Both match language, 8-channel passthrough available, should pick 8-channel
+      result = findBestAudioStreamIndex(streams, false, "eng", m.createMockCapabilities(8, true))
+      m.assertEqual(result, 2)
+    end function
+
+    @it("falls back to 6-channel when 8-channel not supported")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, Language: "eng", channels: 6, codec: "ac3", IsDefault: false },
+        { Type: "audio", index: 2, Language: "eng", channels: 8, codec: "dts", IsDefault: false }
+      ]
+      ' Stereo device, should prefer 6-channel over 8-channel (easier to transcode)
+      result = findBestAudioStreamIndex(streams, false, "eng", m.createMockCapabilities(2, false))
+      m.assertEqual(result, 1)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Real-world scenarios")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("handles anime with Japanese default and English dub - stereo device")
     function _()
       streams = [
         { Type: "audio", index: 1, Language: "jpn", channels: 2, codec: "aac", IsDefault: true },
         { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
       ]
       ' playDefault = true: Should pick Japanese (IsDefault), ignore English preference
-      result = findBestAudioStreamIndex(streams, true, "eng")
+      result = findBestAudioStreamIndex(streams, true, "eng", m.createMockCapabilities(2, false))
       m.assertEqual(result, 1)
 
       ' playDefault = false: Should pick English (language preference), ignore IsDefault
-      result = findBestAudioStreamIndex(streams, false, "eng")
+      result = findBestAudioStreamIndex(streams, false, "eng", m.createMockCapabilities(2, false))
       m.assertEqual(result, 2)
     end function
 
-    @it("handles movie with multiple audio formats for same language")
+    @it("handles movie with multiple audio formats for same language - 5.1 device")
     function _()
       streams = [
         { Type: "audio", index: 1, Language: "eng", channels: 2, codec: "aac", IsDefault: false },
         { Type: "audio", index: 2, Language: "eng", channels: 6, codec: "ac3", IsDefault: false },
         { Type: "audio", index: 3, Language: "eng", channels: 8, codec: "dts", IsDefault: false }
       ]
-      ' Should pick best quality available (8-channel if supported, otherwise 6-channel)
-      result = findBestAudioStreamIndex(streams, false, "eng")
-      ' Result depends on hardware capabilities, but should prefer higher channels
-      m.assertNotEqual(result, 0)
-      ' At minimum should not pick stereo when surround is available
-      m.assertNotEqual(result, 1)
+      ' Should pick 6-channel (max supported by device)
+      result = findBestAudioStreamIndex(streams, false, "eng", m.createMockCapabilities(6, false))
+      m.assertEqual(result, 2)
+    end function
+
+    @it("handles movie with multiple audio formats for same language - 7.1 device")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, Language: "eng", channels: 2, codec: "aac", IsDefault: false },
+        { Type: "audio", index: 2, Language: "eng", channels: 6, codec: "ac3", IsDefault: false },
+        { Type: "audio", index: 3, Language: "eng", channels: 8, codec: "dts", IsDefault: false }
+      ]
+      ' Should pick 8-channel (max supported by device)
+      result = findBestAudioStreamIndex(streams, false, "eng", m.createMockCapabilities(8, true))
+      m.assertEqual(result, 3)
     end function
 
     @it("handles playDefault = true with multiple defaults and language tiebreaker")
@@ -281,11 +350,11 @@ namespace tests
         { Type: "audio", index: 3, Language: "spa", channels: 2, codec: "aac", IsDefault: false }
       ]
       ' Two IsDefault with same quality - language should break tie
-      result = findBestAudioStreamIndex(streams, true, "eng")
+      result = findBestAudioStreamIndex(streams, true, "eng", m.createMockCapabilities(6, false))
       m.assertEqual(result, 2)
 
       ' Different language preference
-      result = findBestAudioStreamIndex(streams, true, "jpn")
+      result = findBestAudioStreamIndex(streams, true, "jpn", m.createMockCapabilities(6, false))
       m.assertEqual(result, 1)
     end function
 

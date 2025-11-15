@@ -25,12 +25,15 @@ import "pkg:/source/utils/config.bs"
 ' @param {dynamic} streams - Array of media streams from Jellyfin metadata
 ' @param {dynamic} playDefault - Boolean, if true use IsDefault flag and only use language as tiebreaker
 ' @param {dynamic} preferredLanguage - Three-letter language code (e.g., "eng", "jpn")
+' @param {dynamic} deviceCapabilities - Optional: Device audio capabilities (for testing). If invalid, will detect automatically.
 ' @returns {integer} - Jellyfin index of best audio stream, or 0 if not found
-function findBestAudioStreamIndex(streams as dynamic, playDefault as dynamic, preferredLanguage as dynamic) as integer
+function findBestAudioStreamIndex(streams as dynamic, playDefault as dynamic, preferredLanguage as dynamic, deviceCapabilities = invalid as dynamic) as integer
   if not isValid(streams) or streams.Count() = 0 then return 0
 
-  ' Get device audio capabilities once
-  deviceCapabilities = getDeviceAudioCapabilities()
+  ' Get device audio capabilities (or use provided ones for testing)
+  if not isValid(deviceCapabilities)
+    deviceCapabilities = getDeviceAudioCapabilities()
+  end if
 
   ' Collect all audio streams with valid index fields
   ' Streams without index cannot be selected, so filter them out early
@@ -294,6 +297,21 @@ function isStreamDirectPlayable(stream as object, deviceCapabilities as object) 
   if not isValid(stream.codec) then return false
   if not isValid(stream.channels) then return false
 
+  ' Testing mode: If _isMock flag is present, trust the capabilities without real hardware checks
+  ' This allows deterministic unit testing on any hardware configuration
+  if isValid(deviceCapabilities._isMock) and deviceCapabilities._isMock = true
+    ' For mock mode, assume stream is playable if channels are within device max
+    if stream.channels = 8
+      return deviceCapabilities.supports8Channel
+    else if stream.channels = 6
+      return deviceCapabilities.maxChannels >= 6
+    else if stream.channels = 2
+      return deviceCapabilities.maxChannels >= 2
+    end if
+    return true
+  end if
+
+  ' Production mode: Check actual hardware capabilities
   di = CreateObject("roDeviceInfo")
 
   ' For 8-channel audio, MUST verify with PassThru: 1
