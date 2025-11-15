@@ -1,5 +1,6 @@
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/misc.bs"
+import "pkg:/source/utils/streamSelection.bs"
 
 sub init()
   m.title = m.top.findNode("title")
@@ -92,6 +93,11 @@ sub itemContentChanged()
   ' Update progress bar
   if isValid(itemData.UserData) and isValidAndNotEmpty(itemData.UserData.PlayedPercentage)
     m.poster.playedPercentage = itemData.UserData.PlayedPercentage
+  end if
+
+  ' Set default audio track if not manually selected
+  if item.selectedAudioStreamIndex = 0
+    SetDefaultAudioTrack(itemData, item)
   end if
 
   ' Display current video_codec and check if there is more than one video to choose from...
@@ -188,6 +194,27 @@ function getEndTime() as string
 
   return formatTime(date)
 end function
+
+sub SetDefaultAudioTrack(itemData as object, item as object)
+  ' Extract MediaStreams from itemData
+  mediaStreams = invalid
+  if isValid(itemData.mediaStreams)
+    mediaStreams = itemData.mediaStreams
+  else if isValid(itemData.MediaSources) and isValid(itemData.MediaSources[0]) and isValid(itemData.MediaSources[0].MediaStreams)
+    mediaStreams = itemData.MediaSources[0].MediaStreams
+  end if
+
+  if not isValid(mediaStreams) then return
+
+  ' Get user settings for audio selection
+  localUser = m.global.user
+
+  ' Use new comprehensive audio selection logic
+  selectedIndex = findBestAudioStreamIndex(mediaStreams, localUser.settings.playbackPlayDefaultAudioTrack, localUser.config.audioLanguagePreference)
+
+  ' Set the selected audio stream index on the item node
+  item.selectedAudioStreamIndex = selectedIndex
+end sub
 
 sub focusChanged()
   if m.top.itemHasFocus = true

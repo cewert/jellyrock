@@ -1,0 +1,319 @@
+import "pkg:/source/utils/config.bs"
+
+' streamSelection.bs
+' Comprehensive audio and video stream selection utilities
+' Combines user preferences with hardware capabilities for optimal playback
+
+' findBestAudioStreamIndex: Primary function for selecting the best audio stream
+'
+' Selection priority:
+' 1. User language preference (audioLanguagePreference setting)
+' 2. "Play default track" setting (playDefaultAudioTrack)
+' 3. Hardware capabilities (codec support, channel count)
+' 4. Direct play optimization (prefer streams that avoid transcoding)
+'
+' @param {dynamic} streams - Array of media streams from Jellyfin metadata
+' @param {dynamic} playDefault - Boolean, if true prioritize default-flagged streams
+' @param {dynamic} preferredLanguage - Three-letter language code (e.g., "eng", "jpn")
+' @returns {integer} - Jellyfin index of best audio stream, or 0 if not found
+function findBestAudioStreamIndex(streams as dynamic, playDefault as dynamic, preferredLanguage as dynamic) as integer
+  if not isValid(streams) or streams.Count() = 0 then return 0
+
+  ' Get device audio capabilities once
+  deviceCapabilities = getDeviceAudioCapabilities()
+
+  ' Collect all audio streams
+  audioStreams = []
+  for i = 0 to streams.Count() - 1
+    if LCase(streams[i].Type) = "audio"
+      audioStreams.push(streams[i])
+    end if
+  end for
+
+  if audioStreams.Count() = 0 then return 0
+  if audioStreams.Count() = 1
+    ' Only one audio track - return its index
+    if isValid(audioStreams[0].index)
+      return audioStreams[0].index
+    end if
+    return 0
+  end if
+
+  ' Multiple audio tracks - apply selection logic
+
+  ' STEP 1: Check if "play default track" setting is enabled
+  ' If enabled, we prioritize default-flagged streams but still respect language preference
+  if isValid(playDefault) and playDefault = true
+    defaultStreams = []
+    for i = 0 to audioStreams.Count() - 1
+      if audioStreams[i].IsDefault = true
+        defaultStreams.push(audioStreams[i])
+      end if
+    end for
+
+    ' If we have default streams, check for language match within them
+    if defaultStreams.Count() > 0
+      ' If multiple defaults exist, try to match preferred language
+      if defaultStreams.Count() > 1 and isValid(preferredLanguage) and preferredLanguage <> ""
+        for i = 0 to defaultStreams.Count() - 1
+          if isValid(defaultStreams[i].Language) and LCase(defaultStreams[i].Language) = LCase(preferredLanguage)
+            ' Found default stream matching language preference
+            if isValid(defaultStreams[i].index)
+              return defaultStreams[i].index
+            end if
+          end if
+        end for
+      end if
+
+      ' Return first default stream (language didn't match or only one default)
+      if isValid(defaultStreams[0].index)
+        return defaultStreams[0].index
+      end if
+    end if
+  end if
+
+  ' STEP 2: Search for preferred language stream
+  ' This respects user's language preference above all else
+  if isValid(preferredLanguage) and preferredLanguage <> ""
+    languageMatchedStreams = []
+    for i = 0 to audioStreams.Count() - 1
+      if isValid(audioStreams[i].Language) and LCase(audioStreams[i].Language) = LCase(preferredLanguage)
+        languageMatchedStreams.push(audioStreams[i])
+      end if
+    end for
+
+    ' If we found language matches, apply hardware optimization
+    if languageMatchedStreams.Count() > 0
+      bestStream = selectBestStreamByHardware(languageMatchedStreams, deviceCapabilities)
+      if isValid(bestStream) and isValid(bestStream.index)
+        return bestStream.index
+      end if
+    end if
+  end if
+
+  ' STEP 3: No language match found - apply hardware optimization to all streams
+  ' This ensures we pick the best quality stream the device can handle
+  bestStream = selectBestStreamByHardware(audioStreams, deviceCapabilities)
+  if isValid(bestStream) and isValid(bestStream.index)
+    return bestStream.index
+  end if
+
+  ' STEP 4: Fallback - return first audio stream
+  if isValid(audioStreams[0].index)
+    return audioStreams[0].index
+  end if
+
+  return 0
+end function
+
+' selectBestStreamByHardware: Selects the best audio stream based on device capabilities
+'
+' Priority:
+' 1. Prefer streams matching device's max channel capability (for quality)
+' 2. Among matching streams, prefer direct-playable codecs
+' 3. Fall back intelligently based on channel counts
+'
+' @param {object} audioStreams - Array of audio stream objects
+' @param {object} deviceCapabilities - Device capability info from getDeviceAudioCapabilities()
+' @returns {dynamic} - Best matching audio stream object, or invalid
+function selectBestStreamByHardware(audioStreams as object, deviceCapabilities as object) as dynamic
+  if audioStreams.Count() = 0 then return invalid
+  if audioStreams.Count() = 1 then return audioStreams[0]
+
+  maxChannels = deviceCapabilities.maxChannels
+  supportsPassthrough = deviceCapabilities.supportsPassthrough
+
+  ' Find streams matching our max channel capability
+  channelMatchingStreams = []
+  for each stream in audioStreams
+    if isValid(stream.channels) and stream.channels = maxChannels
+      channelMatchingStreams.push(stream)
+    end if
+  end for
+
+  ' Case 1: We have streams matching our max channel capability
+  if channelMatchingStreams.Count() > 0
+    ' If only one, verify it's actually playable
+    if channelMatchingStreams.Count() = 1
+      stream = channelMatchingStreams[0]
+
+      ' Special handling for 8-channel: requires passthrough, Roku can't natively decode
+      if maxChannels = 8
+        if supportsPassthrough and isStreamDirectPlayable(stream, deviceCapabilities)
+          return stream
+        else
+          ' 8-channel not supported via passthrough - fall back to 6-channel
+          sixChannelStream = findDirectPlayableStreamByChannelCount(audioStreams, 6, deviceCapabilities)
+          if isValid(sixChannelStream) then return sixChannelStream
+          ' No direct-playable 6-channel - look for stereo
+          stereoStream = findDirectPlayableStreamByChannelCount(audioStreams, 2, deviceCapabilities)
+          if isValid(stereoStream) then return stereoStream
+          ' No good options - return the 8-channel anyway (will transcode)
+          return stream
+        end if
+      else
+        ' 6-channel or stereo - verify it's direct playable
+        if isStreamDirectPlayable(stream, deviceCapabilities)
+          return stream
+        end if
+        ' Not direct playable but it's our only match - return it anyway
+        return stream
+      end if
+    end if
+
+    ' Multiple streams match our max channels - pick first direct-playable one
+    for each stream in channelMatchingStreams
+      if isStreamDirectPlayable(stream, deviceCapabilities)
+        return stream
+      end if
+    end for
+
+    ' None are direct-playable - return first one (will transcode)
+    return channelMatchingStreams[0]
+  end if
+
+  ' Case 2: No exact channel match - apply fallback logic
+  if maxChannels = 2
+    ' Device only supports stereo - look for < 8 channel streams to make transcoding easier
+    for each stream in audioStreams
+      if isValid(stream.channels) and stream.channels < 8
+        return stream
+      end if
+    end for
+    ' All streams are 8-channel - return first one
+    return audioStreams[0]
+  else if maxChannels = 6
+    ' Device supports 5.1 - look for 8-channel to preserve surround (will transcode to 5.1)
+    for each stream in audioStreams
+      if isValid(stream.channels) and stream.channels = 8
+        return stream
+      end if
+    end for
+    ' No 8-channel found - return first stream
+    return audioStreams[0]
+  else if maxChannels = 8
+    ' Device supports 7.1 passthrough - look for 6-channel alternative if no 8-channel works
+    sixChannelStream = findDirectPlayableStreamByChannelCount(audioStreams, 6, deviceCapabilities)
+    if isValid(sixChannelStream) then return sixChannelStream
+    ' No 6-channel found - return first stream
+    return audioStreams[0]
+  end if
+
+  ' Final fallback
+  return audioStreams[0]
+end function
+
+' getDeviceAudioCapabilities: Detects device audio codec and channel support
+'
+' Strategy:
+' - Use combined check (no PassThru) for 6-channel and below (safe, checks both)
+' - ALWAYS verify 8-channel with PassThru: 1 (combined check can lie)
+' - Roku max native decode is 6 channels (varies by model)
+' - 8-channel requires HDMI passthrough to receiver/soundbar
+'
+' @returns {object} - AssocArray with maxChannels, supports8Channel
+function getDeviceAudioCapabilities() as object
+  di = CreateObject("roDeviceInfo")
+
+  audioCodecs = ["aac", "ac3", "dts", "eac3"]
+  audioChannels = [6, 2]
+  maxChannels = 2 ' Default to stereo
+  supports8Channel = false
+
+  ' Check combined capability (Roku + HDMI) for 6-channel and below
+  ' Omitting PassThru parameter checks both device and HDMI receiver
+  ' This is safe for 6-channel and below
+  for each codec in audioCodecs
+    for each channelCount in audioChannels
+      if di.CanDecodeAudio({ Codec: codec, ChCnt: channelCount }).Result
+        maxChannels = channelCount
+        exit for
+      end if
+    end for
+    if maxChannels > 2 then exit for
+  end for
+
+  ' Check for 8-channel HDMI passthrough
+  ' CRITICAL: Always use PassThru: 1 for 8-channel verification
+  ' The combined check (no PassThru) can lie about 8-channel support
+  ' Roku devices cannot natively decode 8-channel audio (max is 6)
+  ' PassThru: 1 checks ONLY the HDMI device capability (receiver/soundbar)
+  for each codec in audioCodecs
+    if di.CanDecodeAudio({ Codec: codec, ChCnt: 8, PassThru: 1 }).Result
+      supports8Channel = true
+      maxChannels = 8
+      exit for
+    end if
+  end for
+
+  return {
+    maxChannels: maxChannels,
+    supports8Channel: supports8Channel
+  }
+end function
+
+' isStreamDirectPlayable: Checks if an audio stream can be directly played by the device
+'
+' For 8-channel: MUST use PassThru: 1 (only HDMI passthrough, Roku can't decode 8-channel)
+' For 6-channel and below: Use combined check (no PassThru) - checks both Roku and HDMI
+'
+' @param {object} stream - Audio stream object with codec and channels fields
+' @param {object} deviceCapabilities - Device capability info
+' @returns {boolean} - True if stream can be direct played
+function isStreamDirectPlayable(stream as object, deviceCapabilities as object) as boolean
+  if not isValid(stream) then return false
+  if not isValid(stream.codec) then return false
+  if not isValid(stream.channels) then return false
+
+  di = CreateObject("roDeviceInfo")
+
+  ' For 8-channel audio, MUST verify with PassThru: 1
+  ' Roku cannot natively decode 8-channel (max is 6)
+  ' Combined check can lie about 8-channel support
+  if stream.channels = 8
+    if not deviceCapabilities.supports8Channel then return false
+    result = di.CanDecodeAudio({
+      Codec: LCase(stream.codec),
+      ChCnt: stream.channels,
+      PassThru: 1
+    })
+    return isValid(result) and result.Result = true
+  end if
+
+  ' For 6-channel and below, use combined check (Roku + HDMI)
+  ' This is safe and efficient - checks if either can decode it
+  result = di.CanDecodeAudio({
+    Codec: LCase(stream.codec),
+    ChCnt: stream.channels
+  })
+
+  return isValid(result) and result.Result = true
+end function
+
+' findDirectPlayableStreamByChannelCount: Finds a direct-playable stream with specific channel count
+'
+' @param {object} audioStreams - Array of audio streams
+' @param {integer} targetChannels - Desired channel count (2, 6, or 8)
+' @param {object} deviceCapabilities - Device capability info
+' @returns {dynamic} - Matching stream or invalid
+function findDirectPlayableStreamByChannelCount(audioStreams as object, targetChannels as integer, deviceCapabilities as object) as dynamic
+  if not isValid(audioStreams) then return invalid
+
+  targetChannelStreams = []
+
+  ' Find all streams with target channel count
+  for each stream in audioStreams
+    if isValid(stream.channels) and stream.channels = targetChannels
+      targetChannelStreams.push(stream)
+    end if
+  end for
+
+  ' Check each for direct playability
+  for each stream in targetChannelStreams
+    if isStreamDirectPlayable(stream, deviceCapabilities)
+      return stream
+    end if
+  end for
+
+  return invalid
+end function

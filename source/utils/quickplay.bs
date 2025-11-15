@@ -1,5 +1,5 @@
-import "pkg:/source/classes/VideoDefaults.bs"
 import "pkg:/source/utils/nodeHelpers.bs"
+import "pkg:/source/utils/streamSelection.bs"
 
 ' All of the Quick Play logic seperated by media type
 namespace quickplay
@@ -28,12 +28,22 @@ namespace quickplay
     queueItem = nodeHelpers.cloneNode(itemNode)
     if not isValid(queueItem) then return
 
-    defaults = new VideoDefaults(itemNode)
+    ' Get user session for audio selection
+    localUser = m.global.user
 
-    ' set default video stream
+    ' Extract MediaStreams from itemNode
+    mediaStreams = invalid
+    if isValid(itemNode.json.MediaStreams)
+      mediaStreams = itemNode.json.MediaStreams
+    else if isValid(itemNode.json.MediaSources) and isValid(itemNode.json.MediaSources[0]) and isValid(itemNode.json.MediaSources[0].MediaStreams)
+      mediaStreams = itemNode.json.MediaSources[0].MediaStreams
+    end if
 
-    ' set default audio stream
-    audioStreamIndex = defaults.getDefaultAudioStreamIndex()
+    ' Use new comprehensive audio selection logic
+    audioStreamIndex = 0
+    if isValid(mediaStreams)
+      audioStreamIndex = findBestAudioStreamIndex(mediaStreams, localUser.settings.playbackPlayDefaultAudioTrack, localUser.config.audioLanguagePreference)
+    end if
 
     ' resume playback if possible
     playbackPosition = 0&

@@ -1,6 +1,6 @@
-import "pkg:/source/classes/VideoDefaults.bs"
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/misc.bs"
+import "pkg:/source/utils/streamSelection.bs"
 
 sub init()
   m.extrasGrp = m.top.findnode("extrasGrp")
@@ -270,16 +270,36 @@ sub SetUpAudioOptions(streams)
 end sub
 
 sub SetDefaultAudioTrack(itemData)
-
-  defaults = new VideoDefaults(itemData)
-
-  defaultAudioStream = defaults.getDefaultAudioStream()
-  if not isValid(defaultAudioStream) then return
-
-  if isValid(defaultAudioStream.index)
-    m.top.selectedAudioStreamIndex = defaultAudioStream.index
+  ' Extract MediaStreams from itemData
+  mediaStreams = invalid
+  if isValid(itemData.mediaStreams)
+    mediaStreams = itemData.mediaStreams
+  else if isValid(itemData.MediaSources) and isValid(itemData.MediaSources[0]) and isValid(itemData.MediaSources[0].MediaStreams)
+    mediaStreams = itemData.MediaSources[0].MediaStreams
   end if
-  if isValid(defaultAudioStream.displayTitle)
+
+  if not isValid(mediaStreams) then return
+
+  ' Get user settings for audio selection
+  localUser = m.global.user
+
+  ' Use new comprehensive audio selection logic
+  selectedIndex = findBestAudioStreamIndex(mediaStreams, localUser.settings.playbackPlayDefaultAudioTrack, localUser.config.audioLanguagePreference)
+
+  ' Find the audio stream with the selected index to get its displayTitle
+  defaultAudioStream = invalid
+  for each stream in mediaStreams
+    if LCase(stream.Type) = "audio" and isValid(stream.index) and stream.index = selectedIndex
+      defaultAudioStream = stream
+      exit for
+    end if
+  end for
+
+  ' Set the selected audio stream index
+  m.top.selectedAudioStreamIndex = selectedIndex
+
+  ' Update UI with audio codec information
+  if isValid(defaultAudioStream) and isValid(defaultAudioStream.displayTitle)
     setFieldText("audio_codec", tr("Audio") + ": " + defaultAudioStream.displayTitle)
   end if
 end sub
