@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Unify audio stream selection with hardware detection ([#169](https://github.com/cewert/jellyrock/pull/169))
+
 ### Fixed
 
 - Fix audio/subtitle stream selection for LoadVideoContentTask ([#168](https://github.com/cewert/jellyrock/pull/168))
