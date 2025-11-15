@@ -6,14 +6,24 @@ import "pkg:/source/utils/config.bs"
 
 ' findBestAudioStreamIndex: Primary function for selecting the best audio stream
 '
-' Selection priority:
-' 1. User language preference (audioLanguagePreference setting)
-' 2. "Play default track" setting (playDefaultAudioTrack)
-' 3. Hardware capabilities (codec support, channel count)
-' 4. Direct play optimization (prefer streams that avoid transcoding)
+' Selection priority when playDefault = true (Jellyfin: "Play default audio track regardless of language"):
+'   1. Filter by IsDefault = true streams (ignore language preference)
+'   2. If multiple IsDefault streams, use language preference as tiebreaker
+'   3. If still multiple or no language match, apply hardware optimization
+'   4. If no IsDefault streams exist, fall back to language preference → hardware optimization
+'
+' Selection priority when playDefault = false:
+'   1. Filter by language preference (completely ignore IsDefault flag)
+'   2. If multiple language matches, apply hardware optimization
+'   3. If no language matches, apply hardware optimization to all streams
+'
+' Hardware optimization:
+'   - Prefer streams matching device's max channel capability
+'   - Among matches, prefer direct-playable codecs
+'   - Fall back intelligently based on channel counts
 '
 ' @param {dynamic} streams - Array of media streams from Jellyfin metadata
-' @param {dynamic} playDefault - Boolean, if true prioritize default-flagged streams
+' @param {dynamic} playDefault - Boolean, if true use IsDefault flag and only use language as tiebreaker
 ' @param {dynamic} preferredLanguage - Three-letter language code (e.g., "eng", "jpn")
 ' @returns {integer} - Jellyfin index of best audio stream, or 0 if not found
 function findBestAudioStreamIndex(streams as dynamic, playDefault as dynamic, preferredLanguage as dynamic) as integer
@@ -22,10 +32,11 @@ function findBestAudioStreamIndex(streams as dynamic, playDefault as dynamic, pr
   ' Get device audio capabilities once
   deviceCapabilities = getDeviceAudioCapabilities()
 
-  ' Collect all audio streams
+  ' Collect all audio streams with valid index fields
+  ' Streams without index cannot be selected, so filter them out early
   audioStreams = []
   for i = 0 to streams.Count() - 1
-    if LCase(streams[i].Type) = "audio"
+    if LCase(streams[i].Type) = "audio" and isValid(streams[i].index)
       audioStreams.push(streams[i])
     end if
   end for
@@ -41,8 +52,8 @@ function findBestAudioStreamIndex(streams as dynamic, playDefault as dynamic, pr
 
   ' Multiple audio tracks - apply selection logic
 
-  ' STEP 1: Check if "play default track" setting is enabled
-  ' If enabled, we prioritize default-flagged streams but still respect language preference
+  ' BRANCH 1: "Play default track" setting is enabled
+  ' Use IsDefault flag as primary filter, language as tiebreaker only
   if isValid(playDefault) and playDefault = true
     defaultStreams = []
     for i = 0 to audioStreams.Count() - 1
@@ -51,29 +62,46 @@ function findBestAudioStreamIndex(streams as dynamic, playDefault as dynamic, pr
       end if
     end for
 
-    ' If we have default streams, check for language match within them
+    ' If we found IsDefault streams, process them
     if defaultStreams.Count() > 0
-      ' If multiple defaults exist, try to match preferred language
-      if defaultStreams.Count() > 1 and isValid(preferredLanguage) and preferredLanguage <> ""
-        for i = 0 to defaultStreams.Count() - 1
-          if isValid(defaultStreams[i].Language) and LCase(defaultStreams[i].Language) = LCase(preferredLanguage)
-            ' Found default stream matching language preference
-            if isValid(defaultStreams[i].index)
-              return defaultStreams[i].index
+      ' Only one IsDefault stream - use hardware optimization on it
+      if defaultStreams.Count() = 1
+        bestStream = selectBestStreamByHardware(defaultStreams, deviceCapabilities)
+        if isValid(bestStream) and isValid(bestStream.index)
+          return bestStream.index
+        end if
+      else
+        ' Multiple IsDefault streams - try language preference as tiebreaker
+        if isValid(preferredLanguage) and preferredLanguage <> ""
+          languageMatchedDefaults = []
+          for i = 0 to defaultStreams.Count() - 1
+            if isValid(defaultStreams[i].Language) and LCase(defaultStreams[i].Language) = LCase(preferredLanguage)
+              languageMatchedDefaults.push(defaultStreams[i])
+            end if
+          end for
+
+          ' If language matched some IsDefault streams, use hardware optimization on them
+          if languageMatchedDefaults.Count() > 0
+            bestStream = selectBestStreamByHardware(languageMatchedDefaults, deviceCapabilities)
+            if isValid(bestStream) and isValid(bestStream.index)
+              return bestStream.index
             end if
           end if
-        end for
-      end if
+        end if
 
-      ' Return first default stream (language didn't match or only one default)
-      if isValid(defaultStreams[0].index)
-        return defaultStreams[0].index
+        ' Language didn't match or not set - use hardware optimization on all IsDefault streams
+        bestStream = selectBestStreamByHardware(defaultStreams, deviceCapabilities)
+        if isValid(bestStream) and isValid(bestStream.index)
+          return bestStream.index
+        end if
       end if
     end if
+
+    ' No IsDefault streams found - fall through to language preference logic
   end if
 
-  ' STEP 2: Search for preferred language stream
-  ' This respects user's language preference above all else
+  ' BRANCH 2: Either playDefault = false OR playDefault = true but no IsDefault streams found
+  ' Use language preference as primary filter (completely ignore IsDefault flag)
   if isValid(preferredLanguage) and preferredLanguage <> ""
     languageMatchedStreams = []
     for i = 0 to audioStreams.Count() - 1
@@ -91,14 +119,13 @@ function findBestAudioStreamIndex(streams as dynamic, playDefault as dynamic, pr
     end if
   end if
 
-  ' STEP 3: No language match found - apply hardware optimization to all streams
-  ' This ensures we pick the best quality stream the device can handle
+  ' FALLBACK: No matches found - apply hardware optimization to all streams
   bestStream = selectBestStreamByHardware(audioStreams, deviceCapabilities)
   if isValid(bestStream) and isValid(bestStream.index)
     return bestStream.index
   end if
 
-  ' STEP 4: Fallback - return first audio stream
+  ' FINAL FALLBACK: Return first audio stream
   if isValid(audioStreams[0].index)
     return audioStreams[0].index
   end if
@@ -121,7 +148,7 @@ function selectBestStreamByHardware(audioStreams as object, deviceCapabilities a
   if audioStreams.Count() = 1 then return audioStreams[0]
 
   maxChannels = deviceCapabilities.maxChannels
-  supportsPassthrough = deviceCapabilities.supportsPassthrough
+  supports8Channel = deviceCapabilities.supports8Channel
 
   ' Find streams matching our max channel capability
   channelMatchingStreams = []
@@ -139,7 +166,7 @@ function selectBestStreamByHardware(audioStreams as object, deviceCapabilities a
 
       ' Special handling for 8-channel: requires passthrough, Roku can't natively decode
       if maxChannels = 8
-        if supportsPassthrough and isStreamDirectPlayable(stream, deviceCapabilities)
+        if supports8Channel and isStreamDirectPlayable(stream, deviceCapabilities)
           return stream
         else
           ' 8-channel not supported via passthrough - fall back to 6-channel
@@ -211,7 +238,9 @@ end function
 ' - Roku max native decode is 6 channels (varies by model)
 ' - 8-channel requires HDMI passthrough to receiver/soundbar
 '
-' @returns {object} - AssocArray with maxChannels, supports8Channel
+' @returns {object} - AssocArray with:
+'   maxChannels (integer: 2, 6, or 8) - Maximum supported audio channels
+'   supports8Channel (boolean) - True if HDMI passthrough supports 8-channel audio
 function getDeviceAudioCapabilities() as object
   di = CreateObject("roDeviceInfo")
 

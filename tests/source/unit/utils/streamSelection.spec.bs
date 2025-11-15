@@ -1,0 +1,294 @@
+import "pkg:/source/utils/streamSelection.bs"
+
+namespace tests
+
+  @suite("streamSelection - findBestAudioStreamIndex()")
+  class StreamSelectionTests extends tests.BaseTestSuite
+
+    protected override function setup()
+      super.setup()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Edge cases")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns 0 when streams is invalid")
+    function _()
+      result = findBestAudioStreamIndex(invalid, false, "eng")
+      m.assertEqual(result, 0)
+    end function
+
+    @it("returns 0 when streams is empty array")
+    function _()
+      result = findBestAudioStreamIndex([], false, "eng")
+      m.assertEqual(result, 0)
+    end function
+
+    @it("returns 0 when no audio streams exist")
+    function _()
+      streams = [
+        { Type: "Video", index: 0 },
+        { Type: "Subtitle", index: 1 }
+      ]
+      result = findBestAudioStreamIndex(streams, false, "eng")
+      m.assertEqual(result, 0)
+    end function
+
+    @it("returns only audio stream when exactly one exists")
+    function _()
+      streams = [
+        { Type: "Video", index: 0 },
+        { Type: "audio", index: 1, Language: "jpn", channels: 2, codec: "aac", IsDefault: false },
+        { Type: "Subtitle", index: 2 }
+      ]
+      result = findBestAudioStreamIndex(streams, false, "eng")
+      m.assertEqual(result, 1)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("playDefault = true (IsDefault flag priority)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns only IsDefault stream when exactly one exists")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, Language: "jpn", channels: 6, codec: "ac3", IsDefault: false },
+        { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: true }
+      ]
+      ' Should return English even though Japanese has more channels, because IsDefault = true
+      result = findBestAudioStreamIndex(streams, true, "eng")
+      m.assertEqual(result, 2)
+    end function
+
+    @it("uses language preference as tiebreaker when multiple IsDefault streams exist")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, Language: "jpn", channels: 6, codec: "ac3", IsDefault: true },
+        { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: true },
+        { Type: "audio", index: 3, Language: "spa", channels: 2, codec: "aac", IsDefault: false }
+      ]
+      ' Two IsDefault streams - language preference should break the tie
+      result = findBestAudioStreamIndex(streams, true, "eng")
+      m.assertEqual(result, 2)
+    end function
+
+    @it("uses hardware optimization when multiple IsDefault streams and no language match")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, Language: "jpn", channels: 6, codec: "ac3", IsDefault: true },
+        { Type: "audio", index: 2, Language: "kor", channels: 2, codec: "aac", IsDefault: true },
+        { Type: "audio", index: 3, Language: "spa", channels: 2, codec: "aac", IsDefault: false }
+      ]
+      ' Two IsDefault streams, neither match English preference - should pick higher quality (6-channel)
+      result = findBestAudioStreamIndex(streams, true, "eng")
+      m.assertEqual(result, 1)
+    end function
+
+    @it("falls back to language preference when no IsDefault streams exist")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, Language: "jpn", channels: 6, codec: "ac3", IsDefault: false },
+        { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
+      ]
+      ' No IsDefault streams - should fall back to language preference
+      result = findBestAudioStreamIndex(streams, true, "eng")
+      m.assertEqual(result, 2)
+    end function
+
+    @it("ignores language preference when single IsDefault stream exists")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, Language: "jpn", channels: 2, codec: "aac", IsDefault: true },
+        { Type: "audio", index: 2, Language: "eng", channels: 6, codec: "ac3", IsDefault: false }
+      ]
+      ' User prefers English, but Japanese is IsDefault - should return Japanese
+      result = findBestAudioStreamIndex(streams, true, "eng")
+      m.assertEqual(result, 1)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("playDefault = false (language preference priority)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns language match and ignores IsDefault flag completely")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, Language: "jpn", channels: 6, codec: "ac3", IsDefault: true },
+        { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
+      ]
+      ' Language preference should win, IsDefault should be completely ignored
+      result = findBestAudioStreamIndex(streams, false, "eng")
+      m.assertEqual(result, 2)
+    end function
+
+    @it("uses hardware optimization when multiple language matches exist")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, Language: "eng", index: 1, Language: "eng", channels: 6, codec: "ac3", IsDefault: false },
+        { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: true }
+      ]
+      ' Both match language, ignore IsDefault flag, pick higher quality (6-channel)
+      result = findBestAudioStreamIndex(streams, false, "eng")
+      m.assertEqual(result, 1)
+    end function
+
+    @it("falls back to hardware optimization when no language match")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, Language: "jpn", channels: 6, codec: "ac3", IsDefault: true },
+        { Type: "audio", index: 2, Language: "kor", channels: 2, codec: "aac", IsDefault: false }
+      ]
+      ' No English streams - should pick best quality (6-channel Japanese)
+      result = findBestAudioStreamIndex(streams, false, "eng")
+      m.assertEqual(result, 1)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Language matching (case insensitive)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("matches language case-insensitively")
+    @params("eng", "eng")
+    @params("ENG", "eng")
+    @params("Eng", "eng")
+    @params("eng", "ENG")
+    function _(streamLang, prefLang)
+      streams = [
+        { Type: "audio", index: 1, Language: streamLang, channels: 2, codec: "aac", IsDefault: false },
+        { Type: "audio", index: 2, Language: "jpn", channels: 2, codec: "aac", IsDefault: false }
+      ]
+      result = findBestAudioStreamIndex(streams, false, prefLang)
+      m.assertEqual(result, 1)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Invalid/missing language preference handling")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("handles empty string language preference")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, Language: "jpn", channels: 6, codec: "ac3", IsDefault: false },
+        { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
+      ]
+      ' Empty language preference should use hardware optimization
+      result = findBestAudioStreamIndex(streams, false, "")
+      m.assertEqual(result, 1)
+    end function
+
+    @it("handles invalid language preference")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, Language: "jpn", channels: 6, codec: "ac3", IsDefault: false },
+        { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
+      ]
+      ' Invalid language preference should use hardware optimization
+      result = findBestAudioStreamIndex(streams, false, invalid)
+      m.assertEqual(result, 1)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Stream without Language field")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("handles streams with missing Language field")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, channels: 6, codec: "ac3", IsDefault: false },
+        { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
+      ]
+      ' Stream 1 has no Language field - should still match English preference
+      result = findBestAudioStreamIndex(streams, false, "eng")
+      m.assertEqual(result, 2)
+    end function
+
+    @it("handles streams with invalid Language field")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, Language: invalid, channels: 6, codec: "ac3", IsDefault: false },
+        { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
+      ]
+      ' Stream 1 has invalid Language - should still match English preference
+      result = findBestAudioStreamIndex(streams, false, "eng")
+      m.assertEqual(result, 2)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Stream without index field")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns 0 when selected stream has no index field")
+    function _()
+      streams = [
+        { Type: "audio", Language: "eng", channels: 2, codec: "aac", IsDefault: false }
+      ]
+      ' Only stream has no index field - should return 0
+      result = findBestAudioStreamIndex(streams, false, "eng")
+      m.assertEqual(result, 0)
+    end function
+
+    @it("skips streams without index and returns next valid stream")
+    function _()
+      streams = [
+        { Type: "audio", Language: "eng", channels: 6, codec: "ac3", IsDefault: false },
+        { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
+      ]
+      ' First match has no index - should return second match
+      result = findBestAudioStreamIndex(streams, false, "eng")
+      m.assertEqual(result, 2)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Complex real-world scenarios")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("handles anime with Japanese default and English dub")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, Language: "jpn", channels: 2, codec: "aac", IsDefault: true },
+        { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
+      ]
+      ' playDefault = true: Should pick Japanese (IsDefault), ignore English preference
+      result = findBestAudioStreamIndex(streams, true, "eng")
+      m.assertEqual(result, 1)
+
+      ' playDefault = false: Should pick English (language preference), ignore IsDefault
+      result = findBestAudioStreamIndex(streams, false, "eng")
+      m.assertEqual(result, 2)
+    end function
+
+    @it("handles movie with multiple audio formats for same language")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, Language: "eng", channels: 2, codec: "aac", IsDefault: false },
+        { Type: "audio", index: 2, Language: "eng", channels: 6, codec: "ac3", IsDefault: false },
+        { Type: "audio", index: 3, Language: "eng", channels: 8, codec: "dts", IsDefault: false }
+      ]
+      ' Should pick best quality available (8-channel if supported, otherwise 6-channel)
+      result = findBestAudioStreamIndex(streams, false, "eng")
+      ' Result depends on hardware capabilities, but should prefer higher channels
+      m.assertNotEqual(result, 0)
+      ' At minimum should not pick stereo when surround is available
+      m.assertNotEqual(result, 1)
+    end function
+
+    @it("handles playDefault = true with multiple defaults and language tiebreaker")
+    function _()
+      streams = [
+        { Type: "audio", index: 1, Language: "jpn", channels: 6, codec: "ac3", IsDefault: true },
+        { Type: "audio", index: 2, Language: "eng", channels: 6, codec: "ac3", IsDefault: true },
+        { Type: "audio", index: 3, Language: "spa", channels: 2, codec: "aac", IsDefault: false }
+      ]
+      ' Two IsDefault with same quality - language should break tie
+      result = findBestAudioStreamIndex(streams, true, "eng")
+      m.assertEqual(result, 2)
+
+      ' Different language preference
+      result = findBestAudioStreamIndex(streams, true, "jpn")
+      m.assertEqual(result, 1)
+    end function
+
+  end class
+
+end namespace
