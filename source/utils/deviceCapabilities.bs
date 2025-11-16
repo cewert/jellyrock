@@ -234,205 +234,204 @@ end function
 function getTranscodingProfiles() as object
   ' ONE rendezvous to get user settings
   globalUserSettings = m.global.user.settings
-
   transcodingProfiles = []
-
   di = CreateObject("roDeviceInfo")
 
-  transcodingContainers = ["mp4", "ts"]
-  ' use strings to preserve order
-  mp4AudioCodecs = "aac"
-  mp4VideoCodecs = "h264"
-  tsAudioCodecs = "aac"
-  tsVideoCodecs = "h264"
+  ' ========================================
+  ' AUDIO CAPABILITY DETECTION
+  ' ========================================
 
-  ' does the users setup support surround sound?
-  maxAudioChannels = "2" ' jellyfin expects this as a string
-  ' in order of preference from left to right
-  audioCodecs = ["eac3", "ac3", "dts", "mp3", "vorbis", "opus", "flac", "alac", "ac4", "pcm", "wma", "wmapro"]
+  ' Detect actual passthrough support for multichannel audio
+  sixChannelPassthruCodecs = getSupportedPassthruCodecs(di, 6)
+  eightChannelPassthruCodecs = getSupportedPassthruCodecs(di, 8)
 
-  if di.GetAudioOutputChannel() = "5.1 surround"
-    maxAudioChannels = "6"
-    for each codec in audioCodecs
-      if di.CanDecodeAudio({ Codec: codec, ChCnt: 8 }).Result
-        maxAudioChannels = "8"
-        exit for
-      end if
-    end for
+  ' Apply user's preferred codec ordering to multichannel codecs
+  preferredCodec = globalUserSettings.playbackPreferredAudioCodec
+  if isValid(preferredCodec) and preferredCodec <> "" and preferredCodec <> "auto"
+    sixChannelPassthruCodecs = reorderByPreference(sixChannelPassthruCodecs, preferredCodec)
+    eightChannelPassthruCodecs = reorderByPreference(eightChannelPassthruCodecs, preferredCodec)
   end if
 
-  ' VIDEO CODECS
-  '
-  ' AVC / h264 / MPEG4 AVC
-  for each container in transcodingContainers
-    if di.CanDecodeVideo({ Codec: "mpeg4 avc", Container: container }).Result
-      if container = "mp4"
-        ' check for codec string before adding it
-        if mp4VideoCodecs.Instr(0, ",mpeg4 avc") = -1
-          mp4VideoCodecs = mp4VideoCodecs + ",mpeg4 avc"
-        end if
-      else if container = "ts"
-        ' check for codec string before adding it
-        if tsVideoCodecs.Instr(0, ",mpeg4 avc") = -1
-          tsVideoCodecs = tsVideoCodecs + ",mpeg4 avc"
-        end if
-      end if
-    end if
-  end for
+  ' ========================================
+  ' AUDIO-ONLY TRANSCODING PROFILES
+  ' ========================================
 
-  ' HEVC / h265
+  ' AAC for stereo audio (always 2 channels)
+  transcodingProfiles.push({
+    "Container": "aac",
+    "Type": "Audio",
+    "AudioCodec": "aac",
+    "Context": "Streaming",
+    "Protocol": "http",
+    "MaxAudioChannels": "2"
+  })
+  transcodingProfiles.push({
+    "Container": "aac",
+    "Type": "Audio",
+    "AudioCodec": "aac",
+    "Context": "Static",
+    "Protocol": "http",
+    "MaxAudioChannels": "2"
+  })
+
+  ' MP3 for stereo audio (fixed from incorrect maxAudioChannels value)
+  transcodingProfiles.push({
+    "Container": "mp3",
+    "Type": "Audio",
+    "AudioCodec": "mp3",
+    "Context": "Streaming",
+    "Protocol": "http",
+    "MaxAudioChannels": "2"
+  })
+  transcodingProfiles.push({
+    "Container": "mp3",
+    "Type": "Audio",
+    "AudioCodec": "mp3",
+    "Context": "Static",
+    "Protocol": "http",
+    "MaxAudioChannels": "2"
+  })
+
+  ' ========================================
+  ' VIDEO CODEC DETECTION (per container)
+  ' ========================================
+
+  transcodingContainers = ["ts", "mp4"]
+  containerVideoCodecs = {}
+  containerAudioCodecs = {}
+
   for each container in transcodingContainers
+    ' Video codecs
+    videoCodecList = "h264"
+
     if di.CanDecodeVideo({ Codec: "hevc", Container: container }).Result
-      if container = "mp4"
-        ' check for codec string before adding it
-        if mp4VideoCodecs.Instr(0, "h265,") = -1
-          mp4VideoCodecs = "h265," + mp4VideoCodecs
-        end if
-        if mp4VideoCodecs.Instr(0, "hevc,") = -1
-          mp4VideoCodecs = "hevc," + mp4VideoCodecs
-        end if
-      else if container = "ts"
-        ' check for codec string before adding it
-        if tsVideoCodecs.Instr(0, "h265,") = -1
-          tsVideoCodecs = "h265," + tsVideoCodecs
-        end if
-        if tsVideoCodecs.Instr(0, "hevc,") = -1
-          tsVideoCodecs = "hevc," + tsVideoCodecs
-        end if
+      videoCodecList = "hevc,h265," + videoCodecList
+    end if
+
+    if di.CanDecodeVideo({ Codec: "mpeg4 avc", Container: container }).Result
+      if videoCodecList.Instr("mpeg4 avc") = -1
+        videoCodecList = videoCodecList + ",mpeg4 avc"
       end if
     end if
-  end for
 
-  ' VP9
-  for each container in transcodingContainers
-    if di.CanDecodeAudio({ Codec: "vp9", Container: container }).Result
-      if container = "mp4"
-        ' check for codec string before adding it
-        if mp4VideoCodecs.Instr(0, ",vp9") = -1
-          mp4VideoCodecs = mp4VideoCodecs + ",vp9"
-        end if
-      else if container = "ts"
-        ' check for codec string before adding it
-        if tsVideoCodecs.Instr(0, ",vp9") = -1
-          tsVideoCodecs = tsVideoCodecs + ",vp9"
-        end if
+    if di.CanDecodeVideo({ Codec: "vp9", Container: container }).Result
+      if videoCodecList.Instr("vp9") = -1
+        videoCodecList = videoCodecList + ",vp9"
       end if
     end if
-  end for
 
-  ' MPEG2
-  if globalUserSettings.playbackMpeg2
-    for each container in transcodingContainers
+    if globalUserSettings.playbackMpeg2
       if di.CanDecodeVideo({ Codec: "mpeg2", Container: container }).Result
-        if container = "mp4"
-          ' check for codec string before adding it
-          if mp4VideoCodecs.Instr(0, ",mpeg2video") = -1
-            mp4VideoCodecs = mp4VideoCodecs + ",mpeg2video"
-          end if
-        else if container = "ts"
-          ' check for codec string before adding it
-          if tsVideoCodecs.Instr(0, ",mpeg2video") = -1
-            tsVideoCodecs = tsVideoCodecs + ",mpeg2video"
-          end if
-        end if
+        videoCodecList = videoCodecList + ",mpeg2video"
+      end if
+    end if
+
+    containerVideoCodecs[container] = videoCodecList
+
+    ' Audio codecs (all supported for this container - used in 2ch profile)
+    audioCodecList = "aac"
+    stereoCodecs = ["mp3", "opus", "flac", "pcm", "alac", "vorbis"]
+    surroundCodecs = ["eac3", "ac3", "dts"]
+
+    ' Add stereo codecs
+    for each codec in stereoCodecs
+      if di.CanDecodeAudio({ Codec: codec, Container: container }).Result
+        audioCodecList = audioCodecList + "," + codec
       end if
     end for
-  end if
 
-  ' AV1
-  ' direct streaming av1 is not supported on roku
-  ' force a full transcode by omitting av1 from the transcoding profile
-  ' https://community.roku.com/t5/Roku-Developer-Program/HLS-fMP4-No-Audio/td-p/607399
-
-  ' AUDIO CODECS
-  for each container in transcodingContainers
-    for each codec in audioCodecs
-      if di.CanDecodeAudio({ Codec: codec, Container: container }).result
-        if container = "mp4"
-          mp4AudioCodecs = mp4AudioCodecs + "," + codec
-        else if container = "ts"
-          tsAudioCodecs = tsAudioCodecs + "," + codec
-        end if
+    ' Add surround codecs to stereo profile (as fallback options)
+    for each codec in surroundCodecs
+      if di.CanDecodeAudio({ Codec: codec, Container: container }).Result
+        audioCodecList = audioCodecList + "," + codec
       end if
     end for
+
+    containerAudioCodecs[container] = audioCodecList
   end for
 
-  ' add aac to TranscodingProfile for stereo audio
-  ' NOTE: multichannel aac is not supported. only decode to stereo on some devices
-  transcodingProfiles.push({
-    "Container": "aac",
-    "Type": "Audio",
-    "AudioCodec": "aac",
-    "Context": "Streaming",
-    "Protocol": "http",
-    "MaxAudioChannels": "2"
-  })
-  transcodingProfiles.push({
-    "Container": "aac",
-    "Type": "Audio",
-    "AudioCodec": "aac",
-    "Context": "Static",
-    "Protocol": "http",
-    "MaxAudioChannels": "2"
-  })
-  ' add mp3 to TranscodingProfile for multichannel music
-  transcodingProfiles.push({
-    "Container": "mp3",
-    "Type": "Audio",
-    "AudioCodec": "mp3",
-    "Context": "Streaming",
-    "Protocol": "http",
-    "MaxAudioChannels": maxAudioChannels
-  })
-  transcodingProfiles.push({
-    "Container": "mp3",
-    "Type": "Audio",
-    "AudioCodec": "mp3",
-    "Context": "Static",
-    "Protocol": "http",
-    "MaxAudioChannels": maxAudioChannels
-  })
+  ' ========================================
+  ' VIDEO TRANSCODING PROFILES
+  ' Order: ALL 2ch first, then ALL 6ch, then ALL 8ch
+  ' ========================================
 
-  tsArray = {
-    "Container": "ts",
-    "Context": "Streaming",
-    "Protocol": "hls",
-    "Type": "Video",
-    "AudioCodec": tsAudioCodecs,
-    "VideoCodec": tsVideoCodecs,
-    "MaxAudioChannels": maxAudioChannels,
-    "MinSegments": 1,
-    "BreakOnNonKeyFrames": false,
-    "SegmentLength": 6
-  }
-  mp4Array = {
-    "Container": "mp4",
-    "Context": "Streaming",
-    "Protocol": "hls",
-    "Type": "Video",
-    "AudioCodec": mp4AudioCodecs,
-    "VideoCodec": mp4VideoCodecs,
-    "MaxAudioChannels": maxAudioChannels,
-    "MinSegments": 1,
-    "BreakOnNonKeyFrames": false,
-    "SegmentLength": 6
-  }
-
-  ' apply max res to transcoding profile
   maxHeightArray = getMaxHeightArray(true)
-  if maxHeightArray.count() > 0
-    tsArray.Conditions = [maxHeightArray]
-    mp4Array.Conditions = [maxHeightArray]
+
+  ' ----- 2-CHANNEL PROFILES (always created, first in order) -----
+  for each container in transcodingContainers
+    baseProfile = {
+      "Container": container,
+      "Context": "Streaming",
+      "Protocol": "hls",
+      "Type": "Video",
+      "VideoCodec": containerVideoCodecs[container],
+      "MinSegments": 1,
+      "BreakOnNonKeyFrames": false,
+      "SegmentLength": 6
+    }
+
+    if maxHeightArray.count() > 0
+      baseProfile.Conditions = [maxHeightArray]
+    end if
+
+    twoChProfile = {}
+    twoChProfile.Append(baseProfile)
+    twoChProfile.AudioCodec = containerAudioCodecs[container]
+    twoChProfile.MaxAudioChannels = "2"
+    transcodingProfiles.push(twoChProfile)
+  end for
+
+  ' ----- 6-CHANNEL PROFILES (only if supported) -----
+  if sixChannelPassthruCodecs.count() > 0
+    for each container in transcodingContainers
+      baseProfile = {
+        "Container": container,
+        "Context": "Streaming",
+        "Protocol": "hls",
+        "Type": "Video",
+        "VideoCodec": containerVideoCodecs[container],
+        "MinSegments": 1,
+        "BreakOnNonKeyFrames": false,
+        "SegmentLength": 6
+      }
+
+      if maxHeightArray.count() > 0
+        baseProfile.Conditions = [maxHeightArray]
+      end if
+
+      sixChProfile = {}
+      sixChProfile.Append(baseProfile)
+      sixChProfile.AudioCodec = sixChannelPassthruCodecs.join(",")
+      sixChProfile.MaxAudioChannels = "6"
+      transcodingProfiles.push(sixChProfile)
+    end for
   end if
 
-  ' add user-selected preferred codec to the front of the list
-  if globalUserSettings.playbackPreferredAudioCodec <> "auto"
-    tsArray.AudioCodec = globalUserSettings.playbackPreferredAudioCodec + "," + tsArray.AudioCodec
-    mp4Array.AudioCodec = globalUserSettings.playbackPreferredAudioCodec + "," + mp4Array.AudioCodec
-  end if
+  ' ----- 8-CHANNEL PROFILES (only if supported) -----
+  if eightChannelPassthruCodecs.count() > 0
+    for each container in transcodingContainers
+      baseProfile = {
+        "Container": container,
+        "Context": "Streaming",
+        "Protocol": "hls",
+        "Type": "Video",
+        "VideoCodec": containerVideoCodecs[container],
+        "MinSegments": 1,
+        "BreakOnNonKeyFrames": false,
+        "SegmentLength": 6
+      }
 
-  transcodingProfiles.push(tsArray)
-  transcodingProfiles.push(mp4Array)
+      if maxHeightArray.count() > 0
+        baseProfile.Conditions = [maxHeightArray]
+      end if
+
+      eightChProfile = {}
+      eightChProfile.Append(baseProfile)
+      eightChProfile.AudioCodec = eightChannelPassthruCodecs.join(",")
+      eightChProfile.MaxAudioChannels = "8"
+      transcodingProfiles.push(eightChProfile)
+    end for
+  end if
 
   return transcodingProfiles
 end function
