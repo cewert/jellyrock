@@ -459,65 +459,106 @@ function getCodecProfiles() as object
   di = CreateObject("roDeviceInfo")
   maxHeightArray = getMaxHeightArray()
 
-  ' AUDIO
-  ' test each codec to see how many channels are supported
+  ' ========================================
+  ' DETECT SURROUND PASSTHROUGH SUPPORT
+  ' ========================================
+
+  sixChannelPassthruCodecs = getSupportedPassthruCodecs(di, 6)
+  eightChannelPassthruCodecs = getSupportedPassthruCodecs(di, 8)
+  hasSurroundPassthru = sixChannelPassthruCodecs.count() > 0 or eightChannelPassthruCodecs.count() > 0
+
+  ' ========================================
+  ' AUDIO CODEC PROFILES
+  ' ========================================
+
   audioCodecs = ["aac", "mp3", "mp2", "opus", "pcm", "lpcm", "wav", "flac", "alac", "ac3", "ac4", "aiff", "dts", "wmapro", "vorbis", "eac3", "mpg123"]
   audioChannels = [8, 6, 2] ' highest first
+
   for each audioCodec in audioCodecs
-    for each audioChannel in audioChannels
-      channelSupportFound = false
-      if di.CanDecodeAudio({ Codec: audioCodec, ChCnt: audioChannel }).Result
-        channelSupportFound = true
-        for each codecType in ["VideoAudio", "Audio"]
-          if audioCodec = "aac"
-            codecProfiles.push({
-              "Type": codecType,
-              "Codec": audioCodec,
-              "Conditions": [
-                {
-                  "Condition": "NotEquals",
-                  "Property": "AudioProfile",
-                  "Value": "Main",
-                  "IsRequired": true
-                },
-                {
-                  "Condition": "NotEquals",
-                  "Property": "AudioProfile",
-                  "Value": "HE-AAC",
-                  "IsRequired": true
-                },
-                {
-                  "Condition": "LessThanEqual",
-                  "Property": "AudioChannels",
-                  "Value": audioChannel,
-                  "IsRequired": true
-                }
-              ]
-            })
-          else if audioCodec = "opus" and codecType = "Audio"
-            ' opus audio files not supported by roku
-          else
-            codecProfiles.push({
-              "Type": codecType,
-              "Codec": audioCodec,
-              "Conditions": [
-                {
-                  "Condition": "LessThanEqual",
-                  "Property": "AudioChannels",
-                  "Value": audioChannel,
-                  "IsRequired": true
-                }
-              ]
-            })
-          end if
-        end for
-      end if
-      if channelSupportFound
-        ' if 8 channels are supported we don't need to test for 6 or 2
-        ' if 6 channels are supported we don't need to test 2
-        exit for
-      end if
-    end for
+    ' Special handling for AAC when user has surround passthrough
+    if audioCodec = "aac" and hasSurroundPassthru
+      ' Force AAC to 2 channels maximum to prevent Roku from downmixing
+      ' multichannel AAC to stereo. Server will transcode to surround codec instead.
+      for each codecType in ["VideoAudio", "Audio"]
+        codecProfiles.push({
+          "Type": codecType,
+          "Codec": "aac",
+          "Conditions": [
+            {
+              "Condition": "NotEquals",
+              "Property": "AudioProfile",
+              "Value": "Main",
+              "IsRequired": true
+            },
+            {
+              "Condition": "NotEquals",
+              "Property": "AudioProfile",
+              "Value": "HE-AAC",
+              "IsRequired": true
+            },
+            {
+              "Condition": "LessThanEqual",
+              "Property": "AudioChannels",
+              "Value": "2",
+              "IsRequired": true
+            }
+          ]
+        })
+      end for
+    else
+      ' Standard logic for all other codecs (and AAC when no surround passthru)
+      for each audioChannel in audioChannels
+        ' Use override logic to catch false positives
+        if getActualCodecSupport(audioCodec, audioChannel, di)
+          ' Create codec profile for this channel count
+          for each codecType in ["VideoAudio", "Audio"]
+            if audioCodec = "aac"
+              codecProfiles.push({
+                "Type": codecType,
+                "Codec": audioCodec,
+                "Conditions": [
+                  {
+                    "Condition": "NotEquals",
+                    "Property": "AudioProfile",
+                    "Value": "Main",
+                    "IsRequired": true
+                  },
+                  {
+                    "Condition": "NotEquals",
+                    "Property": "AudioProfile",
+                    "Value": "HE-AAC",
+                    "IsRequired": true
+                  },
+                  {
+                    "Condition": "LessThanEqual",
+                    "Property": "AudioChannels",
+                    "Value": audioChannel.ToStr(),
+                    "IsRequired": true
+                  }
+                ]
+              })
+            else if audioCodec = "opus" and codecType = "Audio"
+              ' Opus audio files not supported by Roku - skip
+            else
+              codecProfiles.push({
+                "Type": codecType,
+                "Codec": audioCodec,
+                "Conditions": [
+                  {
+                    "Condition": "LessThanEqual",
+                    "Property": "AudioChannels",
+                    "Value": audioChannel.ToStr(),
+                    "IsRequired": true
+                  }
+                ]
+              })
+            end if
+          end for
+          ' Found highest supported channel count, stop testing lower
+          exit for
+        end if
+      end for
+    end if
   end for
 
   ' check device for codec profile and level support
