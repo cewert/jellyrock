@@ -46,6 +46,69 @@ function getDeviceProfile() as object
   }
 end function
 
+' Override false positives from Roku API using known hardware limits
+' Returns true if codec can actually decode the specified channel count
+function getActualCodecSupport(codec as string, channelCount as integer, di as object) as boolean
+  ' First check what Roku API reports
+  if not di.CanDecodeAudio({ Codec: codec, ChCnt: channelCount }).Result
+    ' API says no support - trust it
+    return false
+  end if
+
+  ' API says yes - check for false positive using known hardware limits
+  rokuDecodeMaxChannels = {
+    "aac": 6,
+    "eac3": 6,
+    "ac3": 6,
+    "dts": 0,
+    "pcm": 2,
+    "lpcm": 2
+  }
+
+  ' Only override codecs we know about
+  if rokuDecodeMaxChannels.DoesExist(codec)
+    if channelCount > rokuDecodeMaxChannels[codec]
+      ' Exceeds native decode capability - must have passthrough to actually support this
+      return di.CanDecodeAudio({ Codec: codec, ChCnt: channelCount, PassThru: 1 }).Result
+    end if
+  end if
+
+  ' Within native decode capability or unknown codec - trust the API
+  return true
+end function
+
+' Get list of surround codecs that support passthrough at specified channel count
+' Returns array of codec strings in priority order: eac3, ac3, dts
+function getSupportedPassthruCodecs(di as object, channelCount as integer) as object
+  surroundCodecs = ["eac3", "ac3", "dts"]
+  supportedCodecs = []
+
+  for each codec in surroundCodecs
+    if getActualCodecSupport(codec, channelCount, di)
+      supportedCodecs.push(codec)
+    end if
+  end for
+
+  return supportedCodecs
+end function
+
+' Reorder codec array to put preferred codec first (if it exists in array)
+' Returns reordered array with preferred codec at the front
+function reorderByPreference(codecs as object, preferredCodec as string) as object
+  if not arrayHasValue(codecs, preferredCodec)
+    return codecs
+  end if
+
+  reordered = [preferredCodec]
+  for each codec in codecs
+    if codec <> preferredCodec
+      reordered.push(codec)
+    end if
+  end for
+
+  return reordered
+end function
+
 function GetDirectPlayProfiles() as object
   ' ONE rendezvous to get user settings
   globalUserSettings = m.global.user.settings
