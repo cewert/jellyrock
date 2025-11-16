@@ -153,6 +153,21 @@ sub runRegistryUserMigrations()
         print `Successfully migrated ${migratedCount} settings for user ${section}`
       end if
 
+      ' Delete server policy keys that should never be in registry
+      ' These were incorrectly stored as user settings but are server-authoritative
+      serverPolicyKeys = ["liveTvCanRecord", "contentCanDelete", "livetv.canrecord", "content.candelete"]
+      deletedCount = 0
+      for each key in serverPolicyKeys
+        if reg.exists(key)
+          reg.delete(key)
+          deletedCount++
+        end if
+      end for
+
+      if deletedCount > 0
+        print `Deleted ${deletedCount} server policy keys from user ${section}`
+      end if
+
       reg.flush()
     end if
 
@@ -181,22 +196,6 @@ sub runRegistryUserMigrations()
         print `Migrated ${oldSettingName}='${oldValue}' to ${newSettingName}='${newValue}'`
         reg.flush()
       end if
-    end if
-
-    ' Delete server policy keys that should never be in registry
-    ' These were incorrectly stored as user settings but are server-authoritative
-    serverPolicyKeys = ["liveTvCanRecord", "contentCanDelete", "livetv.canrecord", "content.candelete"]
-    deletedCount = 0
-    for each key in serverPolicyKeys
-      if reg.exists(key)
-        reg.delete(key)
-        deletedCount++
-      end if
-    end for
-
-    if deletedCount > 0
-      print `Deleted ${deletedCount} server policy keys from user ${section}`
-      reg.flush()
     end if
   end for
 end sub
