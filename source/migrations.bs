@@ -6,6 +6,9 @@ import "pkg:/source/utils/misc.bs"
 ' client version when settings were renamed from dotted names to camelCase
 const SETTINGS_MIGRATION_VERSION = "1.1.0"
 
+' client version when audio codec preference was renamed and migrated
+const AUDIO_CODEC_MIGRATION_VERSION = "1.1.4"
+
 ' Run all necessary registry mirations on the "global" JellyRock registry section
 sub runGlobalMigrations()
   appLastRunVersion = m.global.app.lastRunVersion
@@ -151,6 +154,33 @@ sub runRegistryUserMigrations()
       end if
 
       reg.flush()
+    end if
+
+    ' AUDIO_CODEC_MIGRATION_VERSION - Rename and migrate audio codec preference
+    if isValid(lastRunVersion) and not versionChecker(lastRunVersion, AUDIO_CODEC_MIGRATION_VERSION)
+      m.wasMigrated = true
+      print `Migrating audio codec settings to v${AUDIO_CODEC_MIGRATION_VERSION} for userid: ${section}`
+
+      ' Rename playbackPreferredAudioCodec to playbackPreferredMultichannelCodec
+      ' and migrate deprecated values (auto, aac) to new default (eac3)
+      oldSettingName = "playbackPreferredAudioCodec"
+      newSettingName = "playbackPreferredMultichannelCodec"
+
+      if reg.exists(oldSettingName)
+        oldValue = reg.read(oldSettingName)
+
+        ' Migrate value: auto/aac/invalid -> eac3, otherwise keep user's choice
+        newValue = "eac3"
+        if isValid(oldValue) and oldValue <> "" and oldValue <> "auto" and oldValue <> "aac"
+          ' User had ac3, eac3, or dts - keep their preference
+          newValue = oldValue
+        end if
+
+        reg.write(newSettingName, newValue)
+        reg.delete(oldSettingName)
+        print `Migrated ${oldSettingName}='${oldValue}' to ${newSettingName}='${newValue}'`
+        reg.flush()
+      end if
     end if
 
     ' Delete server policy keys that should never be in registry

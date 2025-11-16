@@ -246,7 +246,7 @@ function getTranscodingProfiles() as object
   eightChannelPassthruCodecs = getSupportedPassthruCodecs(di, 8)
 
   ' Apply user's preferred codec ordering to multichannel codecs
-  preferredCodec = globalUserSettings.playbackPreferredAudioCodec
+  preferredCodec = globalUserSettings.playbackPreferredMultichannelCodec
   if isValid(preferredCodec) and preferredCodec <> "" and preferredCodec <> "auto"
     sixChannelPassthruCodecs = reorderByPreference(sixChannelPassthruCodecs, preferredCodec)
     eightChannelPassthruCodecs = reorderByPreference(eightChannelPassthruCodecs, preferredCodec)
