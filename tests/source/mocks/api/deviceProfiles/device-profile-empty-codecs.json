@@ -1,0 +1,11 @@
+{
+  "TranscodingProfiles": [
+    {
+      "Container": "ts",
+      "Type": "Video",
+      "AudioCodec": "",
+      "VideoCodec": "h264",
+      "MaxAudioChannels": "6"
+    }
+  ]
+}

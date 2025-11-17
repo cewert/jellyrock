@@ -1,0 +1,383 @@
+import "pkg:/source/utils/deviceCapabilities.bs"
+import "pkg:/source/utils/misc.bs"
+
+namespace tests
+
+  @suite("deviceCapabilities.bs - Codec Support Detection")
+  class DeviceCapabilitiesTests extends tests.BaseTestSuite
+
+    protected override function setup()
+      super.setup()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getActualCodecSupport() - Surround Codecs with PassThru")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns true when PassThru is supported for eac3 6ch")
+    function _()
+      ' Mock di that supports PassThru
+      mockDi = {
+        CanDecodeAudio: function(params as object) as object
+          if params.DoesExist("PassThru") and params.PassThru = 1
+            return { Result: true }
+          end if
+          return { Result: false }
+        end function
+      }
+
+      result = getActualCodecSupport("eac3", 6, mockDi)
+      m.assertTrue(result, "Should return true when PassThru is supported")
+    end function
+
+    @it("returns true when PassThru is supported for ac3 8ch")
+    function _()
+      mockDi = {
+        CanDecodeAudio: function(params as object) as object
+          if params.DoesExist("PassThru") and params.PassThru = 1
+            return { Result: true }
+          end if
+          return { Result: false }
+        end function
+      }
+
+      result = getActualCodecSupport("ac3", 8, mockDi)
+      m.assertTrue(result, "Should return true when PassThru is supported")
+    end function
+
+    @it("returns true when PassThru is supported for dts 6ch")
+    function _()
+      mockDi = {
+        CanDecodeAudio: function(params as object) as object
+          if params.DoesExist("PassThru") and params.PassThru = 1
+            return { Result: true }
+          end if
+          return { Result: false }
+        end function
+      }
+
+      result = getActualCodecSupport("dts", 6, mockDi)
+      m.assertTrue(result, "Should return true when PassThru is supported")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getActualCodecSupport() - Surround Codecs Native Decode")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns true for eac3 6ch native decode (no PassThru)")
+    function _()
+      ' Mock di: no PassThru, but native decode supported
+      mockDi = {
+        CanDecodeAudio: function(params as object) as object
+          if params.DoesExist("PassThru") and params.PassThru = 1
+            return { Result: false } ' No PassThru
+          end if
+          return { Result: true } ' But can decode natively
+        end function
+      }
+
+      result = getActualCodecSupport("eac3", 6, mockDi)
+      m.assertTrue(result, "Should return true for native decode within limits (6ch)")
+    end function
+
+    @it("returns true for ac3 6ch native decode (no PassThru)")
+    function _()
+      mockDi = {
+        CanDecodeAudio: function(params as object) as object
+          if params.DoesExist("PassThru") and params.PassThru = 1
+            return { Result: false }
+          end if
+          return { Result: true }
+        end function
+      }
+
+      result = getActualCodecSupport("ac3", 6, mockDi)
+      m.assertTrue(result, "Should return true for native decode within limits (6ch)")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getActualCodecSupport() - False Positive Detection")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("detects false positive for eac3 8ch (exceeds native decode limit)")
+    function _()
+      ' API says yes, but eac3 native decode max is 6ch
+      mockDi = {
+        CanDecodeAudio: function(params as object) as object
+          if params.DoesExist("PassThru") and params.PassThru = 1
+            return { Result: false } ' No PassThru
+          end if
+          return { Result: true } ' API says can decode (false positive)
+        end function
+      }
+
+      result = getActualCodecSupport("eac3", 8, mockDi)
+      m.assertFalse(result, "Should detect false positive: eac3 can't natively decode >6ch")
+    end function
+
+    @it("detects false positive for ac3 8ch (exceeds native decode limit)")
+    function _()
+      mockDi = {
+        CanDecodeAudio: function(params as object) as object
+          if params.DoesExist("PassThru") and params.PassThru = 1
+            return { Result: false }
+          end if
+          return { Result: true } ' False positive
+        end function
+      }
+
+      result = getActualCodecSupport("ac3", 8, mockDi)
+      m.assertFalse(result, "Should detect false positive: ac3 can't natively decode >6ch")
+    end function
+
+    @it("detects false positive for dts without PassThru (decode-only not supported)")
+    function _()
+      ' DTS is passthrough-only (max channels = 0 for native decode)
+      mockDi = {
+        CanDecodeAudio: function(params as object) as object
+          if params.DoesExist("PassThru") and params.PassThru = 1
+            return { Result: false } ' No PassThru
+          end if
+          return { Result: true } ' API says can decode (false positive)
+        end function
+      }
+
+      result = getActualCodecSupport("dts", 6, mockDi)
+      m.assertFalse(result, "Should detect false positive: DTS requires PassThru (can't natively decode)")
+    end function
+
+    @it("detects false positive for aac >6ch")
+    function _()
+      mockDi = {
+        CanDecodeAudio: function(params as object) as object
+          return { Result: true } ' API says yes (false positive)
+        end function
+      }
+
+      result = getActualCodecSupport("aac", 8, mockDi)
+      m.assertFalse(result, "Should detect false positive: AAC max is 6ch")
+    end function
+
+    @it("detects false positive for pcm >2ch")
+    function _()
+      mockDi = {
+        CanDecodeAudio: function(params as object) as object
+          return { Result: true } ' False positive
+        end function
+      }
+
+      result = getActualCodecSupport("pcm", 6, mockDi)
+      m.assertFalse(result, "Should detect false positive: PCM max is 2ch")
+    end function
+
+    @it("detects false positive for lpcm >2ch")
+    function _()
+      mockDi = {
+        CanDecodeAudio: function(params as object) as object
+          return { Result: true } ' False positive
+        end function
+      }
+
+      result = getActualCodecSupport("lpcm", 6, mockDi)
+      m.assertFalse(result, "Should detect false positive: LPCM max is 2ch")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getActualCodecSupport() - Stereo Codecs")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns true for supported stereo codec (mp3 2ch)")
+    function _()
+      mockDi = {
+        CanDecodeAudio: function(params as object) as object
+          return { Result: true }
+        end function
+      }
+
+      result = getActualCodecSupport("mp3", 2, mockDi)
+      m.assertTrue(result, "Should return true for supported stereo codec")
+    end function
+
+    @it("returns false when API says codec not supported")
+    function _()
+      mockDi = {
+        CanDecodeAudio: function(params as object) as object
+          return { Result: false }
+        end function
+      }
+
+      result = getActualCodecSupport("mp3", 2, mockDi)
+      m.assertFalse(result, "Should return false when API says not supported")
+    end function
+
+    @it("returns true for aac 2ch (within limits)")
+    function _()
+      mockDi = {
+        CanDecodeAudio: function(params as object) as object
+          return { Result: true }
+        end function
+      }
+
+      result = getActualCodecSupport("aac", 2, mockDi)
+      m.assertTrue(result, "Should return true for AAC 2ch (within 6ch limit)")
+    end function
+
+    @it("returns true for aac 6ch (at limit)")
+    function _()
+      mockDi = {
+        CanDecodeAudio: function(params as object) as object
+          return { Result: true }
+        end function
+      }
+
+      result = getActualCodecSupport("aac", 6, mockDi)
+      m.assertTrue(result, "Should return true for AAC 6ch (at limit)")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getSupportedPassthruCodecs()")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns all codecs when all are supported")
+    function _()
+      mockDi = {
+        CanDecodeAudio: function(params as object) as object
+          if params.DoesExist("PassThru") and params.PassThru = 1
+            return { Result: true } ' All PassThru supported
+          end if
+          return { Result: false }
+        end function
+      }
+
+      result = getSupportedPassthruCodecs(mockDi, 6)
+      m.assertArrayCount(result, 3, "Should return all 3 codecs")
+      m.assertEqual(result[0], "eac3", "eac3 should be first")
+      m.assertEqual(result[1], "ac3", "ac3 should be second")
+      m.assertEqual(result[2], "dts", "dts should be third")
+    end function
+
+    @it("returns empty array when no codecs are supported")
+    function _()
+      mockDi = {
+        CanDecodeAudio: function(params as object) as object
+          return { Result: false } ' None supported
+        end function
+      }
+
+      result = getSupportedPassthruCodecs(mockDi, 6)
+      m.assertArrayCount(result, 0, "Should return empty array when none supported")
+    end function
+
+    @it("returns only supported codecs (eac3 and ac3, no dts)")
+    function _()
+      mockDi = {
+        CanDecodeAudio: function(params as object) as object
+          if params.DoesExist("PassThru") and params.PassThru = 1
+            ' Support eac3 and ac3, but not dts
+            if params.Codec = "eac3" or params.Codec = "ac3"
+              return { Result: true }
+            end if
+          end if
+          return { Result: false }
+        end function
+      }
+
+      result = getSupportedPassthruCodecs(mockDi, 6)
+      m.assertArrayCount(result, 2, "Should return 2 codecs")
+      m.assertEqual(result[0], "eac3", "eac3 should be first")
+      m.assertEqual(result[1], "ac3", "ac3 should be second")
+      m.assertFalse(arrayHasValue(result, "dts"), "dts should not be in list")
+    end function
+
+    @it("respects channel count parameter for 8ch")
+    function _()
+      ' Mock that only supports 6ch, not 8ch
+      mockDi = {
+        CanDecodeAudio: function(params as object) as object
+          if params.DoesExist("PassThru") and params.PassThru = 1 and params.ChCnt = 6
+            return { Result: true }
+          end if
+          return { Result: false }
+        end function
+      }
+
+      result = getSupportedPassthruCodecs(mockDi, 8)
+      m.assertArrayCount(result, 0, "Should return empty for 8ch when only 6ch supported")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Helper Functions")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("removeDecimals() removes all decimal points from string")
+    function _()
+      m.assertEqual(removeDecimals("4.1"), "41")
+      m.assertEqual(removeDecimals("5.1.2"), "512")
+      m.assertEqual(removeDecimals("10.5"), "105")
+      m.assertEqual(removeDecimals("42"), "42") ' No decimals
+    end function
+
+    @it("updateProfileArray() creates nested structure for codec")
+    function _()
+      profileArray = {}
+
+      result = updateProfileArray(profileArray, "h264", "main", "4.1")
+
+      m.assertTrue(result.DoesExist("h264"), "Should create h264 entry")
+      m.assertTrue(result.h264.DoesExist("main"), "Should create main profile")
+      m.assertTrue(result.h264.main.DoesExist("4.1"), "Should create 4.1 level")
+    end function
+
+    @it("updateProfileArray() adds multiple profiles for same codec")
+    function _()
+      profileArray = {}
+
+      updateProfileArray(profileArray, "h264", "main", "4.1")
+      result = updateProfileArray(profileArray, "h264", "high", "5.1")
+
+      m.assertTrue(result.h264.DoesExist("main"), "Should have main profile")
+      m.assertTrue(result.h264.DoesExist("high"), "Should have high profile")
+    end function
+
+    @it("updateProfileArray() adds multiple levels for same profile")
+    function _()
+      profileArray = {}
+
+      updateProfileArray(profileArray, "h264", "main", "4.1")
+      result = updateProfileArray(profileArray, "h264", "main", "5.1")
+
+      m.assertTrue(result.h264.main.DoesExist("4.1"), "Should have 4.1 level")
+      m.assertTrue(result.h264.main.DoesExist("5.1"), "Should have 5.1 level")
+    end function
+
+    @it("updateProfileArray() handles profile without level")
+    function _()
+      profileArray = {}
+
+      result = updateProfileArray(profileArray, "mpeg2", "main")
+
+      m.assertTrue(result.DoesExist("mpeg2"), "Should create mpeg2 entry")
+      m.assertTrue(result.mpeg2.DoesExist("main"), "Should create main profile")
+    end function
+
+    @it("updateProfileArray() handles empty videoProfile gracefully")
+    function _()
+      profileArray = {}
+
+      result = updateProfileArray(profileArray, "h264", "")
+
+      ' Should return unchanged when videoProfile is empty
+      m.assertEqual(result.Count(), 0, "Should not create entry for empty profile")
+    end function
+
+    @it("updateProfileArray() handles invalid profileArray gracefully")
+    function _()
+      result = updateProfileArray(invalid, "h264", "main", "4.1")
+
+      ' Function returns empty object {} for invalid input, not invalid
+      m.assertEqual(result.Count(), 0, "Should return empty object for invalid input")
+    end function
+
+  end class
+
+end namespace

@@ -120,27 +120,19 @@
         ]
       },
       {
-        "title": "Preferred Audio Codec",
-        "description": "Use the selected audio codec for transcodes. If the device or stream does not support it, a fallback codec will be used.",
-        "settingName": "playbackPreferredAudioCodec",
+        "title": "Preferred Surround Audio Codec",
+        "description": "When transcoding multichannel audio, prefer this codec. EAC3 supports up to 7.1 channels with better compression. AC3 is more widely compatible. DTS is an alternative for systems that prefer it. This only affects 6 and 8 channel transcoding profiles.",
+        "settingName": "playbackPreferredMultichannelCodec",
         "type": "radio",
-        "default": "auto",
+        "default": "eac3",
         "options": [
           {
-            "title": "Use system settings",
-            "id": "auto"
-          },
-          {
-            "title": "AAC",
-            "id": "aac"
-          },
-          {
-            "title": "DD (AC3)",
-            "id": "ac3"
-          },
-          {
-            "title": "DD+ (EAC3)",
+            "title": "Dolby Digital Plus (EAC3)",
             "id": "eac3"
+          },
+          {
+            "title": "Dolby Digital (AC3)",
+            "id": "ac3"
           },
           {
             "title": "DTS",

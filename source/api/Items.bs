@@ -42,12 +42,56 @@ function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioT
 
       if isValid(selectedAudioStream)
         postData.AudioStreamIndex = audioTrackIndex
-        ' force the server to transcode AAC profiles we don't support to MP3 instead of the usual AAC
-        ' TODO: Remove this after server adds support for transcoding AAC from one profile to another
-        if isValid(selectedAudioStream.Codec) and LCase(selectedAudioStream.Codec) = "aac"
-          if isValid(selectedAudioStream.Profile) and LCase(selectedAudioStream.Profile) = "main" or LCase(selectedAudioStream.Profile) = "he-aac"
-            forceMp3Audio(postData.DeviceProfile)
+
+        ' Get channel count for AAC handling logic
+        channelCount = 2 ' default stereo
+        if isValid(selectedAudioStream.Channels)
+          if type(selectedAudioStream.Channels) = "roString" or type(selectedAudioStream.Channels) = "String"
+            channelCount = selectedAudioStream.Channels.ToInt()
+          else if type(selectedAudioStream.Channels) = "roInt" or type(selectedAudioStream.Channels) = "Integer"
+            channelCount = selectedAudioStream.Channels
           end if
+        end if
+
+        ' Check if device has surround passthrough by looking at MaxAudioChannels in TranscodingProfiles
+        hasPassthruSupport = false
+        if isValid(postData.DeviceProfile) and isValid(postData.DeviceProfile.TranscodingProfiles)
+          for each profile in postData.DeviceProfile.TranscodingProfiles
+            if isValid(profile.Type) and profile.Type = "Video" and isValid(profile.MaxAudioChannels)
+              profileMaxChannels = 0
+              if type(profile.MaxAudioChannels) = "roString" or type(profile.MaxAudioChannels) = "String"
+                profileMaxChannels = profile.MaxAudioChannels.ToInt()
+              else if type(profile.MaxAudioChannels) = "roInt" or type(profile.MaxAudioChannels) = "Integer"
+                profileMaxChannels = profile.MaxAudioChannels
+              end if
+              if profileMaxChannels > 2
+                hasPassthruSupport = true
+                exit for
+              end if
+            end if
+          end for
+        end if
+
+        ' Remove AAC from codec list in two scenarios:
+        ' 1. ANY multichannel source (>2ch) when user has passthrough support - prevents transcoding to AAC which would downmix to stereo
+        ' 2. Unsupported AAC profiles (Main, HE-AAC) - TODO: Remove after server supports transcoding between AAC profiles
+        shouldRemoveAac = false
+
+        ' Scenario 1: ANY multichannel source with passthrough support
+        ' Removes AAC to force server to use surround passthrough codecs (eac3, ac3, dts) instead of transcoding to stereo AAC
+        if channelCount > 2 and hasPassthruSupport
+          shouldRemoveAac = true
+        end if
+
+        ' Scenario 2: AAC with unsupported profile
+        if isValid(selectedAudioStream.Codec) and LCase(selectedAudioStream.Codec) = "aac"
+          if isValid(selectedAudioStream.Profile) and (LCase(selectedAudioStream.Profile) = "main" or LCase(selectedAudioStream.Profile) = "he-aac")
+            shouldRemoveAac = true
+          end if
+        end if
+
+        if shouldRemoveAac
+          removeUnsupportedAacFromProfile(postData.DeviceProfile, channelCount)
         end if
       end if
     end if
@@ -504,18 +548,47 @@ function TVSeasonExtras(seasonId as string) as dynamic
   return { Items: results }
 end function
 
-' updates the device profile we send the server to force mp3 audio transcoding instead of the default aac
-sub forceMp3Audio(deviceProfile as object)
+' Removes AAC from the device profile codec list to prevent stereo downmix of multichannel audio.
+' Also handles unsupported AAC profiles (Main, HE-AAC).
+' For stereo sources (≤2ch), also removes surround passthrough codecs (eac3, ac3, dts)
+' so transcoding falls through to MP3 (better compatibility + smaller files).
+sub removeUnsupportedAacFromProfile(deviceProfile as object, channelCount as integer)
+  ' Validate inputs
+  if not isValid(deviceProfile) then return
+  if not isValid(deviceProfile.TranscodingProfiles) then return
+
+  ' Surround passthrough codecs that should be removed for stereo sources
+  surroundCodecs = ["eac3", "ac3", "dts"]
+
   for each rule in deviceProfile.TranscodingProfiles
     if rule.Container = "ts" or rule.Container = "mp4"
-      if rule.AudioCodec = "aac"
-        rule.AudioCodec = "mp3"
-      else if rule.AudioCodec.Left(4) = "aac,"
-        rule.AudioCodec = mid(rule.AudioCodec, 5)
+      if isValid(rule.AudioCodec)
+        ' Split codec list into array
+        codecList = rule.AudioCodec.split(",")
+        newCodecList = []
 
-        if rule.AudioCodec.Left(3) <> "mp3"
-          rule.AudioCodec = "mp3," + rule.AudioCodec
-        end if
+        ' Remove AAC always, and surround codecs for stereo sources
+        for each codec in codecList
+          skipCodec = false
+
+          ' Always skip AAC to prevent downmix
+          if codec = "aac"
+            skipCodec = true
+          end if
+
+          ' For stereo sources (≤2ch), also skip surround codecs
+          ' This ensures transcoding goes to MP3 instead of trying AC3/EAC3
+          if channelCount <= 2 and arrayHasValue(surroundCodecs, codec)
+            skipCodec = true
+          end if
+
+          if not skipCodec
+            newCodecList.push(codec)
+          end if
+        end for
+
+        ' Rebuild codec string
+        rule.AudioCodec = newCodecList.join(",")
       end if
     end if
   end for

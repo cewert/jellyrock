@@ -193,15 +193,15 @@ namespace tests
       ]
 
       for each specialString in specialStrings
-        ' Use playbackPreferredAudioCodec (string field)
-        user.settings.Save("playbackPreferredAudioCodec", specialString)
+        ' Use playbackPreferredMultichannelCodec (string field)
+        user.settings.Save("playbackPreferredMultichannelCodec", specialString)
 
-        value = settingsNode.playbackPreferredAudioCodec
+        value = settingsNode.playbackPreferredMultichannelCodec
         m.assertEqual(value, specialString, `Special string value should match: ${specialString}`)
       end for
 
       ' Cleanup
-      user.settings.Delete("playbackPreferredAudioCodec")
+      user.settings.Delete("playbackPreferredMultichannelCodec")
     end function
 
     @it("handles case-insensitive boolean strings")
@@ -318,7 +318,7 @@ namespace tests
       stringSettings = [
         { name: "playbackResolutionMax", testValue: "1080" },
         { name: "playbackPlayNextEpisode", testValue: "enabled" },
-        { name: "playbackPreferredAudioCodec", testValue: "aac" },
+        { name: "playbackPreferredMultichannelCodec", testValue: "eac3" },
         { name: "uiGeneralEpisodeImages", testValue: "always" },
         { name: "uiRowLayout", testValue: "landscape" },
         { name: "itemGridTitles", testValue: "showalways" },

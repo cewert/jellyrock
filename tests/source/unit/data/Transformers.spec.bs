@@ -11,7 +11,7 @@ namespace tests
     function _()
       transformer = new JellyfinDataTransformer()
 
-      apiData = MockDataLoader.LoadApiData("movie-basic")
+      apiData = MockDataLoader.LoadItem("movie-basic")
 
       result = transformer.transformBaseItem(apiData, "10.8.0")
 
@@ -28,7 +28,7 @@ namespace tests
     function _()
       transformer = new JellyfinDataTransformer()
 
-      apiData = MockDataLoader.LoadApiData("movie-with-userdata")
+      apiData = MockDataLoader.LoadItem("movie-with-userdata")
 
       result = transformer.transformBaseItem(apiData, "10.8.0")
 
@@ -43,7 +43,7 @@ namespace tests
     function _()
       transformer = new JellyfinDataTransformer()
 
-      apiData = MockDataLoader.LoadApiData("movie-with-images")
+      apiData = MockDataLoader.LoadItem("movie-with-images")
 
       result = transformer.transformBaseItem(apiData, "10.8.0")
 
@@ -57,7 +57,7 @@ namespace tests
     function _()
       transformer = new JellyfinDataTransformer()
 
-      apiData = MockDataLoader.LoadApiData("episode-basic")
+      apiData = MockDataLoader.LoadItem("episode-basic")
 
       result = transformer.transformBaseItem(apiData, "10.8.0")
 
@@ -80,7 +80,7 @@ namespace tests
     function _()
       transformer = new JellyfinDataTransformer()
 
-      apiArray = MockDataLoader.LoadApiData("movie-array")
+      apiArray = MockDataLoader.LoadItem("movie-array")
 
       results = transformer.transformBaseItemArray(apiArray, "10.8.0")
 
@@ -116,7 +116,7 @@ namespace tests
     function _()
       transformer = new JellyfinDataTransformer()
 
-      apiData = MockDataLoader.LoadApiData("movie-resumable")
+      apiData = MockDataLoader.LoadItem("movie-resumable")
 
       result = transformer.transformBaseItem(apiData, "10.8.0")
 
@@ -129,7 +129,7 @@ namespace tests
     function _()
       transformer = new JellyfinDataTransformer()
 
-      apiData = MockDataLoader.LoadApiData("movie-no-userdata")
+      apiData = MockDataLoader.LoadItem("movie-no-userdata")
 
       result = transformer.transformBaseItem(apiData, "10.8.0")
 
@@ -144,7 +144,7 @@ namespace tests
     function _()
       transformer = new JellyfinDataTransformer()
 
-      apiData = MockDataLoader.LoadApiData("series-basic")
+      apiData = MockDataLoader.LoadItem("series-basic")
 
       result = transformer.transformBaseItem(apiData, "10.8.0")
 
@@ -157,7 +157,7 @@ namespace tests
     function _()
       transformer = new JellyfinDataTransformer()
 
-      apiData = MockDataLoader.LoadApiData("program-livetv")
+      apiData = MockDataLoader.LoadItem("program-livetv")
 
       result = transformer.transformBaseItem(apiData, "10.8.0")
 
@@ -172,7 +172,7 @@ namespace tests
     function _()
       transformer = new JellyfinDataTransformer()
 
-      apiData = MockDataLoader.LoadApiData("episode-with-parent-images")
+      apiData = MockDataLoader.LoadItem("episode-with-parent-images")
 
       result = transformer.transformBaseItem(apiData, "10.8.0")
 
@@ -187,7 +187,7 @@ namespace tests
       transformer = new JellyfinDataTransformer()
 
       ' Studios can be objects with Name property or just strings
-      apiData = MockDataLoader.LoadApiData("movie-with-studios")
+      apiData = MockDataLoader.LoadItem("movie-with-studios")
 
       result = transformer.transformBaseItem(apiData, "10.8.0")
 
@@ -202,7 +202,7 @@ namespace tests
     function _()
       transformer = new JellyfinDataTransformer()
 
-      apiData = MockDataLoader.LoadApiData("movie-empty-arrays")
+      apiData = MockDataLoader.LoadItem("movie-empty-arrays")
 
       result = transformer.transformBaseItem(apiData, "10.8.0")
 
@@ -233,7 +233,7 @@ namespace tests
     function _()
       transformer = new JellyfinDataTransformer()
 
-      apiData = MockDataLoader.LoadApiData("movie-basic")
+      apiData = MockDataLoader.LoadItem("movie-basic")
 
       result = transformer.transformBaseItem(apiData, "10.8.0")
 
@@ -246,7 +246,7 @@ namespace tests
       function _()
         transformer = new JellyfinDataTransformer()
 
-        apiData = MockDataLoader.LoadApiData("movie-basic")
+        apiData = MockDataLoader.LoadItem("movie-basic")
 
         result = transformer.transformBaseItem(apiData, "10.8.0")
 
@@ -259,7 +259,7 @@ namespace tests
       function _()
         transformer = new JellyfinDataTransformer()
 
-        apiData = MockDataLoader.LoadApiData("movie-basic")
+        apiData = MockDataLoader.LoadItem("movie-basic")
 
         result = transformer.transformBaseItem(apiData, "10.8.0")
 
@@ -305,7 +305,7 @@ namespace tests
     function _()
       transformer = new SessionDataTransformer()
 
-      settingsData = MockDataLoader.LoadApiData("user-settings")
+      settingsData = MockDataLoader.LoadRegistryUserSettings("user-settings")
 
       result = transformer.transformUserSettings(settingsData)
 
@@ -338,7 +338,7 @@ namespace tests
     function _()
       transformer = new SessionDataTransformer()
 
-      settingsData = MockDataLoader.LoadApiData("user-settings-with-display")
+      settingsData = MockDataLoader.LoadRegistryUserSettings("user-settings-with-display")
 
       result = transformer.transformUserSettings(settingsData)
 
@@ -363,7 +363,7 @@ namespace tests
     function _()
       transformer = new SessionDataTransformer()
 
-      settingsData = MockDataLoader.LoadApiData("user-settings-empty-display")
+      settingsData = MockDataLoader.LoadRegistryUserSettings("user-settings-empty-display")
 
       result = transformer.transformUserSettings(settingsData)
 
@@ -376,7 +376,7 @@ namespace tests
     function _()
       transformer = new SessionDataTransformer()
 
-      settingsData = MockDataLoader.LoadApiData("user-settings-malformed-display")
+      settingsData = MockDataLoader.LoadRegistryUserSettings("user-settings-malformed-display")
 
       result = transformer.transformUserSettings(settingsData)
 
@@ -397,7 +397,7 @@ namespace tests
     function _()
       transformer = new SessionDataTransformer()
 
-      settingsData = MockDataLoader.LoadApiData("user-settings-special-chars-display")
+      settingsData = MockDataLoader.LoadRegistryUserSettings("user-settings-special-chars-display")
 
       result = transformer.transformUserSettings(settingsData)
 
@@ -422,7 +422,7 @@ namespace tests
     function _()
       transformer = new SessionDataTransformer()
 
-      settingsData = MockDataLoader.LoadApiData("user-settings-duplicate-library-display")
+      settingsData = MockDataLoader.LoadRegistryUserSettings("user-settings-duplicate-library-display")
 
       result = transformer.transformUserSettings(settingsData)
 
@@ -593,7 +593,7 @@ namespace tests
       function _()
         transformer = new SessionDataTransformer()
 
-        settingsData = MockDataLoader.LoadApiData("user-settings")
+        settingsData = MockDataLoader.LoadRegistryUserSettings("user-settings")
 
         result = transformer.transformUserSettings(settingsData)
 
@@ -632,7 +632,7 @@ namespace tests
       function _()
         transformer = new SessionDataTransformer()
 
-        settingsData = MockDataLoader.LoadApiData("user-settings")
+        settingsData = MockDataLoader.LoadRegistryUserSettings("user-settings")
 
         result = transformer.transformUserSettings(settingsData)
 
@@ -649,7 +649,7 @@ namespace tests
     function _()
       transformer = new SessionDataTransformer()
 
-      settingsData = MockDataLoader.LoadApiData("user-settings-all-new-names")
+      settingsData = MockDataLoader.LoadRegistryUserSettings("user-settings-all-new-names")
 
       result = transformer.transformUserSettings(settingsData)
 
@@ -661,7 +661,7 @@ namespace tests
       m.assertEqual(result.playbackResolutionMax, "auto")
       m.assertEqual(result.playbackNextUpButtonSeconds, 30)
       m.assertEqual(result.playbackPlayNextEpisode, "enabled")
-      m.assertEqual(result.playbackPreferredAudioCodec, "aac")
+      m.assertEqual(result.playbackPreferredMultichannelCodec, "eac3")
       m.assertEqual(result.playbackSubsOnlyText, false)
       m.assertEqual(result.playbackMpeg2, false)
       m.assertEqual(result.playbackMpeg4, true)
@@ -714,7 +714,7 @@ namespace tests
       transformer = new SessionDataTransformer()
 
       ' Load data with OLD dotted names
-      settingsData = MockDataLoader.LoadApiData("user-settings-all-old-names")
+      settingsData = MockDataLoader.LoadRegistryUserSettings("user-settings-all-old-names")
 
       result = transformer.transformUserSettings(settingsData)
 

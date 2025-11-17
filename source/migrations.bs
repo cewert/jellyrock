@@ -6,38 +6,56 @@ import "pkg:/source/utils/misc.bs"
 ' client version when settings were renamed from dotted names to camelCase
 const SETTINGS_MIGRATION_VERSION = "1.1.0"
 
-' Run all necessary registry mirations on the "global" JellyRock registry section
+' client version when audio codec preference was renamed and migrated
+const AUDIO_CODEC_MIGRATION_VERSION = "1.1.5"
+
+' Run all necessary registry migrations on the "global" JellyRock registry section
 sub runGlobalMigrations()
   appLastRunVersion = m.global.app.lastRunVersion
   ' SETTINGS_MIGRATION_VERSION
   if isValid(appLastRunVersion) and not versionChecker(appLastRunVersion, SETTINGS_MIGRATION_VERSION)
     ' last app version used < SETTINGS_MIGRATION_VERSION
     m.wasMigrated = true
-    print `Running ${SETTINGS_MIGRATION_VERSION} global registry migrations`
 
     migrations = {
-      ' Global Settings (1)
+      ' Global settings
       "global.rememberme": "globalRememberMe"
     }
 
     ' Migrate each setting: read → write new → delete old
     reg = CreateObject("roRegistrySection", getGlobalRegistrySection())
+    migratedCount = 0
     for each oldName in migrations
       if reg.exists(oldName)
+        if migratedCount = 0
+          print `Running ${SETTINGS_MIGRATION_VERSION} global registry migrations`
+        end if
         value = reg.read(oldName)
         newName = migrations[oldName]
         reg.write(newName, value)
         reg.delete(oldName)
+        migratedCount++
       end if
     end for
 
-    reg.flush()
+    if migratedCount > 0
+      reg.flush()
+    end if
 
   end if
 end sub
 
-sub runRegistryUserMigrations()
-  regSections = getRegistrySections()
+' Run registry migrations for user sections
+' @param targetSections Optional array of specific section names to migrate. If invalid, migrates all sections.
+sub runRegistryUserMigrations(targetSections = invalid as dynamic)
+  regSections = invalid
+
+  ' If specific sections provided, use those; otherwise get all sections
+  if isValid(targetSections) and type(targetSections) = "roArray"
+    regSections = targetSections
+  else
+    regSections = getRegistrySections()
+  end if
 
   ' Detect test mode ONCE: if ANY section starts with "test-", we're in test mode
   ' In test mode, ONLY migrate test sections to prevent touching real user data
@@ -76,15 +94,15 @@ sub runRegistryUserMigrations()
     ' SETTINGS_MIGRATION_VERSION - Rename dotted settings to camelCase
     if isValid(lastRunVersion) and not versionChecker(lastRunVersion, SETTINGS_MIGRATION_VERSION)
       m.wasMigrated = true
-      print `Migrating user settings to v${SETTINGS_MIGRATION_VERSION} for userid: ${section}`
 
-      ' Define all 42 setting migrations (old dotted name → new camelCase name)
+      ' Define user setting migrations (old dotted name → new camelCase name)
       ' Single source of truth for migration mapping
       migrations = {
-        ' Auth
+        ' Auth settings (stored per-user for multi-user support)
         "token": "authToken",
         "primaryimagetag": "primaryImageTag",
-        ' Playback Settings (13)
+
+        ' Playback settings
         "playback.bitrate.maxlimited": "playbackBitrateMaxLimited",
         "playback.bitrate.limit": "playbackBitrateLimit",
         "playback.cinemamode": "playbackCinemaMode",
@@ -99,7 +117,7 @@ sub runRegistryUserMigrations()
         "playback.tryDirect.h264ProfileLevel": "playbackTryDirectH264ProfileLevel",
         "playback.tryDirect.hevcProfileLevel": "playbackTryDirectHevcProfileLevel",
 
-        ' UI Settings (14)
+        ' UI settings
         "ui.general.episodeimagesnextup": "uiGeneralEpisodeImages",
         "ui.font.fallback": "uiFontFallback",
         "ui.design.hideclock": "uiDesignHideClock",
@@ -115,13 +133,13 @@ sub runRegistryUserMigrations()
         "ui.tvshows.disableUnwatchedEpisodeCount": "uiTvShowsDisableUnwatchedCount",
         "ui.tvshows.goStraightToEpisodeListing": "uiTvShowsGoStraightToEpisodes",
 
-        ' Item Grid Settings (4)
+        ' Item grid settings
         "itemgrid.showItemCount": "itemGridShowItemCount",
         "itemgrid.gridTitles": "itemGridTitles",
         "itemgrid.reset": "itemGridReset",
         "itemgrid.movieDefaultView": "itemGridMovieDefaultView",
 
-        ' Home Section Settings (7)
+        ' Home section settings
         "homesection0": "homeSection0",
         "homesection1": "homeSection1",
         "homesection2": "homeSection2",
@@ -130,7 +148,7 @@ sub runRegistryUserMigrations()
         "homesection5": "homeSection5",
         "homesection6": "homeSection6",
 
-        ' Display Settings (1)
+        ' Display settings
         "display.livetv.landing": "displayLiveTvLanding"
       }
 
@@ -138,6 +156,9 @@ sub runRegistryUserMigrations()
       migratedCount = 0
       for each oldName in migrations
         if reg.exists(oldName)
+          if migratedCount = 0
+            print `Migrating user settings to v${SETTINGS_MIGRATION_VERSION} for userid: ${section}`
+          end if
           value = reg.read(oldName)
           newName = migrations[oldName]
           reg.write(newName, value)
@@ -150,23 +171,51 @@ sub runRegistryUserMigrations()
         print `Successfully migrated ${migratedCount} settings for user ${section}`
       end if
 
+      ' Delete server policy keys that should never be in registry
+      ' These were incorrectly stored as user settings but are server-authoritative
+      serverPolicyKeys = ["liveTvCanRecord", "contentCanDelete", "livetv.canrecord", "content.candelete"]
+      deletedCount = 0
+      for each key in serverPolicyKeys
+        if reg.exists(key)
+          reg.delete(key)
+          deletedCount++
+        end if
+      end for
+
+      if deletedCount > 0
+        print `Deleted ${deletedCount} server policy keys from user ${section}`
+      end if
+
       reg.flush()
     end if
 
-    ' Delete server policy keys that should never be in registry
-    ' These were incorrectly stored as user settings but are server-authoritative
-    serverPolicyKeys = ["liveTvCanRecord", "contentCanDelete", "livetv.canrecord", "content.candelete"]
-    deletedCount = 0
-    for each key in serverPolicyKeys
-      if reg.exists(key)
-        reg.delete(key)
-        deletedCount++
-      end if
-    end for
+    ' AUDIO_CODEC_MIGRATION_VERSION - Rename and migrate audio codec preference
+    if isValid(lastRunVersion) and not versionChecker(lastRunVersion, AUDIO_CODEC_MIGRATION_VERSION)
+      m.wasMigrated = true
 
-    if deletedCount > 0
-      print `Deleted ${deletedCount} server policy keys from user ${section}`
-      reg.flush()
+      ' Rename playbackPreferredAudioCodec to playbackPreferredMultichannelCodec
+      ' and migrate deprecated values (auto, aac) to new default (eac3)
+      oldSettingName = "playbackPreferredAudioCodec"
+      newSettingName = "playbackPreferredMultichannelCodec"
+
+      if reg.exists(oldSettingName)
+        print `Migrating audio codec settings to v${AUDIO_CODEC_MIGRATION_VERSION} for userid: ${section}`
+        oldValue = reg.read(oldSettingName)
+
+        ' Migrate deprecated values (auto, aac) to eac3, otherwise preserve existing value
+        newValue = "eac3"
+        if isValid(oldValue) and oldValue <> "" and oldValue <> "auto" and oldValue <> "aac"
+          ' User has a valid preference (ac3, eac3, dts) or custom value - preserve it
+          newValue = oldValue
+        end if
+
+        reg.write(newSettingName, newValue)
+        reg.delete(oldSettingName)
+        print `Migrated ${oldSettingName}='${oldValue}' to ${newSettingName}='${newValue}'`
+        reg.flush()
+      else
+        print `No audio codec migration needed for userid: ${section} (setting not found)`
+      end if
     end if
   end for
 end sub

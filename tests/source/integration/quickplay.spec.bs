@@ -61,7 +61,7 @@ namespace tests
     @it("creates queue item from valid movie node")
     function createsQueueItemFromValidMovie()
       ' Load mock data from JSON file
-      mockData = MockDataLoader.LoadApiData("movie-quickplay-basic")
+      mockData = MockDataLoader.LoadItem("movie-quickplay-basic")
 
       ' Use MovieData which has all fields defined in XML (matches production)
       itemNode = CreateObject("roSGNode", "MovieData")
@@ -81,7 +81,7 @@ namespace tests
     @it("does not modify original UI node")
     function doesNotModifyOriginalNode()
       ' Load mock data and modify for this test
-      mockData = MockDataLoader.LoadApiData("movie-quickplay-resumable")
+      mockData = MockDataLoader.LoadItem("movie-quickplay-resumable")
       ' Modify the existing UserData object's property using bracket notation
       userData = mockData.UserData
       userData["PlaybackPositionTicks"] = 15260000000&
@@ -107,7 +107,7 @@ namespace tests
     @it("sets resume position from userdata on queue item")
     function setsResumePositionOnQueueItem()
       ' Load mock data from JSON file
-      mockData = MockDataLoader.LoadApiData("movie-quickplay-resumable")
+      mockData = MockDataLoader.LoadItem("movie-quickplay-resumable")
 
       ' Use MovieData which has all fields defined in XML (matches production)
       itemNode = CreateObject("roSGNode", "MovieData")
@@ -127,7 +127,7 @@ namespace tests
     @it("sets default audio stream on queue item")
     function setsDefaultAudioStreamOnQueueItem()
       ' Load mock data from JSON file
-      mockData = MockDataLoader.LoadApiData("movie-quickplay-multi-audio")
+      mockData = MockDataLoader.LoadItem("movie-quickplay-multi-audio")
 
       ' Use MovieData which has all fields defined in XML (matches production)
       itemNode = CreateObject("roSGNode", "MovieData")
@@ -151,7 +151,7 @@ namespace tests
     @it("creates independent queue item that can be modified without affecting UI")
     function createsIndependentQueueItem()
       ' Load mock data from JSON file
-      mockData = MockDataLoader.LoadApiData("movie-quickplay-independent")
+      mockData = MockDataLoader.LoadItem("movie-quickplay-independent")
 
       ' Use MovieData which has all fields defined in XML (matches production)
       itemNode = CreateObject("roSGNode", "MovieData")

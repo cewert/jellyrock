@@ -46,6 +46,90 @@ function getDeviceProfile() as object
   }
 end function
 
+' Test if device can decode a specific codec at a given channel count
+' This is a public wrapper for getActualCodecSupport that can be called from other files
+' Returns true if the Roku can decode this codec at this channel count
+function canDeviceDecodeCodec(codec as string, channelCount as integer) as boolean
+  di = CreateObject("roDeviceInfo")
+  return getActualCodecSupport(codec, channelCount, di)
+end function
+
+' Override false positives from Roku API using known hardware limits
+' Returns true if codec can actually decode/passthrough the specified channel count
+' For surround codecs (>2ch), prioritizes PassThru check to detect receiver support
+function getActualCodecSupport(codec as string, channelCount as integer, di as object) as boolean
+  ' Codecs that Roku can OUTPUT multichannel audio (not just decode)
+  surroundOutputCodecs = ["eac3", "ac3", "dts"]
+
+  ' For multichannel surround codecs (>2ch), prioritize PassThru check
+  if channelCount > 2 and arrayHasValue(surroundOutputCodecs, codec)
+    ' First: Check if receiver supports this via PassThru
+    if di.CanDecodeAudio({ Codec: codec, ChCnt: channelCount, PassThru: 1 }).Result
+      return true ' Receiver connected and supports this channel count!
+    end if
+
+    ' No PassThru support - check if Roku can natively decode (will downmix to stereo)
+    if not di.CanDecodeAudio({ Codec: codec, ChCnt: channelCount }).Result
+      return false ' API says can't decode at all
+    end if
+
+    ' API says yes - check for false positive using known hardware limits
+    rokuDecodeMaxChannels = {
+      "eac3": 6,
+      "ac3": 6,
+      "dts": 0 ' DTS is passthrough-only, cannot natively decode
+    }
+
+    ' Defensive: Ensure codec is a valid key in rokuDecodeMaxChannels
+    ' This should always be true due to the surroundOutputCodecs check above,
+    ' but this guards against future changes or typos.
+    if not rokuDecodeMaxChannels.DoesExist(codec)
+      ' Unexpected codec; treat as unsupported for >2ch
+      return false
+    end if
+
+    if channelCount > rokuDecodeMaxChannels[codec]
+      return false ' Exceeds native decode capability - false positive
+    end if
+
+    return true ' Can natively decode (will downmix to stereo for no-receiver users)
+  end if
+
+  ' For stereo (2ch) or non-surround codecs (aac, mp3, pcm, etc)
+  if not di.CanDecodeAudio({ Codec: codec, ChCnt: channelCount }).Result
+    return false ' API says no support
+  end if
+
+  ' API says yes - check for false positives on non-surround codecs
+  rokuDecodeMaxChannels = {
+    "aac": 6,
+    "pcm": 2,
+    "lpcm": 2
+  }
+
+  if rokuDecodeMaxChannels.DoesExist(codec) and channelCount > rokuDecodeMaxChannels[codec]
+    return false ' False positive
+  end if
+
+  return true
+end function
+
+' Get list of surround codecs that support passthrough at specified channel count
+' Returns array of codec strings in priority order: eac3, ac3, dts
+function getSupportedPassthruCodecs(di as object, channelCount as integer) as object
+  ' Codecs that Roku can OUTPUT multichannel audio (not just decode)
+  surroundOutputCodecs = ["eac3", "ac3", "dts"]
+  supportedCodecs = []
+
+  for each codec in surroundOutputCodecs
+    if getActualCodecSupport(codec, channelCount, di)
+      supportedCodecs.push(codec)
+    end if
+  end for
+
+  return supportedCodecs
+end function
+
 function GetDirectPlayProfiles() as object
   ' ONE rendezvous to get user settings
   globalUserSettings = m.global.user.settings
@@ -171,205 +255,181 @@ end function
 function getTranscodingProfiles() as object
   ' ONE rendezvous to get user settings
   globalUserSettings = m.global.user.settings
-
   transcodingProfiles = []
-
   di = CreateObject("roDeviceInfo")
 
-  transcodingContainers = ["mp4", "ts"]
-  ' use strings to preserve order
-  mp4AudioCodecs = "aac"
-  mp4VideoCodecs = "h264"
-  tsAudioCodecs = "aac"
-  tsVideoCodecs = "h264"
+  ' ========================================
+  ' AUDIO CAPABILITY DETECTION
+  ' ========================================
 
-  ' does the users setup support surround sound?
-  maxAudioChannels = "2" ' jellyfin expects this as a string
-  ' in order of preference from left to right
-  audioCodecs = ["eac3", "ac3", "dts", "mp3", "vorbis", "opus", "flac", "alac", "ac4", "pcm", "wma", "wmapro"]
+  ' Detect actual passthrough support for multichannel audio
+  sixChannelPassthruCodecs = getSupportedPassthruCodecs(di, 6)
+  eightChannelPassthruCodecs = getSupportedPassthruCodecs(di, 8)
 
-  if di.GetAudioOutputChannel() = "5.1 surround"
-    maxAudioChannels = "6"
-    for each codec in audioCodecs
-      if di.CanDecodeAudio({ Codec: codec, ChCnt: 8 }).Result
-        maxAudioChannels = "8"
-        exit for
-      end if
-    end for
-  end if
+  ' Get user's preferred codec for ordering (applied later in transcoding profile)
+  preferredCodec = globalUserSettings.playbackPreferredMultichannelCodec
 
-  ' VIDEO CODECS
-  '
-  ' AVC / h264 / MPEG4 AVC
+  ' ========================================
+  ' AUDIO-ONLY TRANSCODING PROFILES
+  ' ========================================
+
+  ' AAC for stereo audio (always 2 channels)
+  transcodingProfiles.push({
+    "Container": "aac",
+    "Type": "Audio",
+    "AudioCodec": "aac",
+    "Context": "Streaming",
+    "Protocol": "http",
+    "MaxAudioChannels": "2"
+  })
+  transcodingProfiles.push({
+    "Container": "aac",
+    "Type": "Audio",
+    "AudioCodec": "aac",
+    "Context": "Static",
+    "Protocol": "http",
+    "MaxAudioChannels": "2"
+  })
+
+  ' MP3 for stereo audio (fixed from incorrect maxAudioChannels value)
+  transcodingProfiles.push({
+    "Container": "mp3",
+    "Type": "Audio",
+    "AudioCodec": "mp3",
+    "Context": "Streaming",
+    "Protocol": "http",
+    "MaxAudioChannels": "2"
+  })
+  transcodingProfiles.push({
+    "Container": "mp3",
+    "Type": "Audio",
+    "AudioCodec": "mp3",
+    "Context": "Static",
+    "Protocol": "http",
+    "MaxAudioChannels": "2"
+  })
+
+  ' ========================================
+  ' VIDEO CODEC DETECTION (per container)
+  ' ========================================
+
+  transcodingContainers = ["ts", "mp4"]
+  containerVideoCodecs = {}
+
   for each container in transcodingContainers
-    if di.CanDecodeVideo({ Codec: "mpeg4 avc", Container: container }).Result
-      if container = "mp4"
-        ' check for codec string before adding it
-        if mp4VideoCodecs.Instr(0, ",mpeg4 avc") = -1
-          mp4VideoCodecs = mp4VideoCodecs + ",mpeg4 avc"
-        end if
-      else if container = "ts"
-        ' check for codec string before adding it
-        if tsVideoCodecs.Instr(0, ",mpeg4 avc") = -1
-          tsVideoCodecs = tsVideoCodecs + ",mpeg4 avc"
-        end if
-      end if
-    end if
-  end for
+    ' Video codecs
+    videoCodecList = "h264"
 
-  ' HEVC / h265
-  for each container in transcodingContainers
     if di.CanDecodeVideo({ Codec: "hevc", Container: container }).Result
-      if container = "mp4"
-        ' check for codec string before adding it
-        if mp4VideoCodecs.Instr(0, "h265,") = -1
-          mp4VideoCodecs = "h265," + mp4VideoCodecs
-        end if
-        if mp4VideoCodecs.Instr(0, "hevc,") = -1
-          mp4VideoCodecs = "hevc," + mp4VideoCodecs
-        end if
-      else if container = "ts"
-        ' check for codec string before adding it
-        if tsVideoCodecs.Instr(0, "h265,") = -1
-          tsVideoCodecs = "h265," + tsVideoCodecs
-        end if
-        if tsVideoCodecs.Instr(0, "hevc,") = -1
-          tsVideoCodecs = "hevc," + tsVideoCodecs
-        end if
+      videoCodecList = "hevc,h265," + videoCodecList
+    end if
+
+    if di.CanDecodeVideo({ Codec: "mpeg4 avc", Container: container }).Result
+      if videoCodecList.Instr("mpeg4 avc") = -1
+        videoCodecList = videoCodecList + ",mpeg4 avc"
       end if
     end if
-  end for
 
-  ' VP9
-  for each container in transcodingContainers
-    if di.CanDecodeAudio({ Codec: "vp9", Container: container }).Result
-      if container = "mp4"
-        ' check for codec string before adding it
-        if mp4VideoCodecs.Instr(0, ",vp9") = -1
-          mp4VideoCodecs = mp4VideoCodecs + ",vp9"
-        end if
-      else if container = "ts"
-        ' check for codec string before adding it
-        if tsVideoCodecs.Instr(0, ",vp9") = -1
-          tsVideoCodecs = tsVideoCodecs + ",vp9"
-        end if
+    if di.CanDecodeVideo({ Codec: "vp9", Container: container }).Result
+      if videoCodecList.Instr("vp9") = -1
+        videoCodecList = videoCodecList + ",vp9"
       end if
     end if
-  end for
 
-  ' MPEG2
-  if globalUserSettings.playbackMpeg2
-    for each container in transcodingContainers
+    if globalUserSettings.playbackMpeg2
       if di.CanDecodeVideo({ Codec: "mpeg2", Container: container }).Result
-        if container = "mp4"
-          ' check for codec string before adding it
-          if mp4VideoCodecs.Instr(0, ",mpeg2video") = -1
-            mp4VideoCodecs = mp4VideoCodecs + ",mpeg2video"
-          end if
-        else if container = "ts"
-          ' check for codec string before adding it
-          if tsVideoCodecs.Instr(0, ",mpeg2video") = -1
-            tsVideoCodecs = tsVideoCodecs + ",mpeg2video"
-          end if
-        end if
+        videoCodecList = videoCodecList + ",mpeg2video"
       end if
-    end for
-  end if
+    end if
 
-  ' AV1
-  ' direct streaming av1 is not supported on roku
-  ' force a full transcode by omitting av1 from the transcoding profile
-  ' https://community.roku.com/t5/Roku-Developer-Program/HLS-fMP4-No-Audio/td-p/607399
-
-  ' AUDIO CODECS
-  for each container in transcodingContainers
-    for each codec in audioCodecs
-      if di.CanDecodeAudio({ Codec: codec, Container: container }).result
-        if container = "mp4"
-          mp4AudioCodecs = mp4AudioCodecs + "," + codec
-        else if container = "ts"
-          tsAudioCodecs = tsAudioCodecs + "," + codec
-        end if
-      end if
-    end for
+    containerVideoCodecs[container] = videoCodecList
   end for
 
-  ' add aac to TranscodingProfile for stereo audio
-  ' NOTE: multichannel aac is not supported. only decode to stereo on some devices
-  transcodingProfiles.push({
-    "Container": "aac",
-    "Type": "Audio",
-    "AudioCodec": "aac",
-    "Context": "Streaming",
-    "Protocol": "http",
-    "MaxAudioChannels": "2"
-  })
-  transcodingProfiles.push({
-    "Container": "aac",
-    "Type": "Audio",
-    "AudioCodec": "aac",
-    "Context": "Static",
-    "Protocol": "http",
-    "MaxAudioChannels": "2"
-  })
-  ' add mp3 to TranscodingProfile for multichannel music
-  transcodingProfiles.push({
-    "Container": "mp3",
-    "Type": "Audio",
-    "AudioCodec": "mp3",
-    "Context": "Streaming",
-    "Protocol": "http",
-    "MaxAudioChannels": maxAudioChannels
-  })
-  transcodingProfiles.push({
-    "Container": "mp3",
-    "Type": "Audio",
-    "AudioCodec": "mp3",
-    "Context": "Static",
-    "Protocol": "http",
-    "MaxAudioChannels": maxAudioChannels
-  })
+  ' ========================================
+  ' VIDEO TRANSCODING PROFILES
+  ' Single profile per container with codecs in optimal order
+  ' ========================================
 
-  tsArray = {
-    "Container": "ts",
-    "Context": "Streaming",
-    "Protocol": "hls",
-    "Type": "Video",
-    "AudioCodec": tsAudioCodecs,
-    "VideoCodec": tsVideoCodecs,
-    "MaxAudioChannels": maxAudioChannels,
-    "MinSegments": 1,
-    "BreakOnNonKeyFrames": false,
-    "SegmentLength": 6
-  }
-  mp4Array = {
-    "Container": "mp4",
-    "Context": "Streaming",
-    "Protocol": "hls",
-    "Type": "Video",
-    "AudioCodec": mp4AudioCodecs,
-    "VideoCodec": mp4VideoCodecs,
-    "MaxAudioChannels": maxAudioChannels,
-    "MinSegments": 1,
-    "BreakOnNonKeyFrames": false,
-    "SegmentLength": 6
-  }
+  ' Determine max supported audio channels
+  maxAudioChannels = "2" ' default stereo
+  allSurroundCodecs = []
 
-  ' apply max res to transcoding profile
-  maxHeightArray = getMaxHeightArray(true)
-  if maxHeightArray.count() > 0
-    tsArray.Conditions = [maxHeightArray]
-    mp4Array.Conditions = [maxHeightArray]
+  if eightChannelPassthruCodecs.count() > 0
+    maxAudioChannels = "8"
+    allSurroundCodecs = eightChannelPassthruCodecs
+  else if sixChannelPassthruCodecs.count() > 0
+    maxAudioChannels = "6"
+    allSurroundCodecs = sixChannelPassthruCodecs
   end if
 
-  ' add user-selected preferred codec to the front of the list
-  if globalUserSettings.playbackPreferredAudioCodec <> "auto"
-    tsArray.AudioCodec = globalUserSettings.playbackPreferredAudioCodec + "," + tsArray.AudioCodec
-    mp4Array.AudioCodec = globalUserSettings.playbackPreferredAudioCodec + "," + mp4Array.AudioCodec
-  end if
+  ' Build optimal audio codec list for transcoding
+  ' Order: AAC (stereo), passthrough surround, multichannel decode, stereo fallbacks
+  for each container in transcodingContainers
+    audioCodecList = []
 
-  transcodingProfiles.push(tsArray)
-  transcodingProfiles.push(mp4Array)
+    ' 1. AAC always first (efficient for stereo, removed at playback time for multichannel sources with passthrough)
+    audioCodecList.push("aac")
+
+    ' 2. Add surround passthrough codecs if supported (in preference order)
+    if allSurroundCodecs.count() > 0
+      ' Apply user's preferred codec ordering
+      if isValid(preferredCodec) and preferredCodec <> "" and preferredCodec <> "auto"
+        ' Preferred codec first (if supported)
+        if arrayHasValue(allSurroundCodecs, preferredCodec)
+          audioCodecList.push(preferredCodec)
+        end if
+
+        ' Then other surround codecs in priority order: eac3 > ac3 > dts
+        surroundPriority = ["eac3", "ac3", "dts"]
+        for each codec in surroundPriority
+          if arrayHasValue(allSurroundCodecs, codec) and codec <> preferredCodec
+            audioCodecList.push(codec)
+          end if
+        end for
+      else
+        ' Auto mode: use default priority order (eac3 > ac3 > dts)
+        surroundPriority = ["eac3", "ac3", "dts"]
+        for each codec in surroundPriority
+          if arrayHasValue(allSurroundCodecs, codec)
+            audioCodecList.push(codec)
+          end if
+        end for
+      end if
+    end if
+
+    ' 3. Add stereo fallback codecs if device supports them (MP3 most compatible, then lossless as fallbacks)
+    stereoFallbacks = ["mp3", "flac", "alac", "pcm"]
+    for each codec in stereoFallbacks
+      if not arrayHasValue(audioCodecList, codec)
+        ' Validate device can decode this codec at 2 channels in this container
+        if di.CanDecodeAudio({ Codec: codec, ChCnt: 2, Container: container }).Result
+          audioCodecList.push(codec)
+        end if
+      end if
+    end for
+
+    ' Create single profile per container
+    profile = {
+      "Container": container,
+      "Context": "Streaming",
+      "Protocol": "hls",
+      "Type": "Video",
+      "VideoCodec": containerVideoCodecs[container],
+      "AudioCodec": audioCodecList.join(","),
+      "MaxAudioChannels": maxAudioChannels,
+      "MinSegments": 1,
+      "BreakOnNonKeyFrames": false,
+      "SegmentLength": 6
+    }
+
+    ' Add height restriction if configured
+    maxHeightArray = getMaxHeightArray(true)
+    if maxHeightArray.count() > 0
+      profile.Conditions = [maxHeightArray]
+    end if
+
+    transcodingProfiles.push(profile)
+  end for
 
   return transcodingProfiles
 end function
@@ -397,65 +457,133 @@ function getCodecProfiles() as object
   di = CreateObject("roDeviceInfo")
   maxHeightArray = getMaxHeightArray()
 
-  ' AUDIO
-  ' test each codec to see how many channels are supported
+  ' ========================================
+  ' DETECT SURROUND PASSTHROUGH SUPPORT
+  ' ========================================
+
+  sixChannelPassthruCodecs = getSupportedPassthruCodecs(di, 6)
+  eightChannelPassthruCodecs = getSupportedPassthruCodecs(di, 8)
+  hasSurroundPassthru = sixChannelPassthruCodecs.count() > 0 or eightChannelPassthruCodecs.count() > 0
+
+  ' ========================================
+  ' CODEC CATEGORIES
+  ' ========================================
+
+  ' Codecs that Roku decodes multichannel but only OUTPUTS as stereo PCM
+  ' When user has a receiver, we force these to 2ch max to trigger transcoding
+  ' to surround output codecs (eac3/ac3/dts) instead of direct playing and downmixing
+  stereoOutputCodecs = ["aac", "flac", "alac", "pcm", "lpcm", "wav", "opus", "vorbis"]
+
+  ' ========================================
+  ' AUDIO CODEC PROFILES
+  ' ========================================
+
   audioCodecs = ["aac", "mp3", "mp2", "opus", "pcm", "lpcm", "wav", "flac", "alac", "ac3", "ac4", "aiff", "dts", "wmapro", "vorbis", "eac3", "mpg123"]
   audioChannels = [8, 6, 2] ' highest first
+
   for each audioCodec in audioCodecs
-    for each audioChannel in audioChannels
-      channelSupportFound = false
-      if di.CanDecodeAudio({ Codec: audioCodec, ChCnt: audioChannel }).Result
-        channelSupportFound = true
-        for each codecType in ["VideoAudio", "Audio"]
-          if audioCodec = "aac"
-            codecProfiles.push({
-              "Type": codecType,
-              "Codec": audioCodec,
-              "Conditions": [
-                {
-                  "Condition": "NotEquals",
-                  "Property": "AudioProfile",
-                  "Value": "Main",
-                  "IsRequired": true
-                },
-                {
-                  "Condition": "NotEquals",
-                  "Property": "AudioProfile",
-                  "Value": "HE-AAC",
-                  "IsRequired": true
-                },
-                {
-                  "Condition": "LessThanEqual",
-                  "Property": "AudioChannels",
-                  "Value": audioChannel,
-                  "IsRequired": true
-                }
-              ]
-            })
-          else if audioCodec = "opus" and codecType = "Audio"
-            ' opus audio files not supported by roku
-          else
-            codecProfiles.push({
-              "Type": codecType,
-              "Codec": audioCodec,
-              "Conditions": [
-                {
-                  "Condition": "LessThanEqual",
-                  "Property": "AudioChannels",
-                  "Value": audioChannel,
-                  "IsRequired": true
-                }
-              ]
-            })
-          end if
-        end for
-      end if
-      if channelSupportFound
-        ' if 8 channels are supported we don't need to test for 6 or 2
-        ' if 6 channels are supported we don't need to test 2
-        exit for
-      end if
-    end for
+    ' Special handling for stereo-output codecs when user has surround passthrough
+    ' These codecs decode multichannel but Roku only outputs as stereo PCM
+    if arrayHasValue(stereoOutputCodecs, audioCodec) and hasSurroundPassthru
+      ' Force to 2 channels maximum to prevent Roku from downmixing multichannel to stereo
+      ' This triggers server to transcode to surroundOutputCodecs (eac3/ac3/dts) instead
+      for each codecType in ["VideoAudio", "Audio"]
+        ' Special AAC profile restrictions (Main and HE-AAC not supported)
+        if audioCodec = "aac"
+          codecProfiles.push({
+            "Type": codecType,
+            "Codec": audioCodec,
+            "Conditions": [
+              {
+                "Condition": "NotEquals",
+                "Property": "AudioProfile",
+                "Value": "Main",
+                "IsRequired": true
+              },
+              {
+                "Condition": "NotEquals",
+                "Property": "AudioProfile",
+                "Value": "HE-AAC",
+                "IsRequired": true
+              },
+              {
+                "Condition": "LessThanEqual",
+                "Property": "AudioChannels",
+                "Value": "2",
+                "IsRequired": true
+              }
+            ]
+          })
+        else
+          ' All other stereo-output codecs: just limit channels
+          codecProfiles.push({
+            "Type": codecType,
+            "Codec": audioCodec,
+            "Conditions": [
+              {
+                "Condition": "LessThanEqual",
+                "Property": "AudioChannels",
+                "Value": "2",
+                "IsRequired": true
+              }
+            ]
+          })
+        end if
+      end for
+    else
+      ' Standard logic for all other codecs (and AAC when no surround passthru)
+      for each audioChannel in audioChannels
+        ' Use override logic to catch false positives
+        if getActualCodecSupport(audioCodec, audioChannel, di)
+          ' Create codec profile for this channel count
+          for each codecType in ["VideoAudio", "Audio"]
+            if audioCodec = "aac"
+              codecProfiles.push({
+                "Type": codecType,
+                "Codec": audioCodec,
+                "Conditions": [
+                  {
+                    "Condition": "NotEquals",
+                    "Property": "AudioProfile",
+                    "Value": "Main",
+                    "IsRequired": true
+                  },
+                  {
+                    "Condition": "NotEquals",
+                    "Property": "AudioProfile",
+                    "Value": "HE-AAC",
+                    "IsRequired": true
+                  },
+                  {
+                    "Condition": "LessThanEqual",
+                    "Property": "AudioChannels",
+                    "Value": audioChannel.ToStr(),
+                    "IsRequired": true
+                  }
+                ]
+              })
+            else if audioCodec = "opus" and codecType = "Audio"
+              ' Opus audio files not supported by Roku - skip
+            else
+              codecProfiles.push({
+                "Type": codecType,
+                "Codec": audioCodec,
+                "Conditions": [
+                  {
+                    "Condition": "LessThanEqual",
+                    "Property": "AudioChannels",
+                    "Value": audioChannel.ToStr(),
+                    "IsRequired": true
+                  }
+                ]
+              })
+            end if
+          end for
+          ' Found highest supported channel count, stop testing lower
+          exit for
+        end if
+      end for
+    end if
   end for
 
   ' check device for codec profile and level support
