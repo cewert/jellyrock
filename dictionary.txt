@@ -72,3 +72,6 @@ namespace
 Lifecycle
 Hardcode
 Hardcoded
+pre-migration
+subfolder
+checkboxes

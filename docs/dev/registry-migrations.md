@@ -187,7 +187,7 @@ settingsNode.oldSettingName = settingsData["oldSettingName"] ?? ""
 settingsNode.newSettingName = settingsData["newSettingName"] ?? ""
 ```
 
-**⚠️ Critical:** SessionDataTransformer runs AFTER migrations, so it must use NEW names only. No backward compatibility needed!
+**⚠️ Critical:** `SessionDataTransformer` runs AFTER migrations, so it must use NEW names only. No backward compatibility needed!
 
 ### 4. Other Code References
 
@@ -543,11 +543,11 @@ tests/source/mocks/
 
 ### Loading Mock Data in Tests
 
-**⚠️ Critical: Use centralized MockDataLoader functions only!**
+**⚠️ Critical: Use centralized `MockDataLoader` functions only!**
 
 All mock data loading helpers MUST be in `tests/source/shared/MockDataLoader.bs`. Never create duplicate helper functions in individual test files. This ensures consistency and maintainability.
 
-**Available MockDataLoader functions:**
+**Available `MockDataLoader` functions:**
 
 ```brighterscript
 ' Load item mocks (movies, episodes, series, programs)
@@ -798,12 +798,12 @@ When implementing a registry migration, use this checklist to ensure nothing is 
 
 ### Phase 4: Mock Data
 
-- [ ] Create mock data files in appropriate `tests/source/mocks/` subfolder (api/, registry/, or roku/)
+- [ ] Create mock data files in appropriate `tests/source/mocks/` subfolder (i.e. `api/`, `registry/`, `roku/`)
 - [ ] Create `*-old-names.json` mock (pre-migration state)
 - [ ] Create `*-new-names.json` mock (post-migration state)
 - [ ] If new helper function needed, add to `tests/source/shared/MockDataLoader.bs` (NOT individual test files)
 - [ ] Verify mock data structure matches actual API/registry responses
-- [ ] Update documentation if new MockDataLoader function added
+- [ ] Update documentation if new `MockDataLoader` function added
 
 ### Phase 5: Testing & Validation
 
