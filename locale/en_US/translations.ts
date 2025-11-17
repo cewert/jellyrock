@@ -60,10 +60,6 @@
       <translation>8k</translation>
     </message>
     <message>
-      <source>AAC</source>
-      <translation>AAC</translation>
-    </message>
-    <message>
       <source>Additional Parts</source>
       <translation>Additional Parts</translation>
       <extracomment>Additional parts of a video</extracomment>
@@ -307,14 +303,6 @@
       <extracomment>TV Show library sort option</extracomment>
     </message>
     <message>
-      <source>DD (AC3)</source>
-      <translation>DD (AC3)</translation>
-    </message>
-    <message>
-      <source>DD+ (EAC3)</source>
-      <translation>DD+ (EAC3)</translation>
-    </message>
-    <message>
       <source>Default</source>
       <translation>Default</translation>
     </message>
@@ -363,6 +351,14 @@
     <message>
       <source>Disabled</source>
       <translation>Disabled</translation>
+    </message>
+    <message>
+      <source>Dolby Digital (AC3)</source>
+      <translation>Dolby Digital (AC3)</translation>
+    </message>
+    <message>
+      <source>Dolby Digital Plus (EAC3)</source>
+      <translation>Dolby Digital Plus (EAC3)</translation>
     </message>
     <message>
       <source>Downloading Fallback Font</source>
@@ -837,9 +833,8 @@
       <translation>Played</translation>
     </message>
     <message>
-      <source>Preferred Audio Codec</source>
-      <translation>Preferred Audio Codec</translation>
-      <extracomment>Settings Menu - Title of option</extracomment>
+      <source>Preferred Surround Audio Codec</source>
+      <translation>Preferred Surround Audio Codec</translation>
     </message>
     <message>
       <source>Press &apos;Back&apos; to Close</source>
@@ -1280,19 +1275,9 @@
       <extracomment>Option Title in user setting screen</extracomment>
     </message>
     <message>
-      <source>Use system settings</source>
-      <translation>Use system settings</translation>
-      <extracomment>User Setting - Option title</extracomment>
-    </message>
-    <message>
       <source>Use the replay button to slowly animate to the first item in the folder. (If disabled, the folder will reset to the first item immediately).</source>
       <translation>Use the replay button to slowly animate to the first item in the folder. (If disabled, the folder will reset to the first item immediately).</translation>
       <extracomment>Description for option in Setting Screen</extracomment>
-    </message>
-    <message>
-      <source>Use the selected audio codec for transcodes. If the device or stream does not support it, a fallback codec will be used.</source>
-      <translation>Use the selected audio codec for transcodes. If the device or stream does not support it, a fallback codec will be used.</translation>
-      <extracomment>Settings Menu - Description for option</extracomment>
     </message>
     <message>
       <source>Use voice remote to search</source>
@@ -1368,6 +1353,10 @@
       <source>When finished playing a single episode, play the next one automatically.</source>
       <translation>When finished playing a single episode, play the next one automatically.</translation>
       <extracomment>User Setting - Setting description</extracomment>
+    </message>
+    <message>
+      <source>When transcoding multichannel audio, prefer this codec. EAC3 supports up to 7.1 channels with better compression. AC3 is more widely compatible. DTS is an alternative for systems that prefer it. This only affects 6 and 8 channel transcoding profiles.</source>
+      <translation>When transcoding multichannel audio, prefer this codec. EAC3 supports up to 7.1 channels with better compression. AC3 is more widely compatible. DTS is an alternative for systems that prefer it. This only affects 6 and 8 channel transcoding profiles.</translation>
     </message>
     <message>
       <source>WxH</source>
