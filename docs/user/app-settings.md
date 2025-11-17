@@ -50,7 +50,7 @@ Settings relating to playback and supported codec and media types.
 - [Maximum Resolution](#playbackResolutionMax)
 - [Next Episode Button Time](#playbackNextUpButtonSeconds)
 - [Play Next Episode Automatically](#playbackPlayNextEpisode)
-- [Preferred Audio Codec](#playbackPreferredAudioCodec)
+- [Preferred Surround Audio Codec](#playbackPreferredMultichannelCodec)
 - [Text Subtitles Only](#playbackSubsOnlyText)
 - [Video Codec Support](#playback-video-codec-support)
   - [MPEG-2](#playbackMpeg2)
@@ -121,18 +121,18 @@ When finished playing a single episode, play the next one automatically.
 | Default | `webclient` |
 | Options | <table cellspacing="0" cellpadding="0"><thead><tr><th align="left">Name</th><th align="left">ID</th></tr></thead><tbody><tr><td>Use Web Client Setting</td><td><code>webclient</code></td></tr><tr><td>Enabled</td><td><code>enabled</code></td></tr><tr><td>Disabled</td><td><code>disabled</code></td></tr></tbody></table> |
 
-<h3 id="playbackPreferredAudioCodec">Preferred Audio Codec</h3>
+<h3 id="playbackPreferredMultichannelCodec">Preferred Surround Audio Codec</h3>
 
-<a href="#playback">Playback</a> › <a href="#playbackPreferredAudioCodec">Preferred Audio Codec</a>
+<a href="#playback">Playback</a> › <a href="#playbackPreferredMultichannelCodec">Preferred Surround Audio Codec</a>
 
-Use the selected audio codec for transcodes. If the device or stream does not support it, a fallback codec will be used.
+When transcoding multichannel audio, prefer this codec. EAC3 supports up to 7.1 channels with better compression. AC3 is more widely compatible. DTS is an alternative for systems that prefer it. This only affects 6 and 8 channel transcoding profiles.
 
 | Property | Value |
 | --- | --- |
-| Setting Name | `playbackPreferredAudioCodec` |
+| Setting Name | `playbackPreferredMultichannelCodec` |
 | Type | `radio` |
-| Default | `auto` |
-| Options | <table cellspacing="0" cellpadding="0"><thead><tr><th align="left">Name</th><th align="left">ID</th></tr></thead><tbody><tr><td>Use system settings</td><td><code>auto</code></td></tr><tr><td>AAC</td><td><code>aac</code></td></tr><tr><td>DD (AC3)</td><td><code>ac3</code></td></tr><tr><td>DD+ (EAC3)</td><td><code>eac3</code></td></tr><tr><td>DTS</td><td><code>dts</code></td></tr></tbody></table> |
+| Default | `eac3` |
+| Options | <table cellspacing="0" cellpadding="0"><thead><tr><th align="left">Name</th><th align="left">ID</th></tr></thead><tbody><tr><td>Dolby Digital Plus (EAC3)</td><td><code>eac3</code></td></tr><tr><td>Dolby Digital (AC3)</td><td><code>ac3</code></td></tr><tr><td>DTS</td><td><code>dts</code></td></tr></tbody></table> |
 
 <h3 id="playbackSubsOnlyText">Text Subtitles Only</h3>
 
