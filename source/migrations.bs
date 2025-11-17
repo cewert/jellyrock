@@ -182,6 +182,7 @@ sub runRegistryUserMigrations()
       newSettingName = "playbackPreferredMultichannelCodec"
 
       if reg.exists(oldSettingName)
+        print `Migrating audio codec settings to v${AUDIO_CODEC_MIGRATION_VERSION} for userid: ${section}`
         oldValue = reg.read(oldSettingName)
 
         ' Migrate value: auto/aac/invalid -> eac3, otherwise keep user's choice
@@ -195,6 +196,8 @@ sub runRegistryUserMigrations()
         reg.delete(oldSettingName)
         print `Migrated ${oldSettingName}='${oldValue}' to ${newSettingName}='${newValue}'`
         reg.flush()
+      else
+        print `No audio codec migration needed for userid: ${section} (setting not found)`
       end if
     end if
   end for
