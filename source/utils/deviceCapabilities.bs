@@ -397,11 +397,14 @@ function getTranscodingProfiles() as object
       end if
     end if
 
-    ' 3. Add stereo fallback codecs (MP3 most compatible, then lossless as fallbacks)
+    ' 3. Add stereo fallback codecs if device supports them (MP3 most compatible, then lossless as fallbacks)
     stereoFallbacks = ["mp3", "flac", "alac", "pcm"]
     for each codec in stereoFallbacks
       if not arrayHasValue(audioCodecList, codec)
-        audioCodecList.push(codec)
+        ' Validate device can decode this codec at 2 channels in this container
+        if di.CanDecodeAudio({ Codec: codec, ChCnt: 2, Container: container }).Result
+          audioCodecList.push(codec)
+        end if
       end if
     end for
 
