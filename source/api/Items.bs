@@ -46,7 +46,11 @@ function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioT
         ' Get channel count for AAC handling logic
         channelCount = 2 ' default stereo
         if isValid(selectedAudioStream.Channels)
-          channelCount = selectedAudioStream.Channels
+          if type(selectedAudioStream.Channels) = "roString" or type(selectedAudioStream.Channels) = "String"
+            channelCount = selectedAudioStream.Channels.ToInt()
+          else if type(selectedAudioStream.Channels) = "roInt" or type(selectedAudioStream.Channels) = "Integer"
+            channelCount = selectedAudioStream.Channels
+          end if
         end if
 
         ' Check if device has surround passthrough by looking at MaxAudioChannels in TranscodingProfiles

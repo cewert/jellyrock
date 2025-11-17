@@ -10,8 +10,7 @@ namespace RegistryTestUtils
     for each sectionName in allSections
       if sectionName.StartsWith(pattern)
         ' Delete the entire section from the registry
-        success = registry.Delete(sectionName)
-        if success
+        if registry.Delete(sectionName)
           deletedCount++
         end if
       end if

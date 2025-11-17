@@ -16,25 +16,31 @@ sub runGlobalMigrations()
   if isValid(appLastRunVersion) and not versionChecker(appLastRunVersion, SETTINGS_MIGRATION_VERSION)
     ' last app version used < SETTINGS_MIGRATION_VERSION
     m.wasMigrated = true
-    print `Running ${SETTINGS_MIGRATION_VERSION} global registry migrations`
 
     migrations = {
-      ' Global Settings (1)
+      ' Global settings
       "global.rememberme": "globalRememberMe"
     }
 
     ' Migrate each setting: read → write new → delete old
     reg = CreateObject("roRegistrySection", getGlobalRegistrySection())
+    migratedCount = 0
     for each oldName in migrations
       if reg.exists(oldName)
+        if migratedCount = 0
+          print `Running ${SETTINGS_MIGRATION_VERSION} global registry migrations`
+        end if
         value = reg.read(oldName)
         newName = migrations[oldName]
         reg.write(newName, value)
         reg.delete(oldName)
+        migratedCount++
       end if
     end for
 
-    reg.flush()
+    if migratedCount > 0
+      reg.flush()
+    end if
 
   end if
 end sub
@@ -88,15 +94,15 @@ sub runRegistryUserMigrations(targetSections = invalid as dynamic)
     ' SETTINGS_MIGRATION_VERSION - Rename dotted settings to camelCase
     if isValid(lastRunVersion) and not versionChecker(lastRunVersion, SETTINGS_MIGRATION_VERSION)
       m.wasMigrated = true
-      print `Migrating user settings to v${SETTINGS_MIGRATION_VERSION} for userid: ${section}`
 
-      ' Define all 41 setting migrations (old dotted name → new camelCase name)
+      ' Define user setting migrations (old dotted name → new camelCase name)
       ' Single source of truth for migration mapping
       migrations = {
-        ' Auth
+        ' Auth settings (stored per-user for multi-user support)
         "token": "authToken",
         "primaryimagetag": "primaryImageTag",
-        ' Playback Settings (13)
+
+        ' Playback settings
         "playback.bitrate.maxlimited": "playbackBitrateMaxLimited",
         "playback.bitrate.limit": "playbackBitrateLimit",
         "playback.cinemamode": "playbackCinemaMode",
@@ -111,7 +117,7 @@ sub runRegistryUserMigrations(targetSections = invalid as dynamic)
         "playback.tryDirect.h264ProfileLevel": "playbackTryDirectH264ProfileLevel",
         "playback.tryDirect.hevcProfileLevel": "playbackTryDirectHevcProfileLevel",
 
-        ' UI Settings (14)
+        ' UI settings
         "ui.general.episodeimagesnextup": "uiGeneralEpisodeImages",
         "ui.font.fallback": "uiFontFallback",
         "ui.design.hideclock": "uiDesignHideClock",
@@ -127,13 +133,13 @@ sub runRegistryUserMigrations(targetSections = invalid as dynamic)
         "ui.tvshows.disableUnwatchedEpisodeCount": "uiTvShowsDisableUnwatchedCount",
         "ui.tvshows.goStraightToEpisodeListing": "uiTvShowsGoStraightToEpisodes",
 
-        ' Item Grid Settings (4)
+        ' Item grid settings
         "itemgrid.showItemCount": "itemGridShowItemCount",
         "itemgrid.gridTitles": "itemGridTitles",
         "itemgrid.reset": "itemGridReset",
         "itemgrid.movieDefaultView": "itemGridMovieDefaultView",
 
-        ' Home Section Settings (7)
+        ' Home section settings
         "homesection0": "homeSection0",
         "homesection1": "homeSection1",
         "homesection2": "homeSection2",
@@ -142,7 +148,7 @@ sub runRegistryUserMigrations(targetSections = invalid as dynamic)
         "homesection5": "homeSection5",
         "homesection6": "homeSection6",
 
-        ' Display Settings (1)
+        ' Display settings
         "display.livetv.landing": "displayLiveTvLanding"
       }
 
@@ -150,6 +156,9 @@ sub runRegistryUserMigrations(targetSections = invalid as dynamic)
       migratedCount = 0
       for each oldName in migrations
         if reg.exists(oldName)
+          if migratedCount = 0
+            print `Migrating user settings to v${SETTINGS_MIGRATION_VERSION} for userid: ${section}`
+          end if
           value = reg.read(oldName)
           newName = migrations[oldName]
           reg.write(newName, value)
@@ -193,10 +202,10 @@ sub runRegistryUserMigrations(targetSections = invalid as dynamic)
         print `Migrating audio codec settings to v${AUDIO_CODEC_MIGRATION_VERSION} for userid: ${section}`
         oldValue = reg.read(oldSettingName)
 
-        ' Migrate value: auto/aac/invalid -> eac3, otherwise keep user's choice
+        ' Migrate deprecated values (auto, aac) to eac3, otherwise preserve existing value
         newValue = "eac3"
         if isValid(oldValue) and oldValue <> "" and oldValue <> "auto" and oldValue <> "aac"
-          ' User had ac3, eac3, or dts - keep their preference
+          ' User has a valid preference (ac3, eac3, dts) or custom value - preserve it
           newValue = oldValue
         end if
 
