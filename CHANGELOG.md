@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Dependencies
 
+- Update roku-deploy from v3.14.4 to v3.15.0 ([#180](https://github.com/cewert/jellyrock/pull/180))
 - Github actions ([#176](https://github.com/cewert/jellyrock/pull/176))
 
 ## [1.1.4](https://github.com/cewert/jellyrock/compare/v1.1.3...v1.1.4) - 2025-11-17
