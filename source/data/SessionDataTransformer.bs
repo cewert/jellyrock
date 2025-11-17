@@ -121,7 +121,7 @@ class SessionDataTransformer
       settingsNode.playbackNextUpButtonSeconds = Val(settingsData["playbackNextUpButtonSeconds"])
     end if
     settingsNode.playbackPlayNextEpisode = settingsData["playbackPlayNextEpisode"] ?? ""
-    settingsNode.playbackPreferredAudioCodec = settingsData["playbackPreferredAudioCodec"] ?? ""
+    settingsNode.playbackPreferredMultichannelCodec = settingsData["playbackPreferredMultichannelCodec"] ?? ""
     settingsNode.playbackSubsOnlyText = toBoolean(settingsData["playbackSubsOnlyText"])
     settingsNode.playbackMpeg2 = toBoolean(settingsData["playbackMpeg2"])
     settingsNode.playbackMpeg4 = toBoolean(settingsData["playbackMpeg4"])

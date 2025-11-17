@@ -549,6 +549,10 @@ end function
 ' For stereo sources (≤2ch), also removes surround passthrough codecs (eac3, ac3, dts)
 ' so transcoding falls through to MP3 (better compatibility + smaller files).
 sub removeUnsupportedAacFromProfile(deviceProfile as object, channelCount as integer)
+  ' Validate inputs
+  if not isValid(deviceProfile) then return
+  if not isValid(deviceProfile.TranscodingProfiles) then return
+
   ' Surround passthrough codecs that should be removed for stereo sources
   surroundCodecs = ["eac3", "ac3", "dts"]
 

@@ -1,0 +1,304 @@
+
+namespace tests
+
+  @suite("Audio Codec Migration - v1.1.5 Migration")
+  @tags("migration")
+  class AudioCodecMigrationTests extends tests.BaseTestSuite
+
+    protected override sub setup()
+      m.needsRegistrySetup = true
+      super.setup()
+    end sub
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Setting Name Migration")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("migrates playbackPreferredAudioCodec to playbackPreferredMultichannelCodec")
+    function _()
+      ' GIVEN: User on v1.1.0 with old setting name
+      testUserId = "test-audio-migration-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.1.4") ' Between v1.1.0 and v1.1.5 - runs ONLY v1.1.5
+      reg.write("playbackPreferredAudioCodec", "eac3")
+      reg.flush()
+
+      ' WHEN: Migration runs (only for this specific user to isolate test)
+      runRegistryUserMigrations([testUserId])
+
+      ' THEN: New setting name exists with preserved value
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertTrue(reg.exists("playbackPreferredMultichannelCodec"), "New setting should exist")
+      m.assertEqual(reg.read("playbackPreferredMultichannelCodec"), "eac3", "Value should be preserved")
+
+      ' AND: Old setting name is deleted
+      m.assertFalse(reg.exists("playbackPreferredAudioCodec"), "Old setting should be deleted")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Value Migration - Deprecated Values")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("migrates 'auto' value to 'eac3'")
+    function _()
+      testUserId = "test-audio-migration-auto-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.1.4")
+      reg.write("playbackPreferredAudioCodec", "auto")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read("playbackPreferredMultichannelCodec"), "eac3", "'auto' should migrate to 'eac3'")
+      m.assertFalse(reg.exists("playbackPreferredAudioCodec"))
+    end function
+
+    @it("migrates 'aac' value to 'eac3'")
+    function _()
+      testUserId = "test-audio-migration-aac-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.1.4")
+      reg.write("playbackPreferredAudioCodec", "aac")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read("playbackPreferredMultichannelCodec"), "eac3", "'aac' should migrate to 'eac3'")
+      m.assertFalse(reg.exists("playbackPreferredAudioCodec"))
+    end function
+
+    @it("migrates empty string value to 'eac3'")
+    function _()
+      testUserId = "test-audio-migration-empty-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.1.4")
+      reg.write("playbackPreferredAudioCodec", "")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read("playbackPreferredMultichannelCodec"), "eac3", "Empty string should migrate to 'eac3'")
+      m.assertFalse(reg.exists("playbackPreferredAudioCodec"))
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Value Migration - Valid Values Preserved")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("preserves 'ac3' value during migration")
+    function _()
+      testUserId = "test-audio-migration-ac3-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.1.4")
+      reg.write("playbackPreferredAudioCodec", "ac3")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read("playbackPreferredMultichannelCodec"), "ac3", "'ac3' should be preserved")
+      m.assertFalse(reg.exists("playbackPreferredAudioCodec"))
+    end function
+
+    @it("preserves 'eac3' value during migration")
+    function _()
+      testUserId = "test-audio-migration-eac3-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.1.4")
+      reg.write("playbackPreferredAudioCodec", "eac3")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read("playbackPreferredMultichannelCodec"), "eac3", "'eac3' should be preserved")
+      m.assertFalse(reg.exists("playbackPreferredAudioCodec"))
+    end function
+
+    @it("preserves 'dts' value during migration")
+    function _()
+      testUserId = "test-audio-migration-dts-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.1.4")
+      reg.write("playbackPreferredAudioCodec", "dts")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read("playbackPreferredMultichannelCodec"), "dts", "'dts' should be preserved")
+      m.assertFalse(reg.exists("playbackPreferredAudioCodec"))
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Edge Cases")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("handles missing old setting gracefully (no migration needed)")
+    function _()
+      testUserId = "test-audio-migration-missing-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.1.4")
+      ' Don't write playbackPreferredAudioCodec
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertFalse(reg.exists("playbackPreferredMultichannelCodec"), "New setting should not be created")
+      m.assertFalse(reg.exists("playbackPreferredAudioCodec"), "Old setting should not exist")
+    end function
+
+    @it("handles invalid/unknown value by migrating to 'eac3'")
+    function _()
+      testUserId = "test-audio-migration-invalid-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.1.4")
+      reg.write("playbackPreferredAudioCodec", "unknown-codec")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read("playbackPreferredMultichannelCodec"), "unknown-codec", "Unknown values should be preserved")
+      m.assertFalse(reg.exists("playbackPreferredAudioCodec"))
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Version Checking")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("skips migration when version already >= v1.1.5")
+    function _()
+      testUserId = "test-audio-migration-skip-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.1.5") ' Already on v1.1.5
+      reg.write("playbackPreferredAudioCodec", "ac3")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      ' Old setting should still exist (migration didn't run)
+      m.assertTrue(reg.exists("playbackPreferredAudioCodec"), "Old setting should remain (no migration)")
+      m.assertFalse(reg.exists("playbackPreferredMultichannelCodec"), "New setting should not exist")
+    end function
+
+    @it("runs migration for version v1.1.4")
+    function _()
+      testUserId = "test-audio-migration-v114-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.1.4") ' Just before v1.1.5
+      reg.write("playbackPreferredAudioCodec", "dts")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertTrue(reg.exists("playbackPreferredMultichannelCodec"), "Migration should run for v1.1.4")
+      m.assertEqual(reg.read("playbackPreferredMultichannelCodec"), "dts")
+      m.assertFalse(reg.exists("playbackPreferredAudioCodec"))
+    end function
+
+    @it("runs migration for version v1.1.0")
+    function _()
+      ' Temporarily set app version to 1.2.0 to allow BOTH v1.1.0 and v1.1.5 migrations
+      savedAppVersion = m.global.app.version
+      m.global.app.version = "1.2.0"
+
+      testUserId = "test-audio-migration-v110-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.1.0") ' At v1.1.0 (post name migration)
+      reg.write("playbackPreferredAudioCodec", "ac3")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertTrue(reg.exists("playbackPreferredMultichannelCodec"), "Migration should run for v1.1.0")
+      m.assertEqual(reg.read("playbackPreferredMultichannelCodec"), "ac3")
+      m.assertFalse(reg.exists("playbackPreferredAudioCodec"))
+
+      ' Restore app version
+      m.global.app.version = savedAppVersion
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Multi-User Migration")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("migrates multiple users independently with different values")
+    function _()
+      ' GIVEN: Three users with different audio codec preferences
+      user1 = "test-audio-migration-multi-001"
+      user2 = "test-audio-migration-multi-002"
+      user3 = "test-audio-migration-multi-003"
+
+      reg1 = CreateObject("roRegistrySection", user1)
+      reg1.write("LastRunVersion", "1.1.0")
+      reg1.write("playbackPreferredAudioCodec", "auto") ' Should migrate to eac3
+      reg1.flush()
+
+      reg2 = CreateObject("roRegistrySection", user2)
+      reg2.write("LastRunVersion", "1.1.0")
+      reg2.write("playbackPreferredAudioCodec", "ac3") ' Should preserve ac3
+      reg2.flush()
+
+      reg3 = CreateObject("roRegistrySection", user3)
+      reg3.write("LastRunVersion", "1.1.0")
+      reg3.write("playbackPreferredAudioCodec", "dts") ' Should preserve dts
+      reg3.flush()
+
+      ' WHEN: Migration runs for these 3 users only
+      runRegistryUserMigrations([user1, user2, user3])
+
+      ' THEN: Each user migrated correctly with independent values
+      reg1 = CreateObject("roRegistrySection", user1)
+      m.assertEqual(reg1.read("playbackPreferredMultichannelCodec"), "eac3", "User 1 should have eac3")
+      m.assertFalse(reg1.exists("playbackPreferredAudioCodec"))
+
+      reg2 = CreateObject("roRegistrySection", user2)
+      m.assertEqual(reg2.read("playbackPreferredMultichannelCodec"), "ac3", "User 2 should have ac3")
+      m.assertFalse(reg2.exists("playbackPreferredAudioCodec"))
+
+      reg3 = CreateObject("roRegistrySection", user3)
+      m.assertEqual(reg3.read("playbackPreferredMultichannelCodec"), "dts", "User 3 should have dts")
+      m.assertFalse(reg3.exists("playbackPreferredAudioCodec"))
+    end function
+
+    @it("handles mixed old and new settings (migration overwrites new)")
+    function _()
+      testUserId = "test-audio-migration-mixed-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.1.4")
+      reg.write("playbackPreferredAudioCodec", "ac3") ' Old name
+      reg.write("playbackPreferredMultichannelCodec", "eac3") ' New name already exists
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      ' Old value should overwrite new value during migration
+      m.assertEqual(reg.read("playbackPreferredMultichannelCodec"), "ac3", "Old value should overwrite new")
+      m.assertFalse(reg.exists("playbackPreferredAudioCodec"), "Old setting should be deleted")
+    end function
+
+  end class
+
+end namespace

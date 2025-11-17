@@ -1,0 +1,18 @@
+{
+  "TranscodingProfiles": [
+    {
+      "Container": "ts",
+      "Type": "Video",
+      "AudioCodec": "aac",
+      "VideoCodec": "h264",
+      "MaxAudioChannels": "6"
+    },
+    {
+      "Container": "mp4",
+      "Type": "Video",
+      "AudioCodec": "aac",
+      "VideoCodec": "h264",
+      "MaxAudioChannels": "6"
+    }
+  ]
+}

@@ -661,7 +661,7 @@ namespace tests
       m.assertEqual(result.playbackResolutionMax, "auto")
       m.assertEqual(result.playbackNextUpButtonSeconds, 30)
       m.assertEqual(result.playbackPlayNextEpisode, "enabled")
-      m.assertEqual(result.playbackPreferredAudioCodec, "aac")
+      m.assertEqual(result.playbackPreferredMultichannelCodec, "eac3")
       m.assertEqual(result.playbackSubsOnlyText, false)
       m.assertEqual(result.playbackMpeg2, false)
       m.assertEqual(result.playbackMpeg4, true)

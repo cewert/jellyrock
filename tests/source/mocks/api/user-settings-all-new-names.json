@@ -7,7 +7,7 @@
   "playbackResolutionMax": "auto",
   "playbackNextUpButtonSeconds": "30",
   "playbackPlayNextEpisode": "enabled",
-  "playbackPreferredAudioCodec": "aac",
+  "playbackPreferredMultichannelCodec": "eac3",
   "playbackSubsOnlyText": "false",
   "playbackMpeg2": "false",
   "playbackMpeg4": "true",
