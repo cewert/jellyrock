@@ -47,33 +47,53 @@ function getDeviceProfile() as object
 end function
 
 ' Override false positives from Roku API using known hardware limits
-' Returns true if codec can actually decode the specified channel count
+' Returns true if codec can actually decode/passthrough the specified channel count
+' For surround codecs (>2ch), prioritizes PassThru check to detect receiver support
 function getActualCodecSupport(codec as string, channelCount as integer, di as object) as boolean
-  ' First check what Roku API reports
-  if not di.CanDecodeAudio({ Codec: codec, ChCnt: channelCount }).Result
-    ' API says no support - trust it
-    return false
+  surroundCodecs = ["eac3", "ac3", "dts"]
+
+  ' For multichannel surround codecs (>2ch), prioritize PassThru check
+  if channelCount > 2 and arrayHasValue(surroundCodecs, codec)
+    ' First: Check if receiver supports this via PassThru
+    if di.CanDecodeAudio({ Codec: codec, ChCnt: channelCount, PassThru: 1 }).Result
+      return true ' Receiver connected and supports this channel count!
+    end if
+
+    ' No PassThru support - check if Roku can natively decode (will downmix to stereo)
+    if not di.CanDecodeAudio({ Codec: codec, ChCnt: channelCount }).Result
+      return false ' API says can't decode at all
+    end if
+
+    ' API says yes - check for false positive using known hardware limits
+    rokuDecodeMaxChannels = {
+      "eac3": 6,
+      "ac3": 6,
+      "dts": 0 ' DTS is passthrough-only, cannot natively decode
+    }
+
+    if channelCount > rokuDecodeMaxChannels[codec]
+      return false ' Exceeds native decode capability - false positive
+    end if
+
+    return true ' Can natively decode (will downmix to stereo for no-receiver users)
   end if
 
-  ' API says yes - check for false positive using known hardware limits
+  ' For stereo (2ch) or non-surround codecs (aac, mp3, pcm, etc)
+  if not di.CanDecodeAudio({ Codec: codec, ChCnt: channelCount }).Result
+    return false ' API says no support
+  end if
+
+  ' API says yes - check for false positives on non-surround codecs
   rokuDecodeMaxChannels = {
     "aac": 6,
-    "eac3": 6,
-    "ac3": 6,
-    "dts": 0,
     "pcm": 2,
     "lpcm": 2
   }
 
-  ' Only override codecs we know about
-  if rokuDecodeMaxChannels.DoesExist(codec)
-    if channelCount > rokuDecodeMaxChannels[codec]
-      ' Exceeds native decode capability - must have passthrough to actually support this
-      return di.CanDecodeAudio({ Codec: codec, ChCnt: channelCount, PassThru: 1 }).Result
-    end if
+  if rokuDecodeMaxChannels.DoesExist(codec) and channelCount > rokuDecodeMaxChannels[codec]
+    return false ' False positive
   end if
 
-  ' Within native decode capability or unknown codec - trust the API
   return true
 end function
 
@@ -352,62 +372,12 @@ function getTranscodingProfiles() as object
 
   ' ========================================
   ' VIDEO TRANSCODING PROFILES
-  ' Order: ALL 2ch first, then ALL 6ch, then ALL 8ch
+  ' Order: ALL 8ch first, then ALL 6ch, then ALL 2ch (highest to lowest)
   ' ========================================
 
   maxHeightArray = getMaxHeightArray(true)
 
-  ' ----- 2-CHANNEL PROFILES (always created, first in order) -----
-  for each container in transcodingContainers
-    baseProfile = {
-      "Container": container,
-      "Context": "Streaming",
-      "Protocol": "hls",
-      "Type": "Video",
-      "VideoCodec": containerVideoCodecs[container],
-      "MinSegments": 1,
-      "BreakOnNonKeyFrames": false,
-      "SegmentLength": 6
-    }
-
-    if maxHeightArray.count() > 0
-      baseProfile.Conditions = [maxHeightArray]
-    end if
-
-    twoChProfile = {}
-    twoChProfile.Append(baseProfile)
-    twoChProfile.AudioCodec = containerAudioCodecs[container]
-    twoChProfile.MaxAudioChannels = "2"
-    transcodingProfiles.push(twoChProfile)
-  end for
-
-  ' ----- 6-CHANNEL PROFILES (only if supported) -----
-  if sixChannelPassthruCodecs.count() > 0
-    for each container in transcodingContainers
-      baseProfile = {
-        "Container": container,
-        "Context": "Streaming",
-        "Protocol": "hls",
-        "Type": "Video",
-        "VideoCodec": containerVideoCodecs[container],
-        "MinSegments": 1,
-        "BreakOnNonKeyFrames": false,
-        "SegmentLength": 6
-      }
-
-      if maxHeightArray.count() > 0
-        baseProfile.Conditions = [maxHeightArray]
-      end if
-
-      sixChProfile = {}
-      sixChProfile.Append(baseProfile)
-      sixChProfile.AudioCodec = sixChannelPassthruCodecs.join(",")
-      sixChProfile.MaxAudioChannels = "6"
-      transcodingProfiles.push(sixChProfile)
-    end for
-  end if
-
-  ' ----- 8-CHANNEL PROFILES (only if supported) -----
+  ' ----- 8-CHANNEL PROFILES (only if supported, FIRST in order) -----
   if eightChannelPassthruCodecs.count() > 0
     for each container in transcodingContainers
       baseProfile = {
@@ -428,10 +398,60 @@ function getTranscodingProfiles() as object
       eightChProfile = {}
       eightChProfile.Append(baseProfile)
       eightChProfile.AudioCodec = eightChannelPassthruCodecs.join(",")
-      eightChProfile.MaxAudioChannels = "8"
+      eightChProfile.AudioChannels = "8"
       transcodingProfiles.push(eightChProfile)
     end for
   end if
+
+  ' ----- 6-CHANNEL PROFILES (only if supported, SECOND in order) -----
+  if sixChannelPassthruCodecs.count() > 0
+    for each container in transcodingContainers
+      baseProfile = {
+        "Container": container,
+        "Context": "Streaming",
+        "Protocol": "hls",
+        "Type": "Video",
+        "VideoCodec": containerVideoCodecs[container],
+        "MinSegments": 1,
+        "BreakOnNonKeyFrames": false,
+        "SegmentLength": 6
+      }
+
+      if maxHeightArray.count() > 0
+        baseProfile.Conditions = [maxHeightArray]
+      end if
+
+      sixChProfile = {}
+      sixChProfile.Append(baseProfile)
+      sixChProfile.AudioCodec = sixChannelPassthruCodecs.join(",")
+      sixChProfile.AudioChannels = "6"
+      transcodingProfiles.push(sixChProfile)
+    end for
+  end if
+
+  ' ----- 2-CHANNEL PROFILES (always created, LAST in order) -----
+  for each container in transcodingContainers
+    baseProfile = {
+      "Container": container,
+      "Context": "Streaming",
+      "Protocol": "hls",
+      "Type": "Video",
+      "VideoCodec": containerVideoCodecs[container],
+      "MinSegments": 1,
+      "BreakOnNonKeyFrames": false,
+      "SegmentLength": 6
+    }
+
+    if maxHeightArray.count() > 0
+      baseProfile.Conditions = [maxHeightArray]
+    end if
+
+    twoChProfile = {}
+    twoChProfile.Append(baseProfile)
+    twoChProfile.AudioCodec = containerAudioCodecs[container]
+    twoChProfile.AudioChannels = "2"
+    transcodingProfiles.push(twoChProfile)
+  end for
 
   return transcodingProfiles
 end function
