@@ -10,13 +10,6 @@ namespace tests
       super.setup()
     end function
 
-    ' Helper to load device profile mock
-    private function loadDeviceProfileMock(mockName as string) as object
-      filePath = `pkg:/source/tests/mocks/api/${mockName}.json`
-      fileContents = ReadAsciiFile(filePath)
-      return ParseJson(fileContents)
-    end function
-
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("Multichannel Audio (>2ch) - AAC Removal")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -24,7 +17,7 @@ namespace tests
     @it("removes AAC from ts container codec list for 6ch audio")
     function _()
       ' GIVEN: Device profile with passthrough support and multichannel source
-      deviceProfile = m.loadDeviceProfileMock("device-profile-with-passthrough")
+      deviceProfile = MockDataLoader.LoadDeviceProfile("device-profile-with-passthrough")
       channelCount = 6
 
       ' WHEN: removeUnsupportedAacFromProfile is called
@@ -45,7 +38,7 @@ namespace tests
 
     @it("removes AAC from mp4 container codec list for 8ch audio")
     function _()
-      deviceProfile = m.loadDeviceProfileMock("device-profile-8ch-passthrough")
+      deviceProfile = MockDataLoader.LoadDeviceProfile("device-profile-8ch-passthrough")
       channelCount = 8
 
       removeUnsupportedAacFromProfile(deviceProfile, channelCount)
@@ -64,7 +57,7 @@ namespace tests
 
     @it("preserves surround codecs (eac3, ac3, dts) for multichannel audio")
     function _()
-      deviceProfile = m.loadDeviceProfileMock("device-profile-with-passthrough")
+      deviceProfile = MockDataLoader.LoadDeviceProfile("device-profile-with-passthrough")
       channelCount = 6
 
       removeUnsupportedAacFromProfile(deviceProfile, channelCount)
@@ -85,7 +78,7 @@ namespace tests
 
     @it("preserves other codecs (mp3, flac, alac, pcm) for multichannel audio")
     function _()
-      deviceProfile = m.loadDeviceProfileMock("device-profile-with-passthrough")
+      deviceProfile = MockDataLoader.LoadDeviceProfile("device-profile-with-passthrough")
       channelCount = 6
 
       removeUnsupportedAacFromProfile(deviceProfile, channelCount)
@@ -111,7 +104,7 @@ namespace tests
 
     @it("removes AAC from codec list for stereo audio")
     function _()
-      deviceProfile = m.loadDeviceProfileMock("device-profile-stereo-only")
+      deviceProfile = MockDataLoader.LoadDeviceProfile("device-profile-stereo-only")
       channelCount = 2
 
       removeUnsupportedAacFromProfile(deviceProfile, channelCount)
@@ -130,7 +123,7 @@ namespace tests
 
     @it("removes surround codecs (eac3, ac3, dts) for stereo audio")
     function _()
-      deviceProfile = m.loadDeviceProfileMock("device-profile-stereo-only")
+      deviceProfile = MockDataLoader.LoadDeviceProfile("device-profile-stereo-only")
       channelCount = 2
 
       removeUnsupportedAacFromProfile(deviceProfile, channelCount)
@@ -151,7 +144,7 @@ namespace tests
 
     @it("preserves stereo codecs (mp3, flac, alac, pcm) for stereo audio")
     function _()
-      deviceProfile = m.loadDeviceProfileMock("device-profile-stereo-only")
+      deviceProfile = MockDataLoader.LoadDeviceProfile("device-profile-stereo-only")
       channelCount = 2
 
       removeUnsupportedAacFromProfile(deviceProfile, channelCount)
@@ -173,7 +166,7 @@ namespace tests
 
     @it("results in MP3 fallback for stereo audio (surround codecs removed)")
     function _()
-      deviceProfile = m.loadDeviceProfileMock("device-profile-stereo-only")
+      deviceProfile = MockDataLoader.LoadDeviceProfile("device-profile-stereo-only")
       channelCount = 2
 
       removeUnsupportedAacFromProfile(deviceProfile, channelCount)
@@ -199,7 +192,7 @@ namespace tests
 
     @it("handles empty AudioCodec string gracefully")
     function _()
-      deviceProfile = m.loadDeviceProfileMock("device-profile-empty-codecs")
+      deviceProfile = MockDataLoader.LoadDeviceProfile("device-profile-empty-codecs")
       channelCount = 6
 
       ' Should not crash
@@ -219,7 +212,7 @@ namespace tests
 
     @it("handles codec list with only AAC (results in empty list for multichannel)")
     function _()
-      deviceProfile = m.loadDeviceProfileMock("device-profile-aac-only")
+      deviceProfile = MockDataLoader.LoadDeviceProfile("device-profile-aac-only")
       channelCount = 6
 
       removeUnsupportedAacFromProfile(deviceProfile, channelCount)
@@ -283,7 +276,7 @@ namespace tests
 
     @it("processes both ts and mp4 containers in same profile")
     function _()
-      deviceProfile = m.loadDeviceProfileMock("device-profile-with-passthrough")
+      deviceProfile = MockDataLoader.LoadDeviceProfile("device-profile-with-passthrough")
       channelCount = 6
 
       removeUnsupportedAacFromProfile(deviceProfile, channelCount)
@@ -311,7 +304,7 @@ namespace tests
 
     @it("rebuilds codec string correctly after removal")
     function _()
-      deviceProfile = m.loadDeviceProfileMock("device-profile-with-passthrough")
+      deviceProfile = MockDataLoader.LoadDeviceProfile("device-profile-with-passthrough")
       channelCount = 6
 
       removeUnsupportedAacFromProfile(deviceProfile, channelCount)
@@ -333,7 +326,7 @@ namespace tests
 
     @it("maintains codec order after AAC removal")
     function _()
-      deviceProfile = m.loadDeviceProfileMock("device-profile-with-passthrough")
+      deviceProfile = MockDataLoader.LoadDeviceProfile("device-profile-with-passthrough")
       channelCount = 6
 
       removeUnsupportedAacFromProfile(deviceProfile, channelCount)

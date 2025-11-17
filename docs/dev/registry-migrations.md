@@ -516,7 +516,7 @@ testGlobalReg.flush()
 
 ### Directory Structure
 
-Organize mock data by API source and category:
+Organize mock data by data source and category:
 
 ```text
 tests/source/mocks/
@@ -525,11 +525,12 @@ tests/source/mocks/
 │   │   ├── device-profile-8ch-passthrough.json
 │   │   ├── device-profile-stereo-only.json
 │   │   └── device-profile-aac-only.json
-│   ├── items/                   # Item metadata mocks
-│   │   ├── movie-basic.json
-│   │   ├── episode-basic.json
-│   │   └── series-basic.json
-│   └── userSettings/            # User settings mocks
+│   └── items/                   # Item metadata mocks
+│       ├── movie-basic.json
+│       ├── episode-basic.json
+│       └── series-basic.json
+├── registry/                    # Roku Registry data
+│   └── userSettings/            # User settings from registry
 │       ├── user-settings-all-new-names.json
 │       └── user-settings-all-old-names.json
 ├── roku/                        # Roku Device API responses
@@ -542,24 +543,40 @@ tests/source/mocks/
 
 ### Loading Mock Data in Tests
 
-Use helper functions to load mock data:
+**⚠️ Critical: Use centralized MockDataLoader functions only!**
+
+All mock data loading helpers MUST be in `tests/source/shared/MockDataLoader.bs`. Never create duplicate helper functions in individual test files. This ensures consistency and maintainability.
+
+**Available MockDataLoader functions:**
 
 ```brighterscript
-' Helper to load JSON mock data
-private function loadMockData(mockPath as string) as object
-  filePath = `pkg:/tests/source/mocks/${mockPath}`
-  fileContents = ReadAsciiFile(filePath)
-  return ParseJson(fileContents)
-end function
+' Load item mocks (movies, episodes, series, programs)
+mockItem = MockDataLoader.LoadItem("movie-basic")
 
-' Usage in test
-@it("test with mock data")
-function _()
-  mockSettings = m.loadMockData("api/userSettings/user-settings-all-new-names.json")
-  
-  ' Use mock data in test...
-end function
+' Load device profile mocks
+mockProfile = MockDataLoader.LoadDeviceProfile("device-profile-8ch-passthrough")
+
+' Load registry user settings mocks
+mockSettings = MockDataLoader.LoadRegistryUserSettings("user-settings-all-new-names")
+
+' Load Roku device info mocks
+mockDeviceInfo = MockDataLoader.LoadRokuDeviceInfo("roku-ultra-capabilities")
+
+' Load Roku capabilities mocks
+mockCapabilities = MockDataLoader.LoadRokuCapabilities("audio-codecs-full")
+
+' Load server/user/device test fixtures (existing functions)
+mockServer = MockDataLoader.LoadServer("default")
+mockUser = MockDataLoader.LoadUser("admin")
+mockDevice = MockDataLoader.LoadDevice("roku-ultra")
 ```
+
+**If you need a new mock loading function:**
+
+1. Add it to `tests/source/shared/MockDataLoader.bs` namespace
+2. Follow the naming convention: `Load[Category](name as string) as object`
+3. Use the pattern: `filePath = "pkg:/source/tests/mocks/[source]/[category]/" + name + ".json"`
+4. Update this documentation to include the new function
 
 ### Creating New Mock Files
 
@@ -567,12 +584,12 @@ When creating mocks for a migration:
 
 1. Create `*-old-names.json` with settings using OLD names (pre-migration state)
 2. Create `*-new-names.json` with settings using NEW names (post-migration state)
-3. Place in appropriate subfolder based on API source
+3. Place in appropriate subfolder based on data source
 
 **Example:**
 
 ```text
-tests/source/mocks/api/userSettings/
+tests/source/mocks/registry/userSettings/
 ├── user-settings-all-old-names.json      # Pre-migration (dotted names)
 └── user-settings-all-new-names.json      # Post-migration (camelCase names)
 ```
@@ -729,17 +746,7 @@ function _()
   reg.write("LastRunVersion", "1.1.5")  ' ✅ Skips ALL migrations up to v1.1.5
 ```
 
-### 7. ❌ Forgetting to Update Setting Count Comments
-
-**Problem:** Migration adds settings but comment still says "42 settings" when there are now 43.
-
-**Solution:** Always update the count comment in `source/migrations.bs`:
-
-```brighterscript
-' Define all XX setting migrations (old dotted name → new camelCase name)
-```
-
-### 8. ❌ Not Searching for All Code References
+### 7. ❌ Not Searching for All Code References
 
 **Problem:** Updating the migration and transformer but missing a reference in `deviceCapabilities.bs` that still uses the old name.
 
@@ -765,7 +772,6 @@ When implementing a registry migration, use this checklist to ensure nothing is 
 - [ ] Add print statements for debugging and production logs
 - [ ] Verify migration uses `reg.flush()` after writes
 - [ ] Verify old setting names are deleted after migration
-- [ ] Test migration locally with `npm run build` and verify logs
 
 ### Phase 2: Code Updates
 
@@ -792,19 +798,17 @@ When implementing a registry migration, use this checklist to ensure nothing is 
 
 ### Phase 4: Mock Data
 
-- [ ] Create mock data files in appropriate `tests/source/mocks/` subfolder
+- [ ] Create mock data files in appropriate `tests/source/mocks/` subfolder (api/, registry/, or roku/)
 - [ ] Create `*-old-names.json` mock (pre-migration state)
 - [ ] Create `*-new-names.json` mock (post-migration state)
-- [ ] Add helper function to load mock data (if needed)
-- [ ] Verify mock data structure matches actual API responses
+- [ ] If new helper function needed, add to `tests/source/shared/MockDataLoader.bs` (NOT individual test files)
+- [ ] Verify mock data structure matches actual API/registry responses
+- [ ] Update documentation if new MockDataLoader function added
 
 ### Phase 5: Testing & Validation
 
-- [ ] Run unit tests: `npm run build:tests-unit`
-- [ ] Run integration tests: `npm run build:tests-integration`
 - [ ] Format code: `npm run format`
-- [ ] Lint code: `npm run lint:bs`
-- [ ] Verify no new linting warnings introduced
+- [ ] Verify no new IDE code errors introduced
 - [ ] Test locally on device with real registry data (if possible)
 - [ ] Verify logs show migrations running correctly
 
@@ -812,7 +816,6 @@ When implementing a registry migration, use this checklist to ensure nothing is 
 
 - [ ] Add descriptive commit message following conventional commits format
 - [ ] Update this document if any new patterns or pitfalls were discovered
-- [ ] Verify CHANGELOG.md will be auto-updated by CI (no manual changes needed)
 - [ ] Reset this checklist to unchecked state before committing
 - [ ] Create PR with comprehensive description of migration and testing
 

@@ -69,11 +69,43 @@ namespace MockDataLoader
     return files
   end function
 
-  ' Load mock API data (for testing transformers)
-  ' @param {string} dataName - Name of API mock file without extension
-  ' @returns {object} API data object or invalid if file not found
-  function LoadApiData(dataName as string) as object
-    filePath = "pkg:/source/tests/mocks/api/" + dataName + ".json"
+  ' Load mock device profile data
+  ' @param {string} profileName - Name of device profile mock file without extension
+  ' @returns {object} Device profile data or invalid if file not found
+  function LoadDeviceProfile(profileName as string) as object
+    filePath = "pkg:/source/tests/mocks/api/deviceProfiles/" + profileName + ".json"
+    return loadJSONFile(filePath)
+  end function
+
+  ' Load mock item data (movies, episodes, series, programs)
+  ' @param {string} itemName - Name of item mock file without extension
+  ' @returns {object} Item data or invalid if file not found
+  function LoadItem(itemName as string) as object
+    filePath = "pkg:/source/tests/mocks/api/items/" + itemName + ".json"
+    return loadJSONFile(filePath)
+  end function
+
+  ' Load mock registry user settings data
+  ' @param {string} settingsName - Name of user settings mock file without extension
+  ' @returns {object} Registry user settings data or invalid if file not found
+  function LoadRegistryUserSettings(settingsName as string) as object
+    filePath = "pkg:/source/tests/mocks/registry/userSettings/" + settingsName + ".json"
+    return loadJSONFile(filePath)
+  end function
+
+  ' Load mock Roku device info data
+  ' @param {string} deviceInfoName - Name of device info mock file without extension
+  ' @returns {object} Device info data or invalid if file not found
+  function LoadRokuDeviceInfo(deviceInfoName as string) as object
+    filePath = "pkg:/source/tests/mocks/roku/deviceInfo/" + deviceInfoName + ".json"
+    return loadJSONFile(filePath)
+  end function
+
+  ' Load mock Roku capabilities data
+  ' @param {string} capabilitiesName - Name of capabilities mock file without extension
+  ' @returns {object} Capabilities data or invalid if file not found
+  function LoadRokuCapabilities(capabilitiesName as string) as object
+    filePath = "pkg:/source/tests/mocks/roku/capabilities/" + capabilitiesName + ".json"
     return loadJSONFile(filePath)
   end function
 
