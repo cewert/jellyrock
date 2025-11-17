@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Dependencies
+
+- Github actions ([#176](https://github.com/cewert/jellyrock/pull/176))
+
 ## [1.1.4](https://github.com/cewert/jellyrock/compare/v1.1.3...v1.1.4) - 2025-11-17
 
 ### Changed
