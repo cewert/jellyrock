@@ -39,8 +39,17 @@ sub runGlobalMigrations()
   end if
 end sub
 
-sub runRegistryUserMigrations()
-  regSections = getRegistrySections()
+' Run registry migrations for user sections
+' @param targetSections Optional array of specific section names to migrate. If invalid, migrates all sections.
+sub runRegistryUserMigrations(targetSections = invalid as dynamic)
+  regSections = invalid
+
+  ' If specific sections provided, use those; otherwise get all sections
+  if isValid(targetSections) and type(targetSections) = "roArray"
+    regSections = targetSections
+  else
+    regSections = getRegistrySections()
+  end if
 
   ' Detect test mode ONCE: if ANY section starts with "test-", we're in test mode
   ' In test mode, ONLY migrate test sections to prevent touching real user data
@@ -81,7 +90,7 @@ sub runRegistryUserMigrations()
       m.wasMigrated = true
       print `Migrating user settings to v${SETTINGS_MIGRATION_VERSION} for userid: ${section}`
 
-      ' Define all 42 setting migrations (old dotted name → new camelCase name)
+      ' Define all 41 setting migrations (old dotted name → new camelCase name)
       ' Single source of truth for migration mapping
       migrations = {
         ' Auth
@@ -174,7 +183,6 @@ sub runRegistryUserMigrations()
     ' AUDIO_CODEC_MIGRATION_VERSION - Rename and migrate audio codec preference
     if isValid(lastRunVersion) and not versionChecker(lastRunVersion, AUDIO_CODEC_MIGRATION_VERSION)
       m.wasMigrated = true
-      print `Migrating audio codec settings to v${AUDIO_CODEC_MIGRATION_VERSION} for userid: ${section}`
 
       ' Rename playbackPreferredAudioCodec to playbackPreferredMultichannelCodec
       ' and migrate deprecated values (auto, aac) to new default (eac3)

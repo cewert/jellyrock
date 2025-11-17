@@ -14,15 +14,18 @@ namespace tests
     @describe("Basic Migration Tests")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("migrates all 41 user settings from old to new names")
+    @it("migrates all user settings from old to new names")
     function _()
       ' GIVEN: Mock registry with OLD setting names
       testUserId = "test-migration-user-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
       reg.write("LastRunVersion", "1.0.0") ' Old version (before 1.1.0)
+      ' NOTE: With LastRunVersion "1.0.0", both v1.1.0 AND v1.1.5 migrations will run
+      ' v1.1.0: Dotted names → camelCase (41 total settings, but 2 auth settings not tested here)
+      ' v1.1.5: playbackPreferredAudioCodec → playbackPreferredMultichannelCodec (with value migration)
 
-      ' Write ALL 41 OLD user setting names with sample values
+      ' Write 39 OLD user setting names with sample values (excluding auth settings token/primaryimagetag)
       ' NOTE: global.rememberme is NOT a user setting - it's stored in the global "JellyRock" section
 
       ' Playback (13)
@@ -33,7 +36,7 @@ namespace tests
       reg.write("playback.resolution.max", "1080")
       reg.write("playback.nextupbuttonseconds", "30")
       reg.write("playback.playnextepisode", "enabled")
-      reg.write("playback.preferredAudioCodec", "aac")
+      reg.write("playback.preferredAudioCodec", "ac3") ' Use ac3 instead of aac (aac is deprecated and migrates to eac3)
       reg.write("playback.subs.onlytext", "true")
       reg.write("playback.mpeg2", "false")
       reg.write("playback.mpeg4", "true")
@@ -101,8 +104,12 @@ namespace tests
       m.assertEqual(reg.read("playbackNextUpButtonSeconds"), "30")
       m.assertTrue(reg.exists("playbackPlayNextEpisode"))
       m.assertEqual(reg.read("playbackPlayNextEpisode"), "enabled")
-      m.assertTrue(reg.exists("playbackPreferredAudioCodec"))
-      m.assertEqual(reg.read("playbackPreferredAudioCodec"), "aac")
+      ' Audio codec setting migrates through BOTH v1.1.0 and v1.1.5 migrations
+      ' v1.1.0: playback.preferredAudioCodec → playbackPreferredAudioCodec
+      ' v1.1.5: playbackPreferredAudioCodec → playbackPreferredMultichannelCodec
+      m.assertTrue(reg.exists("playbackPreferredMultichannelCodec"))
+      m.assertEqual(reg.read("playbackPreferredMultichannelCodec"), "ac3")
+      m.assertFalse(reg.exists("playbackPreferredAudioCodec"), "Intermediate setting should be deleted")
       m.assertTrue(reg.exists("playbackSubsOnlyText"))
       m.assertEqual(reg.read("playbackSubsOnlyText"), "true")
       m.assertTrue(reg.exists("playbackMpeg2"))
@@ -208,7 +215,8 @@ namespace tests
       m.assertEqual(reg.read("playbackBitrateLimit"), "8000", "Numeric string should be preserved")
       m.assertEqual(reg.read("uiRowLayout"), "landscape", "Regular string should be preserved")
       m.assertEqual(reg.read("uiGeneralEpisodeImages"), "", "Empty string should be preserved")
-      m.assertEqual(reg.read("playbackPreferredAudioCodec"), "AC3/EAC3", "Special chars should be preserved")
+      ' Audio codec migrates through v1.1.0 and v1.1.5, but non-standard values are preserved
+      m.assertEqual(reg.read("playbackPreferredMultichannelCodec"), "AC3/EAC3", "Special chars should be preserved")
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -223,15 +231,15 @@ namespace tests
       reg = CreateObject("roRegistrySection", testUserId)
       reg.write("LastRunVersion", "1.0.0")
 
-      ' Only write 3 of 41 user settings
+      ' Only write 3 of 39 tested user settings (39 = 41 total - 2 auth settings)
       reg.write("ui.row.layout", "landscape")
       reg.write("playback.bitrate.limit", "8000")
       reg.write("ui.design.hideclock", "true")
 
       reg.flush()
 
-      ' WHEN: Migration runs
-      runRegistryUserMigrations()
+      ' WHEN: Migration runs (isolated to this specific user)
+      runRegistryUserMigrations([testUserId])
 
       ' THEN: Only existing settings are migrated
       reg = CreateObject("roRegistrySection", testUserId)
@@ -258,8 +266,8 @@ namespace tests
       reg.write("LastRunVersion", "1.0.0")
       reg.flush()
 
-      ' WHEN: Migration runs
-      runRegistryUserMigrations()
+      ' WHEN: Migration runs (isolated to this specific user)
+      runRegistryUserMigrations([testUserId])
 
       ' THEN: No errors, no new settings created
       reg = CreateObject("roRegistrySection", testUserId)
@@ -321,8 +329,8 @@ namespace tests
 
       reg.flush()
 
-      ' WHEN: Migration runs
-      runRegistryUserMigrations()
+      ' WHEN: Migration runs (isolated to this specific user)
+      runRegistryUserMigrations([testUserId])
 
       ' THEN: Old values overwrite new values (migration always wins)
       reg = CreateObject("roRegistrySection", testUserId)
@@ -339,13 +347,13 @@ namespace tests
     @describe("Version Checking")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("skips migration when version already migrated (v1.1.0+)")
+    @it("skips all migrations when version already migrated (v1.1.5+)")
     function _()
-      ' GIVEN: User already on v1.1.0 or higher
+      ' GIVEN: User already on v1.1.5 or higher (all migrations complete)
       testUserId = "test-migration-skip-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
-      reg.write("LastRunVersion", "1.1.0") ' Already migrated version
+      reg.write("LastRunVersion", "1.1.5") ' All migrations already complete
 
       ' Write OLD setting names (should NOT be migrated)
       reg.write("global.rememberme", "true")
@@ -353,10 +361,10 @@ namespace tests
 
       reg.flush()
 
-      ' WHEN: Migration runs
-      runRegistryUserMigrations()
+      ' WHEN: Migration runs (isolated to this specific user)
+      runRegistryUserMigrations([testUserId])
 
-      ' THEN: No migration occurred (old names still exist)
+      ' THEN: No migrations occurred (old names still exist)
       reg = CreateObject("roRegistrySection", testUserId)
 
       m.assertTrue(reg.exists("global.rememberme"), "Old setting should still exist (not migrated)")
@@ -376,8 +384,8 @@ namespace tests
       reg.write("ui.row.layout", "landscape")
       reg.flush()
 
-      ' WHEN: Migration runs
-      runRegistryUserMigrations()
+      ' WHEN: Migration runs (isolated to this specific user)
+      runRegistryUserMigrations([testUserId])
 
       ' THEN: Migration occurred
       reg = CreateObject("roRegistrySection", testUserId)
@@ -396,8 +404,8 @@ namespace tests
       testGlobalReg.write("global.rememberme", "true")
       testGlobalReg.flush()
 
-      ' WHEN: Migration runs
-      runRegistryUserMigrations()
+      ' WHEN: Migration runs (isolated to test-global section to verify skip logic)
+      runRegistryUserMigrations(["test-global"])
 
       ' THEN: test-global section is NOT migrated
       testGlobalReg = CreateObject("roRegistrySection", "test-global")
@@ -435,8 +443,8 @@ namespace tests
 
       reg.flush()
 
-      ' WHEN: Migration runs
-      runRegistryUserMigrations()
+      ' WHEN: Migration runs (isolated to this specific user)
+      runRegistryUserMigrations([testUserId])
 
       ' THEN: Only displayLiveTvLanding is migrated
       reg = CreateObject("roRegistrySection", testUserId)
@@ -456,7 +464,7 @@ namespace tests
       testUserId = "test-migration-policy-cleanup-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
-      reg.write("LastRunVersion", "1.1.0") ' Already migrated
+      reg.write("LastRunVersion", "1.0.0") ' Pre-migration version so cleanup runs
 
       ' Write both old and new server policy keys (should all be deleted)
       reg.write("liveTvCanRecord", "true")
@@ -470,8 +478,8 @@ namespace tests
 
       reg.flush()
 
-      ' WHEN: Migration runs
-      runRegistryUserMigrations()
+      ' WHEN: Migration runs (isolated to this specific user)
+      runRegistryUserMigrations([testUserId])
 
       ' THEN: Server policy keys are deleted
       reg = CreateObject("roRegistrySection", testUserId)
@@ -505,8 +513,8 @@ namespace tests
       reg.write("playback.bitrate.limit", "8000")
       reg.flush()
 
-      ' WHEN: Migration runs
-      runRegistryUserMigrations()
+      ' WHEN: Migration runs (isolated to this specific user)
+      runRegistryUserMigrations([testUserId])
 
       ' THEN: Verify the registry has correct NEW names after migration
       ' Note: After migration, all settings use NEW camelCase names in registry
