@@ -80,6 +80,14 @@ function getActualCodecSupport(codec as string, channelCount as integer, di as o
       "dts": 0 ' DTS is passthrough-only, cannot natively decode
     }
 
+    ' Defensive: Ensure codec is a valid key in rokuDecodeMaxChannels
+    ' This should always be true due to the surroundOutputCodecs check above,
+    ' but this guards against future changes or typos.
+    if not rokuDecodeMaxChannels.DoesExist(codec)
+      ' Unexpected codec; treat as unsupported for >2ch
+      return false
+    end if
+
     if channelCount > rokuDecodeMaxChannels[codec]
       return false ' Exceeds native decode capability - false positive
     end if
@@ -359,7 +367,7 @@ function getTranscodingProfiles() as object
   for each container in transcodingContainers
     audioCodecList = []
 
-    ' 1. AAC always first (efficient for stereo, will fail for multichannel and fall through)
+    ' 1. AAC always first (efficient for stereo, removed at playback time for multichannel sources with passthrough)
     audioCodecList.push("aac")
 
     ' 2. Add surround passthrough codecs if supported (in preference order)

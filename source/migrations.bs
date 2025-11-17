@@ -7,9 +7,9 @@ import "pkg:/source/utils/misc.bs"
 const SETTINGS_MIGRATION_VERSION = "1.1.0"
 
 ' client version when audio codec preference was renamed and migrated
-const AUDIO_CODEC_MIGRATION_VERSION = "1.1.4"
+const AUDIO_CODEC_MIGRATION_VERSION = "1.1.5"
 
-' Run all necessary registry mirations on the "global" JellyRock registry section
+' Run all necessary registry migrations on the "global" JellyRock registry section
 sub runGlobalMigrations()
   appLastRunVersion = m.global.app.lastRunVersion
   ' SETTINGS_MIGRATION_VERSION
