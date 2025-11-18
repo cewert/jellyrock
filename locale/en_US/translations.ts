@@ -99,6 +99,10 @@
       <translation>All</translation>
     </message>
     <message>
+      <source>Allow the Roku to decode multichannel audio formats (AAC, FLAC, etc.) to stereo. When disabled, forces the server to transcode to 2-channel audio instead of relying on Roku&apos;s downmix, which may improve audio quality on some systems.</source>
+      <translation>Allow the Roku to decode multichannel audio formats (AAC, FLAC, etc.) to stereo. When disabled, forces the server to transcode to 2-channel audio instead of relying on Roku&apos;s downmix, which may improve audio quality on some systems.</translation>
+    </message>
+    <message>
       <source>Always Hide</source>
       <translation>Always Hide</translation>
     </message>
@@ -301,6 +305,10 @@
       <source>DATE_SHOW_ADDED</source>
       <translation>Date Show Added</translation>
       <extracomment>TV Show library sort option</extracomment>
+    </message>
+    <message>
+      <source>Decode Multichannel Audio</source>
+      <translation>Decode Multichannel Audio</translation>
     </message>
     <message>
       <source>Default</source>
