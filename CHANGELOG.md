@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Improve registry migration robustness and test cleanup ([#183](https://github.com/cewert/jellyrock/pull/183))
 - Preserve multichannel audio via passthrough for surround receivers ([#174](https://github.com/cewert/jellyrock/pull/174))
 
 ### Dependencies
