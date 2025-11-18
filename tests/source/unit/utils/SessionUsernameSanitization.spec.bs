@@ -108,7 +108,7 @@ namespace tests
     function _()
       ' Arrange - Real-world bug scenario from issue #568
       userData = {
-        id: "ldap-user",
+        id: "test-ldap-user",
         name: "John R. Doe",
         authToken: "test-token"
       }
