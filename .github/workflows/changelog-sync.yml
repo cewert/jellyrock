@@ -10,7 +10,7 @@ jobs:
     if: github.actor != 'JellyRock-bot'
     runs-on: ubuntu-latest
     concurrency:
-      group: bot-push-main-branch
+      group: bot-changelog-${{ github.ref }}
       cancel-in-progress: false
     steps:
       - name: Checkout code

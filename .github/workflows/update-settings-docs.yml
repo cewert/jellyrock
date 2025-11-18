@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.actor != 'jellyrock-bot'
     concurrency:
-      group: bot-push-main-branch
+      group: bot-settings-docs-${{ github.ref }}
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
