@@ -49,7 +49,7 @@ App Startup
 Add a **user setting** when:
 
 1. **Per-device preference**: Users need different values on Roku vs other Jellyfin clients
-2. **JellyRock-specific feature**: Setting controls Roku-only functionality
+2. **JellyRock specific feature**: Setting controls Roku-only functionality
 3. **Override server settings**: Users want to override web client preferences on Roku
 
 Add a **global setting** when:
@@ -92,7 +92,7 @@ jellyrock/
 ### Setting Types
 
 | Type | Description | Example Values |
-|------|-------------|----------------|
+| ------ | ------------- | ---------------- |
 | `bool` | Boolean toggle | `true`, `false` |
 | `integer` | Numeric value | `0`, `30`, `1920` |
 | `string` | Free-form text | `"auto"`, `"enabled"` |
@@ -216,7 +216,7 @@ Add a field definition in the appropriate section (Playback Settings, UI Setting
 **Field Types:**
 
 | Setting Type | XML Type |
-|-------------|----------|
+| ------------- | ---------- |
 | `bool` | `type="boolean"` |
 | `integer` | `type="integer"` |
 | `string` or `radio` | `type="string"` |
@@ -261,11 +261,13 @@ end if
 settingsNode.settingName = settingsData["settingName"] ?? ""
 ```
 
+**Why `DoesExist` for integers only?** `Val(invalid)` returns `0`, which could be a valid setting value. Without the check, you can't tell if the user never set it (should use default) or explicitly set it to `0`. For booleans and strings, `toBoolean(invalid)` and `?? ""` already handle missing values safely.
+
 **Important:**
 
 - Use `??` operator for default fallback (empty string for strings)
 - Use `toBoolean()` helper for boolean settings
-- Use `Val()` for integer settings (with DoesExist check)
+- Use `Val()` for integer settings (with `DoesExist` check)
 - Do NOT hardcode default values (they come from settings.json)
 
 **Example:**
@@ -485,7 +487,7 @@ Test the setting manually on a real Roku device:
 
 ### 4. Documentation
 
-- ✅ **DO** document helper functions with clear JSDoc-style comments
+- ✅ **DO** document helper functions with clear JSDoc style comments
 - ✅ **DO** explain the resolution priority in comments
 - ✅ **DO** add inline comments for non-obvious logic
 - ✅ **DO** update relevant documentation when adding settings

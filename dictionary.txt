@@ -75,3 +75,6 @@ Hardcoded
 pre-migration
 subfolder
 checkboxes
+hardcoded
+pre-roll
+booleans
