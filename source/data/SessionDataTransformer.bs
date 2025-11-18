@@ -115,6 +115,7 @@ class SessionDataTransformer
       settingsNode.playbackBitrateLimit = Val(settingsData["playbackBitrateLimit"])
     end if
     settingsNode.playbackCinemaMode = toBoolean(settingsData["playbackCinemaMode"])
+    settingsNode.playbackDecodeMultichannelAudio = toBoolean(settingsData["playbackDecodeMultichannelAudio"])
     settingsNode.playbackSubsCustom = toBoolean(settingsData["playbackSubsCustom"])
     settingsNode.playbackResolutionMax = settingsData["playbackResolutionMax"] ?? ""
     if settingsData.DoesExist("playbackNextUpButtonSeconds")

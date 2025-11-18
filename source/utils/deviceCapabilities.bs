@@ -465,6 +465,10 @@ function getCodecProfiles() as object
   eightChannelPassthruCodecs = getSupportedPassthruCodecs(di, 8)
   hasSurroundPassthru = sixChannelPassthruCodecs.count() > 0 or eightChannelPassthruCodecs.count() > 0
 
+  ' Check user setting for multichannel decode preference
+  ' When disabled, force stereo-output codecs to 2ch max (same as passthrough behavior)
+  userWantsDecodeLimit = not globalUserSettings.playbackDecodeMultichannelAudio
+
   ' ========================================
   ' CODEC CATEGORIES
   ' ========================================
@@ -482,11 +486,11 @@ function getCodecProfiles() as object
   audioChannels = [8, 6, 2] ' highest first
 
   for each audioCodec in audioCodecs
-    ' Special handling for stereo-output codecs when user has surround passthrough
+    ' Special handling for stereo-output codecs when user has surround passthrough OR user disabled multichannel decode
     ' These codecs decode multichannel but Roku only outputs as stereo PCM
-    if arrayHasValue(stereoOutputCodecs, audioCodec) and hasSurroundPassthru
+    if arrayHasValue(stereoOutputCodecs, audioCodec) and (hasSurroundPassthru or userWantsDecodeLimit)
       ' Force to 2 channels maximum to prevent Roku from downmixing multichannel to stereo
-      ' This triggers server to transcode to surroundOutputCodecs (eac3/ac3/dts) instead
+      ' This triggers server to transcode to surroundOutputCodecs (eac3/ac3/dts) or stereo instead
       for each codecType in ["VideoAudio", "Audio"]
         ' Special AAC profile restrictions (Main and HE-AAC not supported)
         if audioCodec = "aac"
