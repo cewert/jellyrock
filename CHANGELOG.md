@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Add Play Default Audio Track setting ([#184](https://github.com/cewert/jellyrock/pull/184))
 - (docs) add comprehensive user settings implementation guide ([72694f4](https://github.com/cewert/jellyrock/commit/72694f4))
 
 ### Changed
