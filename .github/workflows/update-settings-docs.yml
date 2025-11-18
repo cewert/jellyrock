@@ -1,5 +1,5 @@
-# This workflow automates updating the generated settings documentation when app-settings.md changes.
-# It runs on PRs and pushes to main that modify docs/user/app-settings.md, then commits the regenerated file as jellyrock-bot.
+# This workflow automates updating the generated settings documentation when settings.json changes.
+# It only runs on pushes to main that modify settings/settings.json, then commits the regenerated file as jellyrock-bot.
 
 name: Update Settings Docs
 
@@ -9,22 +9,16 @@ on:
     branches: [main]
     paths:
       - "settings/settings.json"
-  pull_request_target:
-    types: [opened, synchronize]
-    paths:
-      - "settings/settings.json"
 
 jobs:
   update-settings-docs:
     runs-on: ubuntu-latest
-    if: |
-      github.actor != 'jellyrock-bot' &&
-      (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
+    if: github.actor != 'jellyrock-bot'
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
-          ref: ${{ github.head_ref }}
           token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
+          fetch-depth: 0
 
       - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6
         with:
@@ -53,6 +47,7 @@ jobs:
         run: |
           git config user.name "JellyRock-bot"
           git config user.email "c.ewert@gmail.com"
+          git pull --rebase origin main
           git add docs/user/app-settings.md
           git commit -m "chore(docs): auto-update settings docs"
 
@@ -61,5 +56,5 @@ jobs:
         uses: CasperWA/push-protected@74d25b8aa10e0c29024138735d32f3c0b75f9279 # v2
         with:
           token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
-          branch: ${{ github.event_name == 'push' && 'main' || github.head_ref }}
+          branch: main
           unprotect_reviews: false

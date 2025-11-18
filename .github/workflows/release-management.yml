@@ -193,6 +193,7 @@ jobs:
         run: |
           git config user.name "JellyRock-bot"
           git config user.email "c.ewert@gmail.com"
+          git pull --rebase origin ${{ needs.validate-and-prepare.outputs.branch_name }}
           git add package.json package-lock.json manifest
 
           if git diff --cached --quiet; then

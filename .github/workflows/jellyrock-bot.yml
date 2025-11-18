@@ -1,17 +1,14 @@
-name: jellyrock-bot # jobs that trigger jellrock-bot to push commits to the repository
+name: jellyrock-bot # jobs that trigger jellyrock-bot to push commits to the repository
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
-  pull_request_target:
-    types: [opened, synchronize]
 
 jobs:
   build-translation:
-    if: |
-      github.actor != 'jellyrock-bot' &&
-      (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+    if: github.actor != 'jellyrock-bot'
     runs-on: ubuntu-latest
     permissions:
       # Give the default GITHUB_TOKEN write permission to commit and push the changed files back to the repository.
@@ -19,7 +16,6 @@ jobs:
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
-          ref: ${{ github.head_ref }}
           fetch-depth: 0 # Get full history
           token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
       - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6
@@ -55,6 +51,7 @@ jobs:
         run: |
           git config user.name "JellyRock-bot"
           git config user.email "c.ewert@gmail.com"
+          git pull --rebase origin main
           git add locale/en_US/translations.ts
           git commit -m "chore(translation): Update en_US translation file"
 
@@ -63,5 +60,5 @@ jobs:
         uses: CasperWA/push-protected@74d25b8aa10e0c29024138735d32f3c0b75f9279 # v2
         with:
           token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
-          branch: ${{ github.event_name == 'push' && 'main' || github.head_ref }}
+          branch: main
           unprotect_reviews: false

@@ -49,6 +49,7 @@ jobs:
             # Switch to main branch and apply the changelog changes
             git stash push -m "changelog updates" CHANGELOG.md
             git checkout main
+            git pull --rebase origin main
             git stash pop
 
             git add CHANGELOG.md
