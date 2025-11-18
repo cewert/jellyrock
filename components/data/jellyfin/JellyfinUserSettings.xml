@@ -32,6 +32,7 @@
     <field id="playbackMpeg4" type="boolean" alwaysNotify="true" />
     <field id="playbackTryDirectH264ProfileLevel" type="boolean" alwaysNotify="true" />
     <field id="playbackTryDirectHevcProfileLevel" type="boolean" alwaysNotify="true" />
+    <field id="playbackPlayDefaultAudioTrack" type="string" alwaysNotify="true" />
 
     <!-- UI Settings -->
     <field id="uiGeneralEpisodeImages" type="string" alwaysNotify="true" />

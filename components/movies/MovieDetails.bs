@@ -283,8 +283,11 @@ sub SetDefaultAudioTrack(itemData)
   ' Get user settings for audio selection
   localUser = m.global.user
 
+  ' Resolve playDefaultAudioTrack setting (JellyRock override or web client)
+  playDefault = resolvePlayDefaultAudioTrack(localUser.settings, localUser.config)
+
   ' Use new comprehensive audio selection logic
-  selectedIndex = findBestAudioStreamIndex(mediaStreams, localUser.settings.playbackPlayDefaultAudioTrack, localUser.config.audioLanguagePreference)
+  selectedIndex = findBestAudioStreamIndex(mediaStreams, playDefault, localUser.config.audioLanguagePreference)
 
   ' Find the audio stream with the selected index to get its displayTitle
   defaultAudioStream = invalid

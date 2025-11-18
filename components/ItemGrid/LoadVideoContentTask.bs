@@ -81,7 +81,10 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
   ' Task field > 0 means user manually selected from MovieDetails/TVListDetails - preserve it
   if m.top.selectedAudioStreamIndex = 0
     if isValid(meta.json) and isValid(meta.json.MediaStreams)
-      audio_stream_idx = findBestAudioStreamIndex(meta.json.MediaStreams, userSettings.playbackPlayDefaultAudioTrack, userSession.config.audioLanguagePreference)
+      ' Resolve playDefaultAudioTrack setting (JellyRock override or web client)
+      playDefault = resolvePlayDefaultAudioTrack(userSettings, userSession.config)
+
+      audio_stream_idx = findBestAudioStreamIndex(meta.json.MediaStreams, playDefault, userSession.config.audioLanguagePreference)
     else
       ' MediaStreams not available - keep existing behavior of using 0
       ' This should never happen since ItemMetaData() just fetched metadata

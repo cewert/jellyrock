@@ -39,10 +39,13 @@ namespace quickplay
       mediaStreams = itemNode.json.MediaSources[0].MediaStreams
     end if
 
+    ' Resolve playDefaultAudioTrack setting (JellyRock override or web client)
+    playDefault = resolvePlayDefaultAudioTrack(localUser.settings, localUser.config)
+
     ' Use new comprehensive audio selection logic
     audioStreamIndex = 0
     if isValid(mediaStreams)
-      audioStreamIndex = findBestAudioStreamIndex(mediaStreams, localUser.settings.playbackPlayDefaultAudioTrack, localUser.config.audioLanguagePreference)
+      audioStreamIndex = findBestAudioStreamIndex(mediaStreams, playDefault, localUser.config.audioLanguagePreference)
     end if
 
     ' resume playback if possible
