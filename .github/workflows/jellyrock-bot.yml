@@ -10,6 +10,9 @@ jobs:
   build-translation:
     if: github.actor != 'jellyrock-bot'
     runs-on: ubuntu-latest
+    concurrency:
+      group: bot-push-main-branch
+      cancel-in-progress: false
     permissions:
       # Give the default GITHUB_TOKEN write permission to commit and push the changed files back to the repository.
       contents: write
