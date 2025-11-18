@@ -83,8 +83,8 @@ jobs:
           else
             git config user.name "JellyRock-bot"
             git config user.email "c.ewert@gmail.com"
-            git pull --rebase origin main
             git add CHANGELOG.md
+            git pull --rebase --autostash origin main
 
             if [ "${{ steps.sync_type.outputs.type }}" = "release" ]; then
               echo "📝 Committing release changelog sync for v${{ steps.sync_type.outputs.version }}"

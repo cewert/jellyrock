@@ -51,8 +51,8 @@ jobs:
         run: |
           git config user.name "JellyRock-bot"
           git config user.email "c.ewert@gmail.com"
-          git pull --rebase origin main
           git add locale/en_US/translations.ts
+          git pull --rebase --autostash origin main
           git commit -m "chore(translation): Update en_US translation file"
 
       - name: Push to protected branch
