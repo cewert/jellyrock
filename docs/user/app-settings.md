@@ -50,6 +50,7 @@ Settings relating to playback and supported codec and media types.
 - [Maximum Resolution](#playbackResolutionMax)
 - [Next Episode Button Time](#playbackNextUpButtonSeconds)
 - [Play Next Episode Automatically](#playbackPlayNextEpisode)
+- [Play Default Audio Track](#playbackPlayDefaultAudioTrack)
 - [Preferred Surround Audio Codec](#playbackPreferredMultichannelCodec)
 - [Text Subtitles Only](#playbackSubsOnlyText)
 - [Video Codec Support](#playback-video-codec-support)
@@ -117,6 +118,19 @@ When finished playing a single episode, play the next one automatically.
 | Property | Value |
 | --- | --- |
 | Setting Name | `playbackPlayNextEpisode` |
+| Type | `radio` |
+| Default | `webclient` |
+| Options | <table cellspacing="0" cellpadding="0"><thead><tr><th align="left">Name</th><th align="left">ID</th></tr></thead><tbody><tr><td>Use Web Client Setting</td><td><code>webclient</code></td></tr><tr><td>Enabled</td><td><code>enabled</code></td></tr><tr><td>Disabled</td><td><code>disabled</code></td></tr></tbody></table> |
+
+<h3 id="playbackPlayDefaultAudioTrack">Play Default Audio Track</h3>
+
+<a href="#playback">Playback</a> › <a href="#playbackPlayDefaultAudioTrack">Play Default Audio Track</a>
+
+Override web client audio preference. When enabled, use the IsDefault flag to select audio track. When disabled, prefer language match and ignore IsDefault.
+
+| Property | Value |
+| --- | --- |
+| Setting Name | `playbackPlayDefaultAudioTrack` |
 | Type | `radio` |
 | Default | `webclient` |
 | Options | <table cellspacing="0" cellpadding="0"><thead><tr><th align="left">Name</th><th align="left">ID</th></tr></thead><tbody><tr><td>Use Web Client Setting</td><td><code>webclient</code></td></tr><tr><td>Enabled</td><td><code>enabled</code></td></tr><tr><td>Disabled</td><td><code>disabled</code></td></tr></tbody></table> |
