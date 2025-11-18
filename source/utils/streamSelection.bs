@@ -4,6 +4,40 @@ import "pkg:/source/utils/config.bs"
 ' Comprehensive audio and video stream selection utilities
 ' Combines user preferences with hardware capabilities for optimal playback
 
+' resolvePlayDefaultAudioTrack: Resolves the playDefaultAudioTrack setting value
+'
+' Checks JellyRock override setting first, then falls back to web client setting.
+' Ensures a valid boolean is always returned.
+'
+' @param {object} userSettings - JellyfinUserSettings node (JellyRock settings)
+' @param {object} userConfig - JellyfinUserConfiguration node (web client settings)
+' @returns {boolean} - Resolved playDefaultAudioTrack value (guaranteed boolean)
+function resolvePlayDefaultAudioTrack(userSettings as object, userConfig as object) as boolean
+  ' Default to true if we can't determine the value
+  defaultValue = true
+
+  ' Try to get web client setting
+  if isValid(userConfig) and isValid(userConfig.playDefaultAudioTrack)
+    ' Ensure it's actually a boolean before using it
+    valueType = Type(userConfig.playDefaultAudioTrack)
+    if valueType = "roBoolean" or valueType = "Boolean"
+      defaultValue = userConfig.playDefaultAudioTrack
+    end if
+  end if
+
+  ' Check for JellyRock override setting
+  if isValid(userSettings) and isValid(userSettings.playbackPlayDefaultAudioTrack) and userSettings.playbackPlayDefaultAudioTrack <> ""
+    if userSettings.playbackPlayDefaultAudioTrack = "enabled"
+      return true
+    else if userSettings.playbackPlayDefaultAudioTrack = "disabled"
+      return false
+      ' else "webclient" or other - use web client setting
+    end if
+  end if
+
+  return defaultValue
+end function
+
 ' findBestAudioStreamIndex: Primary function for selecting the best audio stream
 '
 ' Selection priority when playDefault = true (Jellyfin: "Play default audio track regardless of language"):

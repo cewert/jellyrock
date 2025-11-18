@@ -109,7 +109,7 @@ class SessionDataTransformer
       return settingsNode
     end if
 
-    ' Playback Settings (13)
+    ' Playback Settings
     settingsNode.playbackBitrateMaxLimited = toBoolean(settingsData["playbackBitrateMaxLimited"])
     if settingsData.DoesExist("playbackBitrateLimit")
       settingsNode.playbackBitrateLimit = Val(settingsData["playbackBitrateLimit"])
@@ -121,6 +121,7 @@ class SessionDataTransformer
       settingsNode.playbackNextUpButtonSeconds = Val(settingsData["playbackNextUpButtonSeconds"])
     end if
     settingsNode.playbackPlayNextEpisode = settingsData["playbackPlayNextEpisode"] ?? ""
+    settingsNode.playbackPlayDefaultAudioTrack = settingsData["playbackPlayDefaultAudioTrack"] ?? ""
     settingsNode.playbackPreferredMultichannelCodec = settingsData["playbackPreferredMultichannelCodec"] ?? ""
     settingsNode.playbackSubsOnlyText = toBoolean(settingsData["playbackSubsOnlyText"])
     settingsNode.playbackMpeg2 = toBoolean(settingsData["playbackMpeg2"])
@@ -128,7 +129,7 @@ class SessionDataTransformer
     settingsNode.playbackTryDirectH264ProfileLevel = toBoolean(settingsData["playbackTryDirectH264ProfileLevel"])
     settingsNode.playbackTryDirectHevcProfileLevel = toBoolean(settingsData["playbackTryDirectHevcProfileLevel"])
 
-    ' UI Settings (14)
+    ' UI Settings
     settingsNode.uiGeneralEpisodeImages = settingsData["uiGeneralEpisodeImages"] ?? ""
     settingsNode.uiFontFallback = toBoolean(settingsData["uiFontFallback"])
     settingsNode.uiDesignHideClock = toBoolean(settingsData["uiDesignHideClock"])
@@ -146,13 +147,13 @@ class SessionDataTransformer
     settingsNode.uiTvShowsDisableUnwatchedCount = toBoolean(settingsData["uiTvShowsDisableUnwatchedCount"])
     settingsNode.uiTvShowsGoStraightToEpisodes = toBoolean(settingsData["uiTvShowsGoStraightToEpisodes"])
 
-    ' Item Grid Settings (4)
+    ' Item Grid Settings
     settingsNode.itemGridShowItemCount = toBoolean(settingsData["itemGridShowItemCount"])
     settingsNode.itemGridTitles = settingsData["itemGridTitles"] ?? ""
     settingsNode.itemGridReset = toBoolean(settingsData["itemGridReset"])
     settingsNode.itemGridMovieDefaultView = settingsData["itemGridMovieDefaultView"] ?? ""
 
-    ' Home sections (7)
+    ' Home sections
     settingsNode.homeSection0 = settingsData["homeSection0"] ?? ""
     settingsNode.homeSection1 = settingsData["homeSection1"] ?? ""
     settingsNode.homeSection2 = settingsData["homeSection2"] ?? ""
@@ -161,7 +162,7 @@ class SessionDataTransformer
     settingsNode.homeSection5 = settingsData["homeSection5"] ?? ""
     settingsNode.homeSection6 = settingsData["homeSection6"] ?? ""
 
-    ' Display settings (1)
+    ' Display settings
     settingsNode.displayLiveTvLanding = settingsData["displayLiveTvLanding"] ?? ""
 
     ' Transform display settings into nested structure

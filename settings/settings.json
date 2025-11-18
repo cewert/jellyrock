@@ -120,6 +120,27 @@
         ]
       },
       {
+        "title": "Play Default Audio Track",
+        "description": "Override web client audio preference. When enabled, use the IsDefault flag to select audio track. When disabled, prefer language match and ignore IsDefault.",
+        "settingName": "playbackPlayDefaultAudioTrack",
+        "type": "radio",
+        "default": "webclient",
+        "options": [
+          {
+            "title": "Use Web Client Setting",
+            "id": "webclient"
+          },
+          {
+            "title": "Enabled",
+            "id": "enabled"
+          },
+          {
+            "title": "Disabled",
+            "id": "disabled"
+          }
+        ]
+      },
+      {
         "title": "Preferred Surround Audio Codec",
         "description": "When transcoding multichannel audio, prefer this codec. EAC3 supports up to 7.1 channels with better compression. AC3 is more widely compatible. DTS is an alternative for systems that prefer it. This only affects 6 and 8 channel transcoding profiles.",
         "settingName": "playbackPreferredMultichannelCodec",
