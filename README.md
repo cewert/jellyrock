@@ -51,6 +51,7 @@ npm run build # OR npm run build:prod
 - [Developer Mode](docs/dev/developer-mode.md)
 - [Dev Guide](docs/dev/DEVGUIDE.md)
 - [Logging](docs/dev/logging.md)
+- [New User Setting](docs/dev/new-user-setting.md)
 - [Registry Migrations](docs/dev/registry-migrations.md)
 - [TDD Workflow](docs/dev/unit-tests-tdd.md)
 - [Unit Tests](docs/dev/unit-tests.md)
