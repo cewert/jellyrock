@@ -20,6 +20,7 @@ namespace tests
       testUserId = "test-audio-migration-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.1.4") ' Between v1.1.0 and v1.1.5 - runs ONLY v1.1.5
       reg.write("playbackPreferredAudioCodec", "eac3")
       reg.flush()
@@ -45,6 +46,7 @@ namespace tests
       testUserId = "test-audio-migration-auto-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.1.4")
       reg.write("playbackPreferredAudioCodec", "auto")
       reg.flush()
@@ -61,6 +63,7 @@ namespace tests
       testUserId = "test-audio-migration-aac-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.1.4")
       reg.write("playbackPreferredAudioCodec", "aac")
       reg.flush()
@@ -77,6 +80,7 @@ namespace tests
       testUserId = "test-audio-migration-empty-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.1.4")
       reg.write("playbackPreferredAudioCodec", "")
       reg.flush()
@@ -97,6 +101,7 @@ namespace tests
       testUserId = "test-audio-migration-ac3-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.1.4")
       reg.write("playbackPreferredAudioCodec", "ac3")
       reg.flush()
@@ -113,6 +118,7 @@ namespace tests
       testUserId = "test-audio-migration-eac3-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.1.4")
       reg.write("playbackPreferredAudioCodec", "eac3")
       reg.flush()
@@ -129,6 +135,7 @@ namespace tests
       testUserId = "test-audio-migration-dts-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.1.4")
       reg.write("playbackPreferredAudioCodec", "dts")
       reg.flush()
@@ -149,6 +156,7 @@ namespace tests
       testUserId = "test-audio-migration-missing-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.1.4")
       ' Don't write playbackPreferredAudioCodec
       reg.flush()
@@ -165,6 +173,7 @@ namespace tests
       testUserId = "test-audio-migration-invalid-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.1.4")
       reg.write("playbackPreferredAudioCodec", "unknown-codec")
       reg.flush()
@@ -185,6 +194,7 @@ namespace tests
       testUserId = "test-audio-migration-skip-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.1.5") ' Already on v1.1.5
       reg.write("playbackPreferredAudioCodec", "ac3")
       reg.flush()
@@ -202,6 +212,7 @@ namespace tests
       testUserId = "test-audio-migration-v114-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.1.4") ' Just before v1.1.5
       reg.write("playbackPreferredAudioCodec", "dts")
       reg.flush()
@@ -223,6 +234,7 @@ namespace tests
       testUserId = "test-audio-migration-v110-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.1.0") ' At v1.1.0 (post name migration)
       reg.write("playbackPreferredAudioCodec", "ac3")
       reg.flush()
@@ -250,16 +262,19 @@ namespace tests
       user3 = "test-audio-migration-multi-003"
 
       reg1 = CreateObject("roRegistrySection", user1)
+      reg1.write("serverId", m.global.server.id)
       reg1.write("LastRunVersion", "1.1.0")
       reg1.write("playbackPreferredAudioCodec", "auto") ' Should migrate to eac3
       reg1.flush()
 
       reg2 = CreateObject("roRegistrySection", user2)
+      reg2.write("serverId", m.global.server.id)
       reg2.write("LastRunVersion", "1.1.0")
       reg2.write("playbackPreferredAudioCodec", "ac3") ' Should preserve ac3
       reg2.flush()
 
       reg3 = CreateObject("roRegistrySection", user3)
+      reg3.write("serverId", m.global.server.id)
       reg3.write("LastRunVersion", "1.1.0")
       reg3.write("playbackPreferredAudioCodec", "dts") ' Should preserve dts
       reg3.flush()
@@ -286,6 +301,7 @@ namespace tests
       testUserId = "test-audio-migration-mixed-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.1.4")
       reg.write("playbackPreferredAudioCodec", "ac3") ' Old name
       reg.write("playbackPreferredMultichannelCodec", "eac3") ' New name already exists

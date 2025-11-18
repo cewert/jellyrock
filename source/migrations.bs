@@ -46,6 +46,8 @@ sub runGlobalMigrations()
 end sub
 
 ' Run registry migrations for user sections
+' Only processes sections with a valid serverId key (written by user.Login())
+' Automatically skips orphaned/incomplete sections and global sections
 ' @param targetSections Optional array of specific section names to migrate. If invalid, migrates all sections.
 sub runRegistryUserMigrations(targetSections = invalid as dynamic)
   regSections = invalid
@@ -82,11 +84,22 @@ sub runRegistryUserMigrations(targetSections = invalid as dynamic)
 
     ' Process this section
     reg = CreateObject("roRegistrySection", section)
+
+    ' Validate this is a legitimate user section by checking for serverId
+    ' serverId is ALWAYS written by user.Login() regardless of saveCredentials
+    ' If missing, this is an orphaned/incomplete section - skip it
+    if not reg.exists("serverId")
+      print `Skipping incomplete user section: ${section} (missing serverId)`
+      continue for
+    end if
+
+    ' Check if user needs migrations
     lastRunVersion = invalid
     if reg.exists("LastRunVersion")
       lastRunVersion = reg.read("LastRunVersion")
     else
-      ' No LastRunVersion found, assume very old version
+      ' No LastRunVersion found - could be old user data needing migration
+      ' Use "0.0.0" to trigger all migrations (safe since migrations are idempotent)
       lastRunVersion = "0.0.0"
       reg.write("LastRunVersion", lastRunVersion)
     end if

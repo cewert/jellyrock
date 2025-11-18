@@ -20,6 +20,7 @@ namespace tests
       testUserId = "test-migration-user-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.0.0") ' Old version (before 1.1.0)
       ' NOTE: With LastRunVersion "1.0.0", both v1.1.0 AND v1.1.5 migrations will run
       ' v1.1.0: Dotted names → camelCase
@@ -88,6 +89,7 @@ namespace tests
 
       ' THEN: NEW setting names exist with preserved values
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
 
       ' Verify playback settings migrated correctly
       m.assertTrue(reg.exists("playbackBitrateMaxLimited"))
@@ -194,6 +196,7 @@ namespace tests
       testUserId = "test-migration-values-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.0.0")
 
       ' Test various value formats (user settings only)
@@ -210,6 +213,7 @@ namespace tests
 
       ' THEN: Values are preserved exactly as-is
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
 
       m.assertEqual(reg.read("playbackBitrateMaxLimited"), "true", "Boolean string should be preserved")
       m.assertEqual(reg.read("playbackBitrateLimit"), "8000", "Numeric string should be preserved")
@@ -229,6 +233,7 @@ namespace tests
       testUserId = "test-migration-partial-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.0.0")
 
       ' Write a subset of settings to verify partial migration works correctly
@@ -243,6 +248,7 @@ namespace tests
 
       ' THEN: Only existing settings are migrated
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
 
       m.assertTrue(reg.exists("uiRowLayout"))
       m.assertTrue(reg.exists("playbackBitrateLimit"))
@@ -263,6 +269,7 @@ namespace tests
       testUserId = "test-migration-empty-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.0.0")
       reg.flush()
 
@@ -272,12 +279,13 @@ namespace tests
       ' THEN: No errors, no new settings created
       reg = CreateObject("roRegistrySection", testUserId)
 
-      ' Verify LastRunVersion still exists
+      ' Verify LastRunVersion and serverId still exist
       m.assertTrue(reg.exists("LastRunVersion"))
+      m.assertTrue(reg.exists("serverId"))
 
-      ' Verify no settings were created
+      ' Verify no other settings were created
       allKeys = reg.GetKeyList()
-      m.assertEqual(allKeys.Count(), 1, "Should only have LastRunVersion key")
+      m.assertEqual(allKeys.Count(), 2, "Should only have serverId and LastRunVersion keys")
     end function
 
     @it("migrates multiple users independently")
@@ -288,6 +296,7 @@ namespace tests
 
       ' User 1
       reg1 = CreateObject("roRegistrySection", testUserId1)
+      reg1.write("serverId", m.global.server.id)
       reg1.write("LastRunVersion", "1.0.0")
       reg1.write("ui.row.layout", "landscape")
       reg1.write("ui.design.hideclock", "true")
@@ -295,6 +304,7 @@ namespace tests
 
       ' User 2
       reg2 = CreateObject("roRegistrySection", testUserId2)
+      reg2.write("serverId", m.global.server.id)
       reg2.write("LastRunVersion", "1.0.0")
       reg2.write("ui.row.layout", "portrait")
       reg2.write("ui.design.hideclock", "false")
@@ -320,6 +330,7 @@ namespace tests
       testUserId = "test-migration-mixed-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.0.0")
 
       ' Write both old and new names (migration should prefer old→new and delete old)
@@ -334,6 +345,7 @@ namespace tests
 
       ' THEN: Old values overwrite new values (migration always wins)
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
 
       m.assertEqual(reg.read("uiDesignHideClock"), "true", "Old value should overwrite new value")
       m.assertEqual(reg.read("uiRowLayout"), "landscape")
@@ -353,6 +365,7 @@ namespace tests
       testUserId = "test-migration-skip-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.1.5") ' All migrations already complete
 
       ' Write OLD setting names (should NOT be migrated)
@@ -366,6 +379,7 @@ namespace tests
 
       ' THEN: No migrations occurred (old names still exist)
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
 
       m.assertTrue(reg.exists("global.rememberme"), "Old setting should still exist (not migrated)")
       m.assertTrue(reg.exists("ui.row.layout"), "Old setting should still exist (not migrated)")
@@ -379,6 +393,7 @@ namespace tests
       testUserId = "test-migration-run-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.0.0") ' Old version
 
       reg.write("ui.row.layout", "landscape")
@@ -389,6 +404,7 @@ namespace tests
 
       ' THEN: Migration occurred
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
 
       m.assertTrue(reg.exists("uiRowLayout"), "New setting should exist")
       m.assertFalse(reg.exists("ui.row.layout"), "Old setting should be deleted")
@@ -432,6 +448,7 @@ namespace tests
       testUserId = "test-migration-display-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.0.0")
 
       ' Top-level display setting (SHOULD be migrated)
@@ -448,6 +465,7 @@ namespace tests
 
       ' THEN: Only displayLiveTvLanding is migrated
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
 
       m.assertTrue(reg.exists("displayLiveTvLanding"))
       m.assertEqual(reg.read("displayLiveTvLanding"), "guide")
@@ -464,6 +482,7 @@ namespace tests
       testUserId = "test-migration-policy-cleanup-001"
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.0.0") ' Pre-migration version so cleanup runs
 
       ' Write both old and new server policy keys (should all be deleted)
@@ -483,6 +502,7 @@ namespace tests
 
       ' THEN: Server policy keys are deleted
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
 
       m.assertFalse(reg.exists("liveTvCanRecord"), "liveTvCanRecord should be deleted")
       m.assertFalse(reg.exists("contentCanDelete"), "contentCanDelete should be deleted")
@@ -507,6 +527,7 @@ namespace tests
       ' GIVEN: Registry with OLD user setting names (pre-migration state)
       ' NOTE: global.rememberme is NOT a user setting - it belongs in the global section
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       reg.write("LastRunVersion", "1.0.0")
       reg.write("ui.row.layout", "landscape")
       reg.write("ui.design.hideclock", "false")
@@ -520,6 +541,7 @@ namespace tests
       ' Note: After migration, all settings use NEW camelCase names in registry
 
       reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
       m.assertTrue(reg.exists("uiRowLayout"))
       m.assertEqual(reg.read("uiRowLayout"), "landscape")
       m.assertTrue(reg.exists("uiDesignHideClock"))
