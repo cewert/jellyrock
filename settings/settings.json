@@ -51,6 +51,13 @@
         "default": "true"
       },
       {
+        "title": "Decode Multichannel Audio",
+        "description": "Allow the Roku to decode multichannel audio formats (AAC, FLAC, etc.) to stereo. When disabled, forces the server to transcode to 2-channel audio instead of relying on Roku's downmix, which may improve audio quality on some systems.",
+        "settingName": "playbackDecodeMultichannelAudio",
+        "type": "bool",
+        "default": "true"
+      },
+      {
         "title": "Maximum Resolution",
         "description": "Configure the maximum resolution when transcoding video files to this device.",
         "settingName": "playbackResolutionMax",

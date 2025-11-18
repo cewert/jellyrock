@@ -642,10 +642,10 @@ namespace tests
     #end if
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("Complete 42 Settings Coverage - NEW Names")
+    @describe("Complete Settings Coverage - NEW Names")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("transforms all 42 settings with NEW camelCase names")
+    @it("transforms all settings with NEW camelCase names")
     function _()
       transformer = new SessionDataTransformer()
 
@@ -653,10 +653,11 @@ namespace tests
 
       result = transformer.transformUserSettings(settingsData)
 
-      ' Playback Settings (13)
+      ' Playback Settings
       m.assertEqual(result.playbackBitrateMaxLimited, false)
       m.assertEqual(result.playbackBitrateLimit, 8000)
       m.assertEqual(result.playbackCinemaMode, false)
+      m.assertEqual(result.playbackDecodeMultichannelAudio, true)
       m.assertEqual(result.playbackSubsCustom, true)
       m.assertEqual(result.playbackResolutionMax, "auto")
       m.assertEqual(result.playbackNextUpButtonSeconds, 30)
@@ -668,7 +669,7 @@ namespace tests
       m.assertEqual(result.playbackTryDirectH264ProfileLevel, false)
       m.assertEqual(result.playbackTryDirectHevcProfileLevel, false)
 
-      ' UI Settings (14)
+      ' UI Settings
       m.assertEqual(result.uiGeneralEpisodeImages, "always")
       m.assertEqual(result.uiFontFallback, false)
       m.assertEqual(result.uiDesignHideClock, true)
@@ -684,13 +685,13 @@ namespace tests
       m.assertEqual(result.uiTvShowsDisableUnwatchedCount, false)
       m.assertEqual(result.uiTvShowsGoStraightToEpisodes, false)
 
-      ' Item Grid Settings (4)
+      ' Item Grid Settings
       m.assertEqual(result.itemGridShowItemCount, true)
       m.assertEqual(result.itemGridTitles, "showalways")
       m.assertEqual(result.itemGridReset, false)
       m.assertEqual(result.itemGridMovieDefaultView, "moviesgrid")
 
-      ' Home Sections (7)
+      ' Home Sections
       m.assertEqual(result.homeSection0, "librarybuttons")
       m.assertEqual(result.homeSection1, "resume")
       m.assertEqual(result.homeSection2, "nextup")
@@ -699,7 +700,7 @@ namespace tests
       m.assertEqual(result.homeSection5, "none")
       m.assertEqual(result.homeSection6, "none")
 
-      ' Display (1)
+      ' Display
       m.assertEqual(result.displayLiveTvLanding, "guide")
 
       ' Display settings nested

@@ -169,7 +169,7 @@ Add your setting to the appropriate category (Playback, User Interface, etc.):
 
 **Alphabetical Order:**
 
-Settings **MUST** be kept in alphabetical order by `settingName` within each category's `children` array. This ensures the UI settings list is always alphabetically sorted for users.
+Settings **MUST** be kept in alphabetical order by **`title`** (NOT `settingName`) within each category's `children` array. This ensures the UI settings list is always alphabetically sorted for users.
 
 **Example (Play Default Audio Track):**
 
@@ -489,7 +489,8 @@ Test the setting manually on a real Roku device:
 - ✅ **DO** explain the resolution priority in comments
 - ✅ **DO** add inline comments for non-obvious logic
 - ✅ **DO** update relevant documentation when adding settings
-- ❌ **DON'T** leave outdated comments (remove hardcoded counts)
+- ❌ **DON'T** include hardcoded counts in comments (e.g., "Playback Settings (13)") - they require manual updates and get outdated
+- ❌ **DON'T** leave outdated comments
 
 ### 5. Testing
 
@@ -629,7 +630,7 @@ When implementing a new user setting, use this checklist to ensure nothing is ov
 - [ ] Use `camelCase` naming with category prefix (e.g., `playback*`, `ui*`, `global*`)
 - [ ] Set appropriate default value (use `"webclient"` for override settings)
 - [ ] Define all options for radio type (with clear titles and simple IDs)
-- [ ] **IMPORTANT:** Insert setting in alphabetical order by `settingName` within the category's `children` array
+- [ ] **IMPORTANT:** Insert setting in alphabetical order by `title` within the category's `children` array
 
 ### Phase 2: Schema Definition
 
@@ -649,11 +650,13 @@ When implementing a new user setting, use this checklist to ensure nothing is ov
 
 ### Phase 4: Implementation Logic
 
-- [ ] Create helper function if setting has complex resolution logic (most common for web client overrides)
+**Note:** Some settings don't need helper functions - they may just modify existing logic (e.g., adding to a condition). Skip helper-specific checkboxes if not applicable.
+
+- [ ] Create helper function if setting has complex resolution logic (most common for web client overrides) OR modify existing logic to use the setting
 - [ ] Provide safe defaults for invalid/missing values
-- [ ] Document helper function with clear comments
-- [ ] Use DRY principle - create ONE function, use everywhere
-- [ ] Update all usage sites to call helper consistently
+- [ ] Document implementation with clear comments
+- [ ] Use DRY principle - create ONE function, use everywhere (if applicable)
+- [ ] Update all usage sites to use the setting consistently
 - [ ] Search codebase for related code: `grep -r "relatedTerm" source/ components/`
 
 ### Phase 5: Testing
@@ -664,6 +667,8 @@ When implementing a new user setting, use this checklist to ensure nothing is ov
 - [ ] Test web client fallback when no override
 - [ ] Test invalid inputs (invalid objects, empty strings)
 - [ ] Test edge cases (unexpected values, missing fields)
+- [ ] Update existing comprehensive tests (e.g., `Transformers.spec.bs` settings coverage test)
+- [ ] Update test mock data files (e.g., `user-settings-all-new-names.json`)
 - [ ] Verify all tests pass: `npm run build:tests-unit`
 
 ### Phase 6: Manual Testing

@@ -3,6 +3,7 @@
   "playbackBitrateMaxLimited": "false",
   "playbackBitrateLimit": "8000",
   "playbackCinemaMode": "false",
+  "playbackDecodeMultichannelAudio": "true",
   "playbackSubsCustom": "true",
   "playbackResolutionMax": "auto",
   "playbackNextUpButtonSeconds": "30",
