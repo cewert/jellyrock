@@ -99,9 +99,9 @@
         "default": "30"
       },
       {
-        "title": "Play Next Episode Automatically",
-        "description": "When finished playing a single episode, play the next one automatically.",
-        "settingName": "playbackPlayNextEpisode",
+        "title": "Play Default Audio Track",
+        "description": "Override web client audio preference. When enabled, use the IsDefault flag to select audio track. When disabled, prefer language match and ignore IsDefault.",
+        "settingName": "playbackPlayDefaultAudioTrack",
         "type": "radio",
         "default": "webclient",
         "options": [
@@ -120,9 +120,9 @@
         ]
       },
       {
-        "title": "Play Default Audio Track",
-        "description": "Override web client audio preference. When enabled, use the IsDefault flag to select audio track. When disabled, prefer language match and ignore IsDefault.",
-        "settingName": "playbackPlayDefaultAudioTrack",
+        "title": "Play Next Episode Automatically",
+        "description": "When finished playing a single episode, play the next one automatically.",
+        "settingName": "playbackPlayNextEpisode",
         "type": "radio",
         "default": "webclient",
         "options": [
