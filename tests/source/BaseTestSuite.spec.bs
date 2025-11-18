@@ -228,6 +228,31 @@ namespace tests
       return m.global.user.settings
     end function
 
+    ' Load and apply a specific mock device configuration
+    ' @param deviceName - Name of device mock file (e.g., "roku-en-us", "roku-es-mx")
+    protected function loadTestDevice(deviceName as string) as void
+      ' Load mock device data
+      mockDeviceData = MockDataLoader.LoadDevice(deviceName)
+      if not isValid(mockDeviceData)
+        throw "Failed to load mock device: " + deviceName
+      end if
+
+      ' Get local reference to minimize rendezvous
+      localDevice = m.global.device
+
+      ' Update device fields from mock data
+      for each key in mockDeviceData
+        if localDevice.hasField(key)
+          localDevice[key] = mockDeviceData[key]
+        else
+          ' Add field if it doesn't exist
+          fieldDef = {}
+          fieldDef[key] = mockDeviceData[key]
+          localDevice.addFields(fieldDef)
+        end if
+      end for
+    end function
+
     ' ===================================================================
     ' DISPLAY SETTINGS TEST HELPERS
     ' ===================================================================

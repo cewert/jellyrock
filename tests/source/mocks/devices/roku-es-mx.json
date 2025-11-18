@@ -1,0 +1,15 @@
+{
+  "id": "test-device-es-mx",
+  "name": "Test Roku Device (Mexican Spanish)",
+  "model": "9102X",
+  "modelType": "STB",
+  "serial": "YN00TEST1234",
+  "friendlyName": "Test Roku Device YN00TEST1234",
+  "serverDeviceName": "test-device-es-mx-TestUser",
+  "locale": "es_MX",
+  "videoMode": "1080p60",
+  "videoHeight": "1080",
+  "videoWidth": "1920",
+  "videoRefresh": 60,
+  "videoBitDepth": 8
+}
