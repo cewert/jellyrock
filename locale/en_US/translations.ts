@@ -768,6 +768,10 @@
       <extracomment>User Setting - Setting option title</extracomment>
     </message>
     <message>
+      <source>Override web client audio preference. When enabled, use the IsDefault flag to select audio track. When disabled, prefer language match and ignore IsDefault.</source>
+      <translation>Override web client audio preference. When enabled, use the IsDefault flag to select audio track. When disabled, prefer language match and ignore IsDefault.</translation>
+    </message>
+    <message>
       <source>Parental Ratings</source>
       <translation>Parental Ratings</translation>
       <extracomment>Used in Filter menu</extracomment>
@@ -797,6 +801,10 @@
     <message>
       <source>Play All</source>
       <translation>Play All</translation>
+    </message>
+    <message>
+      <source>Play Default Audio Track</source>
+      <translation>Play Default Audio Track</translation>
     </message>
     <message>
       <source>Play Next Episode Automatically</source>
