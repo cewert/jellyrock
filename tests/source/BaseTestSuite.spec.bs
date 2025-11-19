@@ -240,17 +240,27 @@ namespace tests
       ' Get local reference to minimize rendezvous
       localDevice = m.global.device
 
-      ' Update device fields from mock data
+      ' Separate existing fields from new fields for batch operations
+      fieldsToUpdate = {}
+      fieldsToAdd = {}
+
       for each key in mockDeviceData
         if localDevice.hasField(key)
-          localDevice[key] = mockDeviceData[key]
+          fieldsToUpdate[key] = mockDeviceData[key]
         else
-          ' Add field if it doesn't exist
-          fieldDef = {}
-          fieldDef[key] = mockDeviceData[key]
-          localDevice.addFields(fieldDef)
+          fieldsToAdd[key] = mockDeviceData[key]
         end if
       end for
+
+      ' Batch update existing fields (single rendezvous)
+      if fieldsToUpdate.Count() > 0
+        localDevice.setFields(fieldsToUpdate)
+      end if
+
+      ' Batch add new fields (single rendezvous)
+      if fieldsToAdd.Count() > 0
+        localDevice.addFields(fieldsToAdd)
+      end if
     end function
 
     ' ===================================================================

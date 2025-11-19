@@ -111,8 +111,8 @@ end function
 '   3. If no language matches, apply hardware optimization to all streams
 '
 ' Roku OS Language Fallback:
-'   When preferredLanguage is blank/empty and rokuLocaleFallback is provided,
-'   automatically uses the Roku device's OS language as fallback for better
+'   When preferredLanguage is blank/empty, automatically uses the Roku device's
+'   OS language (from m.global.device.locale) as fallback for better
 '   out-of-box experience (see issue #179)
 '
 ' Hardware optimization:

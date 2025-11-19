@@ -50,7 +50,8 @@ end function
 ⚠️ **Minimize rendezvous with render thread!** ⚠️
 - Use field type `assocarray` to pass all input data to the task at once, when the input data is more than one string.
 - Use node field types (`node` and `nodearray`) when passing large amounts of data.
-- Cache references to render-thread nodes in local variables.
+- Cache references to render-thread nodes in local variables **ONLY when accessing multiple fields or in loops**.
+- A single access like `m.global.device.locale` is fine and does NOT need caching.
 - ONLY use `setFields()` to update node data when we don't have a local copy of the node and we don't need to process the node before updating.
 - ONLY use `getFields()` to access node data when you need a **static** snapshot of the data.
 ```brighterscript
@@ -77,6 +78,12 @@ function goodExample()
 
     ' Pass complete node tree to render thread in ONE operation
     m.top.result = localNode  ' Single rendezvous, ownership transfers
+end function
+
+function acceptableExample()
+    ' Single field access - no caching needed
+    locale = m.global.device.locale  ' One rendezvous - acceptable
+    processLocale(locale)
 end function
 ```
 ## Style Guide
