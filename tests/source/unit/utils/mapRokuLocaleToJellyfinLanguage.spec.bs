@@ -1,0 +1,122 @@
+import "pkg:/source/utils/streamSelection.bs"
+
+namespace tests
+
+  @suite("streamSelection - mapRokuLocaleToJellyfinLanguage()")
+  class LocaleMappingTests extends tests.BaseTestSuite
+
+    protected override function setup()
+      super.setup()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Valid Roku locale mappings")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("maps en_US to eng")
+    function _()
+      result = mapRokuLocaleToJellyfinLanguage("en_US")
+      m.assertEqual(result, "eng")
+    end function
+
+    @it("maps en_GB to eng")
+    function _()
+      result = mapRokuLocaleToJellyfinLanguage("en_GB")
+      m.assertEqual(result, "eng")
+    end function
+
+    @it("maps en_CA to eng")
+    function _()
+      result = mapRokuLocaleToJellyfinLanguage("en_CA")
+      m.assertEqual(result, "eng")
+    end function
+
+    @it("maps en_AU to eng")
+    function _()
+      result = mapRokuLocaleToJellyfinLanguage("en_AU")
+      m.assertEqual(result, "eng")
+    end function
+
+    @it("maps es_ES to spa")
+    function _()
+      result = mapRokuLocaleToJellyfinLanguage("es_ES")
+      m.assertEqual(result, "spa")
+    end function
+
+    @it("maps es_MX to spa")
+    function _()
+      result = mapRokuLocaleToJellyfinLanguage("es_MX")
+      m.assertEqual(result, "spa")
+    end function
+
+    @it("maps pt_BR to por")
+    function _()
+      result = mapRokuLocaleToJellyfinLanguage("pt_BR")
+      m.assertEqual(result, "por")
+    end function
+
+    @it("maps fr_CA to fra")
+    function _()
+      result = mapRokuLocaleToJellyfinLanguage("fr_CA")
+      m.assertEqual(result, "fra")
+    end function
+
+    @it("maps de_DE to deu")
+    function _()
+      result = mapRokuLocaleToJellyfinLanguage("de_DE")
+      m.assertEqual(result, "deu")
+    end function
+
+    @it("maps it_IT to ita")
+    function _()
+      result = mapRokuLocaleToJellyfinLanguage("it_IT")
+      m.assertEqual(result, "ita")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Case insensitivity")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("handles uppercase locale codes")
+    function _()
+      result = mapRokuLocaleToJellyfinLanguage("EN_US")
+      m.assertEqual(result, "eng")
+    end function
+
+    @it("handles mixed case locale codes")
+    function _()
+      result = mapRokuLocaleToJellyfinLanguage("Es_MX")
+      m.assertEqual(result, "spa")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Invalid/edge cases")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns empty string for invalid locale")
+    function _()
+      result = mapRokuLocaleToJellyfinLanguage(invalid)
+      m.assertEqual(result, "")
+    end function
+
+    @it("returns empty string for empty string")
+    function _()
+      result = mapRokuLocaleToJellyfinLanguage("")
+      m.assertEqual(result, "")
+    end function
+
+    @it("returns empty string for unsupported language")
+    function _()
+      result = mapRokuLocaleToJellyfinLanguage("ja_JP")
+      m.assertEqual(result, "")
+    end function
+
+    @it("handles locale without underscore")
+    function _()
+      result = mapRokuLocaleToJellyfinLanguage("en")
+      m.assertEqual(result, "eng")
+    end function
+
+  end class
+
+end namespace

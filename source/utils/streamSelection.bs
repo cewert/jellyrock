@@ -4,6 +4,17 @@ import "pkg:/source/utils/config.bs"
 ' Comprehensive audio and video stream selection utilities
 ' Combines user preferences with hardware capabilities for optimal playback
 
+' JellyfinLanguage: ISO 639-2 three-letter language codes used by Jellyfin
+' Only includes languages supported by Roku OS locales
+enum JellyfinLanguage
+  ENGLISH = "eng"
+  SPANISH = "spa"
+  PORTUGUESE = "por"
+  FRENCH = "fra"
+  GERMAN = "deu"
+  ITALIAN = "ita"
+end enum
+
 ' resolvePlayDefaultAudioTrack: Resolves the playDefaultAudioTrack setting value
 '
 ' Checks JellyRock override setting first, then falls back to web client setting.
@@ -38,6 +49,54 @@ function resolvePlayDefaultAudioTrack(userSettings as object, userConfig as obje
   return defaultValue
 end function
 
+' mapRokuLocaleToJellyfinLanguage: Converts Roku locale codes to Jellyfin ISO 639-2 language codes
+'
+' Maps Roku device locale (e.g., "en_US", "fr_CA") to Jellyfin's 3-letter language codes.
+' Extracts base language from locale and maps to standard ISO 639-2 codes.
+'
+' Supported Roku locales:
+' - en_US, en_GB, en_CA, en_AU → eng (English)
+' - es_ES, es_MX → spa (Spanish)
+' - pt_BR → por (Portuguese)
+' - fr_CA → fra (French)
+' - de_DE → deu (German)
+' - it_IT → ita (Italian)
+'
+' @param {dynamic} rokuLocale - Roku locale string (e.g., "en_US", "fr_CA")
+' @returns {string} - Jellyfin ISO 639-2 language code (e.g., "eng", "fra"), or empty string if not recognized
+function mapRokuLocaleToJellyfinLanguage(rokuLocale as dynamic) as string
+  if not isValid(rokuLocale) or rokuLocale = "" then return ""
+
+  ' Extract base language (first 2 characters before underscore)
+  ' "en_US" → "en", "fr_CA" → "fr"
+  baseLanguage = ""
+  underscorePos = rokuLocale.Instr("_")
+  if underscorePos > -1
+    baseLanguage = LCase(Left(rokuLocale, underscorePos))
+  else
+    ' No underscore found - use entire string (shouldn't happen with valid Roku locales)
+    baseLanguage = LCase(rokuLocale)
+  end if
+
+  ' Map base language to Jellyfin ISO 639-2 code
+  if baseLanguage = "en"
+    return JellyfinLanguage.ENGLISH
+  else if baseLanguage = "es"
+    return JellyfinLanguage.SPANISH
+  else if baseLanguage = "pt"
+    return JellyfinLanguage.PORTUGUESE
+  else if baseLanguage = "fr"
+    return JellyfinLanguage.FRENCH
+  else if baseLanguage = "de"
+    return JellyfinLanguage.GERMAN
+  else if baseLanguage = "it"
+    return JellyfinLanguage.ITALIAN
+  end if
+
+  ' Unknown language - return empty string
+  return ""
+end function
+
 ' findBestAudioStreamIndex: Primary function for selecting the best audio stream
 '
 ' Selection priority when playDefault = true (Jellyfin: "Play default audio track regardless of language"):
@@ -50,6 +109,11 @@ end function
 '   1. Filter by language preference (completely ignore IsDefault flag)
 '   2. If multiple language matches, apply hardware optimization
 '   3. If no language matches, apply hardware optimization to all streams
+'
+' Roku OS Language Fallback:
+'   When preferredLanguage is blank/empty, automatically uses the Roku device's
+'   OS language (from m.global.device.locale) as fallback for better
+'   out-of-box experience (see issue #179)
 '
 ' Hardware optimization:
 '   - Prefer streams matching device's max channel capability
@@ -67,6 +131,17 @@ function findBestAudioStreamIndex(streams as dynamic, playDefault as dynamic, pr
   ' Get device audio capabilities (or use provided ones for testing)
   if not isValid(deviceCapabilities)
     deviceCapabilities = getDeviceAudioCapabilities()
+  end if
+
+  ' Apply Roku OS language fallback when web client language preference is blank
+  ' This provides better out-of-box experience for new users (issue #179)
+  effectiveLanguage = preferredLanguage
+  if not isValid(preferredLanguage) or preferredLanguage = ""
+    ' Get Roku OS locale from global device node
+    rokuLocale = m.global.device.locale
+    if isValid(rokuLocale) and rokuLocale <> ""
+      effectiveLanguage = mapRokuLocaleToJellyfinLanguage(rokuLocale)
+    end if
   end if
 
   ' Collect all audio streams with valid index fields
@@ -109,10 +184,10 @@ function findBestAudioStreamIndex(streams as dynamic, playDefault as dynamic, pr
         end if
       else
         ' Multiple IsDefault streams - try language preference as tiebreaker
-        if isValid(preferredLanguage) and preferredLanguage <> ""
+        if isValid(effectiveLanguage) and effectiveLanguage <> ""
           languageMatchedDefaults = []
           for i = 0 to defaultStreams.Count() - 1
-            if isValid(defaultStreams[i].Language) and LCase(defaultStreams[i].Language) = LCase(preferredLanguage)
+            if isValid(defaultStreams[i].Language) and LCase(defaultStreams[i].Language) = LCase(effectiveLanguage)
               languageMatchedDefaults.push(defaultStreams[i])
             end if
           end for
@@ -139,10 +214,10 @@ function findBestAudioStreamIndex(streams as dynamic, playDefault as dynamic, pr
 
   ' BRANCH 2: Either playDefault = false OR playDefault = true but no IsDefault streams found
   ' Use language preference as primary filter (completely ignore IsDefault flag)
-  if isValid(preferredLanguage) and preferredLanguage <> ""
+  if isValid(effectiveLanguage) and effectiveLanguage <> ""
     languageMatchedStreams = []
     for i = 0 to audioStreams.Count() - 1
-      if isValid(audioStreams[i].Language) and LCase(audioStreams[i].Language) = LCase(preferredLanguage)
+      if isValid(audioStreams[i].Language) and LCase(audioStreams[i].Language) = LCase(effectiveLanguage)
         languageMatchedStreams.push(audioStreams[i])
       end if
     end for

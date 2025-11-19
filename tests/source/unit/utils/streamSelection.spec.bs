@@ -165,22 +165,28 @@ namespace tests
 
     @it("handles empty string language preference")
     function _()
+      ' Set device locale to empty to test pure hardware optimization path
+      m.global.device.locale = ""
+
       streams = [
         { Type: "audio", index: 1, Language: "jpn", channels: 2, codec: "aac", IsDefault: false },
         { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
       ]
-      ' Empty language preference should use hardware optimization (picks first on stereo)
+      ' Empty language preference + empty device locale should use hardware optimization (picks first on stereo)
       result = findBestAudioStreamIndex(streams, false, "", m.createMockCapabilities(2, false))
       m.assertEqual(result, 1)
     end function
 
     @it("handles invalid language preference")
     function _()
+      ' Set device locale to empty to test pure hardware optimization path
+      m.global.device.locale = ""
+
       streams = [
         { Type: "audio", index: 1, Language: "jpn", channels: 2, codec: "aac", IsDefault: false },
         { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
       ]
-      ' Invalid language preference should use hardware optimization
+      ' Invalid language preference + empty device locale should use hardware optimization
       result = findBestAudioStreamIndex(streams, false, invalid, m.createMockCapabilities(2, false))
       m.assertEqual(result, 1)
     end function
@@ -356,6 +362,67 @@ namespace tests
       ' Different language preference
       result = findBestAudioStreamIndex(streams, true, "jpn", m.createMockCapabilities(6, false))
       m.assertEqual(result, 1)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Roku OS language fallback (issue #179)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("uses Roku locale when web client language preference is blank")
+    function _()
+      ' Load device with en_US locale
+      m.loadTestDevice("roku-en-us")
+
+      streams = [
+        { Type: "audio", index: 1, Language: "jpn", channels: 2, codec: "aac", IsDefault: false },
+        { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
+      ]
+      ' Blank language preference, should use Roku locale (en_US → eng)
+      result = findBestAudioStreamIndex(streams, false, "", m.createMockCapabilities(2, false))
+      m.assertEqual(result, 2)
+    end function
+
+    @it("uses Roku locale when web client language preference is invalid")
+    function _()
+      ' Load device with es_MX locale
+      m.loadTestDevice("roku-es-mx")
+
+      streams = [
+        { Type: "audio", index: 1, Language: "eng", channels: 2, codec: "aac", IsDefault: false },
+        { Type: "audio", index: 2, Language: "spa", channels: 2, codec: "aac", IsDefault: false }
+      ]
+      ' Invalid language preference, should use Roku locale (es_MX → spa)
+      result = findBestAudioStreamIndex(streams, false, invalid, m.createMockCapabilities(2, false))
+      m.assertEqual(result, 2)
+    end function
+
+    @it("prefers web client language over Roku locale when explicitly set")
+    function _()
+      ' Load device with en_US locale
+      m.loadTestDevice("roku-en-us")
+
+      streams = [
+        { Type: "audio", index: 1, Language: "jpn", channels: 2, codec: "aac", IsDefault: false },
+        { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
+      ]
+      ' User explicitly set Japanese, should override Roku locale
+      result = findBestAudioStreamIndex(streams, false, "jpn", m.createMockCapabilities(2, false))
+      m.assertEqual(result, 1)
+    end function
+
+    @it("works with Roku locale fallback for anime scenario")
+    function _()
+      ' Load device with en_US locale
+      m.loadTestDevice("roku-en-us")
+
+      streams = [
+        { Type: "audio", index: 1, Language: "jpn", channels: 2, codec: "aac", IsDefault: true },
+        { Type: "audio", index: 2, Language: "eng", channels: 2, codec: "aac", IsDefault: false }
+      ]
+      ' New user with blank web client preference, Roku in English
+      ' playDefault = false: Should automatically get English dub instead of Japanese
+      result = findBestAudioStreamIndex(streams, false, "", m.createMockCapabilities(2, false))
+      m.assertEqual(result, 2)
     end function
 
   end class
