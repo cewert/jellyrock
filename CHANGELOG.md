@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Add `Decode Multichannel Audio` setting ([#187](https://github.com/cewert/jellyrock/pull/187))
 
+### Changed
+
+- Use Roku OS language as fallback for audio track selection ([#188](https://github.com/cewert/jellyrock/pull/188))
+
 ## [1.1.5](https://github.com/cewert/jellyrock/compare/v1.1.4...v1.1.5) - 2025-11-18
 
 ### Added
