@@ -78,3 +78,5 @@ checkboxes
 hardcoded
 pre-roll
 booleans
+nodearray
+E2E

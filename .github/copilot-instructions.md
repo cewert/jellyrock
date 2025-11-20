@@ -1,133 +1,91 @@
-# JellyRock
+# JellyRock Developer Guide
 JellyRock is a Jellyfin client for Roku devices allowing users to consume media from their personal Jellyfin servers.
 ## Technologies used
-- BrightScript - Roku's proprietary scripting language. `ExampleFile.brs`
-- BrighterScript - A superset of BrightScript that compiles to standard BrightScript. `ExampleFile.bs`
-- Roku Scene Graph (RSG) - XML-based programming framework. Uses a hierarchical node structure to manage UI elements and separates design (XML) from logic (BrighterScript). `ExampleFile.xml`
-- Jellyfin Server REST API - All API calls to a Jellyfin server should use functions from the sdk.bs file. `source/api/sdk.bs`
-## ⚠️ Expected Behavior and Workflow ⚠️
-1. Ask questions when you are not sure about something! Do not make things up or assume!
-2. Fix problems at their source if possible, not at every usage point!
-3. When you are finished coding, format your code `npm run format`.
-4. When you are finished formatting your code, lint and validate your code `npm run lint:bs`.
-5. Provide a concise overview of any code changes.
-6. Provide a list of app behavior to test and expected log output.
-## Folder Structure
-- `build` - Transpiled `.brs` files created after running `npm run build` or `npm run build-prod`. **These are the actual files used to deploy the app and are the files that will show up in runtime logs!**
-- `components` - `.xml` and `.bs` file pairs categorized by folders.
-- `scripts` - JavaScript files used for NPM scripts.
-- `settings/settings.json` - All the available app settings and their metadata. e.g. id, description, type, default state, etc.
-- `source` - `.bs` files containing main app logic and utilities.
-- `CHANGELOG.md` - "Keep a Changelog" format, automatically updated by CI.
-## BrighterScript Guide
-- `.xml` and `.bs` files in the same folder, with the same name, are automatically scoped together when compiled.
-- ALWAYS use `import` statements instead of XML script tags(`<script type="text/brighterscript" uri="ExampleComponent.bs" />`)
-- Use `isValid()` for conditional invalid comparisons. For components, ensure the file containing `isValid()` is imported as needed. i.e. `import "pkg:/source/utils/misc.bs"`
-- ⚠️ **Minimize rendezvous with Task nodes (main thread)!** ⚠️
-## Roku Scene Graph (RSG) Guide
-Component system functions:
-```brighterscript
-sub init()
-  ' Initialize component
-
-  ' Save references to frequently accessed components
-  m.nodeRef = m.top.findNode("ExampleComponent")
-end sub
-
-' Handle remote control input
-function onKeyEvent(key as string, press as boolean) as boolean
-  if not press then return false
-
-  if key = "play"
-    m.nodeRef.control = "play"
-    return true ' Return true if we are done processing button input, false to let the event bubble up
-  end if
-
-  return false ' default return value is false
-end function
-```
-## Task Nodes
-⚠️ **Minimize rendezvous with render thread!** ⚠️
-- Use field type `assocarray` to pass all input data to the task at once, when the input data is more than one string.
-- Use node field types (`node` and `nodearray`) when passing large amounts of data.
-- Cache references to render-thread nodes in local variables **ONLY when accessing multiple fields or in loops**.
-- A single access like `m.global.device.locale` is fine and does NOT need caching.
-- ONLY use `setFields()` to update node data when we don't have a local copy of the node and we don't need to process the node before updating.
-- ONLY use `getFields()` to access node data when you need a **static** snapshot of the data.
-```brighterscript
-function badExample()
-    title = m.global.content.title        ' Rendezvous 1
-    description = m.global.content.description  ' Rendezvous 2
-    url = m.global.content.url            ' Rendezvous 3
-end function
-
-function goodExample()
-    ' Single rendezvous to get all data at once
-    localNode = m.global.content      ' ONE rendezvous
-    
-    ' Now work with local data - NO additional rendezvous
-    newTitle = processTitle(localNode.title)
-    localNode.title = newTitle
-    newDescription = processDescription(localNode.description)
-    localNode.description = newDescription
-    newURL = processURL(localNode.url)
-    localNode.url = newURL
-
-    ' Can still call node methods
-    childCount = localNode.getChildCount()
-
-    ' Pass complete node tree to render thread in ONE operation
-    m.top.result = localNode  ' Single rendezvous, ownership transfers
-end function
-
-function acceptableExample()
-    ' Single field access - no caching needed
-    locale = m.global.device.locale  ' One rendezvous - acceptable
-    processLocale(locale)
-end function
-```
-## Style Guide
-- ALWAYS use 2 spaces for indentation.
-- No more than 1 blank line for visual spacing.
-- `camelCase` variable names and function names.
-- `PascalCase` file names and class names.
-- Use comments for function definitions, complex code, any Roku specific oddities, and best practices.
-## Coding Standards
-- Never use print statements outside of `source/main.bs`.
-- Use `roku-log` for all logging in components and classes. For namespace/function code in `source/` folder, use print statements sparingly and only when absolutely necessary (roku-log only works in components/classes). Use best practices and provide enough logging to effectively test your code during runtime without being excessive. `docs/dev/logging.md`.
-- Never use an API or write to the file system on the render thread (don't block the render thread).
-- Never hardcode color values - Use global theme colors from the `source/utils/globals.bs` file.
-- Use themed UI components when possible. `/components/ui/`
-## Core Architecture
-### Scene Management System
-The app uses a central `SceneManager` (`components/data/SceneManager.bs`) that manages all screen navigation:
-- **Stack-based navigation**: `pushScene()`, `popScene()`, `clearScenes()`
-- **Life cycle hooks**: `OnScreenShown()`, `OnScreenHidden()` called automatically
-- **Focus management**: Preserves `lastFocus` when switching screens, use `setFocus(true)` and check `hasFocus()`
-- All screens extend either `JRScreen` or `JRGroup` base classes
-### Component Inheritance Pattern
-```
-JRScene (root scene)
-├── JRScreen (full-screen views like Home, Settings)
-└── JRGroup (sub-components and dialogs)
-```
-### Application Flow
-1. `source/Main.bs` → Entry point, initializes global state.
-2. `source/ShowScenes.bs` → Creates and manages different screen types.
-3. Scene navigation via `m.global.sceneManager.callFunc("pushScene", group)`.
-### Global State
-- `m.global` - App-wide state.
-- `m.global.server` - The active Jellyfin server state.
-- `m.global.user` - The state of the authenticated user connected to the active server and using the app.
-- `m.global.user.settings` - The setting configuration for the active user.
-
-**Best practice for accessing global state:**
-```brighterscript
-' ONE rendezvous to get local reference
-localUser = m.global.user
-
-' Access fields from local copy (no additional rendezvous)
-userId = localUser.id
-userName = localUser.name
-userSettings = localUser.settings
-```
+- **BrighterScript (.bs)** - Primary language, compiles to BrightScript (.brs)
+- **(RSG) Roku Scene Graph (.xml)** - Node-based UI framework (NOT HTML!)
+- **Jellyfin API** - Via `source/api/sdk.bs`, Task Node pattern required
+## ⚠️ Mandatory Agent Rules ⚠️
+1. DO NOT make things up or assume
+2. Ask clarifying questions when you are not sure about something
+3. Focus on best practices, industry standards, and easy long term maintenance
+4. ALWAYS look for the best possible solution to a problem then provide the user with their best options
+5. Iterate on a plan with the user until they approve it, and only then begin coding
+6. When finished coding a user approve plan, provide a list of app behavior for the user to manually test and any expected debug logging output
+## Development Context
+**Check relevant docs for specific areas:**
+- **Adding user settings?** → `docs/dev/adding-user-settings.md`
+- **Writing tests?** → `docs/dev/unit-tests.md`
+- **Registry migrations?** → `docs/dev/registry-migrations.md`
+**All dev docs:** `docs/dev/`
+## Architecture Overview
+### `SceneManager` System
+- Stack navigation: `pushScene()`, `popScene()`, `clearScenes()`
+- Lifecycle: `OnScreenShown()`, `OnScreenHidden()`
+- Component hierarchy: `JRScene` → `JRScreen`/`JRGroup`
+- Focus management with `lastFocus` preservation
+### Global State Structure
+- `m.global.app` - App state
+- `m.global.constants` - UI constants
+- `m.global.device` - Device state
+- `m.global.server` - The active Jellyfin server state
+- `m.global.user` - Authenticated user state
+- `m.global.user.settings` - User setting configuration. Contains child nodes `user` and `policy`, which hold the Jellyfin server authoritative config data. 
+  Example: `m.global.user.settings.user`, `m.global.user.settings.policy`
+## Folder Structure & Scoping Rules
+### Component Folder (`components/`)
+- **ONLY place XML files allowed in project**
+- XML + BS file pairs with same name auto-scope together
+- Organized by feature (video/, login/, settings/, etc.)
+### Source Folder (`source/`)
+- **BS files only** - no XML allowed
+- Files auto-scope together, no imports needed
+- **BUT**: Must import to use in components: `import "pkg:/source/..."`
+### Scripts Folder (`scripts/`)
+- JavaScript files for NPM build processes
+- Build automation and tooling scripts
+### Settings (`settings/settings.json`)
+- **Single source of truth** for all app settings
+- Default values and configuration options
+- User preferences and app behavior controls
+### Tests Structure (`tests/`)
+- **Unit tests** (`source/unit/`): Isolated function testing, no I/O
+- **Integration tests** (`source/integration/`): Component interactions, real I/O allowed
+- **E2E tests** (`source/e2e/`): UI automation (future RTA implementation)
+### Build (`build/`)
+- Transpiled `.brs` files from BrighterScript compilation
+- **These are the actual deployed files** shown in runtime logs
+## Roku-Specific Requirements
+### Render Thread Protection
+- **ALL API calls and I/O operations via Task Nodes only** (use `source/api/sdk.bs` for API calls)
+- Single field access: direct OK (m.global.device.locale)
+- Multiple field access: cache node reference locally
+- Use `getFields()`/`setFields()` for bulk operations
+### Component Patterns
+- File pairing: same base name auto-scopes XML+BS together
+- Use import statements (not XML script tags)
+- `isValid()` for conditional invalid checks
+- `onKeyEvent()`: return true = handled, false = bubble up
+### Task Node Field Types
+- **assocarray**: Pass multiple input parameters
+- **node/nodearray**: Handle large data transfers  
+- **string**: Simple single parameters
+### Input Event Handling
+- `onKeyEvent(key, press) as boolean`
+- `return true` = event consumed, no bubble
+- `return false` = event bubbles up to parent
+## Development Workflow
+### IDE Integration
+- `BSConfig` validation runs automatically
+- Real-time linting (no manual NPM run lint)
+- Build errors caught by IDE (no manual build commands)
+### Agent Restrictions
+- **Cannot run tests** (manual execution required)
+- **Cannot modify CHANGELOG.md** (CI-controlled only)
+- **Cannot execute build/deploy** (IDE handles compilation)
+### Code Standards
+- Use `roku-log` for component and class logging
+- Use print statements sparingly and only when absolutely necessary (roku-log only works in components/classes)
+- Fix issues at source, not usage points
+- Use comments for JSDoc style function definitions, complex code, any Roku specific oddities, and best practices
+- Update/create unit tests for all changes
+- 2 spaces indentation, PascalCase class names - camelCase everything else
