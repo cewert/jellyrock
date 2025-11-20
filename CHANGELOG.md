@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Optimize bot instruction files ([#192](https://github.com/cewert/jellyrock/pull/192))
+
 ### Dependencies
 
 - Update rimraf from v6.1.0 to v6.1.2 ([#191](https://github.com/cewert/jellyrock/pull/191))
