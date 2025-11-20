@@ -4,7 +4,6 @@ JellyRock is a Jellyfin client for Roku devices allowing users to consume media 
 - **BrighterScript (.bs)** - Primary language, compiles to BrightScript (.brs)
 - **(RSG) Roku Scene Graph (.xml)** - Node-based UI framework (NOT HTML!)
 - **Jellyfin API** - Via `source/api/sdk.bs`, Task Node pattern required
-- Jellyfin Server API - All server calls via `source/api/sdk.bs` (Task Node pattern required)
 ## ⚠️ Mandatory Agent Rules ⚠️
 1. DO NOT make things up or assume
 2. Ask clarifying questions when you are not sure about something
