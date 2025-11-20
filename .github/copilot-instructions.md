@@ -29,7 +29,8 @@ JellyRock is a Jellyfin client for Roku devices allowing users to consume media 
 - `m.global.device` - Device state
 - `m.global.server` - The active Jellyfin server state
 - `m.global.user` - Authenticated user state
-- `m.global.user.settings` - User setting configuration. `user` and `policy` nodes hold the Jellyfin server Authoritative config data
+- `m.global.user.settings` - User setting configuration. Contains child nodes `user` and `policy`, which hold the Jellyfin server authoritative config data. 
+  Example: `m.global.user.settings.user`, `m.global.user.settings.policy`
 ## Folder Structure & Scoping Rules
 ### Component Folder (`components/`)
 - **ONLY place XML files allowed in project**
