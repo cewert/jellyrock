@@ -4,7 +4,6 @@ JellyRock is a Jellyfin client for Roku devices allowing users to consume media 
 - **BrighterScript (.bs)** - Primary language, compiles to BrightScript (.brs)
 - **(RSG) Roku Scene Graph (.xml)** - Node-based UI framework (NOT HTML!)
 - **Jellyfin API** - Via `source/api/sdk.bs`, Task Node pattern required
-- Jellyfin Server API - All server calls via `source/api/sdk.bs` (Task Node pattern required)
 ## ⚠️ Mandatory Agent Rules ⚠️
 1. DO NOT make things up or assume
 2. Ask clarifying questions when you are not sure about something
@@ -30,7 +29,8 @@ JellyRock is a Jellyfin client for Roku devices allowing users to consume media 
 - `m.global.device` - Device state
 - `m.global.server` - The active Jellyfin server state
 - `m.global.user` - Authenticated user state
-- `m.global.user.settings` - User setting configuration. `user` and `policy` nodes hold the Jellyfin server Authoritative config data
+- `m.global.user.settings` - User setting configuration. Contains child nodes `user` and `policy`, which hold the Jellyfin server authoritative config data. 
+  Example: `m.global.user.settings.user`, `m.global.user.settings.policy`
 ## Folder Structure & Scoping Rules
 ### Component Folder (`components/`)
 - **ONLY place XML files allowed in project**
@@ -50,7 +50,7 @@ JellyRock is a Jellyfin client for Roku devices allowing users to consume media 
 ### Tests Structure (`tests/`)
 - **Unit tests** (`source/unit/`): Isolated function testing, no I/O
 - **Integration tests** (`source/integration/`): Component interactions, real I/O allowed
-- **`E2E` tests** (`source/e2e/`): UI automation (future RTA implementation)
+- **E2E tests** (`source/e2e/`): UI automation (future RTA implementation)
 ### Build (`build/`)
 - Transpiled `.brs` files from BrighterScript compilation
 - **These are the actual deployed files** shown in runtime logs

@@ -50,7 +50,7 @@ JellyRock is a Jellyfin client for Roku devices allowing users to consume media 
 ### Tests Structure (`tests/`)
 - **Unit tests** (`source/unit/`): Isolated function testing, no I/O
 - **Integration tests** (`source/integration/`): Component interactions, real I/O allowed
-- **`E2E` tests** (`source/e2e/`): UI automation (future RTA implementation)
+- **E2E tests** (`source/e2e/`): UI automation (future RTA implementation)
 ### Build (`build/`)
 - Transpiled `.brs` files from BrighterScript compilation
 - **These are the actual deployed files** shown in runtime logs
