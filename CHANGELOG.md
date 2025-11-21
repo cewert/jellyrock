@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Enable MKV container support via manifest flag ([#195](https://github.com/cewert/jellyrock/pull/195))
 - Optimize bot instruction files ([#192](https://github.com/cewert/jellyrock/pull/192))
 
 ### Dependencies
