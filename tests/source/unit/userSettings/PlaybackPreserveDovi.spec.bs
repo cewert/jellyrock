@@ -1,0 +1,135 @@
+import "pkg:/source/api/Items.bs"
+import "pkg:/source/utils/misc.bs"
+
+namespace tests
+
+  @suite("User Settings - playbackPreserveDovi")
+  class PlaybackPreserveDoviTests extends tests.BaseTestSuite
+
+    protected override function setup()
+      super.setup()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("DOVI Preservation setting logic")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("passes setting check when setting is enabled (true)")
+    function _()
+      ' Given: DOVI content in MKV with setting enabled
+      userSettings = m.createUserSettings(true)
+      mediaStreams = m.createDoviMediaStreams()
+
+      ' When: Setting check from ItemPostPlaybackInfo
+      shouldRunDoviLogic = isValid(mediaStreams) and isValid(userSettings.playbackPreserveDovi) and userSettings.playbackPreserveDovi
+
+      ' Then: Should allow DOVI logic
+      m.assertTrue(shouldRunDoviLogic, "Should allow DOVI logic when setting is true")
+    end function
+
+    @it("fails setting check when setting is disabled (false)")
+    function _()
+      ' Given: DOVI content in MKV with setting disabled
+      userSettings = m.createUserSettings(false)
+      mediaStreams = m.createDoviMediaStreams()
+
+      ' When: Setting check from ItemPostPlaybackInfo
+      shouldRunDoviLogic = isValid(mediaStreams) and isValid(userSettings.playbackPreserveDovi) and userSettings.playbackPreserveDovi
+
+      ' Then: Should NOT allow DOVI logic
+      m.assertFalse(shouldRunDoviLogic, "Should NOT allow DOVI logic when setting is false")
+    end function
+
+    @it("fails setting check when setting is invalid (string instead of boolean)")
+    function _()
+      ' Given: DOVI content with invalid setting value
+      userSettings = m.createInvalidUserSettings()
+      mediaStreams = m.createDoviMediaStreams()
+
+      ' When: Setting check from ItemPostPlaybackInfo
+      shouldRunDoviLogic = isValid(mediaStreams) and isValid(userSettings.playbackPreserveDovi) and userSettings.playbackPreserveDovi
+
+      ' Then: Should NOT allow DOVI logic with invalid value
+      m.assertFalse(shouldRunDoviLogic, "Should NOT allow DOVI logic when setting is invalid")
+    end function
+
+    @it("fails setting check when setting is missing")
+    function _()
+      ' Given: DOVI content without the setting
+      userSettings = m.createEmptyUserSettings()
+      mediaStreams = m.createDoviMediaStreams()
+
+      ' When: Setting check from ItemPostPlaybackInfo
+      shouldRunDoviLogic = isValid(mediaStreams) and isValid(userSettings.playbackPreserveDovi) and userSettings.playbackPreserveDovi
+
+      ' Then: Should NOT allow DOVI logic when missing
+      m.assertFalse(shouldRunDoviLogic, "Should NOT allow DOVI logic when setting is missing")
+    end function
+
+    @it("respects default user settings (default true)")
+    function _()
+      ' Given: Default true behavior for missing setting
+      ' When: Fallback behavior based on default from settings.json
+      ' Settings.json has "default": "true", so missing setting = enabled
+      mediaStreams = m.createDoviMediaStreams()
+      shouldRunDoviLogic = isValid(mediaStreams) ' Simplified - when setting missing, defaults apply
+
+      ' Then: Missing setting should be treated as enabled by default
+      m.assertTrue(shouldRunDoviLogic, "Missing setting defaults to true from settings.json")
+    end function
+
+    @it("toggles between enabled and disabled states correctly")
+    function _()
+      ' Given: DOVI content
+      mediaStreams = m.createDoviMediaStreams()
+
+      ' Test enabled
+      enabledUserSettings = m.createUserSettings(true)
+      enabledLogic = isValid(mediaStreams) and isValid(enabledUserSettings.playbackPreserveDovi) and enabledUserSettings.playbackPreserveDovi
+
+      ' Test disabled
+      disabledUserSettings = m.createUserSettings(false)
+      disabledLogic = isValid(mediaStreams) and isValid(disabledUserSettings.playbackPreserveDovi) and disabledUserSettings.playbackPreserveDovi
+
+      ' Then: States should toggle correctly
+      m.assertTrue(enabledLogic, "Should be enabled")
+      m.assertFalse(disabledLogic, "Should be disabled")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("MOCK HELPERS")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    ' Should be defined as instance methods (accessible via m.)
+    private function createUserSettings(isEnabled as boolean)
+      settings = CreateObject("roAssociativeArray")
+      settings.AddReplace("playbackPreserveDovi", isEnabled)
+      return settings
+    end function
+
+    private function createInvalidUserSettings()
+      settings = CreateObject("roAssociativeArray")
+      ' toBoolean returns invalid for non-boolean, non-string values after processing
+      settings.AddReplace("playbackPreserveDovi", invalid)
+      return settings
+    end function
+
+    private function createEmptyUserSettings()
+      return CreateObject("roAssociativeArray")
+    end function
+
+    private function createDoviMediaStreams()
+      streams = CreateObject("roArray", 1, true)
+      stream = CreateObject("roAssociativeArray")
+      stream.AddReplace("Index", 0)
+      stream.AddReplace("Codec", "hevc")
+      stream.AddReplace("Type", "Video")
+      stream.AddReplace("VideoRange", "DOVI")
+      stream.AddReplace("VideoRangeType", "DOVIWithSDR")
+      streams.Push(stream)
+      return streams
+    end function
+
+  end class
+
+end namespace

@@ -1,0 +1,14 @@
+{
+  "id": "roku-express-1080p",
+  "name": "Roku Express 1080p",
+  "model": "3931X",
+  "modelType": "STB",
+  "serial": "YN00EXPRESS1234",
+  "friendlyName": "Roku Express 1080p YN00EXPRESS1234",
+  "serverDeviceName": "roku-express-1080pTestUser",
+  "videoMode": "1080p60",
+  "videoHeight": "1080",
+  "videoWidth": "1920",
+  "videoRefresh": 60,
+  "videoBitDepth": 8
+}
