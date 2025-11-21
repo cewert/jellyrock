@@ -57,7 +57,7 @@ function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioT
 
         ' always use the first video stream for now
         ' Note: don't force remux on AV1 codec - see #194
-        if isValid(stream.Type) and stream.Type = "Video" and stream.Codec <> "av1"
+        if isValid(stream.Type) and stream.Type = "Video" and isValid(stream.Codec) and LCase(stream.Codec) <> "av1"
           if videoMetadata.container = "mkv" and isValid(stream.VideoRangeType) and stream.VideoRangeType <> ""
             ' is DOVI in the string?
             if Instr(LCase(stream.VideoRangeType), "dovi") > 0
