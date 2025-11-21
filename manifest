@@ -13,16 +13,18 @@ mm_icon_focus_sd=pkg:/images/branding/channel-poster_sd.png
 
 ### Splash Screen + Loading Screen Artwork
 
+splash_min_time=1500
+
 splash_screen_fhd=pkg:/images/branding/splash-screen_fhd.png
 splash_screen_hd=pkg:/images/branding/splash-screen_hd.png
 splash_screen_sd=pkg:/images/branding/splash-screen_sd.png
-
-splash_min_time=1500
 
 ui_resolutions=fhd
 
 confirm_partner_button=1
 
 supports_input_launch=1
+
+requires_mkv=1
 
 bs_const=debug=false
