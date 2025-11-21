@@ -615,7 +615,7 @@ sub removeUnsupportedAacFromProfile(deviceProfile as object, channelCount as int
   surroundCodecs = ["eac3", "ac3", "dts"]
 
   for each rule in deviceProfile.TranscodingProfiles
-    if rule.Type = "Video"
+    if isValid(rule.Type) and rule.Type = "Video"
       if isValid(rule.AudioCodec)
         ' Split codec list into array
         codecList = rule.AudioCodec.split(",")
