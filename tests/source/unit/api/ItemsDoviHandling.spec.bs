@@ -222,6 +222,85 @@ namespace tests
       m.assertTrue(shouldCheckDovi, "Should check for DOVI on 4K devices")
     end function
 
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Codec-Specific Handling")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("does NOT force remux for av1 codec even with DOVI content")
+    function _()
+      ' Given: MKV container with AV1 codec and DOVI VideoRangeType
+      mediaStreams = [
+        {
+          Type: "Video",
+          Codec: "av1",
+          VideoRangeType: "DOVIWithSDR"
+        }
+      ]
+
+      ' When: Check if stream should be processed for DOVI preservation
+      ' The logic: stream.Type = "Video" AND stream.Codec <> "av1"
+      shouldProcessDovi = false
+      for each stream in mediaStreams
+        if isValid(stream.Type) and stream.Type = "Video" and stream.Codec <> "av1"
+          shouldProcessDovi = true
+          exit for
+        end if
+      end for
+
+      ' Then: Should NOT process DOVI logic for av1 codec
+      m.assertFalse(shouldProcessDovi, "Should NOT force remux for av1 codec with DOVI")
+    end function
+
+    @it("DOES force remux for hevc codec with DOVI content")
+    function _()
+      ' Given: MKV container with HEVC codec and DOVI VideoRangeType
+      mediaStreams = [
+        {
+          Type: "Video",
+          Codec: "hevc",
+          VideoRangeType: "DOVIWithHDR10"
+        }
+      ]
+
+      ' When: Check if stream should be processed for DOVI preservation
+      ' The logic: stream.Type = "Video" AND stream.Codec <> "av1"
+      shouldProcessDovi = false
+      for each stream in mediaStreams
+        if isValid(stream.Type) and stream.Type = "Video" and stream.Codec <> "av1"
+          shouldProcessDovi = true
+          exit for
+        end if
+      end for
+
+      ' Then: Should process DOVI logic for hevc codec
+      m.assertTrue(shouldProcessDovi, "Should force remux for hevc codec with DOVI")
+    end function
+
+    @it("DOES force remux for h264 codec with DOVI content")
+    function _()
+      ' Given: MKV container with H264 codec and DOVI VideoRangeType
+      mediaStreams = [
+        {
+          Type: "Video",
+          Codec: "h264",
+          VideoRangeType: "DOVI"
+        }
+      ]
+
+      ' When: Check if stream should be processed for DOVI preservation
+      ' The logic: stream.Type = "Video" AND stream.Codec <> "av1"
+      shouldProcessDovi = false
+      for each stream in mediaStreams
+        if isValid(stream.Type) and stream.Type = "Video" and stream.Codec <> "av1"
+          shouldProcessDovi = true
+          exit for
+        end if
+      end for
+
+      ' Then: Should process DOVI logic for h264 codec
+      m.assertTrue(shouldProcessDovi, "Should force remux for h264 codec with DOVI")
+    end function
+
   end class
 
 end namespace

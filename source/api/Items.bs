@@ -53,8 +53,11 @@ function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioT
     ' Only proceed with DOVI logic if device supports DOVI
     if deviceSupportsDovi
       for each stream in mediaStreams
+        ' print "deviceSupportsDovi mediaStreams stream =", stream
+
         ' always use the first video stream for now
-        if isValid(stream.Type) and stream.Type = "Video"
+        ' Note: don't force remux on AV1 codec - see #194
+        if isValid(stream.Type) and stream.Type = "Video" and stream.Codec <> "av1"
           if videoMetadata.container = "mkv" and isValid(stream.VideoRangeType) and stream.VideoRangeType <> ""
             ' is DOVI in the string?
             if Instr(LCase(stream.VideoRangeType), "dovi") > 0
