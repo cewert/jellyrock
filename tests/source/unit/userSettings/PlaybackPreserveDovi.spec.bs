@@ -63,19 +63,8 @@ namespace tests
       shouldRunDoviLogic = isValid(mediaStreams) and isValid(userSettings.playbackPreserveDovi) and userSettings.playbackPreserveDovi
 
       ' Then: Should NOT allow DOVI logic when missing
+      ' Note: Implementation does not apply settings.json default - setting must exist AND be true
       m.assertFalse(shouldRunDoviLogic, "Should NOT allow DOVI logic when setting is missing")
-    end function
-
-    @it("respects default user settings (default true)")
-    function _()
-      ' Given: Default true behavior for missing setting
-      ' When: Fallback behavior based on default from settings.json
-      ' Settings.json has "default": "true", so missing setting = enabled
-      mediaStreams = m.createDoviMediaStreams()
-      shouldRunDoviLogic = isValid(mediaStreams) ' Simplified - when setting missing, defaults apply
-
-      ' Then: Missing setting should be treated as enabled by default
-      m.assertTrue(shouldRunDoviLogic, "Missing setting defaults to true from settings.json")
     end function
 
     @it("toggles between enabled and disabled states correctly")

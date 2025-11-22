@@ -38,7 +38,7 @@ function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioT
   end if
 
   ' DOVI not supported using MKV container, so force remux for DOVI content
-  ' Only run DOVI logic if the user setting is enabled (default to true)
+  ' Only run DOVI logic if the user setting exists and is enabled
   if isValid(mediaStreams) and isValid(m.global.user.settings.playbackPreserveDovi) and m.global.user.settings.playbackPreserveDovi
     ' Check if device supports DOVI before proceeding
     deviceSupportsDovi = false
