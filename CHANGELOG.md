@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Dependencies
 
+- Update markdownlint-cli2 from v0.19.0 to v0.19.1 ([#196](https://github.com/cewert/jellyrock/pull/196))
 - Update rimraf from v6.1.0 to v6.1.2 ([#191](https://github.com/cewert/jellyrock/pull/191))
 
 ## [1.2.0](https://github.com/cewert/jellyrock/compare/v1.1.5...v1.2.0) - 2025-11-19
