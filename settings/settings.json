@@ -169,6 +169,13 @@
         ]
       },
       {
+        "title": "Preserve DoVi",
+        "description": "Preserve Dolby Vision content when possible by forcing remux instead of direct playback when using MKV container files. This ensures proper Dolby Vision playback on supported devices.",
+        "settingName": "playbackPreserveDovi",
+        "type": "bool",
+        "default": "true"
+      },
+      {
         "title": "Text Subtitles Only",
         "description": "Only display text subtitles to minimize transcoding.",
         "settingName": "playbackSubsOnlyText",

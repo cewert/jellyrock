@@ -1,0 +1,14 @@
+{
+  "id": "roku-ultra-4k-dovi",
+  "name": "Roku Ultra 4K DOVI",
+  "model": "4800X",
+  "modelType": "STB",
+  "serial": "YN00ULTRA1234",
+  "friendlyName": "Roku Ultra 4K YN00ULTRA1234",
+  "serverDeviceName": "roku-ultra-4k-doviTestUser",
+  "videoMode": "2160p60",
+  "videoHeight": "2160",
+  "videoWidth": "3840",
+  "videoRefresh": 60,
+  "videoBitDepth": 10
+}

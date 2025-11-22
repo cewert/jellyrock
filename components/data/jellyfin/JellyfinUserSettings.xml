@@ -23,6 +23,7 @@
     <field id="playbackBitrateLimit" type="integer" alwaysNotify="true" />
     <field id="playbackCinemaMode" type="boolean" alwaysNotify="true" />
     <field id="playbackDecodeMultichannelAudio" type="boolean" alwaysNotify="true" />
+    <field id="playbackPreserveDovi" type="boolean" alwaysNotify="true" />
     <field id="playbackSubsCustom" type="boolean" alwaysNotify="true" />
     <field id="playbackResolutionMax" type="string" alwaysNotify="true" />
     <field id="playbackNextUpButtonSeconds" type="integer" alwaysNotify="true" />

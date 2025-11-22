@@ -29,11 +29,65 @@ function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioT
     postData.EnableDirectPlay = false
   end if
 
+  mediaStreams = invalid
+  if isValid(videoMetadata) and isValid(videoMetadata.json) and isValid(videoMetadata.json.MediaStreams)
+    mediaStreams = videoMetadata.json.MediaStreams
+    ' print "ItemPostPlaybackInfo videoMetadata =", videoMetadata
+    ' print "ItemPostPlaybackInfo videoMetadata.json =", videoMetadata.json
+    ' print "ItemPostPlaybackInfo videoMetadata.json.MediaStreams =", videoMetadata.json.MediaStreams
+  end if
+
+  ' DOVI not supported using MKV container, so force remux for DOVI content
+  ' Only run DOVI logic if the user setting exists and is enabled
+  if isValid(mediaStreams) and isValid(m.global.user.settings.playbackPreserveDovi) and m.global.user.settings.playbackPreserveDovi
+    ' Check if device supports DOVI before proceeding
+    deviceSupportsDovi = false
+    di = CreateObject("roDeviceInfo")
+    if canPlay4k()
+      dp = di.GetDisplayProperties()
+      if dp.DolbyVision
+        deviceSupportsDovi = true
+      end if
+    end if
+
+    ' Only proceed with DOVI logic if device supports DOVI
+    if deviceSupportsDovi
+      for each stream in mediaStreams
+        ' print "deviceSupportsDovi mediaStreams stream =", stream
+
+        ' always use the first video stream for now
+        ' Note: don't force remux on AV1 codec - see #194
+        if isValid(stream.Type) and stream.Type = "Video" and isValid(stream.Codec) and LCase(stream.Codec) <> "av1"
+          if videoMetadata.container = "mkv" and isValid(stream.VideoRangeType) and stream.VideoRangeType <> ""
+            ' is DOVI in the string?
+            if Instr(LCase(stream.VideoRangeType), "dovi") > 0
+              ' add a condition to the mkv container profile to force remux (container swap)
+              postData.DeviceProfile.ContainerProfiles.push({
+                "Type": "Video",
+                "Container": "mkv",
+                "Conditions": [
+                  {
+                    "Condition": "NotEquals",
+                    "Property": "VideoRangeType",
+                    "Value": stream.VideoRangeType,
+                    "IsRequired": true
+                  }
+                ]
+              })
+            end if
+          end if
+          exit for
+        end if
+      end for
+    end if
+  end if
+
   if audioTrackIndex > -1
-    if isValid(videoMetadata) and isValid(videoMetadata.json) and isValid(videoMetadata.json.MediaStreams)
+    if isValid(mediaStreams)
       ' Find the audio stream with the matching Jellyfin index
       selectedAudioStream = invalid
-      for each stream in videoMetadata.json.MediaStreams
+      for each stream in mediaStreams
+        ' print "ItemPostPlaybackInfo mediaStreams stream =", stream
         if isValid(stream.index) and stream.index = audioTrackIndex
           selectedAudioStream = stream
           exit for
@@ -561,7 +615,7 @@ sub removeUnsupportedAacFromProfile(deviceProfile as object, channelCount as int
   surroundCodecs = ["eac3", "ac3", "dts"]
 
   for each rule in deviceProfile.TranscodingProfiles
-    if rule.Container = "ts" or rule.Container = "mp4"
+    if isValid(rule.Type) and rule.Type = "Video"
       if isValid(rule.AudioCodec)
         ' Split codec list into array
         codecList = rule.AudioCodec.split(",")
