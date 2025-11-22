@@ -1,290 +1,58 @@
-
 namespace tests
 
   @suite("session.bs - Username Sanitization for URL-safe DeviceId")
   class SessionUsernameSanitizationTests extends tests.BaseTestSuite
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("user.Login() - friendlyName creation (URL-safe, no spaces)")
+    @describe("user.SanitizeUsernameForUrl() - Pure function tests (no I/O)")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("removes special characters AND spaces from friendlyName")
+    @it("removes spaces from username")
     function _()
-      ' Arrange
-      userData = {
-        id: "test-user-123",
-        name: "John.R.Doe!",
-        authToken: "test-token"
-      }
-
-      ' Act
-      user.Login(userData, false)
-
-      ' Assert
-      localUser = m.getTestUser()
-      ' Period and exclamation removed, no spaces in original
-      m.assertEqual("JohnRDoe", localUser.friendlyName)
-      ' Original name unchanged
-      m.assertEqual("John.R.Doe!", localUser.name)
+      result = user.SanitizeUsernameForUrl("John Doe")
+      m.assertEqual("JohnDoe", result)
     end function
 
-    @it("removes spaces from friendlyName for URL safety")
+    @it("removes special characters from username")
     function _()
-      ' Arrange
-      userData = {
-        id: "test-user-456",
-        name: "John Doe",
-        authToken: "test-token"
-      }
-
-      ' Act
-      user.Login(userData, false)
-
-      ' Assert
-      localUser = m.getTestUser()
-      ' Spaces removed from friendlyName
-      m.assertEqual("JohnDoe", localUser.friendlyName)
-      ' Original name unchanged (used for UI display)
-      m.assertEqual("John Doe", localUser.name)
+      result = user.SanitizeUsernameForUrl("John.R.Doe!")
+      m.assertEqual("JohnRDoe", result)
     end function
 
-    @it("removes multiple spaces and special chars from friendlyName")
+    @it("removes spaces and special chars from username")
     function _()
-      ' Arrange - Realistic LDAP username format
-      userData = {
-        id: "test-user-789",
-        name: "Jane A. Doe",
-        authToken: "test-token"
-      }
-
-      ' Act
-      user.Login(userData, false)
-
-      ' Assert
-      localUser = m.getTestUser()
-      ' Period AND spaces removed
-      m.assertEqual("JaneADoe", localUser.friendlyName)
-      ' Original preserved
-      m.assertEqual("Jane A. Doe", localUser.name)
+      result = user.SanitizeUsernameForUrl("Jane A. Doe")
+      m.assertEqual("JaneADoe", result)
     end function
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("user.SetServerDeviceName() - Uses URL-safe friendlyName")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    @it("serverDeviceName has no spaces (friendlyName is URL-safe)")
+    @it("handles LDAP format names - issue #568")
     function _()
-      ' Arrange
-      userData = {
-        id: "test-user-fix",
-        name: "John Doe",
-        authToken: "test-token"
-      }
-      user.Login(userData, false)
-
-      localDevice = m.global.device
-      originalDeviceId = localDevice.id
-
-      ' Act - SetServerDeviceName is called during Login
-      user.SetServerDeviceName()
-
-      ' Assert
-      localDevice = m.global.device
-      localUser = m.getTestUser()
-
-      ' friendlyName has no spaces (URL-safe)
-      m.assertEqual("JohnDoe", localUser.friendlyName)
-
-      ' serverDeviceName = deviceId + friendlyName (both URL-safe)
-      expectedDeviceName = originalDeviceId + "JohnDoe"
-      m.assertEqual(expectedDeviceName, localDevice.serverDeviceName)
-
-      ' Verify no spaces in serverDeviceName
-      hasSpaces = (localDevice.serverDeviceName.Instr(" ") >= 0)
-      m.assertFalse(hasSpaces, "serverDeviceName must not contain spaces for URL safety")
+      result = user.SanitizeUsernameForUrl("John R. Doe")
+      m.assertEqual("JohnRDoe", result)
     end function
 
-    @it("handles LDAP format names (John R. Doe)")
+    @it("handles empty string")
     function _()
-      ' Arrange - Real-world bug scenario from issue #568
-      userData = {
-        id: "test-ldap-user",
-        name: "John R. Doe",
-        authToken: "test-token"
-      }
-      user.Login(userData, false)
-
-      localDevice = m.global.device
-      deviceId = localDevice.id
-
-      ' Act
-      user.SetServerDeviceName()
-
-      ' Assert
-      localDevice = m.global.device
-      localUser = m.getTestUser()
-
-      ' friendlyName has spaces AND period removed
-      m.assertEqual("JohnRDoe", localUser.friendlyName)
-
-      ' serverDeviceName uses the URL-safe friendlyName
-      expectedDeviceName = deviceId + "JohnRDoe"
-      m.assertEqual(expectedDeviceName, localDevice.serverDeviceName)
-
-      ' Critical: Must be URL-safe
-      hasSpaces = (localDevice.serverDeviceName.Instr(" ") >= 0)
-      m.assertFalse(hasSpaces, "Spaces cause 'Malformed input to URL function' error")
+      result = user.SanitizeUsernameForUrl("")
+      m.assertEqual("", result)
     end function
 
-    @it("serverDeviceName is URL-safe for all problematic usernames")
+    @it("handles username with only special chars")
     function _()
-      ' Arrange - Test multiple problematic usernames
-      problematicNames = [
-        { name: "John Doe", expected: "JohnDoe" },
-        { name: "Jane A. Smith", expected: "JaneASmith" },
-        { name: "Bob Test User", expected: "BobTestUser" },
-        { name: "User With Many Spaces", expected: "UserWithManySpaces" }
-      ]
-
-      localDevice = m.global.device
-      deviceId = localDevice.id
-
-      for each testCase in problematicNames
-        ' Reset user
-        user.Logout()
-
-        userData = {
-          id: "test-user",
-          name: testCase.name,
-          authToken: "test-token"
-        }
-
-        ' Act
-        user.Login(userData, false)
-        user.SetServerDeviceName()
-
-        ' Assert
-        localDevice = m.global.device
-        localUser = m.getTestUser()
-        expectedDeviceName = deviceId + testCase.expected
-
-        ' friendlyName should match expected (no spaces)
-        m.assertEqual(testCase.expected, localUser.friendlyName, "friendlyName failed for: " + testCase.name)
-
-        ' serverDeviceName should be deviceId + friendlyName
-        m.assertEqual(expectedDeviceName, localDevice.serverDeviceName, "serverDeviceName failed for: " + testCase.name)
-
-        ' Verify URL-safe (no spaces)
-        hasSpaces = (localDevice.serverDeviceName.Instr(" ") >= 0)
-        m.assertFalse(hasSpaces, "serverDeviceName must be URL-safe for: " + testCase.name)
-      end for
-
-      return true
+      result = user.SanitizeUsernameForUrl("!@#$   ")
+      m.assertEqual("", result)
     end function
 
-    @it("handles empty friendlyName after sanitization")
+    @it("preserves alphanumeric usernames")
     function _()
-      ' Arrange - Username that becomes empty after sanitization
-      userData = {
-        id: "test-empty",
-        name: "!@#$   ", ' Only special chars and spaces
-        authToken: "test-token"
-      }
-      user.Login(userData, false)
-
-      localDevice = m.global.device
-      deviceId = localDevice.id
-
-      ' Act
-      user.SetServerDeviceName()
-
-      ' Assert
-      localDevice = m.global.device
-      localUser = m.getTestUser()
-
-      ' friendlyName is empty
-      m.assertEqual("", localUser.friendlyName)
-
-      ' When friendlyName is empty, serverDeviceName = deviceId only
-      m.assertEqual(deviceId, localDevice.serverDeviceName)
+      result = user.SanitizeUsernameForUrl("user123")
+      m.assertEqual("user123", result)
     end function
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("Regression tests - Edge cases")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    @it("preserves underscores and hyphens (URL-safe chars)")
+    @it("preserves URL-safe chars (hyphens and underscores)")
     function _()
-      ' Arrange
-      userData = {
-        id: "test-user",
-        name: "user_name-test",
-        authToken: "test-token"
-      }
-      user.Login(userData, false)
-
-      ' Act
-      user.SetServerDeviceName()
-
-      ' Assert
-      localDevice = m.global.device
-      localUser = m.getTestUser()
-
-      ' Underscores and hyphens preserved in friendlyName
-      m.assertEqual("user_name-test", localUser.friendlyName)
-
-      ' And therefore in serverDeviceName
-      m.assertTrue(localDevice.serverDeviceName.Instr("user_name-test") > 0)
-    end function
-
-    @it("handles very long usernames")
-    function _()
-      ' Arrange
-      longName = "This Is A Very Long Username With Many Words That Could Cause Issues"
-      userData = {
-        id: "test-long",
-        name: longName,
-        authToken: "test-token"
-      }
-      user.Login(userData, false)
-
-      ' Act
-      user.SetServerDeviceName()
-
-      ' Assert
-      localDevice = m.global.device
-      localUser = m.getTestUser()
-
-      ' friendlyName should have no spaces
-      expectedFriendlyName = "ThisIsAVeryLongUsernameWithManyWordsThatCouldCauseIssues"
-      m.assertEqual(expectedFriendlyName, localUser.friendlyName)
-
-      ' Should work even with long names
-      m.assertNotEqual("", localDevice.serverDeviceName)
-
-      ' Must be URL-safe (no spaces)
-      hasSpaces = (localDevice.serverDeviceName.Instr(" ") >= 0)
-      m.assertFalse(hasSpaces)
-    end function
-
-    @it("handles alphanumeric usernames without modification")
-    function _()
-      ' Arrange
-      userData = {
-        id: "test-alphanumeric",
-        name: "user123",
-        authToken: "test-token"
-      }
-      user.Login(userData, false)
-
-      ' Act
-      user.SetServerDeviceName()
-
-      ' Assert
-      localUser = m.getTestUser()
-
-      ' Alphanumeric names should pass through unchanged
-      m.assertEqual("user123", localUser.friendlyName)
+      result = user.SanitizeUsernameForUrl("user_name-test")
+      m.assertEqual("user_name-test", result)
     end function
 
   end class

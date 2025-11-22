@@ -200,9 +200,7 @@ namespace user
 
     ' Create friendly name (URL-safe, no spaces or special chars)
     ' Used for serverDeviceName which appears in URLs and HTTP headers
-    regex = CreateObject("roRegex", "[^a-zA-Z0-9\-\_]", "")
-    friendlyName = regex.ReplaceAll(userNode.name, "")
-    userNode.friendlyName = friendlyName
+    userNode.friendlyName = user.SanitizeUsernameForUrl(userNode.name)
 
     ' Migrations
     if isValid(userData.LastRunVersion)
@@ -323,6 +321,19 @@ namespace user
       m.global.setFields({ device: tmpDevice })
     end if
   end sub
+
+  ' Sanitize username to be URL-safe (removes spaces and special characters)
+  ' Used for friendlyName which appears in serverDeviceName URLs and HTTP headers
+  ' @param name - The raw username to sanitize
+  ' @returns URL-safe username with only alphanumeric, hyphens, and underscores
+  function SanitizeUsernameForUrl(name as string) as string
+    if not isValidAndNotEmpty(name) then return ""
+
+    ' Remove all characters except alphanumeric, hyphens, and underscores
+    ' This prevents "Malformed input to URL function" errors from spaces and special chars
+    regex = CreateObject("roRegex", "[^a-zA-Z0-9\-\_]", "")
+    return regex.ReplaceAll(name, "")
+  end function
 
   ' Load user preferences from Jellyfin server
   sub LoadUserPreferences()
