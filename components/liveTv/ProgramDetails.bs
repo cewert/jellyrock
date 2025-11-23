@@ -174,8 +174,11 @@ sub programUpdated()
   ' If not a series, hide Record Series button (doesn't make sense for non-series content)
   if prog.json.isSeries <> true ' could be invalid or false
     m.recordSeriesButton.visible = false
+    m.recordSeriesButton.enabled = false
   else
     m.recordSeriesButton.visible = true
+    ' Restore enabled state based on user permissions (set in setupLabels)
+    m.recordSeriesButton.enabled = m.userCanRecord
   end if
 
   m.detailsView.visible = "true"
