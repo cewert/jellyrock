@@ -853,6 +853,14 @@
       <translation>Preferred Surround Audio Codec</translation>
     </message>
     <message>
+      <source>Preserve Dolby Vision content when possible by forcing remux instead of direct playback when using MKV container files. This ensures proper Dolby Vision playback on supported devices.</source>
+      <translation>Preserve Dolby Vision content when possible by forcing remux instead of direct playback when using MKV container files. This ensures proper Dolby Vision playback on supported devices.</translation>
+    </message>
+    <message>
+      <source>Preserve DoVi</source>
+      <translation>Preserve DoVi</translation>
+    </message>
+    <message>
       <source>Press &apos;Back&apos; to Close</source>
       <translation>Press &apos;Back&apos; to Close</translation>
     </message>
