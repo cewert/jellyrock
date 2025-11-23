@@ -25,28 +25,16 @@ sub init()
   m.image = m.top.findNode("image")
   m.favorite = m.top.findNode("favorite")
 
-  m.viewChannelFocusAnimationOpacity = m.top.findNode("viewChannelFocusAnimationOpacity")
-  m.recordFocusAnimationOpacity = m.top.findNode("recordFocusAnimationOpacity")
-  m.recordSeriesFocusAnimationOpacity = m.top.findNode("recordSeriesFocusAnimationOpacity")
+  m.buttonsFocusAnimationOpacity = m.top.findNode("buttonsFocusAnimationOpacity")
   m.focusAnimation = m.top.findNode("focusAnimation")
 
+  m.buttons = m.top.findNode("buttons")
   m.viewChannelButton = m.top.findNode("viewChannelButton")
   m.recordButton = m.top.findNode("recordButton")
   m.recordSeriesButton = m.top.findNode("recordSeriesButton")
 
-  m.viewChannelOutline = m.top.findNode("viewChannelOutline")
-  m.recordOutline = m.top.findNode("recordOutline")
-  m.recordSeriesOutline = m.top.findNode("recordSeriesOutline")
-
-  m.viewChannelLabel = m.top.findNode("viewChannelButtonLabel")
-  m.recordLabel = m.top.findNode("recordButtonLabel")
-  m.recordSeriesLabel = m.top.findNode("recordSeriesButtonLabel")
-
-  m.viewChannelButtonBackground = m.top.findNode("viewChannelButtonBackground")
-  m.recordButtonBackground = m.top.findNode("recordButtonBackground")
-  m.recordSeriesButtonBackground = m.top.findNode("recordSeriesButtonBackground")
-
   m.focusAnimation.observeField("state", "onAnimationComplete")
+  m.buttons.observeField("buttonSelected", "onButtonSelected")
 
   setupLabels()
 end sub
@@ -67,54 +55,17 @@ sub setupLabels()
   isRepeatBackground.height = boundingRect.height + 8
   m.episodeDetailsGroup.removeChildIndex(0)
 
-  m.viewChannelLabel.text = tr("View Channel")
-  boundingRect = m.viewChannelButton.boundingRect()
-  viewButtonBackground = m.top.findNode("viewChannelButtonBackground")
-  viewButtonBackground.width = boundingRect.width + 20
-  viewButtonBackground.height = boundingRect.height + 20
-  m.viewChannelOutline.width = viewButtonBackground.width
-  m.viewChannelOutline.height = viewButtonBackground.height
-
-  m.recordLabel.text = tr("Record")
-  boundingRect = m.recordButton.boundingRect()
-  recordButtonBackground = m.top.findNode("recordButtonBackground")
-  recordButtonBackground.width = boundingRect.width + 20
-  recordButtonBackground.height = boundingRect.height + 20
-  m.recordOutline.width = recordButtonBackground.width
-  m.recordOutline.height = recordButtonBackground.height
-
-  m.recordSeriesLabel.text = tr("Record Series")
-  boundingRect = m.recordSeriesButton.boundingRect()
-  recordSeriesButtonBackground = m.top.findNode("recordSeriesButtonBackground")
-  recordSeriesButtonBackground.width = boundingRect.width + 20
-  recordSeriesButtonBackground.height = boundingRect.height + 20
-  m.recordSeriesOutline.width = recordSeriesButtonBackground.width
-  m.recordSeriesOutline.height = recordSeriesButtonBackground.height
-
+  ' Handle user recording permissions
   m.userCanRecord = m.global.user.policy.enableLiveTvManagement
   if m.userCanRecord = false
-    m.recordButton.visible = false
-    m.recordSeriesButton.visible = false
+    m.recordButton.enabled = false
+    m.recordSeriesButton.enabled = false
   end if
 end sub
 
 sub updateLabels(recordText = tr("Record"), recordSeriesText = tr("Record Series"))
-  m.recordLabel.text = recordText
-  m.recordSeriesLabel.text = recordSeriesText
-
-  boundingRect = m.recordButton.boundingRect()
-  recordButtonBackground = m.top.findNode("recordButtonBackground")
-  recordButtonBackground.width = boundingRect.width
-  recordButtonBackground.height = boundingRect.height
-  m.recordOutline.width = recordButtonBackground.width
-  m.recordOutline.height = recordButtonBackground.height
-
-  boundingRect = m.recordSeriesButton.boundingRect()
-  recordSeriesButtonBackground = m.top.findNode("recordSeriesButtonBackground")
-  recordSeriesButtonBackground.width = boundingRect.width
-  recordSeriesButtonBackground.height = boundingRect.height
-  m.recordSeriesOutline.width = recordSeriesButtonBackground.width
-  m.recordSeriesOutline.height = recordSeriesButtonBackground.height
+  m.recordButton.text = recordText
+  m.recordSeriesButton.text = recordSeriesText
 end sub
 
 sub channelUpdated()
@@ -220,7 +171,7 @@ sub programUpdated()
     updateLabels()
   end if
 
-  ' If not a series, hide Record Series button
+  ' If not a series, hide Record Series button (doesn't make sense for non-series content)
   if prog.json.isSeries <> true ' could be invalid or false
     m.recordSeriesButton.visible = false
   else
@@ -292,27 +243,17 @@ function getDurationStringFromSeconds(seconds) as string
 end function
 
 '
-' Show view channel button when item has Focus
+' Show button group when item has Focus
 sub focusChanged()
   if m.top.hasFocus = true
     m.overview.maxLines = m.maxDetailLines
-    m.viewChannelFocusAnimationOpacity.keyValue = [0, 1]
-    m.recordFocusAnimationOpacity.keyValue = [0, 1]
-    m.recordSeriesFocusAnimationOpacity.keyValue = [0, 1]
-    m.viewChannelButton.setFocus(true)
-    m.viewChannelOutline.visible = true
-    m.recordOutline.visible = false
-    m.recordSeriesOutline.visible = false
-    m.viewChannelButtonBackground.blendColor = "#006fab"
-    m.recordButtonBackground.blendColor = "#000000"
-    m.recordSeriesButtonBackground.blendColor = "#000000"
+    m.buttonsFocusAnimationOpacity.keyValue = [0, 1]
+    m.buttons.callFunc("focus") ' JRButtonGroup handles button focus
   else
     m.top.watchSelectedChannel = false
     m.top.recordSelectedChannel = false
     m.top.recordSeriesSelectedChannel = false
-    m.viewChannelFocusAnimationOpacity.keyValue = [1, 0]
-    m.recordFocusAnimationOpacity.keyValue = [1, 0]
-    m.recordSeriesFocusAnimationOpacity.keyValue = [1, 0]
+    m.buttonsFocusAnimationOpacity.keyValue = [1, 0]
   end if
 
   m.focusAnimation.control = "start"
@@ -325,56 +266,24 @@ sub onAnimationComplete()
   end if
 end sub
 
+' Handle button selection from JRButtonGroup
+sub onButtonSelected()
+  selectedIndex = m.buttons.buttonSelected
+
+  ' Button indices: 0 = viewChannel, 1 = record, 2 = recordSeries
+  if selectedIndex = 0
+    m.top.watchSelectedChannel = true
+  else if selectedIndex = 1
+    m.top.recordSelectedChannel = true
+  else if selectedIndex = 2
+    m.top.recordSeriesSelectedChannel = true
+  end if
+end sub
+
 function onKeyEvent(key as string, press as boolean) as boolean
   if not press then return false
 
-  if key = "OK" and m.viewChannelButton.hasFocus()
-    m.top.watchSelectedChannel = true
-    return true
-  else if key = "OK" and m.recordButton.hasFocus()
-    m.top.recordSelectedChannel = true
-    return true
-  else if key = "OK" and m.recordSeriesButton.hasFocus()
-    m.top.recordSeriesSelectedChannel = true
-    return true
-  end if
-
-  if m.userCanRecord = true
-    if key = "right" and m.viewChannelButton.hasFocus()
-      m.recordButton.setFocus(true)
-      m.viewChannelOutline.visible = false
-      m.recordOutline.visible = true
-      m.viewChannelButtonBackground.blendColor = "#000000"
-      m.recordButtonBackground.blendColor = "#006fab"
-      m.recordSeriesButtonBackground.blendColor = "#000000"
-      return true
-    else if key = "right" and m.recordButton.hasFocus()
-      m.recordSeriesButton.setFocus(true)
-      m.recordOutline.visible = false
-      m.recordSeriesOutline.visible = true
-      m.viewChannelButtonBackground.blendColor = "#000000"
-      m.recordButtonBackground.blendColor = "#000000"
-      m.recordSeriesButtonBackground.blendColor = "#006fab"
-      return true
-    else if key = "left" and m.recordSeriesButton.hasFocus()
-      m.recordButton.setFocus(true)
-      m.recordOutline.visible = true
-      m.recordSeriesOutline.visible = false
-      m.viewChannelButtonBackground.blendColor = "#000000"
-      m.recordButtonBackground.blendColor = "#006fab"
-      m.recordSeriesButtonBackground.blendColor = "#000000"
-      return true
-    else if key = "left" and m.recordButton.hasFocus()
-      m.viewChannelButton.setFocus(true)
-      m.viewChannelOutline.visible = true
-      m.recordOutline.visible = false
-      m.viewChannelButtonBackground.blendColor = "#006fab"
-      m.recordButtonBackground.blendColor = "#000000"
-      m.recordSeriesButtonBackground.blendColor = "#000000"
-      return true
-    end if
-  end if
-
+  ' Just prevent up/down from bubbling
   if key = "up" or key = "down"
     return true
   end if
