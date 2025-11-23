@@ -17,33 +17,33 @@
 <component name="JellyfinUserConfiguration" extends="ContentNode">
   <interface>
     <!-- Audio Settings -->
-    <field id="audioLanguagePreference" type="string" value="" />
-    <field id="playDefaultAudioTrack" type="boolean" value="true" />
-    <field id="rememberAudioSelections" type="boolean" value="false" />
+    <field id="audioLanguagePreference" type="string" />
+    <field id="playDefaultAudioTrack" type="boolean" />
+    <field id="rememberAudioSelections" type="boolean" />
 
     <!-- Subtitle Settings -->
-    <field id="subtitleMode" type="string" value="Default" />
-    <field id="subtitleLanguagePreference" type="string" value="" />
-    <field id="rememberSubtitleSelections" type="boolean" value="false" />
+    <field id="subtitleMode" type="string" />
+    <field id="subtitleLanguagePreference" type="string" />
+    <field id="rememberSubtitleSelections" type="boolean" />
 
     <!-- Display Settings -->
-    <field id="displayMissingEpisodes" type="boolean" value="false" />
-    <field id="displayCollectionsView" type="boolean" value="false" />
-    <field id="hidePlayedInLatest" type="boolean" value="true" />
-    <field id="useEpisodeImagesInNextUpAndResume" type="boolean" value="false" />
+    <field id="displayMissingEpisodes" type="boolean" />
+    <field id="displayCollectionsView" type="boolean" />
+    <field id="hidePlayedInLatest" type="boolean" />
+    <field id="useEpisodeImagesInNextUpAndResume" type="boolean" />
 
     <!-- Playback Settings -->
-    <field id="enableNextEpisodeAutoPlay" type="boolean" value="false" />
+    <field id="enableNextEpisodeAutoPlay" type="boolean" />
 
     <!-- View Organization -->
-    <field id="orderedViews" type="array" value="[]" />
-    <field id="latestItemsExcludes" type="array" value="[]" />
-    <field id="myMediaExcludes" type="array" value="[]" />
-    <field id="groupedFolders" type="array" value="[]" />
+    <field id="orderedViews" type="array" />
+    <field id="latestItemsExcludes" type="array" />
+    <field id="myMediaExcludes" type="array" />
+    <field id="groupedFolders" type="array" />
 
     <!-- Other Settings -->
-    <field id="castReceiverId" type="string" value="" />
-    <field id="enableLocalPassword" type="boolean" value="false" />
+    <field id="castReceiverId" type="string" />
+    <field id="enableLocalPassword" type="boolean" />
 
     <!-- DEBUG ONLY: Raw configuration data for debugging - only populated when bs_const=debug=true -->
     <field id="rawConfigData" type="assocarray" />

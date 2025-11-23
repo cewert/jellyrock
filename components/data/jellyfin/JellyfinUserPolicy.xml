@@ -17,74 +17,74 @@
 <component name="JellyfinUserPolicy" extends="ContentNode">
   <interface>
     <!-- User Status -->
-    <field id="isAdministrator" type="boolean" value="false" />
-    <field id="isDisabled" type="boolean" value="false" />
-    <field id="isHidden" type="boolean" value="false" />
+    <field id="isAdministrator" type="boolean" />
+    <field id="isDisabled" type="boolean" />
+    <field id="isHidden" type="boolean" />
 
     <!-- Authentication Settings -->
-    <field id="authenticationProviderId" type="string" value="" />
-    <field id="passwordResetProviderId" type="string" value="" />
-    <field id="invalidLoginAttemptCount" type="integer" value="0" />
-    <field id="loginAttemptsBeforeLockout" type="integer" value="-1" />
+    <field id="authenticationProviderId" type="string" />
+    <field id="passwordResetProviderId" type="string" />
+    <field id="invalidLoginAttemptCount" type="integer" />
+    <field id="loginAttemptsBeforeLockout" type="integer" />
 
     <!-- Media Playback Permissions -->
-    <field id="enableMediaPlayback" type="boolean" value="true" />
-    <field id="enableAudioPlaybackTranscoding" type="boolean" value="true" />
-    <field id="enableVideoPlaybackTranscoding" type="boolean" value="true" />
-    <field id="enablePlaybackRemuxing" type="boolean" value="true" />
-    <field id="forceRemoteSourceTranscoding" type="boolean" value="false" />
+    <field id="enableMediaPlayback" type="boolean" />
+    <field id="enableAudioPlaybackTranscoding" type="boolean" />
+    <field id="enableVideoPlaybackTranscoding" type="boolean" />
+    <field id="enablePlaybackRemuxing" type="boolean" />
+    <field id="forceRemoteSourceTranscoding" type="boolean" />
 
     <!-- Content Access Permissions -->
-    <field id="enableAllFolders" type="boolean" value="false" />
-    <field id="enabledFolders" type="array" value="[]" />
-    <field id="enableContentDownloading" type="boolean" value="true" />
-    <field id="enableContentDeletion" type="boolean" value="false" />
-    <field id="enableContentDeletionFromFolders" type="array" value="[]" />
+    <field id="enableAllFolders" type="boolean" />
+    <field id="enabledFolders" type="array" />
+    <field id="enableContentDownloading" type="boolean" />
+    <field id="enableContentDeletion" type="boolean" />
+    <field id="enableContentDeletionFromFolders" type="array" />
 
     <!-- Live TV Permissions -->
-    <field id="enableLiveTvAccess" type="boolean" value="true" />
-    <field id="enableLiveTvManagement" type="boolean" value="false" />
+    <field id="enableLiveTvAccess" type="boolean" />
+    <field id="enableLiveTvManagement" type="boolean" />
 
     <!-- Channel Permissions -->
-    <field id="enableAllChannels" type="boolean" value="false" />
-    <field id="enabledChannels" type="array" value="[]" />
-    <field id="blockedChannels" type="array" value="[]" />
+    <field id="enableAllChannels" type="boolean" />
+    <field id="enabledChannels" type="array" />
+    <field id="blockedChannels" type="array" />
 
     <!-- Device Permissions -->
-    <field id="enableAllDevices" type="boolean" value="true" />
-    <field id="enabledDevices" type="array" value="[]" />
-    <field id="maxActiveSessions" type="integer" value="0" />
+    <field id="enableAllDevices" type="boolean" />
+    <field id="enabledDevices" type="array" />
+    <field id="maxActiveSessions" type="integer" />
 
     <!-- Remote Access Permissions -->
-    <field id="enableRemoteAccess" type="boolean" value="true" />
-    <field id="enableRemoteControlOfOtherUsers" type="boolean" value="false" />
-    <field id="enableSharedDeviceControl" type="boolean" value="true" />
-    <field id="remoteClientBitrateLimit" type="integer" value="0" />
+    <field id="enableRemoteAccess" type="boolean" />
+    <field id="enableRemoteControlOfOtherUsers" type="boolean" />
+    <field id="enableSharedDeviceControl" type="boolean" />
+    <field id="remoteClientBitrateLimit" type="integer" />
 
     <!-- Content Management Permissions -->
-    <field id="enableCollectionManagement" type="boolean" value="false" />
-    <field id="enableSubtitleManagement" type="boolean" value="false" />
-    <field id="enableLyricManagement" type="boolean" value="false" />
+    <field id="enableCollectionManagement" type="boolean" />
+    <field id="enableSubtitleManagement" type="boolean" />
+    <field id="enableLyricManagement" type="boolean" />
 
     <!-- Sharing and Sync Permissions -->
-    <field id="enablePublicSharing" type="boolean" value="true" />
-    <field id="enableSyncTranscoding" type="boolean" value="true" />
-    <field id="enableMediaConversion" type="boolean" value="true" />
+    <field id="enablePublicSharing" type="boolean" />
+    <field id="enableSyncTranscoding" type="boolean" />
+    <field id="enableMediaConversion" type="boolean" />
 
     <!-- User Preferences -->
-    <field id="enableUserPreferenceAccess" type="boolean" value="true" />
+    <field id="enableUserPreferenceAccess" type="boolean" />
 
     <!-- Content Filtering -->
-    <field id="blockedMediaFolders" type="array" value="[]" />
-    <field id="blockedTags" type="array" value="[]" />
-    <field id="allowedTags" type="array" value="[]" />
-    <field id="blockUnratedItems" type="array" value="[]" />
+    <field id="blockedMediaFolders" type="array" />
+    <field id="blockedTags" type="array" />
+    <field id="allowedTags" type="array" />
+    <field id="blockUnratedItems" type="array" />
 
     <!-- Access Schedules -->
-    <field id="accessSchedules" type="array" value="[]" />
+    <field id="accessSchedules" type="array" />
 
     <!-- Sync Play -->
-    <field id="syncPlayAccess" type="string" value="CreateAndJoinGroups" />
+    <field id="syncPlayAccess" type="string" />
 
     <!-- DEBUG ONLY: Raw policy data for debugging - only populated when bs_const=debug=true -->
     <field id="rawPolicyData" type="assocarray" />
