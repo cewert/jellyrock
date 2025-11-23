@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Enable MKV container support via manifest flag ([#195](https://github.com/cewert/jellyrock/pull/195))
 - Optimize bot instruction files ([#192](https://github.com/cewert/jellyrock/pull/192))
 
+### Removed
+
+- Remove hardcoded defaults from server-authoritative user settings ([#201](https://github.com/cewert/jellyrock/pull/201))
+
 ### Dependencies
 
 - Update markdownlint-cli2 from v0.19.0 to v0.19.1 ([#196](https://github.com/cewert/jellyrock/pull/196))
