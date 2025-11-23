@@ -65,11 +65,8 @@ sub itemContentChanged()
 
   itemData.Title = itemData.name ' Temporarily required while we move from "HomeItem" to "JRContentItem"
 
-  ' validate to prevent crash
-  userSettings = invalid
-  if isValid(m.global) and isValid(m.global.user) and isValid(m.global.user.settings)
-    userSettings = m.global.user.settings
-  end if
+  globalUser = m.global.user
+  userSettings = globalUser.settings
 
   ' validate to prevent crash
   if not isValid(m.itemPoster) then initItemPoster()
@@ -151,7 +148,7 @@ sub itemContentChanged()
 
     if isValid(userSettings)
       if userSettings.uiGeneralEpisodeImages = "webclient"
-        tmpSetting = m.global.user.config.useEpisodeImagesInNextUpAndResume
+        tmpSetting = globalUser.config.useEpisodeImagesInNextUpAndResume
         if isValid(tmpSetting) and tmpSetting
           m.itemPoster.uri = itemData.thumbnailURL
         else

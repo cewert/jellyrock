@@ -228,19 +228,21 @@ end function
 
 ' Returns a string containing the "Authorization" header payload
 function buildAuthHeader() as string
+  globalDevice = m.global.device
+  globalUser = m.global.user
   QUOTE = Chr(34)
   auth = "MediaBrowser" + " Client=" + QUOTE + "JellyRock" + QUOTE
-  auth = auth + ", Device=" + QUOTE + m.global.device.name + " (" + m.global.device.model + ")" + QUOTE
+  auth = auth + ", Device=" + QUOTE + globalDevice.name + " (" + globalDevice.model + ")" + QUOTE
   auth = auth + ", Version=" + QUOTE + m.global.app.version + QUOTE
 
-  if isValid(m.global.user.id)
-    auth = auth + ", UserId=" + QUOTE + m.global.user.id + QUOTE
+  if isValid(globalUser.id)
+    auth = auth + ", UserId=" + QUOTE + globalUser.id + QUOTE
   end if
 
-  auth = auth + ", DeviceId=" + QUOTE + m.global.device.serverDeviceName + QUOTE
+  auth = auth + ", DeviceId=" + QUOTE + globalDevice.serverDeviceName + QUOTE
 
-  if isValid(m.global.user.authToken)
-    auth = auth + ", Token=" + QUOTE + m.global.user.authToken + QUOTE
+  if isValid(globalUser.authToken)
+    auth = auth + ", Token=" + QUOTE + globalUser.authToken + QUOTE
   end if
 
   return auth

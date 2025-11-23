@@ -20,6 +20,7 @@ sub init()
 end sub
 
 sub loadItems()
+  globalUser = m.global.user
   results = []
 
   sort_field = m.top.sortField
@@ -105,33 +106,33 @@ sub loadItems()
 
   if m.top.ItemType = "LiveTV"
     url = "LiveTv/Channels"
-    params.append({ UserId: m.global.user.id })
+    params.append({ UserId: globalUser.id })
   else if m.top.view = "Networks"
     url = "Studios"
-    params.append({ UserId: m.global.user.id })
+    params.append({ UserId: globalUser.id })
   else if m.top.view = "Genres"
     url = "Genres"
-    params.append({ UserId: m.global.user.id, includeItemTypes: m.top.itemType })
+    params.append({ UserId: globalUser.id, includeItemTypes: m.top.itemType })
   else if m.top.ItemType = "MusicArtist"
     url = "Artists"
     params.append({
-      UserId: m.global.user.id,
+      UserId: globalUser.id,
       Fields: "Genres"
     })
     params.IncludeItemTypes = "MusicAlbum,Audio"
   else if m.top.ItemType = "AlbumArtists"
     url = "Artists/AlbumArtists"
     params.append({
-      UserId: m.global.user.id,
+      UserId: globalUser.id,
       Fields: "Genres"
     })
     params.IncludeItemTypes = "MusicAlbum,Audio"
   else if m.top.ItemType = "MusicAlbum"
-    url = Substitute("Users/{0}/Items/", m.global.user.id)
+    url = Substitute("Users/{0}/Items/", globalUser.id)
     params.append({ ImageTypeLimit: 1 })
     params.append({ EnableImageTypes: "Primary,Backdrop,Banner,Thumb" })
   else
-    url = Substitute("Users/{0}/Items/", m.global.user.id)
+    url = Substitute("Users/{0}/Items/", globalUser.id)
   end if
 
   resp = APIRequest(url, params)
@@ -200,7 +201,7 @@ sub loadItems()
         tmp = CreateObject("roSGNode", "ContentNode")
         tmp.title = item.name
 
-        genreData = api.users.GetItemsByQuery(m.global.user.id, {
+        genreData = api.users.GetItemsByQuery(globalUser.id, {
           SortBy: "Random",
           SortOrder: "Ascending",
           IncludeItemTypes: m.top.itemType,

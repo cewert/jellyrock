@@ -83,6 +83,7 @@ sub OnScreenShown()
   ' Configure overhang UI
   m.log.increaseIndent("Configuring overhang")
   scene = m.top.getScene()
+  globalUser = m.global.user
   m.log.debug("Retrieved scene", scene)
 
   overhang = scene.findNode("overhang")
@@ -90,12 +91,12 @@ sub OnScreenShown()
     m.log.debug("Found overhang node", overhang)
 
     overhang.isLogoVisible = true
-    overhang.currentUser = m.global.user.name
+    overhang.currentUser = globalUser.name
     overhang.title = tr("Home")
     m.log.debug("Updated overhang properties", "user:", overhang.currentUser, "title:", overhang.title, "logoVisible:", overhang.isLogoVisible)
 
     ' Hide clock if user preference is set
-    hideClockSetting = m.global.user.settings.uiDesignHideClock
+    hideClockSetting = globalUser.settings.uiDesignHideClock
     m.log.debug("Hide clock setting", hideClockSetting)
 
     if hideClockSetting
@@ -145,7 +146,7 @@ sub OnScreenShown()
     refresh()
 
     ' Update backdrop based on current splash background setting
-    splashEnabled = m.global.user.settings.uiHomeSplashBackground
+    splashEnabled = globalUser.settings.uiHomeSplashBackground
     m.log.debug("Current splash background setting", splashEnabled)
 
     if isValid(m.backdrop)

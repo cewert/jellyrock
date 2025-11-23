@@ -11,13 +11,14 @@ sub init()
 end sub
 
 sub loadItems()
+  globalUser = m.global.user
 
   results = []
 
   ' Load Libraries
   if m.top.itemsToLoad = "libraries"
 
-    url = Substitute("Users/{0}/Views/", m.global.user.id)
+    url = Substitute("Users/{0}/Views/", globalUser.id)
     resp = APIRequest(url)
     data = getJson(resp)
     if isValid(data) and isValid(data.Items)
@@ -33,7 +34,7 @@ sub loadItems()
 
     ' Load Latest Additions to Libraries
   else if m.top.itemsToLoad = "latest"
-    activeUser = m.global.user.id
+    activeUser = globalUser.id
     if isValid(activeUser)
       url = Substitute("Users/{0}/Items/Latest", activeUser)
       params = {}
@@ -60,7 +61,7 @@ sub loadItems()
 
     ' Load Next Up
   else if m.top.itemsToLoad = "nextUp"
-    userSettings = m.global.user.settings
+    userSettings = globalUser.settings
 
     url = "Shows/NextUp"
     params = {}
@@ -68,7 +69,7 @@ sub loadItems()
     params["SortBy"] = "DatePlayed"
     params["SortOrder"] = "Descending"
     params["ImageTypeLimit"] = 1
-    params["UserId"] = m.global.user.id
+    params["UserId"] = globalUser.id
     params["EnableRewatching"] = userSettings.uiDetailsEnableRewatchingNextUp
     params["DisableFirstEpisode"] = false
     params["limit"] = 69
@@ -98,7 +99,7 @@ sub loadItems()
     end if
     ' Load Continue Watching
   else if m.top.itemsToLoad = "continue"
-    activeUser = m.global.user.id
+    activeUser = globalUser.id
     if isValid(activeUser)
       url = Substitute("Users/{0}/Items/Resume", activeUser)
 
@@ -125,7 +126,7 @@ sub loadItems()
 
   else if m.top.itemsToLoad = "favorites"
 
-    url = Substitute("Users/{0}/Items", m.global.user.id)
+    url = Substitute("Users/{0}/Items", globalUser.id)
 
     params = {}
     params["Filters"] = "IsFavorite"
@@ -159,7 +160,7 @@ sub loadItems()
   else if m.top.itemsToLoad = "onNow"
     url = "LiveTv/Programs/Recommended"
     params = {}
-    params["userId"] = m.global.user.id
+    params["userId"] = globalUser.id
     params["isAiring"] = true
     params["limit"] = 16 ' 16 to be consistent with "Latest In"
     params["imageTypeLimit"] = 1
@@ -196,7 +197,7 @@ sub loadItems()
     end for
   else if m.top.itemsToLoad = "specialfeatures"
     params = {}
-    url = Substitute("Users/{0}/Items/{1}/SpecialFeatures", m.global.user.id, m.top.itemId)
+    url = Substitute("Users/{0}/Items/{1}/SpecialFeatures", globalUser.id, m.top.itemId)
     resp = APIRequest(url, params)
     data = getJson(resp)
     if isValid(data) and data.count() > 0
@@ -230,7 +231,7 @@ sub loadItems()
       end for
     end if
   else if m.top.itemsToLoad = "likethis"
-    params = { "userId": m.global.user.id, "limit": 16 }
+    params = { "userId": globalUser.id, "limit": 16 }
     url = Substitute("Items/{0}/Similar", m.top.itemId)
     resp = APIRequest(url, params)
     data = getJson(resp)

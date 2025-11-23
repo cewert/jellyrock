@@ -268,13 +268,14 @@ sub SendPerformanceBeacon(signalName as string)
 end sub
 
 function CreateServerGroup()
+  globalServer = m.global.server
   screen = CreateObject("roSGNode", "SetServerScreen")
   screen.optionsAvailable = true
   m.global.sceneManager.callFunc("pushScene", screen)
   port = CreateObject("roMessagePort")
 
-  if isValid(m.global.server.serverUrl)
-    screen.serverUrl = m.global.server.serverUrl
+  if isValid(globalServer.serverUrl)
+    screen.serverUrl = globalServer.serverUrl
   end if
 
   buttons = screen.findNode("buttons")
@@ -327,7 +328,7 @@ function CreateServerGroup()
             set_setting("server", serverUrl)
             serverInfoResult = ServerInfo()
             'If this is a different server from what we know, reset username/password setting
-            if m.global.server.serverUrl <> serverUrl
+            if globalServer.serverUrl <> serverUrl
               set_setting("username", "")
               set_setting("password", "")
             end if

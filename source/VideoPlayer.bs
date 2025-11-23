@@ -28,6 +28,7 @@ function VideoPlayer(id as string, mediaSourceId = invalid as dynamic, audio_str
 end function
 
 sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx = 1 as integer, subtitle_idx = -1 as integer, playbackPosition = -1 as integer, forceTranscoding = false as boolean, showIntro = true as boolean, allowResumeDialog = true as boolean)
+  globalUser = m.global.user
   video.content = createObject("RoSGNode", "ContentNode")
   meta = ItemMetaData(video.id)
   if not isValid(meta)
@@ -88,7 +89,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
           params = {
             ids: video.Id
           }
-          url = Substitute("Users/{0}/Items/", m.global.user.id)
+          url = Substitute("Users/{0}/Items/", globalUser.id)
           resp = APIRequest(url, params)
           data = getJson(resp)
           for each item in data.Items
@@ -98,7 +99,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
           params = {
             ids: m.series_id
           }
-          url = Substitute("Users/{0}/Items/", m.global.user.id)
+          url = Substitute("Users/{0}/Items/", globalUser.id)
           resp = APIRequest(url, params)
           data = getJson(resp)
           for each item in data.Items
@@ -115,7 +116,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
           params = {
             ids: video.Id
           }
-          url = Substitute("Users/{0}/Items/", m.global.user.id)
+          url = Substitute("Users/{0}/Items/", globalUser.id)
           resp = APIRequest(url, params)
           data = getJson(resp)
           for each item in data.Items
@@ -126,7 +127,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
           params = {
             ids: m.season_id
           }
-          url = Substitute("Users/{0}/Items/", m.global.user.id)
+          url = Substitute("Users/{0}/Items/", globalUser.id)
           resp = APIRequest(url, params)
           data = getJson(resp)
           for each item in data.Items
@@ -136,7 +137,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
           params = {
             ids: m.series_id
           }
-          url = Substitute("Users/{0}/Items/", m.global.user.id)
+          url = Substitute("Users/{0}/Items/", globalUser.id)
           resp = APIRequest(url, params)
           data = getJson(resp)
           for each item in data.Items
@@ -153,7 +154,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
           params = {
             ids: video.Id
           }
-          url = Substitute("Users/{0}/Items/", m.global.user.id)
+          url = Substitute("Users/{0}/Items/", globalUser.id)
           resp = APIRequest(url, params)
           data = getJson(resp)
           for each item in data.Items
@@ -223,7 +224,7 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
   end if
 
   subtitles = sortSubtitles(meta.id, m.playbackInfo.MediaSources[0].MediaStreams)
-  if m.global.user.settings.playbackSubsOnlyText = true
+  if globalUser.settings.playbackSubsOnlyText = true
     safesubs = []
     for each subtitle in subtitles["all"]
       if subtitle["IsTextSubtitleStream"]
@@ -258,8 +259,8 @@ sub AddVideoContent(video as object, mediaSourceId as dynamic, audio_stream_idx 
     ' Find first video stream - MediaStreams[0] might be subtitle/audio
     videoStream = getFirstVideoStream(m.playbackInfo.MediaSources[0].MediaStreams)
     if isValid(videoStream) and isValid(videoStream.codec)
-      tryDirectPlay = m.global.user.settings.playbackTryDirectH264ProfileLevel = true and videoStream.codec = "h264"
-      tryDirectPlay = tryDirectPlay or (m.global.user.settings.playbackTryDirectHevcProfileLevel = true and videoStream.codec = "hevc")
+      tryDirectPlay = globalUser.settings.playbackTryDirectH264ProfileLevel = true and videoStream.codec = "h264"
+      tryDirectPlay = tryDirectPlay or (globalUser.settings.playbackTryDirectHevcProfileLevel = true and videoStream.codec = "hevc")
     else
       tryDirectPlay = false
     end if

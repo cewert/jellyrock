@@ -19,8 +19,9 @@ end function
 
 function AboutMe(id = "" as string)
   if id = ""
-    if isValid(m.global.user.id)
-      id = m.global.user.id
+    globalUser = m.global.user
+    if isValid(globalUser.id) and globalUser.id <> ""
+      id = globalUser.id
     else
       return invalid
     end if
@@ -150,10 +151,11 @@ function AuthenticateViaQuickConnect(secret)
   req = APIRequest("Users/AuthenticateWithQuickConnect")
   jsonResponse = postJson(req, FormatJson(params))
   if isValid(jsonResponse) and isValid(jsonResponse.AccessToken) and isValid(jsonResponse.User)
+    globalUser = m.global.user
     userdata = CreateObject("roSGNode", "UserData")
     userdata.json = jsonResponse
-    m.global.user.id = jsonResponse.User.Id
-    m.global.user.authToken = jsonResponse.AccessToken
+    globalUser.id = jsonResponse.User.Id
+    globalUser.authToken = jsonResponse.AccessToken
     userdata.callFunc("saveToRegistry")
 
     return true

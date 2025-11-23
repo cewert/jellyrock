@@ -75,8 +75,9 @@ end function
 function getGlobalRegistrySection() as string
   ' Detect test mode by checking if m.global.user.id starts with "test-"
   ' This is more reliable than compile-time flags since test user IDs always use this pattern
-  if isValid(m.global) and isValid(m.global.user) and isValid(m.global.user.id)
-    userId = m.global.user.id
+  globalUser = m.global.user
+  if isValid(globalUser) and isValid(globalUser.id)
+    userId = globalUser.id
     if type(userId) = "roString" or type(userId) = "String"
       if userId.StartsWith("test-")
         return "test-global"
@@ -104,16 +105,16 @@ end sub
 
 ' User registry accessors for the currently active user
 function get_user_setting(key as string) as dynamic
-  if key = "" or not isValid(m.global.user.id) then return invalid
-  value = registry_read(key, m.global.user.id)
+  globalUser = m.global.user
+  if key = "" or not isValid(globalUser.id) then return invalid
+  value = registry_read(key, globalUser.id)
   return value
 end function
 
 sub set_user_setting(key as string, value as dynamic)
-  if not isValid(m.global.user.id) then return
-
   ' Get local reference to minimize rendezvous
   localUser = m.global.user
+  if not isValid(localUser.id) then return
 
   ' Use node structure as source of truth - check where this field belongs
   if localUser.hasField(key)
@@ -132,11 +133,12 @@ sub set_user_setting(key as string, value as dynamic)
 end sub
 
 sub unset_user_setting(key as string)
-  if not isValid(m.global.user.id) then return
+  globalUser = m.global.user
+  if not isValid(globalUser.id) then return
   ' Delete from registry only (for sensitive data like token, username)
   ' These fields are excluded from the observer, so deleting from registry
   ' won't trigger the observer to re-save them
-  registry_delete(key, m.global.user.id)
+  registry_delete(key, globalUser.id)
 end sub
 
 ' Helper to determine if a setting is global (applies to all users)

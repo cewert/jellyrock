@@ -148,10 +148,10 @@ namespace user
 
       if saveCredentials
         if isValidAndNotEmpty(myPrimaryImageTag)
-          registry_write("primaryImageTag", myPrimaryImageTag, m.global.user.id)
+          registry_write("primaryImageTag", myPrimaryImageTag, userNode.id)
         end if
         if isValidAndNotEmpty(myAuthToken)
-          registry_write("authToken", myAuthToken, m.global.user.id)
+          registry_write("authToken", myAuthToken, userNode.id)
         end if
       end if
     else
@@ -182,11 +182,11 @@ namespace user
 
       if saveCredentials
         if isValidAndNotEmpty(myPrimaryImageTag)
-          registry_write("primaryImageTag", myPrimaryImageTag, m.global.user.id)
+          registry_write("primaryImageTag", myPrimaryImageTag, userNode.id)
         end if
 
         if isValidAndNotEmpty(myAuthToken)
-          registry_write("authToken", myAuthToken, m.global.user.id)
+          registry_write("authToken", myAuthToken, userNode.id)
         end if
       end if
     end if

@@ -5,8 +5,9 @@ import "pkg:/source/utils/deviceCapabilities.bs"
 import "pkg:/source/utils/misc.bs"
 
 function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioTrackIndex = -1 as integer, subtitleTrackIndex = SubtitleSelection.none as integer, startTimeTicks = 0& as longinteger, videoMetadata = invalid as dynamic)
+  globalUser = m.global.user
   postData = {
-    "UserId": m.global.user.id,
+    "UserId": globalUser.id,
     "StartTimeTicks": startTimeTicks,
     "AutoOpenLiveStream": true
     ' "AlwaysBurnInSubtitleWhenTranscoding": true
@@ -39,7 +40,7 @@ function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioT
 
   ' DOVI not supported using MKV container, so force remux for DOVI content
   ' Only run DOVI logic if the user setting exists and is enabled
-  if isValid(mediaStreams) and isValid(m.global.user.settings.playbackPreserveDovi) and m.global.user.settings.playbackPreserveDovi
+  if isValid(mediaStreams) and isValid(globalUser.settings.playbackPreserveDovi) and globalUser.settings.playbackPreserveDovi
     ' Check if device supports DOVI before proceeding
     deviceSupportsDovi = false
     di = CreateObject("roDeviceInfo")
@@ -403,9 +404,10 @@ end function
 
 ' Get Songs that are on an Album
 function MusicSongList(id as string)
-  url = Substitute("Users/{0}/Items", m.global.user.id, id)
+  globalUser = m.global.user
+  url = Substitute("Users/{0}/Items", globalUser.id, id)
   resp = APIRequest(url, {
-    "UserId": m.global.user.id,
+    "UserId": globalUser.id,
     "parentId": id,
     "includeitemtypes": "Audio",
     "sortBy": "SortName"
@@ -430,9 +432,10 @@ end function
 
 ' Get Songs that are on an Album
 function AudioItem(id as string)
-  url = Substitute("Users/{0}/Items/{1}", m.global.user.id, id)
+  globalUser = m.global.user
+  url = Substitute("Users/{0}/Items/{1}", globalUser.id, id)
   resp = APIRequest(url, {
-    "UserId": m.global.user.id,
+    "UserId": globalUser.id,
     "includeitemtypes": "Audio",
     "sortBy": "SortName"
   })
@@ -472,9 +475,10 @@ end function
 
 ' Get Intro Videos for an item
 function GetIntroVideos(id as string)
-  url = Substitute("Users/{0}/Items/{1}/Intros", m.global.user.id, id)
+  globalUser = m.global.user
+  url = Substitute("Users/{0}/Items/{1}/Intros", globalUser.id, id)
   resp = APIRequest(url, {
-    "UserId": m.global.user.id
+    "UserId": globalUser.id
   })
 
   return getJson(resp)
