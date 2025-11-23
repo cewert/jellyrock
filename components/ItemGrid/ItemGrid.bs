@@ -205,7 +205,7 @@ sub loadInitialItems()
     ' For LiveTV, we want to "Fit" the item images, not zoom
     m.top.imageDisplayMode = "scaleToFit"
 
-    if userSettings.displayLiveTvLanding = "guide" and m.options.view <> "livetv"
+    if m.view = "tvGuide"
       showTvGuide()
     end if
   else if m.top.parentItem.collectionType = "CollectionFolder" or m.top.parentItem.type = "CollectionFolder" or m.top.parentItem.collectionType = "boxsets" or m.top.parentItem.Type = "Boxset" or m.top.parentItem.Type = "Boxsets" or m.top.parentItem.Type = "Folder" or m.top.parentItem.Type = "Channel"
