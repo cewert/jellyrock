@@ -251,9 +251,9 @@ namespace tests
       m.assertFalse(deviceProfile.TranscodingProfiles[0].DoesExist("AudioCodec"), "AudioCodec field should remain non-existent")
     end function
 
-    @it("ignores containers other than ts/mp4")
+    @it("processes all video containers including mkv")
     function _()
-      ' Create profile with different container
+      ' Create profile with mkv container
       deviceProfile = {
         TranscodingProfiles: [
           {
@@ -266,12 +266,42 @@ namespace tests
         ]
       }
       channelCount = 6
-      originalCodecs = deviceProfile.TranscodingProfiles[0].AudioCodec
 
       removeUnsupportedAacFromProfile(deviceProfile, channelCount)
 
-      ' mkv container should remain unchanged
-      m.assertEqual(deviceProfile.TranscodingProfiles[0].AudioCodec, originalCodecs, "mkv container should not be modified")
+      ' mkv container should have AAC removed like all other video containers
+      m.assertEqual(deviceProfile.TranscodingProfiles[0].AudioCodec, "eac3,ac3,mp3", "mkv container should have AAC removed")
+    end function
+
+    @it("ignores non-Video type profiles (only processes Type=Video)")
+    function _()
+      ' Create profile with mixed types including Audio type
+      deviceProfile = {
+        TranscodingProfiles: [
+          {
+            Container: "ts",
+            Type: "Audio",
+            AudioCodec: "aac,mp3,flac",
+            MaxAudioChannels: "2"
+          },
+          {
+            Container: "ts",
+            Type: "Video",
+            AudioCodec: "aac,eac3,ac3,mp3",
+            VideoCodec: "h264",
+            MaxAudioChannels: "6"
+          }
+        ]
+      }
+      channelCount = 6
+      originalAudioProfileCodecs = deviceProfile.TranscodingProfiles[0].AudioCodec
+
+      removeUnsupportedAacFromProfile(deviceProfile, channelCount)
+
+      ' Audio profile should remain unchanged
+      m.assertEqual(deviceProfile.TranscodingProfiles[0].AudioCodec, originalAudioProfileCodecs, "Audio type profile should not be modified")
+      ' Video profile should have AAC removed
+      m.assertEqual(deviceProfile.TranscodingProfiles[1].AudioCodec, "eac3,ac3,mp3", "Video type profile should have AAC removed")
     end function
 
     @it("processes both ts and mp4 containers in same profile")

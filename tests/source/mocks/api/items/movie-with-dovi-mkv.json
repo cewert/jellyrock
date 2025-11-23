@@ -1,0 +1,40 @@
+{
+  "Id": "movie-dovi-mkv123",
+  "Type": "Movie",
+  "Name": "DOVI Test Movie",
+  "RunTimeTicks": 72000000000,
+  "OfficialRating": "PG-13",
+  "MediaSources": [
+    {
+      "Id": "mediasource123",
+      "Container": "mkv",
+      "Path": "/movies/test/dovi-movie.mkv",
+      "MediaStreams": [
+        {
+          "Index": 0,
+          "Codec": "hevc",
+          "Type": "Video",
+          "Width": 3840,
+          "Height": 2160,
+          "VideoRange": "DOVI",
+          "VideoRangeType": "DOVIWithHDR10",
+          "Profile": "Main 10",
+          "Level": 183,
+          "IsDefault": true,
+          "IsForced": false
+        },
+        {
+          "Index": 1,
+          "Codec": "eac3",
+          "Type": "Audio",
+          "Language": "eng",
+          "Channels": 6,
+          "BitRate": 640000,
+          "Profile": "Dolby Digital Plus",
+          "IsDefault": true,
+          "IsForced": false
+        }
+      ]
+    }
+  ]
+}

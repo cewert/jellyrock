@@ -1,0 +1,40 @@
+{
+  "Id": "movie-sdr-mkv123",
+  "Type": "Movie",
+  "Name": "SDR Test Movie",
+  "RunTimeTicks": 72000000000,
+  "OfficialRating": "PG-13",
+  "MediaSources": [
+    {
+      "Id": "mediasource456",
+      "Container": "mkv",
+      "Path": "/movies/test/sdr-movie.mkv",
+      "MediaStreams": [
+        {
+          "Index": 0,
+          "Codec": "h264",
+          "Type": "Video",
+          "Width": 1920,
+          "Height": 1080,
+          "VideoRange": "SDR",
+          "VideoRangeType": "SDR",
+          "Profile": "High",
+          "Level": 42,
+          "IsDefault": true,
+          "IsForced": false
+        },
+        {
+          "Index": 1,
+          "Codec": "aac",
+          "Type": "Audio",
+          "Language": "eng",
+          "Channels": 2,
+          "BitRate": 128000,
+          "Profile": "LC",
+          "IsDefault": true,
+          "IsForced": false
+        }
+      ]
+    }
+  ]
+}

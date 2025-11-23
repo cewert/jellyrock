@@ -1,0 +1,40 @@
+{
+  "Id": "movie-dovi-mp4123",
+  "Type": "Movie",
+  "Name": "DOVI Test Movie MP4",
+  "RunTimeTicks": 72000000000,
+  "OfficialRating": "PG-13",
+  "MediaSources": [
+    {
+      "Id": "mediasource789",
+      "Container": "mp4",
+      "Path": "/movies/test/dovi-movie.mp4",
+      "MediaStreams": [
+        {
+          "Index": 0,
+          "Codec": "hevc",
+          "Type": "Video",
+          "Width": 3840,
+          "Height": 2160,
+          "VideoRange": "DOVI",
+          "VideoRangeType": "DOVIWithHDR10",
+          "Profile": "Main 10",
+          "Level": 183,
+          "IsDefault": true,
+          "IsForced": false
+        },
+        {
+          "Index": 1,
+          "Codec": "aac",
+          "Type": "Audio",
+          "Language": "eng",
+          "Channels": 2,
+          "BitRate": 192000,
+          "Profile": "LC",
+          "IsDefault": true,
+          "IsForced": false
+        }
+      ]
+    }
+  ]
+}
