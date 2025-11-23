@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- cache m.global node references to reduce render thread overhead ([2c21862](https://github.com/cewert/jellyrock/commit/2c21862))
 - Preserve DoVi in MKV containers by forcing a remux ([#193](https://github.com/cewert/jellyrock/pull/193))
 - extract username sanitization into pure function ([b259c4e](https://github.com/cewert/jellyrock/commit/b259c4e))
 - Enable MKV container support via manifest flag ([#195](https://github.com/cewert/jellyrock/pull/195))
