@@ -58,7 +58,7 @@ JellyRock is a Jellyfin client for Roku devices allowing users to consume media 
 ### Render Thread Protection
 - **ALL API calls and I/O operations via Task Nodes only** (use `source/api/sdk.bs` for API calls)
 - Single field access: direct OK (m.global.device.locale)
-- Multiple field access: cache node reference locally
+- Multiple `m.global.child` access: cache local reference first (`globalUser = m.global.user`) to reduce render thread overhead
 - Use `getFields()`/`setFields()` for bulk operations
 ### Component Patterns
 - File pairing: same base name auto-scopes XML+BS together
