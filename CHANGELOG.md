@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Separate TV channel number and name in OSD display ([#202](https://github.com/cewert/jellyrock/pull/202))
 - LiveTV guide view not displaying on initial load ([#199](https://github.com/cewert/jellyrock/pull/199))
 - Replace custom buttons with JRButtonGroup in ProgramDetails ([#197](https://github.com/cewert/jellyrock/pull/197))
 - cache m.global node references to reduce render thread overhead ([2c21862](https://github.com/cewert/jellyrock/commit/2c21862))
