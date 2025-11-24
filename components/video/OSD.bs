@@ -304,16 +304,19 @@ sub setVideoSubTitle()
       currentProgram = ParseJson(m.top.currentProgram)
 
       if isValidAndNotEmpty(currentProgram)
-        ' set video title to current program name
+        ' Channel Number i.e. "CH 300"
+        if isValid(currentProgram.ChannelNumber) and currentProgram.ChannelNumber <> ""
+          currentChannelNumber = createSubtitleLabelNode("currentChannelNumber")
+          currentChannelNumber.text = tr("CH") + ` ${currentProgram.ChannelNumber}`
+
+          displaySubtitleNode(currentChannelNumber)
+        end if
+        ' Channel Name
         if isValid(currentProgram.Name)
-          currentChannel = createSubtitleLabelNode("currentChannel")
-          currentChannel.text = currentProgram.ChannelName
+          currentChannelName = createSubtitleLabelNode("currentChannelName")
+          currentChannelName.text = currentProgram.ChannelName
 
-          if isValid(currentProgram.ChannelNumber) and currentProgram.ChannelNumber <> ""
-            currentChannel.text = `${currentChannel.text} (${currentProgram.ChannelNumber})`
-          end if
-
-          displaySubtitleNode(currentChannel)
+          displaySubtitleNode(currentChannelName)
         end if
       end if
     end if
