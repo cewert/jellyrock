@@ -1,6 +1,6 @@
 import "pkg:/source/utils/misc.bs"
 
-const focusBorderSize = 6 ' 6px border when focused
+const focusBorderOffset = 6 ' Used for positioning calculations only (matches 6px border in 9-patch image); does NOT control actual border rendering
 const textExtension = 12 ' Text extends 6px on each side to prevent label wrapping
 
 ' LAYOUT NOTE FOR DEVELOPERS:
@@ -144,7 +144,7 @@ sub updateButtonPositioning()
 
   ' Text positioned at 0, extends equally on both sides
   m.buttonText.width = m.buttonBackground.width + textExtension
-  m.buttonText.translation = [0, m.buttonBackground.height + (focusBorderSize * 2)]
+  m.buttonText.translation = [0, m.buttonBackground.height + (focusBorderOffset * 2)]
 end sub
 
 sub setFocusBorderSize()
