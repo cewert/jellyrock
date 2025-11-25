@@ -36,7 +36,7 @@
     <LabelSecondaryMedium id="videoRemainingTime" bold="true" horizAlign="right" width="200" translation="[1624,868]" />
 
     <!-- FOOTER -->
-    <OSDButtonGroup id="buttonMenuLeft" translation="[90,936]">
+    <OSDButtonGroup id="buttonMenuLeft" translation="[96,936]">
       <IconButton id="itemBack" icon="pkg:/images/icons/itemPrevious.png" />
       <IconButton id="videoPlayPause" icon="pkg:/images/icons/play.png" />
       <IconButton id="itemNext" icon="pkg:/images/icons/itemNext.png" />
@@ -45,7 +45,7 @@
       <IconButton id="chapterList" icon="pkg:/images/icons/chapters.png" />
     </OSDButtonGroup>
     <!-- Video info popup is right aligned-->
-    <OSDButtonGroup id="buttonMenuRight" translation="[1724,936]">
+    <OSDButtonGroup id="buttonMenuRight" translation="[1730,936]">
       <IconButton id="showVideoInfoPopup" icon="pkg:/images/icons/fileInfo.png" />
     </OSDButtonGroup>
 

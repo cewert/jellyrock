@@ -1,10 +1,11 @@
 import "pkg:/source/utils/misc.bs"
 
 sub init()
-  m.buttonFocusBorder = m.top.findNode("buttonFocusBorder")
   m.buttonBackground = m.top.findNode("buttonBackground")
+  m.buttonBorder = m.top.findNode("buttonBorder")
   m.buttonText = m.top.findNode("buttonText")
 
+  m.top.observeField("enabled", "onEnabledChanged")
   m.top.observeField("background", "onBackgroundChanged")
   m.top.observeField("textColor", "onTextColorChanged")
   m.top.observeField("text", "onTextChanged")
@@ -22,43 +23,37 @@ sub applyTheme()
   ' Set default colors
   m.top.background = constants.colorBackgroundSecondary
   m.top.textColor = constants.colorTextPrimary
+  m.top.focusBorder = constants.colorPrimary
   m.top.focusBackground = constants.colorBackgroundSecondary
   m.top.textFocusColor = constants.colorTextPrimary
 end sub
 
 sub onFocusChanged()
-  constants = m.global.constants
-
   if m.top.hasFocus()
-    ' Button background
-    if isValid(m.top.focusBackground)
-      m.buttonBackground.blendColor = m.top.focusBackground
-    end if
-    ' Button text
-    if isValid(m.top.textFocusColor)
-      m.buttonText.color = m.top.textFocusColor
-    end if
-    ' Focus border
+    ' Button border - change to focus color
     if m.top.enableBorder
-      m.buttonFocusBorder.blendColor = constants.colorPrimary
-      m.buttonFocusBorder.visible = true
+      m.buttonBorder.blendColor = m.top.focusBorder
     end if
-  else
     ' Button background
-    if isValid(m.top.background)
-      m.buttonBackground.blendColor = m.top.background
-    end if
+    m.buttonBackground.blendColor = m.top.focusBackground
     ' Button text
-    if isValid(m.top.textColor)
-      m.buttonText.color = m.top.textColor
-    end if
-    ' Focus border
-    m.buttonFocusBorder.visible = false
+    m.buttonText.color = m.top.textFocusColor
+  else
+    ' Button border - match background color
+    m.buttonBorder.blendColor = m.top.background
+    ' Button background
+    m.buttonBackground.blendColor = m.top.background
+    ' Button text
+    m.buttonText.color = m.top.textColor
   end if
 end sub
 
 sub onBackgroundChanged()
   m.buttonBackground.blendColor = m.top.background
+  ' Border matches background when not focused
+  if not m.top.hasFocus()
+    m.buttonBorder.blendColor = m.top.background
+  end if
 end sub
 
 sub onTextColorChanged()
@@ -151,13 +146,9 @@ sub onEnabledChanged()
 end sub
 
 sub setFocusBorderSize()
-  if not m.top.enableBorder then return
   if m.buttonBackground.width < 1 then return
 
-  m.buttonFocusBorder.width = m.buttonBackground.width + (m.top.borderSize * 2)
-  m.buttonFocusBorder.height = m.buttonBackground.height + (m.top.borderSize * 2)
-
-  ' translate the button so the focus border is visible
-  m.buttonBackground.translation = [m.top.borderSize, m.top.borderSize]
-  m.buttonText.translation = [m.top.borderSize, m.top.borderSize]
+  ' Border poster must be same size as background
+  m.buttonBorder.width = m.buttonBackground.width
+  m.buttonBorder.height = m.buttonBackground.height
 end sub
