@@ -2,6 +2,12 @@ import "pkg:/source/utils/misc.bs"
 
 const focusBorderSize = 6 ' 6px border when focused
 
+' LAYOUT NOTE FOR DEVELOPERS:
+' IconButton text extends 12px wider than the button (6px on each side) to prevent label wrapping.
+' The button background/border/icon are shifted 6px to the right to center under the text.
+' When positioning IconButtons, account for this 6px offset if edge alignment is important.
+' Example: If aligning to x=90, the button will actually appear at x=96 (90 + 6px offset).
+
 sub init()
   m.buttonBackground = m.top.findNode("buttonBackground")
   m.buttonBorder = m.top.findNode("buttonBorder")

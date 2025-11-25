@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  LAYOUT NOTE: IconButton has a 6px right offset due to text extending 12px wider than button.
+  For LEFT-aligned components: subtract 6px from desired x-coordinate for edge alignment.
+  Example: If aligning to x=90, the button will actually appear at x=96 (90 + 6px offset).
+  For RIGHT-aligned components: add 6px to account for text extension.
+-->
 <component name="IconButton" extends="Group">
   <children>
     <Poster id="buttonBackground" uri="pkg:/images/9patch/filled-rounded.9.png" />
