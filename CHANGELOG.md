@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- claude agent to analyze PR code reviews ([924e6c3](https://github.com/cewert/jellyrock/commit/924e6c3))
+
 ### Changed
 
 - Separate TV channel number and name in OSD display ([#202](https://github.com/cewert/jellyrock/pull/202))
