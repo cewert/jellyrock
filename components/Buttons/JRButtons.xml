@@ -4,7 +4,7 @@
     <Group>
 
       <!-- Background Bar -->
-      <Poster id="menubg" uri="pkg:/images/option-menu-bg.9.png" width="800" height="100" />
+      <Poster id="menubg" uri="pkg:/images/9patch/filled-rounded.9.png" width="800" height="100" />
 
       <rectangle id="focus" />
 

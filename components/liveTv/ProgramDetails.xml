@@ -17,11 +17,11 @@
 
           <LayoutGroup id="episodeDetailsGroup" layoutDirection="horiz" itemSpacings="[10]">
             <Group id="isLive">
-              <Poster id="isLiveBackground" uri="pkg:/images/white.9.png" blendColor="#FF0000" />
+              <Poster id="isLiveBackground" uri="pkg:/images/9patch/filled-rounded.9.png" blendColor="#FF0000" />
               <LabelPrimarySmallest id="isLiveText" text="Live" translation="[8,4]" bold="true" />
             </Group>
             <Group id="isRepeat">
-              <Poster id="isRepeatBackground" uri="pkg:/images/white.9.png" blendColor="#009688" />
+              <Poster id="isRepeatBackground" uri="pkg:/images/9patch/filled-rounded.9.png" blendColor="#009688" />
               <LabelPrimarySmallest id="isRepeatText" text="Repeat" translation="[8,4]" bold="true" />
             </Group>
             <LabelPrimarySmall id="episodeNumber" />

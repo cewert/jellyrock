@@ -3,7 +3,7 @@
   <children>
     <Rectangle width="1920" height="1080" color="#000000" opacity="0.75" />
     <Group translation="[100,100]">
-      <Poster width="1720" height="880" uri="pkg:/images/dialog.9.png" />
+      <Poster id="dialogBackground" width="1720" height="880" uri="pkg:/images/9patch/filled-rounded.9.png" />
       <LayoutGroup horizAlignment="center" translation="[860,50]" itemSpacings="[50]">
         <JRButtons id="buttons" />
         <Group>

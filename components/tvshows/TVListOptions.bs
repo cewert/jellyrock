@@ -16,10 +16,7 @@ sub init()
   m.videoNames = []
   m.audioNames = []
 
-  ' Set button colors to global
-  constants = m.global.constants
-  m.top.findNode("videoMenu").focusBitmapBlendColor = constants.colorSecondary
-  m.top.findNode("audioMenu").focusBitmapBlendColor = constants.colorSecondary
+  applyTheme()
 
   ' Animation
   m.fadeAnim = m.top.findNode("fadeAnim")
@@ -29,6 +26,13 @@ sub init()
   m.buttons.observeField("focusedIndex", "buttonFocusChanged")
   m.buttons.focusedIndex = m.selectedItem
 
+end sub
+
+sub applyTheme()
+  constants = m.global.constants
+  m.top.findNode("dialogBackground").blendColor = constants.colorBackgroundSecondary
+  m.top.findNode("videoMenu").focusBitmapBlendColor = constants.colorPrimary
+  m.top.findNode("audioMenu").focusBitmapBlendColor = constants.colorPrimary
 end sub
 
 sub optionsSet()

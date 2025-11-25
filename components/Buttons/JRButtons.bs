@@ -13,8 +13,7 @@ sub init()
   m.focusAnimWidth = m.top.findNode("focusWidth")
   m.focusAnimHeight = m.top.findNode("focusHeight")
 
-  ' Set button color to global
-  m.focusRing.color = m.global.constants.colorPrimary
+  applyTheme()
 
   m.buttonCount = 0
   m.selectedFocusedIndex = 0
@@ -25,6 +24,12 @@ sub init()
   m.top.enableRenderTracking = true
   m.top.observeField("renderTracking", "renderChanged")
 
+end sub
+
+sub applyTheme()
+  constants = m.global.constants
+  m.menubg.blendColor = constants.colorBackgroundPrimary
+  m.focusRing.color = constants.colorPrimary
 end sub
 
 '

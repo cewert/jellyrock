@@ -15,8 +15,7 @@
       textVertAlign="center" />
 
     <Poster
-      translation="[710,230]" id="testRectangle" width="1210" height="830" uri="pkg:/images/white.9.png"
-      blendColor="#3f3f3f" />
+      translation="[710,230]" id="testRectangle" width="1210" height="830" uri="pkg:/images/9patch/filled-rounded.9.png" />
 
     <LayoutGroup translation="[1278,270]" id="settingDetail" vertAlignment="top" horizAlignment="center" itemSpacings="[50]">
       <LabelPrimaryMedium id="settingDesc"
