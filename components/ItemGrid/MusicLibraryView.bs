@@ -682,7 +682,6 @@ sub optionsClosed()
 
   if m.options.view <> m.view
     m.view = m.options.view
-    m.top.view = m.view
     setLibraryDisplaySetting(m.top.parentItem.Id, "landing", m.view)
 
     ' Reset any filtering or search terms

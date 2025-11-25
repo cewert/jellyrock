@@ -6,6 +6,7 @@ sub init()
   m.postTextBackground = m.top.findNode("postTextBackground")
   m.posterText = m.top.findNode("posterText")
   m.backdrop = m.top.findNode("backdrop")
+  m.backdrop.blendColor = m.global.constants.colorBackgroundSecondary
 
   m.itemPoster.observeField("loadStatus", "onPosterLoadStatusChanged")
 
@@ -22,8 +23,6 @@ sub init()
 end sub
 
 sub itemContentChanged()
-  m.backdrop.blendColor = "#101010"
-
   m.posterText.visible = false
   m.postTextBackground.visible = false
 
@@ -38,20 +37,35 @@ sub itemContentChanged()
 
   if not isValid(itemData) then return
 
-  if LCase(itemData.type) = "musicalbum"
-    m.backdrop.uri = "pkg:/images/icons/album.png"
-  else if LCase(itemData.type) = "musicartist"
-    m.backdrop.uri = "pkg:/images/icons/missingArtist.png"
-  else if LCase(itemData.json.type) = "musicgenre"
-    m.backdrop.uri = "pkg:/images/icons/musicFolder.png"
+  ' Check if we need to show a fallback icon (only when no PosterUrl)
+  showFallbackIcon = false
+  fallbackIconUri = ""
+
+  if not isValid(itemData.PosterUrl) or itemData.PosterUrl = ""
+    if LCase(itemData.type) = "musicalbum"
+      fallbackIconUri = "pkg:/images/icons/album.png"
+      showFallbackIcon = true
+    else if LCase(itemData.type) = "musicartist"
+      fallbackIconUri = "pkg:/images/icons/missingArtist.png"
+      showFallbackIcon = true
+    else if LCase(itemData.json.type) = "musicgenre"
+      fallbackIconUri = "pkg:/images/icons/musicFolder.png"
+      showFallbackIcon = true
+    end if
   end if
 
   m.itemPoster.uri = itemData.PosterUrl
   m.posterText.text = itemData.title
 
-  'If Poster not loaded, ensure "blue box" is shown until loaded
+  'If Poster not loaded, show colored backdrop
   if m.itemPoster.loadStatus <> "ready"
     m.backdrop.visible = true
+    ' If we need a fallback icon, prepare to show it on top of backdrop
+    if showFallbackIcon
+      m.itemPoster.uri = fallbackIconUri
+      m.itemPoster.blendColor = m.global.constants.colorTextSecondary
+      m.itemPoster.loadDisplayMode = "scaleToFit"
+    end if
   end if
   if m.top.itemHasFocus then focusChanged()
 end sub
@@ -72,9 +86,18 @@ sub focusChanged()
   end if
 end sub
 
-'Hide backdrop and text when poster loaded
+'Hide backdrop when real poster loaded (not fallback icon)
 sub onPosterLoadStatusChanged()
   if m.itemPoster.loadStatus = "ready"
-    m.backdrop.visible = false
+    ' Only hide backdrop if we loaded an actual poster image (has PosterUrl)
+    itemData = m.top.itemContent
+    if isValid(itemData) and isValid(itemData.PosterUrl) and itemData.PosterUrl <> ""
+      m.backdrop.visible = false
+      m.itemPoster.blendColor = "0xFFFFFFFF" ' Reset to white
+      ' Restore original display mode if parent specifies one
+      if isValid(m.topParent.imageDisplayMode)
+        m.itemPoster.loadDisplayMode = m.topParent.imageDisplayMode
+      end if
+    end if
   end if
 end sub

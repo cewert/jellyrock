@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="MusicLibraryView" extends="JRScreen">
   <children>
-    <Rectangle id="screenSaverBackground" width="1920" height="1080" color="#000000" />
-
     <VoiceTextEditBox id="VoiceBox" visible="true" width="40" translation="[52, 120]" />
 
     <maskGroup translation="[820, 0]" id="backgroundMask" maskUri="pkg:/images/backgroundmask.png" maskSize="[1220,445]">
