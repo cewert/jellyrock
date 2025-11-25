@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Refactor 9-patch images and fix library view backgrounds ([#208](https://github.com/cewert/jellyrock/pull/208))
 - (ui) improve button focus borders with optimized 9-patch implementation ([#206](https://github.com/cewert/jellyrock/pull/206))
 - Separate TV channel number and name in OSD display ([#202](https://github.com/cewert/jellyrock/pull/202))
 - LiveTV guide view not displaying on initial load ([#199](https://github.com/cewert/jellyrock/pull/199))
