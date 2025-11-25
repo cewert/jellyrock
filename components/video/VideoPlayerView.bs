@@ -440,7 +440,7 @@ sub onVideoContentLoaded()
   m.LoadMetaDataTask.content = []
 
   ' If we have nothing to play, return to previous screen
-  if not isValidAndNotEmpty(videoContent)
+  if not isValid(videoContent) or not isValid(videoContent[0])
     stopLoadingSpinner()
     showPlaybackErrorDialog(tr("There was an error retrieving the data for this item from the server."))
     return
