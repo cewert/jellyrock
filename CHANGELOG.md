@@ -23,6 +23,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Enable MKV container support via manifest flag ([#195](https://github.com/cewert/jellyrock/pull/195))
 - Optimize bot instruction files ([#192](https://github.com/cewert/jellyrock/pull/192))
 
+### Fixed
+
+- playback crash when videoContent[0] is invalid ([7d159f7](https://github.com/cewert/jellyrock/commit/7d159f7))
+
 ### Removed
 
 - Remove hardcoded defaults from server-authoritative user settings ([#201](https://github.com/cewert/jellyrock/pull/201))
