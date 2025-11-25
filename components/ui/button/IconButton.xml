@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  LAYOUT NOTE: IconButton has a 6px right offset due to text extending 12px wider than button.
+  For LEFT-aligned components: subtract 6px from desired x-coordinate for edge alignment.
+  Example: If aligning to x=90, the button will actually appear at x=96 (90 + 6px offset).
+  For RIGHT-aligned components: add 6px to account for text extension.
+-->
 <component name="IconButton" extends="Group">
   <children>
-    <Poster id="buttonFocusBorder" uri="pkg:/images/white.9.png" visible="false" />
-    <Poster id="buttonBackground" uri="pkg:/images/white.9.png" />
+    <Poster id="buttonBackground" uri="pkg:/images/9patch/filled-rounded.9.png" />
+    <Poster id="buttonBorder" uri="pkg:/images/9patch/border-6px.9.png" />
     <Poster id="buttonIcon" />
-    <LabelPrimarySmallest id="buttonText" horizAlign="center" />
+    <LabelPrimarySmallest id="buttonText" horizAlign="center" wrap="true" maxLines="2" lineSpacing="0" />
   </children>
   <interface>
     <field id="background" type="color" value="" />
+    <field id="focusBorder" type="color" value="" />
     <field id="focusBackground" type="color" value="" />
     <field id="iconBackground" type="color" value="" />
     <field id="iconFocusBackground" type="color" value="" />
@@ -18,7 +25,6 @@
     <field id="focus" type="boolean" />
     <field id="escape" type="string" value="" />
     <field id="enableBorder" type="boolean" value="true" />
-    <field id="borderSize" type="integer" value="6" />
-    <field id="enabled" type="boolean" value="true" onChange="onEnabledChanged" />
+    <field id="enabled" type="boolean" value="true" />
   </interface>
 </component>

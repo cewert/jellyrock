@@ -1,11 +1,22 @@
 import "pkg:/source/utils/misc.bs"
+
+const focusBorderOffset = 6 ' Used for positioning calculations only (matches 6px border in 9-patch image); does NOT control actual border rendering
+const textExtension = 12 ' Text extends 6px on each side to prevent label wrapping
+
+' LAYOUT NOTE FOR DEVELOPERS:
+' IconButton text extends 12px wider than the button (6px on each side) to prevent label wrapping.
+' The button background/border/icon are shifted 6px to the right to center under the text.
+' When positioning IconButtons, account for this 6px offset if edge alignment is important.
+' Example: If aligning to x=90, the button will actually appear at x=96 (90 + 6px offset).
+
 sub init()
-  m.buttonFocusBorder = m.top.findNode("buttonFocusBorder")
   m.buttonBackground = m.top.findNode("buttonBackground")
+  m.buttonBorder = m.top.findNode("buttonBorder")
   m.buttonIcon = m.top.findNode("buttonIcon")
   m.buttonIcon.ObserveField("loadStatus", "OnImageLoadStatusChanged")
   m.buttonText = m.top.findNode("buttonText")
 
+  m.top.observeField("enabled", "onEnabledChanged")
   m.top.observeField("background", "onBackgroundChanged")
   m.top.observeField("iconBackground", "onIconBackgroundChanged")
   m.top.observeField("icon", "onIconChanged")
@@ -23,44 +34,41 @@ sub applyTheme()
 
   ' Set default colors
   m.top.background = constants.colorBackgroundSecondary
+  m.top.focusBorder = constants.colorPrimary
   m.top.iconBackground = constants.colorTextPrimary
   m.top.focusBackground = constants.colorBackgroundSecondary
   m.top.iconFocusBackground = constants.colorTextPrimary
 end sub
 
 sub onFocusChanged()
-  constants = m.global.constants
-
   if m.top.focus
-    ' Button background
-    if isValid(m.top.focusBackground)
-      m.buttonBackground.blendColor = m.top.focusBackground
-    end if
-    ' Button icon
-    if isValid(m.top.iconFocusBackground)
-      m.buttonIcon.blendColor = m.top.iconFocusBackground
-    end if
-    ' Focus border
+    ' Button border - change to focus color
     if m.top.enableBorder
-      m.buttonFocusBorder.blendColor = constants.colorPrimary
-      m.buttonFocusBorder.visible = true
+      m.buttonBorder.blendColor = m.top.focusBorder
+    else
+      ' Border disabled - ensure it stays invisible
+      m.buttonBorder.blendColor = m.top.background
     end if
-  else
     ' Button background
-    if isValid(m.top.background)
-      m.buttonBackground.blendColor = m.top.background
-    end if
+    m.buttonBackground.blendColor = m.top.focusBackground
     ' Button icon
-    if isValid(m.top.iconBackground)
-      m.buttonIcon.blendColor = m.top.iconBackground
-    end if
-    ' Focus border
-    m.buttonFocusBorder.visible = false
+    m.buttonIcon.blendColor = m.top.iconFocusBackground
+  else
+    ' Button border - match background color
+    m.buttonBorder.blendColor = m.top.background
+    ' Button background
+    m.buttonBackground.blendColor = m.top.background
+    ' Button icon
+    m.buttonIcon.blendColor = m.top.iconBackground
   end if
 end sub
 
 sub onBackgroundChanged()
   m.buttonBackground.blendColor = m.top.background
+  ' Border matches background when not focused OR when borders are disabled
+  if not m.top.focus or not m.top.enableBorder
+    m.buttonBorder.blendColor = m.top.background
+  end if
 end sub
 
 sub onIconBackgroundChanged()
@@ -99,9 +107,12 @@ sub setIconSize()
       m.buttonBackground.height = iconHeight
     end if
 
-    m.buttonIcon.translation = [((m.buttonBackground.width - iconWidth) / 2), ((m.buttonBackground.height - iconHeight) / 2)]
-    m.buttonText.translation = [0, m.buttonBackground.height + 12]
-    m.buttonText.width = m.buttonBackground.width
+    ' Position icon centered in button background
+    buttonOffset = textExtension / 2
+    m.buttonIcon.translation = [buttonOffset + ((m.buttonBackground.width - iconWidth) / 2), ((m.buttonBackground.height - iconHeight) / 2)]
+
+    ' Update button and text positioning using shared method
+    updateButtonPositioning()
   end if
 end sub
 
@@ -121,19 +132,30 @@ sub onEnabledChanged()
   end if
 end sub
 
+' Updates button and text positioning based on textExtension constant
+' This centers button elements under the wider text label
+sub updateButtonPositioning()
+  ' Calculate offset to center button elements under wider text
+  buttonOffset = textExtension / 2
+
+  ' Shift button elements to the right to center them under the wider text
+  m.buttonBackground.translation = [buttonOffset, 0]
+  m.buttonBorder.translation = [buttonOffset, 0]
+
+  ' Text positioned at 0, extends equally on both sides
+  m.buttonText.width = m.buttonBackground.width + textExtension
+  m.buttonText.translation = [0, m.buttonBackground.height + (focusBorderOffset * 2)]
+end sub
+
 sub setFocusBorderSize()
-  if not m.top.enableBorder then return
   if m.buttonBackground.width < 1 then return
 
-  m.buttonFocusBorder.width = m.buttonBackground.width + (m.top.borderSize * 2)
-  m.buttonFocusBorder.height = m.buttonBackground.height + (m.top.borderSize * 2)
+  ' Border poster must be same size as background
+  m.buttonBorder.width = m.buttonBackground.width
+  m.buttonBorder.height = m.buttonBackground.height
 
-  ' translate the button so the focus border is visible
-  m.buttonBackground.translation = [m.top.borderSize, m.top.borderSize]
-  m.buttonIcon.translation = [m.top.padding + m.top.borderSize, m.top.padding + m.top.borderSize]
-
-  m.buttonText.translation = [0, m.buttonBackground.height + 12 + m.top.borderSize]
-  m.buttonText.width = m.buttonFocusBorder.width
+  ' Update button and text positioning using shared method
+  updateButtonPositioning()
 end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
