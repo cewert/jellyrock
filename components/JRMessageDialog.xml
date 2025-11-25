@@ -3,8 +3,7 @@
   <children>
     <Poster
       id="dialogBackground"
-      uri="pkg:/images/dialog.9.png"
-      blendColor="#000000"
+      uri="pkg:/images/9patch/filled-rounded.9.png"
       translation="[0, 0]"
     />
     <LabelPrimaryMedium id="messageText" horizAlign="center" wrap="true" />

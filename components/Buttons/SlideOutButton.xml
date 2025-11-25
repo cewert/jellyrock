@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="SlideOutButton" extends="Group">
   <children>
-    <Poster id="buttonBackground" uri="pkg:/images/white.9.png" />
+    <Poster id="buttonBackground" uri="pkg:/images/9patch/filled-rounded.9.png" />
     <Poster id="buttonIcon" />
     <LabelPrimarySmallest id="buttonText" horizAlign="center" />
   </children>

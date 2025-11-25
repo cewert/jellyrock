@@ -1,4 +1,6 @@
 sub init()
+  m.top.findNode("dialogBackground").blendColor = m.global.constants.colorBackgroundSecondary
+
   options = m.top.findNode("optionList")
   options.focusBitmapBlendColor = "0x0cb0e8"
   options.color = "0xffffff"

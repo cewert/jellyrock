@@ -3,6 +3,8 @@ import "pkg:/source/utils/misc.bs"
 
 sub init()
   m.log = log.Logger("ItemGridOptions")
+  m.top.findNode("dialogBackground").blendColor = m.global.constants.colorBackgroundSecondary
+
   m.buttons = m.top.findNode("buttons")
   m.buttons.buttons = [tr("View"), tr("Sort"), tr("Filter")]
   m.buttons.selectedIndex = 1
