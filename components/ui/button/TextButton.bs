@@ -33,6 +33,9 @@ sub onFocusChanged()
     ' Button border - change to focus color
     if m.top.enableBorder
       m.buttonBorder.blendColor = m.top.focusBorder
+    else
+      ' Border disabled - ensure it stays invisible
+      m.buttonBorder.blendColor = m.top.background
     end if
     ' Button background
     m.buttonBackground.blendColor = m.top.focusBackground
@@ -50,8 +53,8 @@ end sub
 
 sub onBackgroundChanged()
   m.buttonBackground.blendColor = m.top.background
-  ' Border matches background when not focused
-  if not m.top.hasFocus()
+  ' Border matches background when not focused OR when borders are disabled
+  if not m.top.hasFocus() or not m.top.enableBorder
     m.buttonBorder.blendColor = m.top.background
   end if
 end sub

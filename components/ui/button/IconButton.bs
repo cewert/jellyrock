@@ -1,6 +1,7 @@
 import "pkg:/source/utils/misc.bs"
 
 const focusBorderSize = 6 ' 6px border when focused
+const textExtension = 12 ' Text extends 6px on each side to prevent label wrapping
 
 ' LAYOUT NOTE FOR DEVELOPERS:
 ' IconButton text extends 12px wider than the button (6px on each side) to prevent label wrapping.
@@ -44,6 +45,9 @@ sub onFocusChanged()
     ' Button border - change to focus color
     if m.top.enableBorder
       m.buttonBorder.blendColor = m.top.focusBorder
+    else
+      ' Border disabled - ensure it stays invisible
+      m.buttonBorder.blendColor = m.top.background
     end if
     ' Button background
     m.buttonBackground.blendColor = m.top.focusBackground
@@ -61,8 +65,8 @@ end sub
 
 sub onBackgroundChanged()
   m.buttonBackground.blendColor = m.top.background
-  ' Border matches background when not focused
-  if not m.top.focus
+  ' Border matches background when not focused OR when borders are disabled
+  if not m.top.focus or not m.top.enableBorder
     m.buttonBorder.blendColor = m.top.background
   end if
 end sub
@@ -103,18 +107,12 @@ sub setIconSize()
       m.buttonBackground.height = iconHeight
     end if
 
-    ' Text extends 6px on each side (12px total) to allow longer labels
-    textExtension = 12
+    ' Position icon centered in button background
     buttonOffset = textExtension / 2
-
-    ' Shift button elements to the right to center them under the wider text
-    m.buttonBackground.translation = [buttonOffset, 0]
-    m.buttonBorder.translation = [buttonOffset, 0]
     m.buttonIcon.translation = [buttonOffset + ((m.buttonBackground.width - iconWidth) / 2), ((m.buttonBackground.height - iconHeight) / 2)]
 
-    ' Text positioned at 0, extends equally on both sides
-    m.buttonText.width = m.buttonBackground.width + textExtension
-    m.buttonText.translation = [0, m.buttonBackground.height + (focusBorderSize * 2)]
+    ' Update button and text positioning using shared method
+    updateButtonPositioning()
   end if
 end sub
 
@@ -134,15 +132,10 @@ sub onEnabledChanged()
   end if
 end sub
 
-sub setFocusBorderSize()
-  if m.buttonBackground.width < 1 then return
-
-  ' Border poster must be same size as background
-  m.buttonBorder.width = m.buttonBackground.width
-  m.buttonBorder.height = m.buttonBackground.height
-
-  ' Text extends 6px on each side (12px total) to allow longer labels
-  textExtension = 12
+' Updates button and text positioning based on textExtension constant
+' This centers button elements under the wider text label
+sub updateButtonPositioning()
+  ' Calculate offset to center button elements under wider text
   buttonOffset = textExtension / 2
 
   ' Shift button elements to the right to center them under the wider text
@@ -152,6 +145,17 @@ sub setFocusBorderSize()
   ' Text positioned at 0, extends equally on both sides
   m.buttonText.width = m.buttonBackground.width + textExtension
   m.buttonText.translation = [0, m.buttonBackground.height + (focusBorderSize * 2)]
+end sub
+
+sub setFocusBorderSize()
+  if m.buttonBackground.width < 1 then return
+
+  ' Border poster must be same size as background
+  m.buttonBorder.width = m.buttonBackground.width
+  m.buttonBorder.height = m.buttonBackground.height
+
+  ' Update button and text positioning using shared method
+  updateButtonPositioning()
 end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
