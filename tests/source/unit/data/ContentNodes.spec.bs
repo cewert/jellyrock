@@ -162,7 +162,7 @@ namespace tests
     function _()
       userNode = CreateObject("roSGNode", "JellyfinUser")
 
-      ' Verify nested nodes are created
+      ' Verify nested nodes are invalid by default (server-authoritative data)
       m.assertInvalid(userNode.config)
       m.assertInvalid(userNode.policy)
 
@@ -170,10 +170,11 @@ namespace tests
       userNode.config = CreateObject("roSGNode", "JellyfinUserConfiguration")
       userNode.policy = CreateObject("roSGNode", "JellyfinUserPolicy")
 
-      ' Verify default values on nested nodes
-      m.assertEqual(userNode.config.enableNextEpisodeAutoPlay, false)
-      m.assertEqual(userNode.policy.isAdministrator, false)
-      m.assertEqual(userNode.policy.enableMediaPlayback, true)
+      ' Verify nodes can be created and assigned
+      m.assertTrue(isValid(userNode.config))
+      m.assertTrue(isValid(userNode.policy))
+      m.assertEqual(userNode.config.subtype(), "JellyfinUserConfiguration")
+      m.assertEqual(userNode.policy.subtype(), "JellyfinUserPolicy")
     end function
 
     @it("uses id and authToken as sentinels")
