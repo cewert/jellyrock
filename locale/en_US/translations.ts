@@ -711,10 +711,6 @@
       <extracomment>Abbreviation for not available</extracomment>
     </message>
     <message>
-      <source>Name:</source>
-      <translation>Name:</translation>
-    </message>
-    <message>
       <source>Networks</source>
       <translation>Networks</translation>
     </message>
@@ -1270,10 +1266,6 @@
     <message>
       <source>Unplayed</source>
       <translation>Unplayed</translation>
-    </message>
-    <message>
-      <source>URL:</source>
-      <translation>URL:</translation>
     </message>
     <message>
       <source>Use custom subtitle rendering for external VTT subtitle files. Enables fallback fonts from the server and removes some formatting tags from misformatted subtitles. Note: May not fully support all Roku caption preferences.</source>
