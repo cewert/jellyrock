@@ -5,22 +5,18 @@ sub init() as void
   m.poster = m.top.findNode("poster")
   m.name = m.top.findNode("name")
   m.baseUrl = m.top.findNode("baseUrl")
-  m.labels = m.top.findNode("labels")
 
   ' Set focus border color to primary color and size it to cover the entire component
-  if isValid(m.focusBorder)
-    m.focusBorder.blendColor = m.global.constants.colorPrimary
-    ' Size the border to cover the entire component with some padding
-    ' get the itemSize of the parent MarkupList
-    parentList = m.top.getParent()
-    if isValid(parentList) and parentList.hasField("itemSize")
-      itemSize = parentList.itemSize
-      if isValid(itemSize) and itemSize.Count() = 2
-        m.focusBorder.width = itemSize[0]
-        m.focusBorder.height = itemSize[1]
-      end if
+  m.focusBorder.blendColor = m.global.constants.colorPrimary
+  ' Size the border to cover the entire component with some padding
+  ' get the itemSize of the parent MarkupList
+  parentList = m.top.getParent()
+  if isValid(parentList) and parentList.hasField("itemSize")
+    itemSize = parentList.itemSize
+    if isValid(itemSize) and itemSize.Count() = 2
+      m.focusBorder.width = itemSize[0]
+      m.focusBorder.height = itemSize[1]
     end if
-    ' m.focusBorder.translation = [-10, -5]
   end if
 end sub
 

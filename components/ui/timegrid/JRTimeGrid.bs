@@ -6,7 +6,7 @@ sub init()
   m.top.automaticLoadingDataFeedback = false
   m.top.showLoadingDataFeedback = true
   m.top.showPastTimeScreen = true
-  m.top.focusBitmapUri = "pkg:/images/white-focus.9.png"
+  m.top.focusBitmapUri = "pkg:/images/9patch/border-6px.9.png"
   m.top.focusBitmapBlendColor = constants.colorPrimary
   m.top.iconFocusedColor = "#ff0000"
 

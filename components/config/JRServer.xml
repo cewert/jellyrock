@@ -7,17 +7,11 @@
   </interface>
 
   <children>
-    <Poster id="focusBorder" uri="pkg:/images/white-focus.9.png" visible="false" />
-    <LayoutGroup layoutDirection="horiz" itemSpacings="[30]" translation="[6,6]">
-      <Poster id="poster" width="90" loadWidth="90" height="90" loadHeight="90" loadDisplayMode="scaleToFit" />
-      <Group id="labels" translation="[100,0]">
-        <LabelPrimaryMedium text="Name:" horizAlign="left" width="130" height="65" translation="[0,5]" />
-        <LabelPrimaryMedium text="URL:" horizAlign="left" width="130" height="65" translation="[0,55]" />
+    <Poster id="focusBorder" uri="pkg:/images/9patch/border-6px.9.png" visible="false" />
+    <Poster id="poster" width="78" loadWidth="78" height="78" loadHeight="78" loadDisplayMode="scaleToFit" translation="[12,11]" />
 
-        <LabelPrimaryMedium id="name" bold="true" horizAlign="left" height="65" translation="[125,5]" />
-        <LabelPrimaryMedium id="baseUrl" horizAlign="left" height="65" translation="[125,55]" />
-      </Group>
-    </LayoutGroup>
+    <LabelPrimaryMedium id="name" bold="true" horizAlign="left" height="65" translation="[100,12]" />
+    <LabelPrimaryMedium id="baseUrl" horizAlign="left" height="65" translation="[100,55]" />
   </children>
 
 </component>
