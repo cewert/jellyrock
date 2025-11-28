@@ -12,6 +12,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Cleanup and theme the Alpha Menu ([#212](https://github.com/cewert/jellyrock/pull/212))
 - remove `white_focus.9.png` 9patch image ([eda1e9d](https://github.com/cewert/jellyrock/commit/eda1e9d))
 
+### Fixed
+
+- make default user image in overhang match the one used in User Select ([51b0952](https://github.com/cewert/jellyrock/commit/51b0952))
+
 ### Removed
 
 - redundant sidebar menu on music artist screen ([#211](https://github.com/cewert/jellyrock/pull/211))
