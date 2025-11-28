@@ -269,6 +269,8 @@ function onKeyEvent(key as string, press as boolean) as boolean
 
       m.top.selectedButtonIndex = 0
       m.sectionScroller.displayedIndex = m.sectionScroller.displayedIndex + 1
+
+      return true
     end if
   end if
 
