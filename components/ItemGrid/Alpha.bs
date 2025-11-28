@@ -3,16 +3,31 @@ sub init()
 
   m.alphaText = m.top.findNode("alphaText")
   m.alphaMenu = m.top.findNode("alphaMenu")
-
   m.alphaMenu.setFocus(false)
-  m.alphaMenu.focusedFont.size = 25
-  m.alphaMenu.font.size = 25
+
+  applyTheme()
 
   ' show mic icon above alpha menu if remote supports voice commands
   if m.global.device.hasVoiceRemote
     alphaMic = m.top.findNode("alphaMic")
     alphaMic.visible = true
   end if
+end sub
+
+sub applyTheme()
+  constants = m.global.constants
+
+  ' font sizes
+  m.alphaMenu.focusedFont.size = constants.fontSizeSmaller
+  m.alphaMenu.font.size = constants.fontSizeSmaller
+  ' font colors
+  m.alphaMenu.focusedColor = constants.colorTextPrimary
+  m.alphaMenu.color = constants.colorTextSecondary
+  ' focus 9patch and color
+  m.alphaMenu.focusBitmapUri = "pkg:/images/9patch/border-6px.9.png"
+  m.alphaMenu.focusBitmapBlendColor = constants.colorPrimary
+  ' focus footprint 9patch
+  m.alphaMenu.focusFootprintBitmapUri = "pkg:/images/1px-transparent.png"
 end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
