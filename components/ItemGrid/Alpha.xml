@@ -6,16 +6,13 @@
       id="alphaMenu"
       translation="[52, 206]"
       vertFocusAnimationStyle="floatingFocus"
-      font="font:SmallestSystemFont"
-      focusedFont="font:SmallestSystemFont"
+      font="font:MediumSystemFont"
+      focusedFont="font:MediumSystemFont"
       itemSpacing="[0,2]"
       itemSize="[28,28]"
       numRows="27"
       textHorizAlign="center"
       drawFocusFeedback="true"
-      focusBitmapUri="pkg:/images/white.png"
-      focusBitmapBlendColor="#FFFFFF"
-      focusFootprintBlendColor="#666666"
     >
       <ContentNode id="alphaText" role="content">
         <ContentNode title="#" />
