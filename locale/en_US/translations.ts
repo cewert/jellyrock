@@ -121,10 +121,6 @@
       <extracomment>Content of message box when trying to play an item which requires transcoding, and the server did not provide transcode url</extracomment>
     </message>
     <message>
-      <source>Appears On</source>
-      <translation>Appears On</translation>
-    </message>
-    <message>
       <source>AppearsOn</source>
       <translation>AppearsOn</translation>
     </message>
@@ -326,10 +322,6 @@
     <message>
       <source>Delete Saved</source>
       <translation>Delete Saved</translation>
-    </message>
-    <message>
-      <source>Details</source>
-      <translation>Details</translation>
     </message>
     <message>
       <source>Died</source>
