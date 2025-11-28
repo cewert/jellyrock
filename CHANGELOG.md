@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - remove `white_focus.9.png` 9patch image ([eda1e9d](https://github.com/cewert/jellyrock/commit/eda1e9d))
 
+### Removed
+
+- redundant sidebar menu on music artist screen ([#211](https://github.com/cewert/jellyrock/pull/211))
+
 ## [1.3.0](https://github.com/cewert/jellyrock/compare/v1.2.0...v1.3.0) - 2025-11-26
 
 ### Added
