@@ -1224,6 +1224,10 @@
       <translation>Total Bitrate</translation>
     </message>
     <message>
+      <source>Track</source>
+      <translation>Track</translation>
+    </message>
+    <message>
       <source>Transcoding Information</source>
       <translation>Transcoding Information</translation>
     </message>
