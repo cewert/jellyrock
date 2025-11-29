@@ -1,42 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="AudioPlayerView" extends="JRScreen">
   <children>
-    <Poster id="backdrop" opacity=".5" loadDisplayMode="scaleToZoom" width="1920" height="1200" blendColor="#3f3f3f" />
-    <Poster id="shuffleIndicator" width="64" height="64" uri="pkg:/images/icons/shuffleIndicator-off.png" translation="[1150,775]" opacity="0" />
-    <Poster id="loopIndicator" width="64" height="64" uri="pkg:/images/icons/loopIndicator-off.png" translation="[700,775]" opacity="0" />
+    <Poster id="backdrop" opacity=".5" loadDisplayMode="scaleToZoom" width="1920" height="1200" />
+    <Rectangle id="backDropMask" width="1920" height="1080" />
     <LabelSecondarySmallest id="positionTimestamp" width="100" height="25" horizAlign="right" translation="[590,838]" text="0:00" />
     <LabelSecondarySmallest id="totalLengthTimestamp" width="100" height="25" horizAlign="left" translation="[1230,838]" />
 
     <LayoutGroup id="toplevel" layoutDirection="vert" horizAlignment="center" translation="[960,175]" itemSpacings="[40]">
       <LayoutGroup id="main_group" layoutDirection="vert" horizAlignment="center" itemSpacings="[15]">
-        <Poster id="albumCover" width="500" height="500" />
+        <Poster id="albumCover" width="500" height="500" loadWidth="500" loadHeight="500" loadDisplayMode="limitSize" />
         <LabelPrimaryMedium id="artist" width="900" height="25" horizAlign="center" />
         <LabelPrimaryMedium id="song" width="900" height="25" horizAlign="center" />
         <LabelSecondarySmallest id="numberofsongs" width="500" height="25" horizAlign="center" />
       </LayoutGroup>
-      <Rectangle id="seekBar" color="0x00000099" width="500" height="10">
-        <Rectangle id="bufferPosition" color="0xFFFFFF44" height="10"></Rectangle>
-        <Rectangle id="playPosition" color="#00a4dcFF" height="10"></Rectangle>
-        <Poster id="thumb" width="25" height="25" uri="pkg:/images/icons/circle.png" visible="false" translation="[0, -10]" />
+      <Rectangle id="seekBar" width="500" height="9">
+        <Rectangle id="bufferPosition" height="9"></Rectangle>
+        <Rectangle id="playPosition" height="9"></Rectangle>
+        <Poster id="thumb" width="25" loadWidth="25" height="25" loadHeight="25" uri="pkg:/images/icons/circle.png" visible="false" translation="[0, -10]" loadDisplayMode="limitSize" />
       </Rectangle>
-      <LayoutGroup id="buttons" layoutDirection="horiz" horizAlignment="center" itemSpacings="[45]">
-        <Poster id="loop" width="64" height="64" uri="pkg:/images/icons/loop-default.png" opacity="0" />
-        <Poster id="previous" width="64" height="64" uri="pkg:/images/icons/previous-default.png" opacity="0" />
-        <Poster id="play" width="64" height="64" uri="pkg:/images/icons/play-default.png" />
-        <Poster id="next" width="64" height="64" uri="pkg:/images/icons/next-default.png" opacity="0" />
-        <Poster id="shuffle" width="64" height="64" uri="pkg:/images/icons/shuffle-default.png" opacity="0" />
-      </LayoutGroup>
+      <JRButtonGroup id="buttons" itemSpacings="36">
+        <IconButton id="previous" icon="pkg:/images/icons/itemPrevious.png" />
+        <IconButton id="play" icon="pkg:/images/icons/play.png" />
+        <IconButton id="next" icon="pkg:/images/icons/itemNext.png" />
+        <IconButton id="shuffle" icon="pkg:/images/icons/shuffle.png" />
+        <IconButton id="repeat" icon="pkg:/images/icons/repeat.png" />
+      </JRButtonGroup>
       <Animation id="bufferPositionAnimation" duration="1" repeat="false" easeFunction="linear">
         <FloatFieldInterpolator id="bufferPositionAnimationWidth" key="[0.0, 1.0]" fieldToInterp="bufferPosition.width" />
       </Animation>
       <Animation id="playPositionAnimation" duration="1" repeat="false" easeFunction="linear">
         <FloatFieldInterpolator id="playPositionAnimationWidth" key="[0.0, 1.0]" fieldToInterp="playPosition.width" />
-      </Animation>
-      <Animation id="displayButtonsAnimation" duration="1" repeat="false" easeFunction="linear">
-        <FloatFieldInterpolator key="[0.0, 1.0]" keyValue="[0.0, 1.0]" fieldToInterp="previous.opacity" />
-        <FloatFieldInterpolator key="[0.0, 1.0]" keyValue="[0.0, 1.0]" fieldToInterp="next.opacity" />
-        <FloatFieldInterpolator key="[0.0, 1.0]" keyValue="[0.0, 1.0]" fieldToInterp="shuffle.opacity" />
-        <FloatFieldInterpolator key="[0.0, 1.0]" keyValue="[0.0, 1.0]" fieldToInterp="loop.opacity" />
       </Animation>
     </LayoutGroup>
     <Rectangle id="seekPosition" visible="false" color="0x00000090" height="40" width="110" translation="[720, 790]">
@@ -116,17 +109,8 @@
       </Animation>
     </SequentialAnimation>
 
-    <!-- Preload selected icons to prevent flicker -->
-    <Poster width="0" height="0" uri="pkg:/images/icons/previous-selected.png" visible="false" />
-    <Poster width="0" height="0" uri="pkg:/images/icons/play-selected.png" visible="false" />
-    <Poster width="0" height="0" uri="pkg:/images/icons/next-selected.png" visible="false" />
-    <Poster width="0" height="0" uri="pkg:/images/icons/shuffle-selected.png" visible="false" />
-    <Poster width="0" height="0" uri="pkg:/images/icons/shuffleIndicator-on.png" visible="false" />
-    <Poster width="0" height="0" uri="pkg:/images/icons/loopIndicator-on.png" visible="false" />
-    <Poster width="0" height="0" uri="pkg:/images/icons/loopIndicator1-on.png" visible="false" />
   </children>
   <interface>
     <field id="state" type="string" />
-    <field id="selectedButtonIndex" type="integer" />
   </interface>
 </component>

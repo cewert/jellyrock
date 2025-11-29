@@ -31,7 +31,7 @@ sub init()
   m.buttonMenuRight = m.top.findNode("buttonMenuRight")
   m.buttonMenuLeft = m.top.findNode("buttonMenuLeft")
   m.buttonMenuLeft.buttonFocused = m.defaultButtonIndex
-  m.buttonMenuLeft.getChild(m.defaultButtonIndex).focus = true
+  m.buttonMenuLeft.getChild(m.defaultButtonIndex).setFocus(true)
 end sub
 
 ' setFields: Grab data from json metadata and save it to local fields
@@ -374,21 +374,21 @@ end sub
 sub resetFocusToDefaultButton()
   ' Remove focus from previously selected button
   for each child in m.buttonMenuLeft.getChildren(-1, 0)
-    if isValid(child.focus)
-      child.focus = false
+    if isValid(child)
+      child.setFocus(false)
     end if
   end for
 
   for each child in m.buttonMenuRight.getChildren(-1, 0)
-    if isValid(child.focus)
-      child.focus = false
+    if isValid(child)
+      child.setFocus(false)
     end if
   end for
 
   ' Set focus back to the default button
   m.buttonMenuLeft.setFocus(true)
   m.focusedButtonIndex = m.defaultButtonIndex
-  m.buttonMenuLeft.getChild(m.defaultButtonIndex).focus = true
+  m.buttonMenuLeft.getChild(m.defaultButtonIndex).setFocus(true)
   m.buttonMenuLeft.buttonFocused = m.defaultButtonIndex
 end sub
 
