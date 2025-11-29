@@ -22,8 +22,8 @@ sub init()
   setupInfoNodes()
   setupDataTasks()
   setupScreenSaver()
+  applyTheme()
 
-  m.buttonCount = m.buttons.getChildCount()
   m.seekPosition.translation = [720 - (m.seekPosition.width / 2), m.seekPosition.translation[1]]
 
   m.screenSaverTimeout = 300
@@ -41,8 +41,24 @@ sub init()
   pageContentChanged()
   setShuffleIconState()
   setLoopButtonImage()
+  ' Set lastFocus for JRScreen lifecycle management
+  m.top.lastFocus = m.buttons
+end sub
 
-  m.buttons.setFocus(true)
+sub applyTheme()
+  constants = m.global.constants
+
+  m.backDropMask.color = constants.colorBlack + constants.alpha40
+
+  for each button in m.buttons.getChildren(-1, 0)
+    button.iconBackground = constants.colorTextSecondary
+    button.iconFocusBackground = constants.colorTextSecondary
+  end for
+
+  m.seekBar.color = constants.colorBlack + constants.alpha60
+  m.bufferPosition.color = constants.colorBackgroundSecondary
+  m.playPosition.color = constants.colorSecondary
+  m.thumb.blendColor = constants.colorPrimary
 end sub
 
 sub onScreensaverTimeoutLoaded()
@@ -69,14 +85,11 @@ sub setupScreenSaver()
 end sub
 
 sub setupAnimationTasks()
-  m.displayButtonsAnimation = m.top.FindNode("displayButtonsAnimation")
   m.playPositionAnimation = m.top.FindNode("playPositionAnimation")
   m.playPositionAnimationWidth = m.top.FindNode("playPositionAnimationWidth")
 
   m.bufferPositionAnimation = m.top.FindNode("bufferPositionAnimation")
   m.bufferPositionAnimationWidth = m.top.FindNode("bufferPositionAnimationWidth")
-
-  m.screenSaverStartAnimation = m.top.FindNode("screenSaverStartAnimation")
 end sub
 
 ' Creates tasks to gather data needed to render Scene and play song
@@ -99,45 +112,63 @@ end sub
 ' Setup playback buttons, default to Play button selected
 sub setupButtons()
   m.buttons = m.top.findNode("buttons")
-  m.top.observeField("selectedButtonIndex", "onButtonSelectedChange")
 
-  ' If we're playing a mixed playlist, remove the shuffle and loop buttons
+  ' Get button references for later use
+  m.playButton = m.buttons.findNode("play")
+  m.shuffleButton = m.buttons.findNode("shuffle")
+  m.repeatButton = m.buttons.findNode("repeat")
+
+  ' If we're playing a mixed playlist, remove the shuffle and repeat buttons
   if m.playlistTypeCount > 1
-    shuffleButton = m.top.findNode("shuffle")
-    m.buttons.removeChild(shuffleButton)
+    if isValid(m.shuffleButton)
+      m.buttons.removeChild(m.shuffleButton)
+      m.shuffleButton = invalid
+    end if
 
-    loopButton = m.top.findNode("loop")
-    m.buttons.removeChild(loopButton)
-
-    m.previouslySelectedButtonIndex = 0
-    m.top.selectedButtonIndex = 1
-    return
+    if isValid(m.repeatButton)
+      m.buttons.removeChild(m.repeatButton)
+      m.repeatButton = invalid
+    end if
   end if
 
-  m.previouslySelectedButtonIndex = 1
-  m.top.selectedButtonIndex = 2
+  ' Set default focus to play button (index 1)
+  m.buttons.buttonFocused = 1
+
+  ' Center button group horizontally
+  m.buttons.callFunc("center")
+
+  ' Observe button selection
+  m.buttons.observeField("buttonSelected", "onButtonSelected")
 end sub
 
-' Event handler when user selected a different playback button
-sub onButtonSelectedChange()
-  ' Change previously selected button back to default image
-  selectedButton = m.buttons.getChild(m.previouslySelectedButtonIndex)
-  selectedButton.uri = selectedButton.uri.Replace("-selected", "-default")
+' Event handler when user selects a button via OK key
+sub onButtonSelected()
+  buttonIndex = m.buttons.buttonSelected
+  button = m.buttons.getChild(buttonIndex)
 
-  ' Change selected button image to selected image
-  selectedButton = m.buttons.getChild(m.top.selectedButtonIndex)
-  selectedButton.uri = selectedButton.uri.Replace("-default", "-selected")
+  if not isValid(button) then return
+
+  if button.id = "play"
+    playAction()
+  else if button.id = "previous"
+    previousClicked()
+  else if button.id = "next"
+    nextClicked()
+  else if button.id = "shuffle"
+    shuffleClicked()
+  else if button.id = "repeat"
+    loopClicked()
+  end if
 end sub
 
 sub setupInfoNodes()
   m.albumCover = m.top.findNode("albumCover")
   m.backDrop = m.top.findNode("backdrop")
+  m.backDropMask = m.top.findNode("backDropMask")
   m.playPosition = m.top.findNode("playPosition")
   m.bufferPosition = m.top.findNode("bufferPosition")
   m.seekBar = m.top.findNode("seekBar")
   m.thumb = m.top.findNode("thumb")
-  m.shuffleIndicator = m.top.findNode("shuffleIndicator")
-  m.loopIndicator = m.top.findNode("loopIndicator")
   m.positionTimestamp = m.top.findNode("positionTimestamp")
   m.seekPosition = m.top.findNode("seekPosition")
   m.seekTimestamp = m.top.findNode("seekTimestamp")
@@ -245,6 +276,15 @@ sub endScreenSaver()
 end sub
 
 sub audioStateChanged()
+  ' Update play/pause button icon based on audio state
+  if isValid(m.playButton)
+    if m.audioPlayer.state = "playing"
+      m.playButton.icon = "pkg:/images/icons/pause.png"
+    else
+      m.playButton.icon = "pkg:/images/icons/play.png"
+    end if
+  end if
+
   ' Song Finished, attempt to move to next song
   if m.audioPlayer.state = "finished"
     ' User has enabled single song loop, play current song again
@@ -277,16 +317,25 @@ function playAction() as boolean
 
   if m.audioPlayer.state = "playing"
     m.audioPlayer.control = "pause"
+    if isValid(m.playButton)
+      m.playButton.icon = "pkg:/images/icons/play.png"
+    end if
     ' Allow screen to go to real screensaver
     WriteAsciiFile("tmp:/scene.temp", "nowplaying-paused")
     MoveFile("tmp:/scene.temp", "tmp:/scene")
   else if m.audioPlayer.state = "paused"
     m.audioPlayer.control = "resume"
+    if isValid(m.playButton)
+      m.playButton.icon = "pkg:/images/icons/pause.png"
+    end if
     ' Write screen tracker for screensaver
     WriteAsciiFile("tmp:/scene.temp", "nowplaying")
     MoveFile("tmp:/scene.temp", "tmp:/scene")
   else if m.audioPlayer.state = "finished"
     m.audioPlayer.control = "play"
+    if isValid(m.playButton)
+      m.playButton.icon = "pkg:/images/icons/pause.png"
+    end if
     ' Write screen tracker for screensaver
     WriteAsciiFile("tmp:/scene.temp", "nowplaying")
     MoveFile("tmp:/scene.temp", "tmp:/scene")
@@ -353,13 +402,20 @@ function loopClicked() as boolean
 end function
 
 sub setLoopButtonImage()
+  if not isValid(m.repeatButton) then return
+
   if m.audioPlayer.loopMode = "all"
-    m.loopIndicator.opacity = "1"
-    m.loopIndicator.uri = m.loopIndicator.uri.Replace("-off", "-on")
+    ' Repeat all - use repeat.png with active state
+    m.repeatButton.icon = "pkg:/images/icons/repeat.png"
+    m.repeatButton.selected = true
   else if m.audioPlayer.loopMode = "one"
-    m.loopIndicator.uri = m.loopIndicator.uri.Replace("-on", "1-on")
+    ' Repeat one - use repeat-1.png with active state
+    m.repeatButton.icon = "pkg:/images/icons/repeat-1.png"
+    m.repeatButton.selected = true
   else
-    m.loopIndicator.uri = m.loopIndicator.uri.Replace("1-on", "-off")
+    ' Repeat off - use repeat.png without active state
+    m.repeatButton.icon = "pkg:/images/icons/repeat.png"
+    m.repeatButton.selected = false
   end if
 end sub
 
@@ -422,29 +478,36 @@ function shuffleClicked() as boolean
   toggleShuffleEnabled()
 
   if not m.queueManager.callFunc("getIsShuffled")
-    m.shuffleIndicator.opacity = ".4"
-    m.shuffleIndicator.uri = m.shuffleIndicator.uri.Replace("-on", "-off")
+    ' Shuffle off
+    if isValid(m.shuffleButton)
+      m.shuffleButton.selected = false
+    end if
     m.queueManager.callFunc("setPosition", currentSongIndex)
     setTrackNumberDisplay()
     return true
   end if
 
-  m.shuffleIndicator.opacity = "1"
-  m.shuffleIndicator.uri = m.shuffleIndicator.uri.Replace("-off", "-on")
+  ' Shuffle on
+  if isValid(m.shuffleButton)
+    m.shuffleButton.selected = true
+  end if
   setTrackNumberDisplay()
 
   return true
 end function
 
 sub setShuffleIconState()
+  if not isValid(m.shuffleButton) then return
+
   if m.queueManager.callFunc("getIsShuffled")
-    m.shuffleIndicator.opacity = "1"
-    m.shuffleIndicator.uri = m.shuffleIndicator.uri.Replace("-off", "-on")
+    m.shuffleButton.selected = true
+  else
+    m.shuffleButton.selected = false
   end if
 end sub
 
 sub setTrackNumberDisplay()
-  setFieldTextValue("numberofsongs", "Track " + stri(m.queueManager.callFunc("getPosition") + 1) + "/" + stri(m.queueManager.callFunc("getCount")))
+  setFieldTextValue("numberofsongs", "Track " + stri(m.queueManager.callFunc("getPosition") + 1) + " " + tr("of") + stri(m.queueManager.callFunc("getCount")))
 end sub
 
 sub LoadNextSong()
@@ -472,12 +535,10 @@ sub pageContentChanged()
   m.LoadAudioStreamTask.control = "RUN"
 end sub
 
-' If we have more and 1 song to play, fade in the next and previous controls
+' If we have more than 1 song to play, set initial button states
 sub loadButtons()
   if m.queueManager.callFunc("getCount") > 1
-    m.shuffleIndicator.opacity = ".4"
-    m.loopIndicator.opacity = ".4"
-    m.displayButtonsAnimation.control = "start"
+    ' Set initial loop/repeat button state
     setLoopButtonImage()
   end if
 end sub
@@ -487,11 +548,17 @@ sub onAudioStreamLoaded()
   data = m.LoadAudioStreamTask.content[0]
   m.LoadAudioStreamTask.unobserveField("content")
   if isValid(data) and data.count() > 0
+    print "onAudioStreamLoaded: data = ", data
+
     ' Reset buffer bar without animation
     m.bufferPosition.width = 0
 
     useMetaTask = false
     currentItem = m.queueManager.callFunc("getCurrentItem")
+    print "onAudioStreamLoaded currentItem =", currentItem
+    print "currentItem.BackdropImageTags =", currentItem.BackdropImageTags
+    print "currentItem.ImageTags =", currentItem.ImageTags
+    print "currentItem.ParentBackdropImageTags =", currentItem.ParentBackdropImageTags
 
     if not isValid(currentItem.RunTimeTicks)
       useMetaTask = true
@@ -509,16 +576,34 @@ sub onAudioStreamLoaded()
       useMetaTask = true
     end if
 
+    print "useMetaTask =", useMetaTask
+
+    ' If we don't have enough data to populate the screen, load metadata
     if useMetaTask
       m.LoadMetaDataTask.itemId = currentItem.id
       m.LoadMetaDataTask.observeField("content", "onMetaDataLoaded")
       m.LoadMetaDataTask.control = "RUN"
     else
-      if isValid(currentItem.ParentBackdropItemId)
-        setBackdropImage(ImageURL(currentItem.ParentBackdropItemId, "Backdrop", { "maxHeight": "720", "maxWidth": "1280" }))
+      ' backdrop image
+      if isValid(currentItem.ParentBackdropItemId) and isValid(currentItem.ParentBackdropImageTags) and currentItem.ParentBackdropImageTags.count() > 0
+        setBackdropImage(ImageURL(currentItem.ParentBackdropItemId, "Backdrop", { "maxHeight": "720", "maxWidth": "1280", "tag": currentItem.ParentBackdropImageTags[0] }))
+      else
+        ' no backdrop available, clear existing backdrop
+        setBackdropImage("pkg:/images/1px-transparent.png")
       end if
 
-      setPosterImage(ImageURL(currentItem.id, "Primary", { "maxHeight": 500, "maxWidth": 500 }))
+      ' poster image
+      if isValid(currentItem.AlbumId) and isValid(currentItem.AlbumPrimaryImageTag) and currentItem.AlbumPrimaryImageTag <> ""
+        ' use primary album image
+        setPosterImage(ImageURL(currentItem.AlbumId, "Primary", { "maxHeight": 500, "maxWidth": 500, "tag": currentItem.AlbumPrimaryImageTag }))
+      else if isValid(currentItem.ImageTags) and currentItem.ImageTags["Primary"] <> invalid
+        ' use primary poster image
+        setPosterImage(ImageURL(currentItem.id, "Primary", { "maxHeight": 500, "maxWidth": 500, "tag": currentItem.ImageTags["Primary"] }))
+      else
+        ' no poster available, show placeholder image
+        setPosterImage("pkg:/images/icons/album.png")
+      end if
+
       setScreenTitle(currentItem)
       setOnScreenTextValues(currentItem)
       m.songDuration = currentItem.RunTimeTicks / 10000000.0
@@ -569,6 +654,17 @@ end sub
 sub setPosterImage(posterURL)
   if isValid(posterURL)
     if m.albumCover.uri <> posterURL
+      if posterURL = "pkg:/images/icons/album.png"
+        constants = m.global.constants
+        ' color the white album placeholder to match theme
+        m.albumCover.blendColor = constants.colorTextSecondary
+        m.screenSaverAlbumCover.blendColor = constants.colorTextSecondary
+      else
+        ' reset blend color to default white
+        m.albumCover.blendColor = "0xFFFFFFFF"
+        m.screenSaverAlbumCover.blendColor = "0xFFFFFFFF"
+      end if
+
       m.albumCover.uri = posterURL
       m.screenSaverAlbumCover.uri = posterURL
     end if
@@ -614,15 +710,6 @@ sub setBackdropImage(data)
       m.backDrop.uri = data
     end if
   end if
-end sub
-
-' setSelectedButtonState: Changes the icon state url for the currently selected button
-'
-' @param {string} oldState - current state to replace in icon url
-' @param {string} newState - state to replace {oldState} with in icon url
-sub setSelectedButtonState(oldState as string, newState as string)
-  selectedButton = m.buttons.getChild(m.top.selectedButtonIndex)
-  selectedButton.uri = selectedButton.uri.Replace(oldState, newState)
 end sub
 
 ' processScrubAction: Handles +/- seeking for the audio trickplay bar
@@ -692,7 +779,7 @@ end sub
 ' exitScrubMode: Moves player out of scrub mode state,  resets back to standard play mode
 '
 sub exitScrubMode()
-  m.buttons.setFocus(true)
+  m.buttons.callFunc("focus")
   m.thumb.setFocus(false)
 
   if m.seekPosition.visible
@@ -703,7 +790,6 @@ sub exitScrubMode()
 
   m.inScrubMode = false
   m.thumb.visible = false
-  setSelectedButtonState("-default", "-selected")
 end sub
 
 ' Process key press events
@@ -750,7 +836,6 @@ function onKeyEvent(key as string, press as boolean) as boolean
     if key = "up"
       if not m.thumb.visible
         m.thumb.visible = true
-        setSelectedButtonState("-selected", "-default")
       end if
       if not m.seekPosition.visible
         m.seekPosition.visible = true
@@ -775,38 +860,6 @@ function onKeyEvent(key as string, press as boolean) as boolean
       return previousClicked()
     else if key = "fastforward"
       return nextClicked()
-    else if key = "left"
-      if m.buttons.hasFocus()
-        if m.queueManager.callFunc("getCount") = 1 then return false
-
-        if m.top.selectedButtonIndex > 0
-          m.previouslySelectedButtonIndex = m.top.selectedButtonIndex
-          m.top.selectedButtonIndex = m.top.selectedButtonIndex - 1
-        end if
-        return true
-      end if
-    else if key = "right"
-      if m.buttons.hasFocus()
-        if m.queueManager.callFunc("getCount") = 1 then return false
-
-        m.previouslySelectedButtonIndex = m.top.selectedButtonIndex
-        if m.top.selectedButtonIndex < m.buttonCount - 1 then m.top.selectedButtonIndex = m.top.selectedButtonIndex + 1
-        return true
-      end if
-    else if key = "OK"
-      if m.buttons.hasFocus()
-        if m.buttons.getChild(m.top.selectedButtonIndex).id = "play"
-          return playAction()
-        else if m.buttons.getChild(m.top.selectedButtonIndex).id = "previous"
-          return previousClicked()
-        else if m.buttons.getChild(m.top.selectedButtonIndex).id = "next"
-          return nextClicked()
-        else if m.buttons.getChild(m.top.selectedButtonIndex).id = "shuffle"
-          return shuffleClicked()
-        else if m.buttons.getChild(m.top.selectedButtonIndex).id = "loop"
-          return loopClicked()
-        end if
-      end if
     end if
   end if
 
