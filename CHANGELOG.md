@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Refactor AudioPlayerView - use IconButton components and fix image bugs ([#218](https://github.com/cewert/jellyrock/pull/218))
 - Cleanup and theme the Alpha Menu ([#212](https://github.com/cewert/jellyrock/pull/212))
 - remove `white_focus.9.png` 9patch image ([eda1e9d](https://github.com/cewert/jellyrock/commit/eda1e9d))
 
