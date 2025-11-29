@@ -24,7 +24,8 @@ sub init()
   m.top.observeField("height", "onHeightChanged")
   m.top.observeField("width", "onWidthChanged")
   m.top.observeField("padding", "onPaddingChanged")
-  m.top.observeField("focus", "onFocusChanged")
+  m.top.observeField("focusedChild", "onFocusChanged")
+  m.top.observeField("selected", "onSelectedChanged")
 
   applyTheme()
 end sub
@@ -38,10 +39,11 @@ sub applyTheme()
   m.top.iconBackground = constants.colorTextPrimary
   m.top.focusBackground = constants.colorBackgroundSecondary
   m.top.iconFocusBackground = constants.colorTextPrimary
+  m.iconSelectedColor = constants.colorSecondary
 end sub
 
 sub onFocusChanged()
-  if m.top.focus
+  if m.top.hasFocus()
     ' Button border - change to focus color
     if m.top.enableBorder
       m.buttonBorder.blendColor = m.top.focusBorder
@@ -51,28 +53,39 @@ sub onFocusChanged()
     end if
     ' Button background
     m.buttonBackground.blendColor = m.top.focusBackground
-    ' Button icon
-    m.buttonIcon.blendColor = m.top.iconFocusBackground
+    ' Button icon - respect selected state when focused
+    if m.top.selected
+      m.buttonIcon.blendColor = m.iconSelectedColor
+    else
+      m.buttonIcon.blendColor = m.top.iconFocusBackground
+    end if
   else
     ' Button border - match background color
     m.buttonBorder.blendColor = m.top.background
     ' Button background
     m.buttonBackground.blendColor = m.top.background
-    ' Button icon
-    m.buttonIcon.blendColor = m.top.iconBackground
+    ' Button icon - respect selected state when not focused
+    if m.top.selected
+      m.buttonIcon.blendColor = m.iconSelectedColor
+    else
+      m.buttonIcon.blendColor = m.top.iconBackground
+    end if
   end if
 end sub
 
 sub onBackgroundChanged()
   m.buttonBackground.blendColor = m.top.background
   ' Border matches background when not focused OR when borders are disabled
-  if not m.top.focus or not m.top.enableBorder
+  if not m.top.hasFocus() or not m.top.enableBorder
     m.buttonBorder.blendColor = m.top.background
   end if
 end sub
 
 sub onIconBackgroundChanged()
-  m.buttonIcon.blendColor = m.top.iconBackground
+  ' Only apply if not in selected state
+  if not m.top.selected
+    m.buttonIcon.blendColor = m.top.iconBackground
+  end if
 end sub
 
 sub onIconChanged()
@@ -132,6 +145,20 @@ sub onEnabledChanged()
   end if
 end sub
 
+sub onSelectedChanged()
+  if m.top.selected
+    ' Active/selected state - use secondary color for icon
+    m.buttonIcon.blendColor = m.iconSelectedColor
+  else
+    ' Inactive state - restore default colors based on focus state
+    if m.top.focus
+      m.buttonIcon.blendColor = m.top.iconFocusBackground
+    else
+      m.buttonIcon.blendColor = m.top.iconBackground
+    end if
+  end if
+end sub
+
 ' Updates button and text positioning based on textExtension constant
 ' This centers button elements under the wider text label
 sub updateButtonPositioning()
@@ -157,17 +184,3 @@ sub setFocusBorderSize()
   ' Update button and text positioning using shared method
   updateButtonPositioning()
 end sub
-
-function onKeyEvent(key as string, press as boolean) as boolean
-  if not press then return false
-
-  if key = "right" and m.top.focus
-    m.top.escape = "right"
-  end if
-
-  if key = "left" and m.top.focus
-    m.top.escape = "left"
-  end if
-
-  return false
-end function

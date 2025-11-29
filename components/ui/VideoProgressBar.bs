@@ -4,7 +4,7 @@ sub init()
 
   constants = m.global.constants
   m.progressBar.color = constants.colorSecondary
-  m.progressBarBackground.color = "0x" + constants.colorBlack + constants.alpha60
+  m.progressBarBackground.color = constants.colorBlack + constants.alpha60
 end sub
 
 sub onWidthChanged()

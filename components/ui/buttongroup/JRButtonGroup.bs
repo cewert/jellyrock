@@ -6,6 +6,19 @@ sub init()
   m.top.itemSpacings = 18
 
   m.top.buttonFocused = 0
+
+  ' Observe focus on the group to set child button focus
+  m.top.observeField("focusedChild", "onGroupFocusChanged")
+end sub
+
+sub onGroupFocusChanged()
+  ' When group gains focus, set focus on the current button
+  if m.top.hasFocus() and m.top.buttonFocused <> invalid
+    button = m.top.getChild(m.top.buttonFocused)
+    if button <> invalid
+      button.setFocus(true)
+    end if
+  end if
 end sub
 
 ' center the button group horizontally
