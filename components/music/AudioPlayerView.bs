@@ -507,7 +507,7 @@ sub setShuffleIconState()
 end sub
 
 sub setTrackNumberDisplay()
-  setFieldTextValue("numberofsongs", "Track " + stri(m.queueManager.callFunc("getPosition") + 1) + " " + tr("of") + stri(m.queueManager.callFunc("getCount")))
+  setFieldTextValue("numberofsongs", tr("Track") + " " + tr("%1 of %2").Replace("%1", stri(m.queueManager.callFunc("getPosition") + 1).trim()).Replace("%2", stri(m.queueManager.callFunc("getCount")).trim()))
 end sub
 
 sub LoadNextSong()
@@ -548,17 +548,11 @@ sub onAudioStreamLoaded()
   data = m.LoadAudioStreamTask.content[0]
   m.LoadAudioStreamTask.unobserveField("content")
   if isValid(data) and data.count() > 0
-    print "onAudioStreamLoaded: data = ", data
-
     ' Reset buffer bar without animation
     m.bufferPosition.width = 0
 
     useMetaTask = false
     currentItem = m.queueManager.callFunc("getCurrentItem")
-    print "onAudioStreamLoaded currentItem =", currentItem
-    print "currentItem.BackdropImageTags =", currentItem.BackdropImageTags
-    print "currentItem.ImageTags =", currentItem.ImageTags
-    print "currentItem.ParentBackdropImageTags =", currentItem.ParentBackdropImageTags
 
     if not isValid(currentItem.RunTimeTicks)
       useMetaTask = true
@@ -575,8 +569,6 @@ sub onAudioStreamLoaded()
     if not isValid(currentItem.Artists)
       useMetaTask = true
     end if
-
-    print "useMetaTask =", useMetaTask
 
     ' If we don't have enough data to populate the screen, load metadata
     if useMetaTask

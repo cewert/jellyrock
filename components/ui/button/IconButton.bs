@@ -151,7 +151,7 @@ sub onSelectedChanged()
     m.buttonIcon.blendColor = m.iconSelectedColor
   else
     ' Inactive state - restore default colors based on focus state
-    if m.top.focus
+    if m.top.hasFocus()
       m.buttonIcon.blendColor = m.top.iconFocusBackground
     else
       m.buttonIcon.blendColor = m.top.iconBackground
