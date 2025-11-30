@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- Fix TextButton uneven padding ([#220](https://github.com/cewert/jellyrock/pull/220))
 - make default user image in overhang match the one used in User Select ([51b0952](https://github.com/cewert/jellyrock/commit/51b0952))
 
 ### Removed
