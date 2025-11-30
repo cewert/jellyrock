@@ -14,6 +14,10 @@ sub init()
   m.top.observeField("minWidth", "onSizeChanged")
   m.top.observeField("minHeight", "onSizeChanged")
 
+  ' Enable render tracking on parent to know when component has rendered
+  m.top.enableRenderTracking = true
+  m.top.observeField("renderTracking", "onRenderComplete")
+
   applyTheme()
 end sub
 
@@ -65,6 +69,15 @@ end sub
 
 sub onTextChanged()
   m.buttonText.text = m.top.text
+  ' If already rendered, resize immediately. Otherwise wait for onRenderComplete
+  if m.top.renderTracking = "full"
+    setSizeAndCenterText()
+  end if
+end sub
+
+' Called when the component has rendered and we can measure the label accurately
+sub onRenderComplete()
+  if m.top.renderTracking <> "full" then return
   setSizeAndCenterText()
 end sub
 
@@ -72,31 +85,25 @@ sub setSizeAndCenterText()
   if not isValid(m.buttonText) then return
   if m.buttonText.text.Len() = 0 then return
 
-  ' Store the current text to detect if we've already sized for this text
-  if not isValid(m.lastSizedText) then m.lastSizedText = ""
-  if m.lastSizedText = m.buttonText.text and isValid(m.top.width) and m.top.width > 0
-    ' We've already sized this text, just update the focus border and return
-    setFocusBorderSize()
-    return
-  end if
-  m.lastSizedText = m.buttonText.text
+  ' Reset label size to allow accurate measurement of text content
+  m.buttonText.width = 0
+  m.buttonText.height = 0
 
-  ' Always use font-based calculation to avoid stale localBoundingRect() issues
-  textLength = m.buttonText.text.Len()
+  ' Get accurate text dimensions from rendered label
+  boundingRect = m.buttonText.localBoundingRect()
+  textWidth = boundingRect.width
+
+  ' If not rendered yet, wait for onRenderComplete
+  if textWidth = 0 then return
+
+  ' Calculate visible text height for equal padding
+  ' localBoundingRect height includes line spacing, adjust to match horizontal padding
   fontSize = m.buttonText.font.size
-  charWidth = fontSize * 0.64
-  textWidth = textLength * charWidth
-
-  ' Use font size for height to avoid stale localBoundingRect() issues
-  textHeight = fontSize
-
-  ' print "[TextButton] text='"; m.buttonText.text; "', length="; textLength; ", charWidth="; charWidth; ", textWidth="; textWidth; ", textHeight="; textHeight
+  visibleTextHeight = fontSize * 0.7
 
   ' Calculate button dimensions with padding
   buttonWidth = textWidth + (m.top.padding * 2)
-  buttonHeight = textHeight + (m.top.padding * 2)
-
-  ' print "[TextButton] size with padding: width=", buttonWidth, ", height=", buttonHeight
+  buttonHeight = visibleTextHeight + (m.top.padding * 2)
 
   ' Ensure minimum dimensions (this is the ONLY place minWidth should be enforced)
   if buttonWidth < m.top.minWidth
@@ -105,8 +112,6 @@ sub setSizeAndCenterText()
   if buttonHeight < m.top.minHeight
     buttonHeight = m.top.minHeight
   end if
-
-  ' print "[TextButton] ACTUAL size (using minWidth): width=", buttonWidth, ", height=", buttonHeight
 
   ' Set background size
   m.buttonBackground.width = buttonWidth
@@ -118,6 +123,14 @@ sub setSizeAndCenterText()
   m.buttonText.translation = [0, 0]
 
   setFocusBorderSize()
+
+  ' Show the button now that it's properly sized
+  m.buttonBackground.visible = true
+  m.buttonBorder.visible = true
+  m.buttonText.visible = true
+
+  ' Signal that the button is ready (sized and visible)
+  m.top.ready = true
 end sub
 
 sub onPaddingChanged()
