@@ -24,8 +24,47 @@ end sub
 ' center the button group horizontally
 ' NOTE: this centers using the entire screen width, not the parent bounding rect
 sub center()
-  buttonsBoundingRect = m.top.boundingRect()
+  ' Check if any child buttons have a 'ready' field that's not yet true
+  ' (This handles TextButtons that need to finish sizing before we can center)
+  allReady = true
+  for i = 0 to m.top.getChildCount() - 1
+    child = m.top.getChild(i)
+    if child <> invalid and child.hasField("ready") and not child.ready
+      allReady = false
+      ' Observe this child's ready field if not already observing
+      if m.observingReadyFields = invalid
+        m.observingReadyFields = []
+      end if
+      ' Check if we're already observing this child
+      alreadyObserving = false
+      for each observedChild in m.observingReadyFields
+        if observedChild.isSameNode(child)
+          alreadyObserving = true
+          exit for
+        end if
+      end for
+      if not alreadyObserving
+        child.observeField("ready", "onChildReady")
+        m.observingReadyFields.push(child)
+      end if
+    end if
+  end for
 
+  ' If all children are ready (or don't have ready fields), center now
+  if allReady
+    doCentering()
+  end if
+end sub
+
+' Called when a child button becomes ready
+sub onChildReady()
+  ' Try centering again - this will check if ALL children are now ready
+  center()
+end sub
+
+' Actually perform the centering calculation
+sub doCentering()
+  buttonsBoundingRect = m.top.boundingRect()
   m.top.translation = [(1920 - buttonsBoundingRect.width) / 2, m.top.translation[1]]
 end sub
 

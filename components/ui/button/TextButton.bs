@@ -128,6 +128,9 @@ sub setSizeAndCenterText()
   m.buttonBackground.visible = true
   m.buttonBorder.visible = true
   m.buttonText.visible = true
+
+  ' Signal that the button is ready (sized and visible)
+  m.top.ready = true
 end sub
 
 sub onPaddingChanged()

@@ -20,5 +20,6 @@
     <field id="enabled" type="boolean" value="true" />
     <field id="minWidth" type="integer" value="60" />
     <field id="minHeight" type="integer" value="0" />
+    <field id="ready" type="boolean" value="false" alwaysNotify="true" />
   </interface>
 </component>
