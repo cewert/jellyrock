@@ -50,11 +50,6 @@ sub applyTheme()
 
   m.backDropMask.color = constants.colorBlack + constants.alpha40
 
-  for each button in m.buttons.getChildren(-1, 0)
-    button.iconBackground = constants.colorTextSecondary
-    button.iconFocusBackground = constants.colorTextSecondary
-  end for
-
   m.seekBar.color = constants.colorBlack + constants.alpha60
   m.bufferPosition.color = constants.colorBackgroundSecondary
   m.playPosition.color = constants.colorSecondary
