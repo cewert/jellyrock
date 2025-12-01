@@ -6,17 +6,17 @@ sub init()
   m.alphaMenu.setFocus(false)
 
   applyTheme()
-
-  ' show mic icon above alpha menu if remote supports voice commands
-  if m.global.device.hasVoiceRemote
-    alphaMic = m.top.findNode("alphaMic")
-    alphaMic.visible = true
-  end if
 end sub
 
 sub applyTheme()
   constants = m.global.constants
 
+  ' show mic icon above alpha menu if remote supports voice commands
+  if m.global.device.hasVoiceRemote
+    alphaMic = m.top.findNode("alphaMic")
+    alphaMic.blendColor = constants.colorTextSecondary
+    alphaMic.visible = true
+  end if
   ' font sizes
   m.alphaMenu.focusedFont.size = constants.fontSizeSmaller
   m.alphaMenu.font.size = constants.fontSizeSmaller

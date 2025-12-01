@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="Alpha" extends="Group">
   <children>
-    <Poster id="alphaMic" height="22" width="15" uri="pkg:/images/icons/mic_icon.png" translation="[60, 150]" visible="false" />
+    <Poster id="alphaMic" height="22" width="15" uri="pkg:/images/icons/mic_icon.png" translation="[58, 140]" visible="false" />
     <LabelList
       id="alphaMenu"
-      translation="[52, 206]"
+      translation="[52, 190]"
       vertFocusAnimationStyle="floatingFocus"
       font="font:MediumSystemFont"
       focusedFont="font:MediumSystemFont"
