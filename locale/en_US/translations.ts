@@ -1008,11 +1008,6 @@
       <translation>Set the maximum bitrate in Mbps. Set to 0 to use Roku&apos;s specifications. This setting must be enabled to take effect.</translation>
     </message>
     <message>
-      <source>Set Watched</source>
-      <translation>Set Watched</translation>
-      <extracomment>Button Text - When pressed, marks item as Warched</extracomment>
-    </message>
-    <message>
       <source>Settings</source>
       <translation>Settings</translation>
     </message>
