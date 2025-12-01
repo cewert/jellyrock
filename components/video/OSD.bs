@@ -31,7 +31,6 @@ sub init()
   m.buttonMenuRight = m.top.findNode("buttonMenuRight")
   m.buttonMenuLeft = m.top.findNode("buttonMenuLeft")
   m.buttonMenuLeft.buttonFocused = m.defaultButtonIndex
-  m.buttonMenuLeft.getChild(m.defaultButtonIndex).setFocus(true)
 end sub
 
 ' setFields: Grab data from json metadata and save it to local fields
