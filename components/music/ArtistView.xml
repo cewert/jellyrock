@@ -4,15 +4,15 @@
     <Poster id="backdrop" opacity=".4" loadDisplayMode="scaleToZoom" width="1920" height="1200" blendColor="#3f3f3f" />
 
     <SectionScroller id="sectionScroller">
-      <Section id="slide-1" defaultFocusID="play">
+      <Section id="slide-1" defaultFocusID="buttons">
         <LayoutGroup id="toplevel" layoutDirection="vert" itemSpacings="[75]">
           <LayoutGroup id="main_group" layoutDirection="horiz" itemSpacings="[125]">
             <LayoutGroup layoutDirection="vert" itemSpacings="[75]">
               <LabelPrimaryMedium id="overview" wrap="true" lineSpacing="25" maxLines="6" width="1080" />
-              <ButtonGroupHoriz id="buttons" itemSpacings="[20]">
-                <IconButton id="play" padding="15" icon="pkg:/images/icons/play.png" text="Play" />
-                <IconButton id="instantMix" padding="15" icon="pkg:/images/icons/instantMix.png" text="Instant Mix" />
-              </ButtonGroupHoriz>
+              <JRButtonGroup id="buttons" itemSpacings="[20]">
+                <IconButton id="play" icon="pkg:/images/icons/play.png" text="Play" />
+                <IconButton id="instantMix" icon="pkg:/images/icons/instantMix.png" text="Instant Mix" />
+              </JRButtonGroup>
             </LayoutGroup>
             <Poster id="artistImage" width="500" height="500" />
           </LayoutGroup>
@@ -41,9 +41,8 @@
     <field id="artistOverview" type="string" onChange="artistOverviewChanged" />
     <field id="musicAlbumSelected" alias="albums.itemSelected" />
     <field id="appearsOnSelected" alias="appearsOn.itemSelected" />
-    <field id="playArtistSelected" alias="play.selected" />
-    <field id="instantMixSelected" alias="instantMix.selected" />
-    <field id="selectedButtonIndex" type="integer" value="-1" />
+    <field id="playArtistSelected" type="boolean" alwaysNotify="true" />
+    <field id="instantMixSelected" type="boolean" alwaysNotify="true" />
     <field id="quickPlayNode" type="node" alwaysNotify="true" />
   </interface>
 </component>

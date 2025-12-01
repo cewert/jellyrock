@@ -1,6 +1,6 @@
 
 sub init()
-  m.top.itemSpacings = 36
+  m.top.itemSpacings = 24
   m.top.layoutDirection = "horiz"
 end sub
 

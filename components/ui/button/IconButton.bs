@@ -111,14 +111,9 @@ sub setIconSize()
     iconWidth = m.buttonIcon.bitmapWidth
     iconHeight = m.buttonIcon.bitmapHeight
 
-    ' set buttonBackground width and height to size of poster + padding
-    if m.top.padding > 0
-      m.buttonBackground.width = iconWidth + (m.top.padding * 2)
-      m.buttonBackground.height = iconHeight + (m.top.padding * 2)
-    else
-      m.buttonBackground.width = iconWidth
-      m.buttonBackground.height = iconHeight
-    end if
+    paddingPixels = 15
+    m.buttonBackground.width = iconWidth + (paddingPixels * 4) ' extra horiz padding for text
+    m.buttonBackground.height = iconHeight + (paddingPixels * 2)
 
     ' Position icon centered in button background
     buttonOffset = textExtension / 2

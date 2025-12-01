@@ -627,23 +627,33 @@ sub Main (args as dynamic) as void
       else if btn.id = "watchedButton"
         print "watchedButton pressed"
         movie = group.itemContent
-        if isValid(movie) and isValid(movie.watched) and isValid(movie.id)
+        watchedButton = group.findNode("watchedButton")
+        if isValid(movie) and isValid(movie.watched) and isValid(movie.id) and isValid(watchedButton)
           if movie.watched
             UnmarkItemWatched(movie.id)
+            movie.watched = false
+            watchedButton.selected = false
           else
             MarkItemWatched(movie.id)
+            movie.watched = true
+            watchedButton.selected = true
           end if
-          movie.watched = not movie.watched
         end if
       else if btn.id = "favoriteButton"
         print "favoriteButton pressed"
         movie = group.itemContent
-        if movie.favorite
-          UnmarkItemFavorite(movie.id)
-        else
-          MarkItemFavorite(movie.id)
+        favoriteButton = group.findNode("favoriteButton")
+        if isValid(movie) and isValid(movie.favorite) and isValid(movie.id) and isValid(favoriteButton)
+          if movie.favorite
+            UnmarkItemFavorite(movie.id)
+            movie.favorite = false
+            favoriteButton.selected = false
+          else
+            MarkItemFavorite(movie.id)
+            movie.favorite = true
+            favoriteButton.selected = true
+          end if
         end if
-        movie.favorite = not movie.favorite
       else if btn.id = "playAll"
         print "playAll button pressed"
         ' User has selected playlist of of audio they want us to play

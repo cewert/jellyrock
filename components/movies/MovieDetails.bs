@@ -80,8 +80,9 @@ end sub
 sub trailerAvailableChanged()
   if m.top.trailerAvailable
     ' add trailor button to button group
-    trailerButton = CreateObject("roSGNode", "TextButton")
+    trailerButton = CreateObject("roSGNode", "IconButton")
     trailerButton.id = "trailerButton"
+    trailerButton.icon = "pkg:/images/icons/playOutline.png"
     trailerButton.text = tr("Play Trailer")
     m.buttonGrp.appendChild(trailerButton)
   else
@@ -190,8 +191,8 @@ sub itemContentChanged()
       m.infoGroup.removeChild(m.top.findNode("releaseYear"))
     end if
 
-    setFavoriteColor()
-    setWatchedColor()
+    updateFavoriteButton()
+    updateWatchedButton()
     SetUpVideoOptions(itemData.mediaSources)
     SetUpAudioOptions(itemData.mediaStreams)
   end if
@@ -343,25 +344,27 @@ function getEndTime() as string
   return formatTime(date)
 end function
 
-sub setFavoriteColor()
+sub updateFavoriteButton()
   fave = m.top.itemContent.favorite
   favoriteButton = m.top.findNode("favoriteButton")
-  if isValid(fave) and fave
-    favoriteButton.textColor = "#269926ff"
-    favoriteButton.text = tr("Favorite")
-  else
-    favoriteButton.text = tr("Set Favorite")
+  if isValid(favoriteButton)
+    if isValid(fave) and fave
+      favoriteButton.selected = true
+    else
+      favoriteButton.selected = false
+    end if
   end if
 end sub
 
-sub setWatchedColor()
+sub updateWatchedButton()
   watched = m.top.itemContent.watched
   watchedButton = m.top.findNode("watchedButton")
-  if watched
-    watchedButton.textColor = "#992626ff"
-    watchedButton.text = tr("Watched")
-  else
-    watchedButton.text = tr("Set Watched")
+  if isValid(watchedButton)
+    if watched
+      watchedButton.selected = true
+    else
+      watchedButton.selected = false
+    end if
   end if
 end sub
 

@@ -10,7 +10,7 @@
     <Poster id="buttonBackground" uri="pkg:/images/9patch/filled-rounded.9.png" />
     <Poster id="buttonBorder" uri="pkg:/images/9patch/border-6px.9.png" />
     <Poster id="buttonIcon" />
-    <LabelPrimarySmallest id="buttonText" horizAlign="center" wrap="true" maxLines="2" lineSpacing="0" />
+    <LabelPrimarySmaller id="buttonText" horizAlign="center" wrap="true" maxLines="2" lineSpacing="0" />
   </children>
   <interface>
     <field id="background" type="color" value="" />
@@ -19,7 +19,6 @@
     <field id="iconBackground" type="color" value="" />
     <field id="iconFocusBackground" type="color" value="" />
     <field id="text" type="string" value="" />
-    <field id="padding" type="integer" value="15" />
     <field id="icon" type="string" value="" />
     <field id="selected" type="boolean" value="false" />
     <field id="focus" type="boolean" />

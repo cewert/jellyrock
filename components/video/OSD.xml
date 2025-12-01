@@ -45,7 +45,7 @@
       <IconButton id="chapterList" icon="pkg:/images/icons/chapters.png" />
     </OSDButtonGroup>
     <!-- Video info popup is right aligned-->
-    <OSDButtonGroup id="buttonMenuRight" translation="[1724,936]">
+    <OSDButtonGroup id="buttonMenuRight" horizAlignment="right" translation="[1830,936]">
       <IconButton id="showVideoInfoPopup" icon="pkg:/images/icons/fileInfo.png" />
     </OSDButtonGroup>
 

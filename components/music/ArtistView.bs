@@ -57,13 +57,12 @@ sub onSectionScrollerChange()
 end sub
 
 sub OnScreenShown()
-  m.sectionScroller.focus = true
-
   if m.sectionScroller.displayedIndex = 0
-    m.previouslySelectedButtonIndex = m.top.selectedButtonIndex
-    m.top.selectedButtonIndex = 0
-    m.buttonGrp.setFocus(true)
+    ' User is on the top section with artist info and buttons
+    m.buttonGrp.callFunc("focus")
+    m.top.lastFocus = m.buttonGrp
   else
+    ' User is scrolled down into albums/appearsOn section
     m.overhang.opacity = "0"
     m.overhang.isVisible = false
     m.overhang.opacity = "1"
@@ -100,26 +99,25 @@ end sub
 ' Setup playback buttons, default to Play button selected
 sub setupButtons()
   m.buttonGrp = m.top.findNode("buttons")
-  m.buttonCount = m.buttonGrp.getChildCount()
 
-  m.playButton = m.top.findNode("play")
-  m.previouslySelectedButtonIndex = -1
+  ' Set default focus to Play button (index 0)
+  m.buttonGrp.buttonFocused = 0
 
-  m.top.observeField("selectedButtonIndex", "onButtonSelectedChange")
-  m.top.selectedButtonIndex = 0
+  ' Observe button selection events
+  m.buttonGrp.observeField("buttonSelected", "onButtonSelected")
 end sub
 
-' Event handler when user selected a different playback button
-sub onButtonSelectedChange()
-  ' Change previously selected button back to default image
-  if m.previouslySelectedButtonIndex > -1
-    previousSelectedButton = m.buttonGrp.getChild(m.previouslySelectedButtonIndex)
-    previousSelectedButton.focus = false
-  end if
+' Handles button selection and notifies Main.bs via observed fields
+sub onButtonSelected()
+  selectedIndex = m.buttonGrp.buttonSelected
 
-  ' Change selected button image to selected image
-  selectedButton = m.buttonGrp.getChild(m.top.selectedButtonIndex)
-  selectedButton.focus = true
+  if selectedIndex = 0
+    ' Play button selected - notify Main.bs to play artist mix
+    m.top.playArtistSelected = true
+  else if selectedIndex = 1
+    ' Instant Mix button selected - notify Main.bs to create instant mix
+    m.top.instantMixSelected = true
+  end if
 end sub
 
 sub setupMainNode()
@@ -229,53 +227,16 @@ end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
 
-  if m.buttonGrp.isInFocusChain()
-    if key = "OK"
-      if press
-        selectedButton = m.buttonGrp.getChild(m.top.selectedButtonIndex)
-        selectedButton.selected = not selectedButton.selected
-        return true
-      end if
-    end if
-
-    if key = "left"
-      if m.top.selectedButtonIndex > 0
-        m.previouslySelectedButtonIndex = m.top.selectedButtonIndex
-        m.top.selectedButtonIndex = m.top.selectedButtonIndex - 1
-        return true
-      end if
-
-      return false
-    end if
-
-    if key = "right"
-      if m.top.pageContent.count() = 1 then return false
-
-      if m.buttonGrp.getChild(m.top.selectedButtonIndex).escape = "right"
-        m.buttonGrp.getChild(m.top.selectedButtonIndex).escape = ""
-        m.previouslySelectedButtonIndex = m.top.selectedButtonIndex
-
-        if m.top.selectedButtonIndex < m.buttonCount - 1
-          m.top.selectedButtonIndex = m.top.selectedButtonIndex + 1
-        end if
-
-        return true
-      end if
-    end if
-
-    if key = "down"
-      selectedButton = m.buttonGrp.getChild(m.top.selectedButtonIndex)
-      selectedButton.focus = false
-
-      m.top.selectedButtonIndex = 0
-      m.sectionScroller.displayedIndex = m.sectionScroller.displayedIndex + 1
-
-      return true
-    end if
+  ' Handle down arrow when button group has focus - move to albums section
+  if m.buttonGrp.isInFocusChain() and key = "down"
+    m.top.lastFocus = m.buttonGrp
+    m.sectionScroller.displayedIndex = m.sectionScroller.displayedIndex + 1
+    return true
   end if
 
   if not press then return false
 
+  ' Handle options key for full description dialog
   if key = "options"
     if m.dscr.isTextEllipsized
       createFullDscrDlg()
@@ -283,6 +244,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
     end if
   end if
 
+  ' Handle play key for quick play of focused album
   if key = "play"
     print "play button pressed from ArtistView"
     itemToPlay = invalid
