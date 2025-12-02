@@ -1,0 +1,250 @@
+import "pkg:/source/migrations.bs"
+import "pkg:/source/utils/config.bs"
+
+namespace tests
+
+  @suite("Empty Image Tag Cleanup Migration - v1.4.0")
+  @tags("migration")
+  class EmptyImageTagCleanupTests extends tests.BaseTestSuite
+
+    protected override sub setup()
+      m.needsRegistrySetup = true
+      super.setup()
+    end sub
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Empty primaryImageTag Cleanup")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("deletes empty string primaryImageTag")
+    function _()
+      ' GIVEN: User on v1.3.0 with empty primaryImageTag
+      testUserId = "test-empty-tag-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.3.0")
+      reg.write("serverId", "test-server-123")
+      reg.write("primaryImageTag", "")  ' Empty string
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations([testUserId])
+
+      ' THEN: Empty primaryImageTag is deleted
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertFalse(reg.exists("primaryImageTag"), "Empty primaryImageTag should be deleted")
+    end function
+
+    @it("deletes whitespace-only primaryImageTag")
+    function _()
+      ' GIVEN: User with whitespace-only primaryImageTag
+      testUserId = "test-whitespace-tag-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.3.0")
+      reg.write("serverId", "test-server-123")
+      reg.write("primaryImageTag", "   ")  ' Whitespace only
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations([testUserId])
+
+      ' THEN: Whitespace primaryImageTag is deleted
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertFalse(reg.exists("primaryImageTag"), "Whitespace-only primaryImageTag should be deleted")
+    end function
+
+    @it("preserves valid primaryImageTag value")
+    function _()
+      ' GIVEN: User with valid primaryImageTag
+      testUserId = "test-valid-tag-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.3.0")
+      reg.write("serverId", "test-server-123")
+      reg.write("primaryImageTag", "abc123validtag")
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations([testUserId])
+
+      ' THEN: Valid primaryImageTag is preserved
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertTrue(reg.exists("primaryImageTag"), "Valid primaryImageTag should be preserved")
+      m.assertEqual(reg.read("primaryImageTag"), "abc123validtag")
+    end function
+
+    @it("handles missing primaryImageTag gracefully")
+    function _()
+      ' GIVEN: User without primaryImageTag
+      testUserId = "test-missing-tag-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.3.0")
+      reg.write("serverId", "test-server-123")
+      ' Don't write primaryImageTag
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations([testUserId])
+
+      ' THEN: No error occurs, primaryImageTag still doesn't exist
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertFalse(reg.exists("primaryImageTag"), "primaryImageTag should not exist")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Version Checking")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("skips migration when version already >= v1.4.0")
+    function _()
+      ' GIVEN: User already on v1.4.0 with empty primaryImageTag
+      testUserId = "test-skip-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.4.0")
+      reg.write("serverId", "test-server-123")
+      reg.write("primaryImageTag", "")
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations([testUserId])
+
+      ' THEN: Empty primaryImageTag is NOT deleted (migration skipped)
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertTrue(reg.exists("primaryImageTag"), "Migration should be skipped")
+      m.assertEqual(reg.read("primaryImageTag"), "")
+    end function
+
+    @it("runs migration for version v1.3.0")
+    function _()
+      ' GIVEN: User on v1.3.0
+      testUserId = "test-run-1-3-0"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.3.0")
+      reg.write("serverId", "test-server-123")
+      reg.write("primaryImageTag", "")
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations([testUserId])
+
+      ' THEN: Migration executes and deletes empty tag
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertFalse(reg.exists("primaryImageTag"))
+    end function
+
+    @it("runs migration for older version v1.0.0")
+    function _()
+      ' GIVEN: User on very old version
+      testUserId = "test-run-1-0-0"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.0.0")
+      reg.write("serverId", "test-server-123")
+      reg.write("primaryImageTag", "")
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations([testUserId])
+
+      ' THEN: Migration executes and deletes empty tag
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertFalse(reg.exists("primaryImageTag"))
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Multi-User Independence")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("migrates multiple users independently with different values")
+    function _()
+      ' GIVEN: Multiple users with different primaryImageTag values
+      user1 = "test-multi-user-001"
+      user2 = "test-multi-user-002"
+      user3 = "test-multi-user-003"
+
+      ' User 1: empty tag (should be deleted)
+      reg1 = CreateObject("roRegistrySection", user1)
+      reg1.write("LastRunVersion", "1.3.0")
+      reg1.write("serverId", "test-server-123")
+      reg1.write("primaryImageTag", "")
+      reg1.flush()
+
+      ' User 2: valid tag (should be preserved)
+      reg2 = CreateObject("roRegistrySection", user2)
+      reg2.write("LastRunVersion", "1.3.0")
+      reg2.write("serverId", "test-server-123")
+      reg2.write("primaryImageTag", "valid123")
+      reg2.flush()
+
+      ' User 3: whitespace tag (should be deleted)
+      reg3 = CreateObject("roRegistrySection", user3)
+      reg3.write("LastRunVersion", "1.3.0")
+      reg3.write("serverId", "test-server-123")
+      reg3.write("primaryImageTag", "  ")
+      reg3.flush()
+
+      ' WHEN: All users migrate
+      runRegistryUserMigrations([user1, user2, user3])
+
+      ' THEN: Each user migrated correctly
+      reg1 = CreateObject("roRegistrySection", user1)
+      m.assertFalse(reg1.exists("primaryImageTag"), "User 1 empty tag should be deleted")
+
+      reg2 = CreateObject("roRegistrySection", user2)
+      m.assertTrue(reg2.exists("primaryImageTag"), "User 2 valid tag should be preserved")
+      m.assertEqual(reg2.read("primaryImageTag"), "valid123")
+
+      reg3 = CreateObject("roRegistrySection", user3)
+      m.assertFalse(reg3.exists("primaryImageTag"), "User 3 whitespace tag should be deleted")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Edge Cases")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("handles tab and newline characters as whitespace")
+    function _()
+      ' GIVEN: User with tab/newline in primaryImageTag
+      testUserId = "test-special-whitespace-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.3.0")
+      reg.write("serverId", "test-server-123")
+      reg.write("primaryImageTag", chr(9) + chr(10))  ' Tab + newline
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations([testUserId])
+
+      ' THEN: Special whitespace is deleted
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertFalse(reg.exists("primaryImageTag"), "Tab/newline should be treated as empty")
+    end function
+
+    @it("preserves tag with leading/trailing whitespace around valid content")
+    function _()
+      ' GIVEN: User with valid tag surrounded by whitespace
+      testUserId = "test-padded-tag-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.3.0")
+      reg.write("serverId", "test-server-123")
+      reg.write("primaryImageTag", "  abc123  ")
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations([testUserId])
+
+      ' THEN: Tag is preserved (trim() results in non-empty)
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertTrue(reg.exists("primaryImageTag"), "Tag with valid content should be preserved")
+      m.assertEqual(reg.read("primaryImageTag"), "  abc123  ", "Original value preserved")
+    end function
+
+  end class
+
+end namespace
