@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- lost focus bug when returning to artistview screen ([90d02ea](https://github.com/cewert/jellyrock/commit/90d02ea))
 - placeholder image not showing for private users on UserSelect screen ([#223](https://github.com/cewert/jellyrock/pull/223))
 - alpha menu mic alignment and color ([a6b6a23](https://github.com/cewert/jellyrock/commit/a6b6a23))
 - Fix TextButton uneven padding ([#220](https://github.com/cewert/jellyrock/pull/220))
