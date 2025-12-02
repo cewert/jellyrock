@@ -24,7 +24,7 @@ namespace tests
       reg = CreateObject("roRegistrySection", testUserId)
       reg.write("LastRunVersion", "1.3.0")
       reg.write("serverId", "test-server-123")
-      reg.write("primaryImageTag", "")  ' Empty string
+      reg.write("primaryImageTag", "") ' Empty string
       reg.flush()
 
       ' WHEN: Migration runs
@@ -43,7 +43,7 @@ namespace tests
       reg = CreateObject("roRegistrySection", testUserId)
       reg.write("LastRunVersion", "1.3.0")
       reg.write("serverId", "test-server-123")
-      reg.write("primaryImageTag", "   ")  ' Whitespace only
+      reg.write("primaryImageTag", "   ") ' Whitespace only
       reg.flush()
 
       ' WHEN: Migration runs
@@ -214,7 +214,7 @@ namespace tests
       reg = CreateObject("roRegistrySection", testUserId)
       reg.write("LastRunVersion", "1.3.0")
       reg.write("serverId", "test-server-123")
-      reg.write("primaryImageTag", chr(9) + chr(10))  ' Tab + newline
+      reg.write("primaryImageTag", chr(9) + chr(10)) ' Tab + newline
       reg.flush()
 
       ' WHEN: Migration runs
