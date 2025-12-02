@@ -66,6 +66,11 @@ sub OnScreenShown()
     m.overhang.opacity = "0"
     m.overhang.isVisible = false
     m.overhang.opacity = "1"
+
+    ' Restore focus to previously focused element (set by SceneManager before push)
+    if isValid(m.top.lastFocus)
+      m.top.lastFocus.setFocus(true)
+    end if
   end if
   stopLoadingSpinner()
 end sub
