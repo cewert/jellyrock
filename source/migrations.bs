@@ -9,6 +9,9 @@ const SETTINGS_MIGRATION_VERSION = "1.1.0"
 ' client version when audio codec preference was renamed and migrated
 const AUDIO_CODEC_MIGRATION_VERSION = "1.1.5"
 
+' client version when empty primaryImageTag entries were cleaned up
+const EMPTY_IMAGE_TAG_CLEANUP_VERSION = "1.4.0"
+
 ' Run all necessary registry migrations on the "global" JellyRock registry section
 sub runGlobalMigrations()
   appLastRunVersion = m.global.app.lastRunVersion
@@ -228,6 +231,31 @@ sub runRegistryUserMigrations(targetSections = invalid as dynamic)
         reg.flush()
       else
         print `No audio codec migration needed for userid: ${section} (setting not found)`
+      end if
+    end if
+
+    ' EMPTY_IMAGE_TAG_CLEANUP_VERSION - Remove empty primaryImageTag entries
+    if isValid(lastRunVersion) and not versionChecker(lastRunVersion, EMPTY_IMAGE_TAG_CLEANUP_VERSION)
+      m.wasMigrated = true
+
+      ' Delete empty or whitespace-only primaryImageTag values
+      ' Empty tags were incorrectly stored by buggy code and prevent placeholder images from showing
+      settingName = "primaryImageTag"
+
+      if reg.exists(settingName)
+        value = reg.read(settingName)
+
+        ' Check if value is empty or whitespace-only (using same logic as isValidAndNotEmpty)
+        if not isValid(value) or value.trim() = ""
+          print `Cleaning up empty primaryImageTag for userid: ${section}`
+          reg.delete(settingName)
+          reg.flush()
+          print `Deleted empty primaryImageTag value`
+        else
+          print `No primaryImageTag cleanup needed for userid: ${section} (value is valid)`
+        end if
+      else
+        print `No primaryImageTag cleanup needed for userid: ${section} (setting not found)`
       end if
     end if
   end for

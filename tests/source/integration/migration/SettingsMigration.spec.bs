@@ -21,10 +21,7 @@ namespace tests
 
       reg = CreateObject("roRegistrySection", testUserId)
       reg.write("serverId", m.global.server.id)
-      reg.write("LastRunVersion", "1.0.0") ' Old version (before 1.1.0)
-      ' NOTE: With LastRunVersion "1.0.0", both v1.1.0 AND v1.1.5 migrations will run
-      ' v1.1.0: Dotted names → camelCase
-      ' v1.1.5: playbackPreferredAudioCodec → playbackPreferredMultichannelCodec (with value migration)
+      reg.write("LastRunVersion", "1.0.0") ' Old version - all migrations will run
 
       ' Write OLD setting names for all categories (auth settings excluded - token/primaryimagetag not tested)
       ' NOTE: global.rememberme is NOT tested here - it's stored in the global "JellyRock" section, not user sections
@@ -81,6 +78,9 @@ namespace tests
       ' Server policy keys (will be deleted during migration - these should never be in registry)
       reg.write("livetv.canrecord", "true")
       reg.write("content.candelete", "false")
+
+      ' Empty primaryImageTag (will be deleted by v1.4.0 migration)
+      reg.write("primaryImageTag", "")
 
       reg.flush()
 
@@ -188,6 +188,9 @@ namespace tests
       m.assertFalse(reg.exists("playback.bitrate.limit"), "Old setting name should be deleted")
       m.assertFalse(reg.exists("ui.design.hideclock"), "Old setting name should be deleted")
       m.assertFalse(reg.exists("homesection0"), "Old setting name should be deleted")
+
+      ' AND: Empty primaryImageTag is cleaned up
+      m.assertFalse(reg.exists("primaryImageTag"), "Empty primaryImageTag should be deleted")
     end function
 
     @it("preserves exact string values during migration")

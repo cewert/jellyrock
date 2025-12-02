@@ -1,0 +1,148 @@
+import "pkg:/source/api/Image.bs"
+import "pkg:/source/utils/misc.bs"
+
+namespace tests
+
+  @suite("Image.bs - UserImageURL()")
+  class ImageURLTests extends tests.BaseTestSuite
+
+    protected override function setup()
+      super.setup()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("UserImageURL() - Tag Validation")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns empty string when tag parameter is empty string")
+    function _()
+      ' GIVEN: User ID and params with empty tag
+      userId = "test-user-123"
+      params = { "tag": "" }
+
+      ' WHEN: UserImageURL is called
+      result = UserImageURL(userId, params)
+
+      ' THEN: Returns empty string to prevent 404 requests
+      m.assertEqual(result, "", "Should return empty string for empty tag")
+    end function
+
+    @it("returns empty string when tag parameter is invalid")
+    function _()
+      ' GIVEN: User ID and params with invalid tag
+      userId = "test-user-123"
+      params = { "tag": invalid }
+
+      ' WHEN: UserImageURL is called
+      result = UserImageURL(userId, params)
+
+      ' THEN: Returns empty string to prevent 404 requests
+      m.assertEqual(result, "", "Should return empty string for invalid tag")
+    end function
+
+    @it("returns empty string when Tag parameter (capital T) is empty string")
+    function _()
+      ' GIVEN: User ID and params with empty Tag (capital T)
+      userId = "test-user-123"
+      params = { "Tag": "" }
+
+      ' WHEN: UserImageURL is called
+      result = UserImageURL(userId, params)
+
+      ' THEN: Returns empty string to prevent 404 requests
+      m.assertEqual(result, "", "Should return empty string for empty Tag")
+    end function
+
+    @it("returns valid URL when tag parameter is valid string")
+    function _()
+      ' GIVEN: User ID and params with valid tag
+      userId = "test-user-123"
+      params = { "tag": "abc123validtag" }
+
+      ' WHEN: UserImageURL is called
+      result = UserImageURL(userId, params)
+
+      ' THEN: Returns valid URL containing the user ID
+      m.assertNotEqual(result, "", "Should return non-empty URL for valid tag")
+      m.assertTrue(result.Instr(userId) >= 0, "URL should contain user ID")
+      m.assertTrue(result.Instr("tag=abc123validtag") >= 0, "URL should contain tag parameter")
+    end function
+
+    @it("returns valid URL when no tag parameter is provided")
+    function _()
+      ' GIVEN: User ID and params without tag
+      userId = "test-user-123"
+      params = {}
+
+      ' WHEN: UserImageURL is called
+      result = UserImageURL(userId, params)
+
+      ' THEN: Returns valid URL (tag is optional)
+      m.assertNotEqual(result, "", "Should return non-empty URL when tag not provided")
+      m.assertTrue(result.Instr(userId) >= 0, "URL should contain user ID")
+    end function
+
+    @it("returns empty string when tag is whitespace-only string")
+    function _()
+      ' GIVEN: User ID and params with whitespace-only tag
+      userId = "test-user-123"
+      params = { "tag": "   " }
+
+      ' WHEN: UserImageURL is called
+      result = UserImageURL(userId, params)
+
+      ' THEN: Returns empty string (isValidAndNotEmpty trims whitespace)
+      m.assertEqual(result, "", "Should return empty string for whitespace-only tag")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("ImageURL() - Tag Validation")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns empty string when tag parameter is empty string")
+    function _()
+      ' GIVEN: Item ID, version, and params with empty tag
+      itemId = "test-item-456"
+      version = "Primary"
+      params = { "tag": "" }
+
+      ' WHEN: ImageURL is called
+      result = ImageURL(itemId, version, params)
+
+      ' THEN: Returns empty string to prevent 404 requests
+      m.assertEqual(result, "", "Should return empty string for empty tag")
+    end function
+
+    @it("returns empty string when tag parameter is invalid")
+    function _()
+      ' GIVEN: Item ID, version, and params with invalid tag
+      itemId = "test-item-456"
+      version = "Primary"
+      params = { "tag": invalid }
+
+      ' WHEN: ImageURL is called
+      result = ImageURL(itemId, version, params)
+
+      ' THEN: Returns empty string to prevent 404 requests
+      m.assertEqual(result, "", "Should return empty string for invalid tag")
+    end function
+
+    @it("returns valid URL when tag parameter is valid string")
+    function _()
+      ' GIVEN: Item ID, version, and params with valid tag
+      itemId = "test-item-456"
+      version = "Primary"
+      params = { "tag": "xyz789validtag" }
+
+      ' WHEN: ImageURL is called
+      result = ImageURL(itemId, version, params)
+
+      ' THEN: Returns valid URL containing the item ID
+      m.assertNotEqual(result, "", "Should return non-empty URL for valid tag")
+      m.assertTrue(result.Instr(itemId) >= 0, "URL should contain item ID")
+      m.assertTrue(result.Instr("tag=xyz789validtag") >= 0, "URL should contain tag parameter")
+    end function
+
+  end class
+
+end namespace

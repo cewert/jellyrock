@@ -82,6 +82,21 @@ function ImageURL(id, version = "Primary", params = {})
 end function
 
 function UserImageURL(id, params = {})
+  ' Validate tag parameter if provided - return empty string for invalid tags to prevent 404 requests
+  if params.doesExist("tag") or params.doesExist("Tag")
+    tagValue = invalid
+    if params.doesExist("tag")
+      tagValue = params.tag
+    else if params.doesExist("Tag")
+      tagValue = params.Tag
+    end if
+
+    ' Return empty string if tag is invalid or empty to prevent 404 requests
+    if not isValidAndNotEmpty(tagValue)
+      return ""
+    end if
+  end if
+
   ' set defaults
   if not isValid(params.maxHeight)
     params.append({ "maxHeight": "300" })

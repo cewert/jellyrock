@@ -59,7 +59,7 @@ function LoginFlow()
           userData = CreateObject("roSGNode", "PublicUserData")
           userData.id = item.Id
           userData.name = item.Name
-          if isValid(item.PrimaryImageTag)
+          if isValidAndNotEmpty(item.PrimaryImageTag)
             userData.ImageURL = UserImageURL(userData.id, { "tag": item.PrimaryImageTag })
           end if
           publicUsersNodes.push(userData)
@@ -79,7 +79,7 @@ function LoginFlow()
                 userData.name = savedUser.username
               end if
 
-              if isValid(savedUser.primaryImageTag)
+              if isValidAndNotEmpty(savedUser.primaryImageTag)
                 userData.ImageURL = UserImageURL(userData.id, { "tag": savedUser.primaryImageTag })
               end if
 
@@ -521,7 +521,7 @@ function CreateSigninGroup(userName = "")
               user.Login(activeUser, true)
               set_user_setting("authToken", activeUser.token)
               set_user_setting("username", userName.value)
-              if isValid(activeUser.json.PrimaryImageTag)
+              if isValidAndNotEmpty(activeUser.json.PrimaryImageTag)
                 set_user_setting("primaryImageTag", activeUser.json.PrimaryImageTag)
               end if
             else
