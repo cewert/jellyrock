@@ -193,7 +193,9 @@ sub Main (args as dynamic) as void
               data = api.users.GetItem(m.global.user.id, currentEpisode.id)
               if isValid(data)
                 currentScene.objects.Items[i].json = data
-                m.global.queueManager.callFunc("setTopStartingPoint", data.UserData.PlaybackPositionTicks)
+                if isValid(data.UserData) and isValid(data.UserData.PlaybackPositionTicks)
+                  m.global.queueManager.callFunc("setTopStartingPoint", data.UserData.PlaybackPositionTicks)
+                end if
               end if
               exit for
             end if
@@ -217,7 +219,9 @@ sub Main (args as dynamic) as void
         if isValid(data)
           currentScene.itemContent.json = data
           ' Set updated starting point for the queue item
-          m.global.queueManager.callFunc("setTopStartingPoint", data.UserData.PlaybackPositionTicks)
+          if isValid(data.UserData) and isValid(data.UserData.PlaybackPositionTicks)
+            m.global.queueManager.callFunc("setTopStartingPoint", data.UserData.PlaybackPositionTicks)
+          end if
 
           ' Refresh movie detail data
           movieMetaData = ItemMetaData(currentScene.itemContent.id)
@@ -268,14 +272,17 @@ sub Main (args as dynamic) as void
 
           selectedItem.selectedAudioStreamIndex = audio_stream_idx
           ' Display playback options dialog
-          if selectedItem.json.userdata.PlaybackPositionTicks > 0
-            m.global.queueManager.callFunc("hold", selectedItem)
-            playbackOptionDialog(selectedItem.json.userdata.PlaybackPositionTicks, selectedItem.json)
-          else
-            m.global.queueManager.callFunc("clear")
-            m.global.queueManager.callFunc("push", selectedItem)
-            m.global.queueManager.callFunc("playQueue")
+          if isValid(selectedItem.json) and isValid(selectedItem.json.userdata) and isValid(selectedItem.json.userdata.PlaybackPositionTicks)
+            if selectedItem.json.userdata.PlaybackPositionTicks > 0
+              m.global.queueManager.callFunc("hold", selectedItem)
+              playbackOptionDialog(selectedItem.json.userdata.PlaybackPositionTicks, selectedItem.json)
+              return
+            end if
           end if
+
+          m.global.queueManager.callFunc("clear")
+          m.global.queueManager.callFunc("push", selectedItem)
+          m.global.queueManager.callFunc("playQueue")
 
         else if selectedItemType = "Series"
           group = CreateSeriesDetailsGroup(selectedItem.json.id)
@@ -581,7 +588,7 @@ sub Main (args as dynamic) as void
           group.itemContent.id = group.selectedVideoStreamId
 
           ' Display playback options dialog
-          if group.itemContent.json.userdata.PlaybackPositionTicks > 0
+          if isValid(group.itemContent.json) and isValid(group.itemContent.json.userdata) and isValid(group.itemContent.json.userdata.PlaybackPositionTicks) and group.itemContent.json.userdata.PlaybackPositionTicks > 0
             m.global.queueManager.callFunc("hold", group.itemContent)
             playbackOptionDialog(group.itemContent.json.userdata.PlaybackPositionTicks, group.itemContent.json)
           else
