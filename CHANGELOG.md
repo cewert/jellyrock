@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- prevent crash when media UserData is invalid ([e08a698](https://github.com/cewert/jellyrock/commit/e08a698))
+
 ### Dependencies
 
 - Update spellchecker-cli from v7.0.1 to v7.0.2 ([#227](https://github.com/cewert/jellyrock/pull/227))
