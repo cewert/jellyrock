@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- playback crash when UserData is invalid ([f6017c6](https://github.com/cewert/jellyrock/commit/f6017c6))
 - prevent crash when media UserData is invalid ([e08a698](https://github.com/cewert/jellyrock/commit/e08a698))
 
 ### Dependencies
