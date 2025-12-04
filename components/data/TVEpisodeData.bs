@@ -10,7 +10,11 @@ sub setFields()
   m.top.showID = datum.SeriesID
   m.top.seasonID = datum.SeasonID
   m.top.overview = datum.overview
-  m.top.favorite = datum.UserData.isFavorite
+  if isValid(datum.UserData)
+    if isValid(datum.UserData.isFavorite)
+      m.top.favorite = datum.UserData.isFavorite
+    end if
+  end if
 end sub
 
 sub setPoster()

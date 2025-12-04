@@ -6,7 +6,11 @@ import "pkg:/source/utils/misc.bs"
 sub setFields()
   json = m.top.json
   m.top.id = json.id
-  m.top.favorite = json.UserData.isFavorite
+  if isValid(json.UserData)
+    if isValid(json.UserData.isFavorite)
+      m.top.favorite = json.UserData.isFavorite
+    end if
+  end if
   m.top.Type = "MusicArtist"
   setPoster()
 

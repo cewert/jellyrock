@@ -10,8 +10,14 @@ sub setFields()
   m.top.Title = json.name
   m.top.overview = json.overview
   m.top.Description = json.overview
-  m.top.favorite = json.UserData.isFavorite
-  m.top.watched = json.UserData.played
+  if isValid(json.UserData)
+    if isValid(json.UserData.isFavorite)
+      m.top.favorite = json.UserData.isFavorite
+    end if
+    if isValid(json.UserData.played)
+      m.top.watched = json.UserData.played
+    end if
+  end if
   m.top.Type = "Boxset"
 
   setPoster()
