@@ -276,13 +276,16 @@ sub Main (args as dynamic) as void
             if selectedItem.json.userdata.PlaybackPositionTicks > 0
               m.global.queueManager.callFunc("hold", selectedItem)
               playbackOptionDialog(selectedItem.json.userdata.PlaybackPositionTicks, selectedItem.json)
-              return
+            else
+              m.global.queueManager.callFunc("clear")
+              m.global.queueManager.callFunc("push", selectedItem)
+              m.global.queueManager.callFunc("playQueue")
             end if
+          else
+            m.global.queueManager.callFunc("clear")
+            m.global.queueManager.callFunc("push", selectedItem)
+            m.global.queueManager.callFunc("playQueue")
           end if
-
-          m.global.queueManager.callFunc("clear")
-          m.global.queueManager.callFunc("push", selectedItem)
-          m.global.queueManager.callFunc("playQueue")
 
         else if selectedItemType = "Series"
           group = CreateSeriesDetailsGroup(selectedItem.json.id)
