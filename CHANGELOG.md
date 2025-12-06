@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - crash on Continue Watching when hitting OK on an episode or recording ([c500b9b](https://github.com/cewert/jellyrock/commit/c500b9b))
 
+### Dependencies
+
+- Update roku-deploy from v3.15.0 to v3.16.1 ([#231](https://github.com/cewert/jellyrock/pull/231))
+
 ## [1.4.1](https://github.com/cewert/jellyrock/compare/v1.4.0...v1.4.1) - 2025-12-04
 
 ### Fixed
