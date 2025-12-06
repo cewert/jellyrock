@@ -58,19 +58,25 @@ function ImageURL(id, version = "Primary", params = {})
     end if
   end if
 
-  ' set defaults
-  if not isValid(params.maxHeight)
-    param = { "maxHeight": "384" }
-    params.append(param)
+  if version = LCase("backdrop")
+    ' use UI resolution for backdrops max resolution. overwrite incoming params if any
+    localDevice = m.global.device
+    params.maxWidth = localDevice.uiResolution[0]
+    params.maxHeight = localDevice.uiResolution[1]
+  else
+    ' set defaults for other image types
+    if not isValid(params.maxHeight)
+      params.maxHeight = "384"
+    end if
+    if not isValid(params.maxWidth)
+      params.maxWidth = "196"
+    end if
   end if
-  if not isValid(params.maxWidth)
-    param = { "maxWidth": "196" }
-    params.append(param)
-  end if
+
   if not isValid(params.quality)
-    param = { "quality": "90" }
-    params.append(param)
+    params.quality = "90"
   end if
+
   url = Substitute("Items/{0}/Images/{1}", id, version)
   ' ?maxHeight=384&maxWidth=256&tag=<tag>&quality=90"
   fullURL = buildURL(url, params)

@@ -23,6 +23,7 @@ sub init()
   m.top.setfocus(true)
 
   m.top.observeField("rowItemSelected", "itemSelected")
+  m.top.observeField("rowItemFocused", "onItemFocused")
 
   ' Load the Libraries from API via task
   m.LoadLibrariesTask = createObject("roSGNode", "LoadItemsTask")
@@ -698,6 +699,22 @@ sub itemSelected()
 
   'Prevent the selected item event from double firing
   m.top.selectedItem = invalid
+end sub
+
+' Handle item focus changes and update background image
+sub onItemFocused()
+  ' Check if valid focus position
+  if not isValid(m.top.rowItemFocused) or m.top.rowItemFocused[0] = -1 or m.top.rowItemFocused[1] = -1
+    return
+  end if
+
+  ' Get focused item
+  focusedItem = m.top.content.getChild(m.top.rowItemFocused[0]).getChild(m.top.rowItemFocused[1])
+
+  ' Set background to item backdrop if available
+  if isValid(focusedItem) and isValid(focusedItem.backdropUrl)
+    m.global.sceneManager.callFunc("setBackgroundImage", focusedItem.backdropUrl)
+  end if
 end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean

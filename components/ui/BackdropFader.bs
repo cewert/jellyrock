@@ -1,0 +1,112 @@
+sub init()
+  m.background = m.top.findNode("background")
+  m.oldBackground = m.top.findNode("oldBackground")
+  m.oldbackgroundInterpolator = m.top.findNode("oldbackgroundInterpolator")
+  m.shade = m.top.findNode("shade")
+  m.fadeoutAnimation = m.top.findNode("fadeoutAnimation")
+  m.fadeinAnimation = m.top.findNode("fadeinAnimation")
+  m.currentUri = "pkg:/images/1px-transparent.png"
+  applyTheme()
+
+  m.background.observeField("bitmapWidth", "onBackgroundLoaded")
+  m.top.observeField("width", "onSizeChange")
+  m.top.observeField("height", "onSizeChange")
+  m.top.observeField("scaleMode", "onSizeChange")
+  m.top.observeField("uri", "onUriChange")
+end sub
+
+sub applyTheme()
+  constants = m.global.constants
+
+  ' Set shade color
+  m.shade.color = constants.colorBlack + constants.alpha60
+
+  ' Initialize parent Rectangle color as transparent (no darkening for transparent images)
+  m.top.color = constants.colorBlack + constants.alpha0
+end sub
+
+' If Size changed, change parameters to children
+sub onSizeChange()
+  m.background.width = m.top.width
+  m.oldBackground.width = m.top.width
+  m.shade.width = m.top.width
+  m.oldBackground.loadWidth = m.top.width
+  m.background.loadWidth = m.top.width
+
+  m.oldBackground.height = m.top.height
+  m.background.height = m.top.height
+  m.shade.height = m.top.height
+  m.oldBackground.loadHeight = m.top.height
+  m.background.loadHeight = m.top.height
+
+  m.oldBackground.loadDisplayMode = m.top.scaleMode
+  m.background.loadDisplayMode = m.top.scaleMode
+end sub
+
+sub onBackgroundLoaded()
+  transparentImage = "pkg:/images/1px-transparent.png"
+
+  ' Manage shade visibility based on image type
+  if m.currentUri <> transparentImage
+    ' Real image: show shade
+    m.shade.visible = true
+  else
+    ' Transparent image: hide shade
+    m.shade.visible = false
+  end if
+
+  ' Handle opacity changes
+  if m.currentUri = transparentImage
+    m.background.opacity = 0
+    m.oldBackground.opacity = 0
+  else if m.top.isAnimated
+    m.fadeinAnimation.control = "start"
+  else
+    m.background.opacity = 0.5
+    m.oldBackground.opacity = 0
+  end if
+end sub
+
+sub onUriChange()
+  changeImage(m.top.uri, m.top.isAnimated)
+end sub
+
+sub changeImage(uri as string, isAnimated as boolean)
+  oldUrl = m.currentUri
+  transparentImage = "pkg:/images/1px-transparent.png"
+
+  ' Handle empty URI - use transparent image
+  if uri = invalid or uri = ""
+    constants = m.global.constants
+    m.currentUri = transparentImage
+    ' Hide shade and remove parent darkening for transparent image
+    m.shade.visible = false
+    m.top.color = constants.colorBlack + constants.alpha0
+    ' Set transparent image to both posters with no opacity reduction
+    m.background.uri = transparentImage
+    m.oldBackground.uri = transparentImage
+    m.background.opacity = 0
+    m.oldBackground.opacity = 0
+    m.fadeoutAnimation.control = "stop"
+    return
+  end if
+
+  ' Set new URI for real image
+  m.currentUri = uri
+  m.background.uri = m.currentUri
+  m.fadeoutAnimation.control = "stop"
+
+  ' Handle transition from old image
+  if oldUrl <> invalid and oldUrl <> "" and oldUrl <> transparentImage
+    m.oldBackground.uri = oldUrl
+
+    if isAnimated
+      ' Animate the old background from its current opacity to 0
+      m.oldbackgroundInterpolator.keyValue = [0.5, 0.0]
+      m.fadeoutAnimation.control = "start"
+    else
+      m.background.opacity = 0.5
+      m.oldBackground.opacity = 0
+    end if
+  end if
+end sub

@@ -14,6 +14,8 @@ sub CreateVideoPlayerView()
   m.selectedSubtitle = {}
 
   m.view = CreateObject("roSGNode", "VideoPlayerView")
+  ' Keep video player invisible during loading to prevent black background from covering backdrop
+  m.view.visible = false
   m.view.observeField("state", "onStateChange")
   m.view.observeField("selectPlaybackInfoPressed", "onSelectPlaybackInfoPressed")
   m.view.observeField("selectSubtitlePressed", "onSelectSubtitlePressed")

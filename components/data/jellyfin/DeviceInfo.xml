@@ -30,6 +30,7 @@
     <field id="displayType" type="string" value="" />
     <field id="displayMode" type="string" value="" />
     <field id="videoMode" type="string" value="" />
+    <field id="uiResolution" type="array" value="[]" />
 
     <!-- Video Capabilities -->
     <field id="videoHeight" type="integer" value="0" />

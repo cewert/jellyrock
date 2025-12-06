@@ -201,6 +201,19 @@ sub resetTime()
   m.overhang.callFunc("resetTime")
 end sub
 
+' Set the background image
+' @param {string} uri - The image URI to display
+' @param {boolean} isAnimated - Whether to animate the transition
+sub setBackgroundImage(uri as string, isAnimated = true as boolean)
+  m.log.info("SceneManager.setBackgroundImage called", uri, isAnimated)
+  ' Passthrough to scene via callFunc
+  if isValid(m.scene)
+    m.scene.callFunc("setBackgroundImage", uri, isAnimated)
+  else
+    m.log.error("SceneManager.setBackgroundImage: m.scene is invalid!")
+  end if
+end sub
+
 ' Display dialog to user with an OK button
 sub userMessage(title as string, message as string)
   dialog = createObject("roSGNode", "StandardMessageDialog")
