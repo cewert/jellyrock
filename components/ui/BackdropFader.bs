@@ -5,7 +5,7 @@ sub init()
   m.shade = m.top.findNode("shade")
   m.fadeoutAnimation = m.top.findNode("fadeoutAnimation")
   m.fadeinAnimation = m.top.findNode("fadeinAnimation")
-  m.currentUri = "pkg:/images/1px-transparent.png"
+  m.currentUri = "pkg:/images/transparent-16x9.png"
   applyTheme()
 
   m.background.observeField("bitmapWidth", "onBackgroundLoaded")
@@ -44,7 +44,7 @@ sub onSizeChange()
 end sub
 
 sub onBackgroundLoaded()
-  transparentImage = "pkg:/images/1px-transparent.png"
+  transparentImage = "pkg:/images/transparent-16x9.png"
 
   ' Manage shade visibility based on image type
   if m.currentUri <> transparentImage
@@ -73,7 +73,7 @@ end sub
 
 sub changeImage(uri as string, isAnimated as boolean)
   oldUrl = m.currentUri
-  transparentImage = "pkg:/images/1px-transparent.png"
+  transparentImage = "pkg:/images/transparent-16x9.png"
 
   ' Handle empty URI - use transparent image
   if uri = invalid or uri = ""

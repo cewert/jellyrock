@@ -576,7 +576,7 @@ sub onAudioStreamLoaded()
         setBackdropImage(ImageURL(currentItem.ParentBackdropItemId, "Backdrop", { "maxHeight": "720", "maxWidth": "1280", "tag": currentItem.ParentBackdropImageTags[0] }))
       else
         ' no backdrop available, clear existing backdrop
-        setBackdropImage("pkg:/images/1px-transparent.png")
+        setBackdropImage("pkg:/images/transparent-16x9.png")
       end if
 
       ' poster image
