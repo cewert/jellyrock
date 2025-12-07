@@ -20,7 +20,7 @@
       <FloatFieldInterpolator
         id="oldbackgroundInterpolator"
         key="[0.0, 1.0]"
-        keyValue="[0.5, 0.0]"
+        keyValue="[0.4, 0.0]"
         fieldToInterp="oldBackground.opacity" />
       <FloatFieldInterpolator
         id="shadeInterpolator"
@@ -37,7 +37,7 @@
       <FloatFieldInterpolator
         id="backgroundInterpolator"
         key="[0.0, 1.0]"
-        keyValue="[0.0, 0.5]"
+        keyValue="[0.0, 0.4]"
         fieldToInterp="background.opacity" />
     </Animation>
   </children>
