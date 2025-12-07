@@ -2,6 +2,7 @@
 <component name="HomeData" extends="ContentNode">
   <interface>
     <field id="name" type="string" />
+    <field id="backdropUrl" type="string" />
     <field id="thumbnailURL" type="string" />
     <field id="iconURL" type="string" />
     <field id="posterURL" type="string" />

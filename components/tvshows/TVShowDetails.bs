@@ -1,7 +1,10 @@
+import "pkg:/source/roku_modules/log/LogMixin.brs"
+import "pkg:/source/utils/backdropUtils.bs"
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/misc.bs"
 
 sub init()
+  m.log = log.Logger("TVShowDetails")
   m.top.optionsAvailable = false
   main = m.top.findNode("toplevel")
   main.translation = [96, 175]
@@ -16,11 +19,37 @@ sub init()
   m.overview.ellipsisText = tr("... (Press * to read more)")
 end sub
 
+sub OnScreenShown()
+  ' Set backdrop from series data
+  ' This handles the case when returning to an already-loaded screen
+  if isValid(m.top.itemContent)
+    if isValid(m.top.itemContent.backdropUrl)
+      m.global.sceneManager.callFunc("setBackgroundImage", m.top.itemContent.backdropUrl)
+      m.log.info("backdropUrl set to", m.top.itemContent.backdropUrl)
+    end if
+  else
+    m.log.info("cannot set backdropUrl, m.top.itemContent is invalid")
+  end if
+end sub
+
 sub itemContentChanged()
   ' Updates video metadata
   ' TODO - make things use item rather than itemData
   item = m.top.itemContent
+  print "[TVShowDetails] itemContentChanged called"
+  if not isValid(item) then return
+
   itemData = item.json
+
+  ' Set backdrop from series data
+  print "[TVShowDetails] backdropUrl in itemContentChanged: "; item.backdropUrl
+  if isValid(item.backdropUrl)
+    print "[TVShowDetails] Setting backdrop: "; item.backdropUrl
+    m.global.sceneManager.callFunc("setBackgroundImage", item.backdropUrl)
+  else
+    print "[TVShowDetails] backdropUrl not valid, setting empty"
+    m.global.sceneManager.callFunc("setBackgroundImage", "")
+  end if
 
   m.tvshowPoster.uri = m.top.itemContent.posterURL
 

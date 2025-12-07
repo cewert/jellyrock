@@ -63,6 +63,15 @@ end sub
 ' OnScreenShown: Callback function when view is presented on screen
 '
 sub OnScreenShown()
+  ' Set backdrop from movie data (only if itemContent is already loaded)
+  ' This handles the case when returning to an already-loaded screen
+  if isValid(m.top.itemContent)
+    if isValid(m.top.itemContent.backdropUrl)
+      m.global.sceneManager.callFunc("setBackgroundImage", m.top.itemContent.backdropUrl)
+    end if
+  end if
+  ' If itemContent not loaded, backdrop will be set in itemContentChanged()
+
   ' set focus to button group
   if m.extrasGrp.opacity = 1
     m.top.lastFocus.setFocus(true)
@@ -97,6 +106,14 @@ end sub
 sub itemContentChanged()
   ' Updates video metadata
   item = m.top.itemContent
+
+  ' Set backdrop from movie data
+  if isValid(item) and isValid(item.backdropUrl) and item.backdropUrl <> ""
+    m.global.sceneManager.callFunc("setBackgroundImage", item.backdropUrl)
+  else
+    m.global.sceneManager.callFunc("setBackgroundImage", "")
+  end if
+
   if isValid(item) and isValid(item.json)
     userSettings = m.global.user.settings
     itemData = item.json

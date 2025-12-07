@@ -6,12 +6,42 @@ import "pkg:/source/utils/deviceCapabilities.bs"
 import "pkg:/source/utils/misc.bs"
 
 sub init()
+  ' Clear backdrop immediately when search screen opens
+  m.global.sceneManager.callFunc("setBackgroundImage", "")
+
   m.top.optionsAvailable = false
   m.searchSelect = m.top.findnode("searchSelect")
   m.searchTask = CreateObject("roSGNode", "SearchTask")
 
   m.searchHelpText = m.top.findNode("SearchHelpText")
 
+  ' Observe row item focus for backdrop updates
+  m.searchSelect.observeField("rowItemFocused", "onSearchItemFocused")
+end sub
+
+sub OnScreenShown()
+  ' Start with transparent backdrop - will update on item focus
+  m.global.sceneManager.callFunc("setBackgroundImage", "")
+end sub
+
+' onSearchItemFocused: Update backdrop when search result is focused
+sub onSearchItemFocused()
+  if not isValid(m.searchSelect.rowItemFocused) or m.searchSelect.rowItemFocused[0] = -1 or m.searchSelect.rowItemFocused[1] = -1
+    return
+  end if
+
+  ' Get focused item from search results
+  rowContent = m.searchSelect.content.getChild(m.searchSelect.rowItemFocused[0])
+  if isValid(rowContent)
+    focusedItem = rowContent.getChild(m.searchSelect.rowItemFocused[1])
+
+    if isValid(focusedItem) and isValid(focusedItem.backdropUrl) and focusedItem.backdropUrl <> ""
+      m.global.sceneManager.callFunc("setBackgroundImage", focusedItem.backdropUrl)
+    else
+      ' Item has no backdrop - set transparent
+      m.global.sceneManager.callFunc("setBackgroundImage", "")
+    end if
+  end if
 end sub
 
 sub searchMedias()

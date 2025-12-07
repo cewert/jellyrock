@@ -58,19 +58,18 @@ function ImageURL(id, version = "Primary", params = {})
     end if
   end if
 
-  ' set defaults
+  ' set defaults for image dimensions if not provided
   if not isValid(params.maxHeight)
-    param = { "maxHeight": "384" }
-    params.append(param)
+    params.maxHeight = "384"
   end if
   if not isValid(params.maxWidth)
-    param = { "maxWidth": "196" }
-    params.append(param)
+    params.maxWidth = "196"
   end if
+
   if not isValid(params.quality)
-    param = { "quality": "90" }
-    params.append(param)
+    params.quality = "90"
   end if
+
   url = Substitute("Items/{0}/Images/{1}", id, version)
   ' ?maxHeight=384&maxWidth=256&tag=<tag>&quality=90"
   fullURL = buildURL(url, params)

@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="JRScene" extends="Scene">
   <children>
+    <BackdropFader
+      id="imageFader"
+      translation="[0, 0]"
+      scaleMode="scaleToZoom" />
     <Group id="content" />
     <JROverhang id="overhang" />
     <LabelPrimaryLarge id="loadingText" height="225" width="1266" horizAlign="center" vertAlign="bottom" wrap="true" translation="[327, 210]" visible="false" />
@@ -14,5 +18,7 @@
     <field id="loadingText" type="string" value="" alwaysNotify="true" onchange="loadingTextChanged" />
     <field id="isLoading" type="boolean" alwaysNotify="true" value="true" onchange="isLoadingChanged" />
     <field id="exit" type="boolean" alwaysNotify="true" />
+    <field id="backgroundImageUri" type="string" value="" alwaysNotify="true" onchange="backgroundImageUriChanged" />
+    <function name="setBackgroundImage" />
   </interface>
 </component>

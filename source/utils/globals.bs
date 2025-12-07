@@ -142,6 +142,8 @@ sub SaveDeviceToGlobal()
   deviceNode.hasVoiceRemote = deviceInfo.HasFeature("voice_remote")
   deviceNode.displayType = deviceInfo.GetDisplayType()
   deviceNode.displayMode = deviceInfo.GetDisplayMode()
+  uiRes = deviceInfo.GetUIResolution()
+  deviceNode.uiResolution = [uiRes.width, uiRes.height]
   ' video info below is based on the the Display type selected in the Roku settings which may or may not match the max playback resolution of the tv
   ' eg. if Display type is 1080p, these settings will be based on 1080p even if the TV supports 2160p/4K
   deviceNode.videoMode = videoMode

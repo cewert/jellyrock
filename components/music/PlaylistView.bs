@@ -12,6 +12,9 @@ sub init()
 
   m.songList.observeField("doneLoading", "onDoneLoading")
 
+  ' Observe item focus to update backdrop for ANY focused item type
+  m.songList.observeField("itemFocused", "onPlaylistItemFocused")
+
   m.dscr = m.top.findNode("overview")
   m.dscr.ellipsisText = tr("... (Press * to read more)")
   createDialogPallete()
@@ -22,13 +25,38 @@ sub setupMainNode()
   main.translation = [96, 175]
 end sub
 
+sub OnScreenShown()
+  ' Start with transparent backdrop for playlists
+  ' Backdrop updates based on focused item as user navigates
+  m.global.sceneManager.callFunc("setBackgroundImage", "")
+end sub
+
 ' Set values for displayed values on screen
 sub pageContentChanged()
   item = m.top.pageContent
 
+  ' Start with transparent for playlists
+  ' Backdrop updates based on focused item as user navigates
+  m.global.sceneManager.callFunc("setBackgroundImage", "")
+
   setPosterImage(item.posterURL)
   setScreenTitle(item.json)
   setOnScreenTextValues(item.json)
+end sub
+
+' onPlaylistItemFocused: Update backdrop when playlist item is focused
+sub onPlaylistItemFocused()
+  if not isValid(m.songList.itemFocused) or m.songList.itemFocused = -1
+    return
+  end if
+
+  ' Get focused playlist item (Audio, Video, Episode, Movie, etc.)
+  focusedItem = m.songList.content.getChild(m.songList.itemFocused)
+
+  ' Update backdrop if item has one, otherwise clear to transparent
+  if isValid(focusedItem) and isValid(focusedItem.backdropUrl)
+    m.global.sceneManager.callFunc("setBackgroundImage", focusedItem.backdropUrl)
+  end if
 end sub
 
 ' Set poster image on screen

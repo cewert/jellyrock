@@ -524,6 +524,9 @@ sub onVideoContentLoaded()
     m.top.audioTrack = "1"
   end if
 
+  ' Make video player visible now that content is loaded and ready to play
+  m.top.visible = true
+
   stopLoadingSpinner()
   m.top.setFocus(true)
   m.top.control = "play"

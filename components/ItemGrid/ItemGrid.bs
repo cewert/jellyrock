@@ -18,8 +18,6 @@ sub init()
   m.channelFocused = invalid
 
   m.itemGrid = m.top.findNode("itemGrid")
-  m.backdrop = m.top.findNode("backdrop")
-  m.newBackdrop = m.top.findNode("backdropTransition")
   m.emptyText = m.top.findNode("emptyText")
 
   m.genreList = m.top.findNode("genrelist")
@@ -28,9 +26,6 @@ sub init()
   m.genreList.observeField("itemSelected", "onGenreItemSelected")
   m.genreData = CreateObject("roSGNode", "ContentNode")
   m.genreList.content = m.genreData
-
-  m.swapAnimation = m.top.findNode("backroundSwapAnimation")
-  m.swapAnimation.observeField("state", "swapDone")
 
   m.loadedRows = 0
   m.loadedItems = 0
@@ -51,12 +46,6 @@ sub init()
   m.voiceBox.observeField("text", "onvoiceFilter")
   'set voice help text
   m.voiceBox.hintText = tr("Use voice remote to search")
-
-  'backdrop
-  m.newBackdrop.observeField("loadStatus", "newBGLoaded")
-
-  'Background Image Queued for loading
-  m.queuedBGUri = ""
 
   'Item sort - maybe load defaults from user prefs?
   m.sortField = "SortName"
@@ -97,7 +86,7 @@ sub loadInitialItems()
   end if
 
   if isValid(m.top.parentItem.backdropUrl)
-    SetBackground(m.top.parentItem.backdropUrl)
+    m.global.sceneManager.callFunc("setBackgroundImage", m.top.parentItem.backdropUrl)
   end if
 
   ' Read view/sort/filter settings using new displaySettings structure
@@ -523,22 +512,6 @@ sub ItemDataLoaded(msg)
   m.log.debug("end ItemDataLoaded()")
 end sub
 
-'Set Background Image
-sub SetBackground(backgroundUri as string)
-  m.log.debug("start SetBackground()", backgroundUri, m.swapAnimation.state, m.newBackdrop.loadStatus)
-  'If a new image is being loaded, or transitioned to, store URL to load next
-  if not m.top.alphaActive
-    if m.swapAnimation.state <> "stopped" or m.newBackdrop.loadStatus = "loading"
-      m.log.debug("caching new background URI")
-      m.queuedBGUri = backgroundUri
-      return
-    end if
-  end if
-
-  m.newBackdrop.uri = backgroundUri
-  m.log.debug("end SetBackground()")
-end sub
-
 'Handle new item being focused
 sub onItemFocused()
   m.log.debug("start onItemFocused()", m.itemGrid.currFocusRow, m.itemGrid.itemFocused)
@@ -557,38 +530,13 @@ sub onItemFocused()
   m.selectedFavoriteItem = m.itemGrid.content.getChild(m.itemGrid.itemFocused)
 
   ' Set Background to item backdrop
-  SetBackground(m.itemGrid.content.getChild(m.itemGrid.itemFocused).backdropUrl)
+  m.global.sceneManager.callFunc("setBackgroundImage", m.itemGrid.content.getChild(m.itemGrid.itemFocused).backdropUrl)
 
   ' Load more data if focus is within last 5 rows, and there are more items to load
   if focusedRow >= m.loadedRows - 5 and m.loadeditems < m.loadItemsTask.totalRecordCount
     loadMoreData()
   end if
   m.log.debug("end onItemFocused()")
-end sub
-
-'When Image Loading Status changes
-sub newBGLoaded()
-  'If image load was sucessful, start the fade swap
-  if m.newBackdrop.loadStatus = "ready"
-    m.swapAnimation.control = "start"
-  end if
-end sub
-
-'Swap Complete
-sub swapDone()
-  if isValid(m.swapAnimation) and m.swapAnimation.state = "stopped"
-    'Set main BG node image and hide transitioning node
-    m.backdrop.uri = m.newBackdrop.uri
-    m.backdrop.opacity = 0.25
-    m.newBackdrop.opacity = 0
-
-    'If there is another one to load
-    if m.newBackdrop.uri <> m.queuedBGUri and m.queuedBGUri <> ""
-      m.log.debug("Loading queued backdrop image", m.queuedBGUri)
-      SetBackground(m.queuedBGUri)
-      m.queuedBGUri = ""
-    end if
-  end if
 end sub
 
 'Load next set of items
@@ -800,11 +748,8 @@ sub alphaActiveChanged()
   m.log.debug("start alphaActiveChanged()", m.top.alphaActive)
 
   if m.top.alphaActive
-    ' fade into an empty backdrop
-    m.swapAnimation.state = "stop"
-    m.queuedBGUri = ""
-    ' use a 1px image because we can't use the animation to fade into a blank uri string
-    SetBackground("pkg:/images/1px-transparent.png")
+    ' Clear backdrop when alpha menu is active
+    m.global.sceneManager.callFunc("setBackgroundImage", "")
   end if
 
   m.log.debug("end alphaActiveChanged()")

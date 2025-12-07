@@ -1,0 +1,89 @@
+[
+  {
+    "_scenario": "video-with-backdrop",
+    "Id": "video-valid-700",
+    "Type": "Video",
+    "Name": "Video With Backdrop",
+    "BackdropImageTags": ["video-backdrop-tag"]
+  },
+  {
+    "_scenario": "video-without-backdrop",
+    "Id": "video-none-701",
+    "Type": "Video",
+    "Name": "Video Without Backdrop",
+    "BackdropImageTags": []
+  },
+  {
+    "_scenario": "collectionfolder-with-backdrop",
+    "Id": "collection-valid-702",
+    "Type": "CollectionFolder",
+    "Name": "Collection With Backdrop",
+    "BackdropImageTags": ["collection-backdrop-tag"]
+  },
+  {
+    "_scenario": "collectionfolder-without-backdrop",
+    "Id": "collection-none-703",
+    "Type": "CollectionFolder",
+    "Name": "Collection Without Backdrop",
+    "BackdropImageTags": []
+  },
+  {
+    "_scenario": "userview-with-backdrop",
+    "Id": "userview-valid-704",
+    "Type": "UserView",
+    "Name": "UserView With Backdrop",
+    "BackdropImageTags": ["userview-backdrop-tag"]
+  },
+  {
+    "_scenario": "userview-without-backdrop",
+    "Id": "userview-none-705",
+    "Type": "UserView",
+    "Name": "UserView Without Backdrop",
+    "BackdropImageTags": []
+  },
+  {
+    "_scenario": "recording-with-parent-backdrop",
+    "Id": "recording-parent-706",
+    "Type": "Recording",
+    "Name": "Recording With Parent Backdrop",
+    "ParentBackdropImageTags": ["recording-parent-backdrop-tag"],
+    "ParentBackdropItemId": "series-parent-id-706"
+  },
+  {
+    "_scenario": "recording-without-backdrop",
+    "Id": "recording-none-707",
+    "Type": "Recording",
+    "Name": "Recording Without Backdrop",
+    "BackdropImageTags": []
+  },
+  {
+    "_scenario": "musicvideo-with-parent-backdrop",
+    "Id": "musicvideo-parent-708",
+    "Type": "MusicVideo",
+    "Name": "Music Video With Parent Backdrop",
+    "ParentBackdropImageTags": ["musicvideo-parent-backdrop-tag"],
+    "ParentBackdropItemId": "artist-parent-id-708"
+  },
+  {
+    "_scenario": "musicvideo-without-backdrop",
+    "Id": "musicvideo-none-709",
+    "Type": "MusicVideo",
+    "Name": "Music Video Without Backdrop",
+    "BackdropImageTags": []
+  },
+  {
+    "_scenario": "program-with-parent-backdrop",
+    "Id": "program-parent-710",
+    "Type": "Program",
+    "Name": "LiveTV Program With Parent Backdrop",
+    "ParentBackdropImageTags": ["program-parent-backdrop-tag"],
+    "ParentBackdropItemId": "channel-parent-id-710"
+  },
+  {
+    "_scenario": "program-without-backdrop",
+    "Id": "program-none-711",
+    "Type": "Program",
+    "Name": "LiveTV Program Without Backdrop",
+    "BackdropImageTags": []
+  }
+]

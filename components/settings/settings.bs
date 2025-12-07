@@ -37,6 +37,11 @@ sub init()
   LoadMenu({ children: m.configTree })
 end sub
 
+sub OnScreenShown()
+  ' Clear backdrop on settings screens
+  m.global.sceneManager.callFunc("setBackgroundImage", "")
+end sub
+
 sub onKeyGridSubmit()
   selectedSetting = m.userLocation.peek().children[m.settingsMenu.itemFocused]
   set_user_setting(selectedSetting.settingName, m.integerSetting.text)

@@ -1,10 +1,16 @@
+import "pkg:/source/roku_modules/log/LogMixin.brs"
 import "pkg:/source/utils/misc.bs"
 
 sub init()
+  m.log = log.Logger("JRScene")
   m.top.backgroundColor = m.global.constants.colorBackgroundPrimary
   m.top.backgroundURI = ""
   m.loadingText = m.top.findNode("loadingText")
   m.spinner = m.top.findNode("spinner")
+  m.imageFader = m.top.findNode("imageFader")
+  localDevice = m.global.device
+  m.imageFader.width = localDevice.uiResolution[0]
+  m.imageFader.height = localDevice.uiResolution[1]
 
   ' set text manually to AVOID translation
   defaultFont = m.top.findNode("defaultFont")
@@ -15,6 +21,24 @@ end sub
 
 sub loadingTextChanged()
   m.loadingText.text = m.top.loadingText
+end sub
+
+sub backgroundImageUriChanged()
+  if not isValid(m.imageFader) then return
+
+  ' Always animate by default when using field interface
+  m.imageFader.isAnimated = true
+  m.imageFader.uri = m.top.backgroundImageUri
+end sub
+
+' Set the background image with animation control
+' @param {string} uri - The image URI to display
+' @param {boolean} isAnimated - Whether to animate the transition
+sub setBackgroundImage(uri as string, isAnimated = true as boolean)
+  if not isValid(m.imageFader) then return
+
+  m.imageFader.isAnimated = isAnimated
+  m.imageFader.uri = uri
 end sub
 
 ' Triggered when the isLoading boolean component field is changed

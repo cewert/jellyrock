@@ -573,10 +573,12 @@ sub onAudioStreamLoaded()
     else
       ' backdrop image
       if isValid(currentItem.ParentBackdropItemId) and isValid(currentItem.ParentBackdropImageTags) and currentItem.ParentBackdropImageTags.count() > 0
-        setBackdropImage(ImageURL(currentItem.ParentBackdropItemId, "Backdrop", { "maxHeight": "720", "maxWidth": "1280", "tag": currentItem.ParentBackdropImageTags[0] }))
+        ' Use UI resolution for backdrop images
+        localDevice = m.global.device
+        setBackdropImage(ImageURL(currentItem.ParentBackdropItemId, "Backdrop", { "maxHeight": localDevice.uiResolution[1], "maxWidth": localDevice.uiResolution[0], "tag": currentItem.ParentBackdropImageTags[0] }))
       else
         ' no backdrop available, clear existing backdrop
-        setBackdropImage("pkg:/images/1px-transparent.png")
+        setBackdropImage("pkg:/images/transparent-16x9.png")
       end if
 
       ' poster image

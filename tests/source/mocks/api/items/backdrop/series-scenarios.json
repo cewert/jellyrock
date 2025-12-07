@@ -1,0 +1,16 @@
+[
+  {
+    "_scenario": "series-with-backdrop",
+    "Id": "series-valid-200",
+    "Type": "Series",
+    "Name": "Test Series With Backdrop",
+    "BackdropImageTags": ["series-backdrop-tag-xyz789"]
+  },
+  {
+    "_scenario": "series-without-backdrop",
+    "Id": "series-no-backdrop-201",
+    "Type": "Series",
+    "Name": "Test Series Without Backdrop",
+    "BackdropImageTags": []
+  }
+]
