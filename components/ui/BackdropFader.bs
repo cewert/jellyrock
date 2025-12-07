@@ -18,11 +18,14 @@ end sub
 sub applyTheme()
   constants = m.global.constants
 
-  ' Set shade color
-  m.shade.color = constants.colorBlack + constants.alpha60
+  ' Set shade color (fully opaque, we'll control visibility with opacity field)
+  m.shade.color = constants.colorBlack + constants.alpha100
 
   ' Initialize parent Rectangle color as transparent (no darkening for transparent images)
   m.top.color = constants.colorBlack + constants.alpha0
+
+  ' Initialize shade opacity
+  m.shade.opacity = 0
 end sub
 
 ' If Size changed, change parameters to children
@@ -46,24 +49,22 @@ end sub
 sub onBackgroundLoaded()
   transparentImage = "pkg:/images/transparent-16x9.png"
 
-  ' Manage shade visibility based on image type
-  if m.currentUri <> transparentImage
-    ' Real image: show shade
-    m.shade.visible = true
-  else
-    ' Transparent image: hide shade
-    m.shade.visible = false
-  end if
-
   ' Handle opacity changes
   if m.currentUri = transparentImage
+    ' Keep background transparent (don't touch oldBackground - let fadeout animation handle it)
     m.background.opacity = 0
-    m.oldBackground.opacity = 0
   else if m.top.isAnimated
+    ' Fade in new background
     m.fadeinAnimation.control = "start"
+    ' Show shade at full opacity
+    m.shade.visible = true
+    m.shade.opacity = 0.6
   else
+    ' No animation: immediately show background and shade
     m.background.opacity = 0.5
     m.oldBackground.opacity = 0
+    m.shade.visible = true
+    m.shade.opacity = 0.6
   end if
 end sub
 
@@ -74,29 +75,25 @@ end sub
 sub changeImage(uri as string, isAnimated as boolean)
   oldUrl = m.currentUri
   transparentImage = "pkg:/images/transparent-16x9.png"
+  constants = m.global.constants
 
   ' Handle empty URI - use transparent image
   if uri = invalid or uri = ""
-    constants = m.global.constants
     m.currentUri = transparentImage
-    ' Hide shade and remove parent darkening for transparent image
-    m.shade.visible = false
+    ' Remove parent darkening for transparent image
     m.top.color = constants.colorBlack + constants.alpha0
-    ' Set transparent image to both posters with no opacity reduction
+    ' Set transparent image to background
     m.background.uri = transparentImage
-    m.oldBackground.uri = transparentImage
     m.background.opacity = 0
-    m.oldBackground.opacity = 0
-    m.fadeoutAnimation.control = "stop"
-    return
+  else
+    ' Set new URI for real image
+    m.currentUri = uri
+    m.background.uri = m.currentUri
   end if
 
-  ' Set new URI for real image
-  m.currentUri = uri
-  m.background.uri = m.currentUri
   m.fadeoutAnimation.control = "stop"
 
-  ' Handle transition from old image
+  ' Handle transition from old image (same logic for both transparent and real images)
   if oldUrl <> invalid and oldUrl <> "" and oldUrl <> transparentImage
     m.oldBackground.uri = oldUrl
 
@@ -107,6 +104,10 @@ sub changeImage(uri as string, isAnimated as boolean)
     else
       m.background.opacity = 0.5
       m.oldBackground.opacity = 0
+      ' Immediately hide shade for non-animated transitions
+      if m.currentUri = transparentImage
+        m.shade.opacity = 0
+      end if
     end if
   end if
 end sub
