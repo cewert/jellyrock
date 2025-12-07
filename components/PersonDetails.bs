@@ -15,10 +15,20 @@ sub init()
   m.top.optionsAvailable = false
 end sub
 
+sub OnScreenShown()
+  ' Always set transparent backdrop for person screens
+  ' Prevents stale movie/TV backdrops from persisting
+  m.global.sceneManager.callFunc("setBackgroundImage", "")
+end sub
+
 sub loadPerson()
   item = m.top.itemContent
   itemData = item.json
   m.top.Id = itemData.id
+
+  ' Always set transparent backdrop for person screens
+  ' Prevents stale movie/TV backdrops from persisting
+  m.global.sceneManager.callFunc("setBackgroundImage", "")
   name = m.top.findNode("name")
   name.Text = itemData.Name
   if isValid(itemData.PremiereDate) and itemData.PremiereDate <> ""

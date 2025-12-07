@@ -40,6 +40,40 @@ sub updateSeason()
   m.poster.uri = ImageURL(m.top.seasonData.Id, "Primary", imgParams)
   m.shuffle.visible = true
   m.top.overhangTitle = m.top.seasonData.SeriesName + " - " + m.top.seasonData.name
+
+  ' Set season/series backdrop
+  setSeasonBackdrop()
+end sub
+
+' setSeasonBackdrop: Sets backdrop for season view
+' Priority 1: Season's own backdrop
+' Priority 2: Parent series backdrop
+' Priority 3: Transparent (no backdrop available)
+sub setSeasonBackdrop()
+  if not isValid(m.top.seasonData) then return
+
+  localDevice = m.global.device
+  backdropWidth = localDevice.uiResolution[0]
+  backdropHeight = localDevice.uiResolution[1]
+
+  ' Priority 1: Try season's own backdrop first
+  if isValid(m.top.seasonData.BackdropImageTags) and isValidAndNotEmpty(m.top.seasonData.BackdropImageTags[0])
+    backdropParams = { "Tag": m.top.seasonData.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
+    backdropUrl = ImageURL(m.top.seasonData.Id, "Backdrop", backdropParams)
+    m.global.sceneManager.callFunc("setBackgroundImage", backdropUrl)
+    return
+  end if
+
+  ' Priority 2: Fallback to parent series backdrop
+  if isValid(m.top.seasonData.ParentBackdropImageTags) and isValidAndNotEmpty(m.top.seasonData.ParentBackdropImageTags[0]) and isValid(m.top.seasonData.SeriesId)
+    backdropParams = { "Tag": m.top.seasonData.ParentBackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
+    backdropUrl = ImageURL(m.top.seasonData.SeriesId, "Backdrop", backdropParams)
+    m.global.sceneManager.callFunc("setBackgroundImage", backdropUrl)
+    return
+  end if
+
+  ' No backdrop available - set transparent
+  m.global.sceneManager.callFunc("setBackgroundImage", "")
 end sub
 
 ' get the currently focused item
@@ -65,6 +99,13 @@ end function
 ' OnScreenShown: Callback function when view is presented on screen
 '
 sub OnScreenShown()
+  ' Set backdrop from season data (only if seasonData is already loaded)
+  ' This handles the case when returning to an already-loaded screen
+  if isValid(m.top.seasonData)
+    setSeasonBackdrop()
+  end if
+  ' If seasonData not loaded, backdrop will be set in updateSeason()
+
   if m.isFirstRun
     m.isFirstRun = false
     return
