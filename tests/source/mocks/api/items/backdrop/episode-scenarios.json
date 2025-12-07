@@ -1,0 +1,41 @@
+[
+  {
+    "_scenario": "episode-with-parent-backdrop",
+    "Id": "episode-parent-300",
+    "Type": "Episode",
+    "Name": "Episode With Parent Backdrop",
+    "ParentBackdropImageTags": ["parent-series-backdrop-tag"],
+    "ParentBackdropItemId": "series-parent-id-300"
+  },
+  {
+    "_scenario": "episode-with-own-backdrop",
+    "Id": "episode-own-301",
+    "Type": "Episode",
+    "Name": "Episode With Own Backdrop",
+    "BackdropImageTags": ["episode-own-backdrop-tag"]
+  },
+  {
+    "_scenario": "episode-with-both-backdrops",
+    "Id": "episode-both-302",
+    "Type": "Episode",
+    "Name": "Episode With Both Backdrops",
+    "ParentBackdropImageTags": ["parent-series-backdrop-tag-priority"],
+    "ParentBackdropItemId": "series-parent-id-302",
+    "BackdropImageTags": ["episode-own-backdrop-tag-lower-priority"]
+  },
+  {
+    "_scenario": "episode-without-backdrop",
+    "Id": "episode-none-303",
+    "Type": "Episode",
+    "Name": "Episode Without Any Backdrop",
+    "BackdropImageTags": []
+  },
+  {
+    "_scenario": "episode-parent-tag-missing-id",
+    "Id": "episode-missing-id-304",
+    "Type": "Episode",
+    "Name": "Episode With Parent Tag But Missing Parent ID",
+    "ParentBackdropImageTags": ["parent-tag-exists"],
+    "BackdropImageTags": ["episode-fallback-tag"]
+  }
+]

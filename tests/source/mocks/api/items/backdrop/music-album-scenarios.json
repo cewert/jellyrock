@@ -1,0 +1,33 @@
+[
+  {
+    "_scenario": "album-with-own-backdrop",
+    "Id": "album-own-400",
+    "Type": "MusicAlbum",
+    "Name": "Album With Own Backdrop",
+    "BackdropImageTags": ["album-own-backdrop-tag"]
+  },
+  {
+    "_scenario": "album-with-parent-artist-backdrop",
+    "Id": "album-parent-401",
+    "Type": "MusicAlbum",
+    "Name": "Album With Parent Artist Backdrop",
+    "ParentBackdropImageTags": ["artist-backdrop-tag"],
+    "ParentBackdropItemId": "artist-parent-id-401"
+  },
+  {
+    "_scenario": "album-with-both-backdrops",
+    "Id": "album-both-402",
+    "Type": "MusicAlbum",
+    "Name": "Album With Both Backdrops",
+    "BackdropImageTags": ["album-own-backdrop-priority"],
+    "ParentBackdropImageTags": ["artist-backdrop-lower-priority"],
+    "ParentBackdropItemId": "artist-parent-id-402"
+  },
+  {
+    "_scenario": "album-without-backdrop",
+    "Id": "album-none-403",
+    "Type": "MusicAlbum",
+    "Name": "Album Without Any Backdrop",
+    "BackdropImageTags": []
+  }
+]

@@ -1,0 +1,40 @@
+[
+  {
+    "_scenario": "audio-with-own-backdrop",
+    "Id": "audio-own-600",
+    "Type": "Audio",
+    "Name": "Song With Own Backdrop",
+    "BackdropImageTags": ["song-own-backdrop-tag"]
+  },
+  {
+    "_scenario": "audio-with-album-backdrop",
+    "Id": "audio-album-601",
+    "Type": "Audio",
+    "Name": "Song With Album Backdrop",
+    "ParentBackdropImageTags": ["album-backdrop-tag"],
+    "ParentBackdropItemId": "album-parent-id-601"
+  },
+  {
+    "_scenario": "audio-with-both-backdrops",
+    "Id": "audio-both-602",
+    "Type": "Audio",
+    "Name": "Song With Both Backdrops",
+    "BackdropImageTags": ["song-own-backdrop-priority"],
+    "ParentBackdropImageTags": ["album-backdrop-lower-priority"],
+    "ParentBackdropItemId": "album-parent-id-602"
+  },
+  {
+    "_scenario": "audio-without-backdrop",
+    "Id": "audio-none-603",
+    "Type": "Audio",
+    "Name": "Song Without Any Backdrop",
+    "BackdropImageTags": []
+  },
+  {
+    "_scenario": "audio-parent-tag-missing-id",
+    "Id": "audio-missing-id-604",
+    "Type": "Audio",
+    "Name": "Song With Parent Tag But Missing Parent ID",
+    "ParentBackdropImageTags": ["album-tag-exists"]
+  }
+]

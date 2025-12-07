@@ -1,0 +1,16 @@
+[
+  {
+    "_scenario": "artist-with-backdrop",
+    "Id": "artist-valid-500",
+    "Type": "MusicArtist",
+    "Name": "Artist With Backdrop",
+    "BackdropImageTags": ["artist-backdrop-tag-def456"]
+  },
+  {
+    "_scenario": "artist-without-backdrop",
+    "Id": "artist-no-backdrop-501",
+    "Type": "MusicArtist",
+    "Name": "Artist Without Backdrop",
+    "BackdropImageTags": []
+  }
+]

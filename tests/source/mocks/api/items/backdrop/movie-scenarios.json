@@ -1,0 +1,58 @@
+[
+  {
+    "_scenario": "movie-with-backdrop",
+    "Id": "movie-valid-123",
+    "Type": "Movie",
+    "Name": "Test Movie With Backdrop",
+    "BackdropImageTags": ["backdrop-tag-abc123"]
+  },
+  {
+    "_scenario": "movie-without-backdrop",
+    "Id": "movie-no-backdrop-456",
+    "Type": "Movie",
+    "Name": "Test Movie Without Backdrop",
+    "BackdropImageTags": []
+  },
+  {
+    "_scenario": "movie-invalid-backdrop-tag",
+    "Id": "movie-invalid-789",
+    "Type": "Movie",
+    "Name": "Test Movie Invalid Tag",
+    "BackdropImageTags": [null]
+  },
+  {
+    "_scenario": "movie-empty-backdrop-tag",
+    "Id": "movie-empty-tag-101",
+    "Type": "Movie",
+    "Name": "Test Movie Empty Tag",
+    "BackdropImageTags": [""]
+  },
+  {
+    "_scenario": "movie-whitespace-backdrop-tag",
+    "Id": "movie-whitespace-102",
+    "Type": "Movie",
+    "Name": "Test Movie Whitespace Tag",
+    "BackdropImageTags": ["   "]
+  },
+  {
+    "_scenario": "movie-multiple-backdrops",
+    "Id": "movie-multiple-103",
+    "Type": "Movie",
+    "Name": "Test Movie Multiple Backdrops",
+    "BackdropImageTags": ["first-backdrop-tag", "second-backdrop-tag", "third-backdrop-tag"]
+  },
+  {
+    "_scenario": "movie-uppercase-type",
+    "Id": "movie-uppercase-104",
+    "Type": "MOVIE",
+    "Name": "Test Movie Uppercase Type",
+    "BackdropImageTags": ["backdrop-uppercase-tag"]
+  },
+  {
+    "_scenario": "movie-mixedcase-type",
+    "Id": "movie-mixedcase-105",
+    "Type": "MoViE",
+    "Name": "Test Movie Mixed Case Type",
+    "BackdropImageTags": ["backdrop-mixedcase-tag"]
+  }
+]
