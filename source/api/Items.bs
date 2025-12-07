@@ -524,7 +524,9 @@ function useTranscodeAudioStream(playbackInfo)
 end function
 
 function BackdropImage(id as string)
-  imgParams = { "maxHeight": "720", "maxWidth": "1280" }
+  ' Use UI resolution for backdrop images
+  localDevice = m.global.device
+  imgParams = { "maxHeight": localDevice.uiResolution[1], "maxWidth": localDevice.uiResolution[0] }
   return ImageURL(id, "Backdrop", imgParams)
 end function
 

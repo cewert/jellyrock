@@ -58,19 +58,12 @@ function ImageURL(id, version = "Primary", params = {})
     end if
   end if
 
-  if version = LCase("backdrop")
-    ' use UI resolution for backdrops max resolution. overwrite incoming params if any
-    localDevice = m.global.device
-    params.maxWidth = localDevice.uiResolution[0]
-    params.maxHeight = localDevice.uiResolution[1]
-  else
-    ' set defaults for other image types
-    if not isValid(params.maxHeight)
-      params.maxHeight = "384"
-    end if
-    if not isValid(params.maxWidth)
-      params.maxWidth = "196"
-    end if
+  ' set defaults for image dimensions if not provided
+  if not isValid(params.maxHeight)
+    params.maxHeight = "384"
+  end if
+  if not isValid(params.maxWidth)
+    params.maxWidth = "196"
   end if
 
   if not isValid(params.quality)
