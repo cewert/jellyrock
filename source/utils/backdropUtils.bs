@@ -12,14 +12,15 @@ import "pkg:/source/utils/misc.bs"
 '  */
 function getBackdropUrl(datum as object, deviceResolution as object) as string
   if not isValid(datum) or not isValid(deviceResolution)
-    print "[backdropUtils] Invalid datum or deviceResolution"
     return ""
   end if
+
+  ' Validate datum.type exists before using it
+  if not isValidAndNotEmpty(datum.type) then return ""
 
   backdropWidth = deviceResolution[0]
   backdropHeight = deviceResolution[1]
   itemType = LCase(datum.type)
-  print "[backdropUtils] Getting backdrop for type: "; itemType
 
   ' CollectionFolder or UserView
   if itemType = "collectionfolder" or itemType = "userview"
@@ -28,7 +29,7 @@ function getBackdropUrl(datum as object, deviceResolution as object) as string
       return ImageURL(datum.id, "Backdrop", backdropParams)
     end if
 
-  ' Episode, Recording, MusicVideo, or Program - Use parent series backdrop or own backdrop
+    ' Episode, Recording, MusicVideo, or Program - Use parent series backdrop or own backdrop
   else if itemType = "episode" or itemType = "recording" or itemType = "musicvideo" or itemType = "program"
     ' Try parent backdrop first (for series-based content)
     if isValid(datum.ParentBackdropImageTags) and isValidAndNotEmpty(datum.ParentBackdropImageTags[0]) and isValid(datum.ParentBackdropItemId)
@@ -41,32 +42,28 @@ function getBackdropUrl(datum as object, deviceResolution as object) as string
       return ImageURL(datum.Id, "Backdrop", backdropParams)
     end if
 
-  ' Series
+    ' Series
   else if itemType = "series"
     if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
       backdropParams = { "Tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
       return ImageURL(datum.Id, "Backdrop", backdropParams)
     end if
 
-  ' Movie
+    ' Movie
   else if itemType = "movie"
     if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
       backdropParams = { "Tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
-      backdropUrl = ImageURL(datum.id, "Backdrop", backdropParams)
-      print "[backdropUtils] Found movie backdrop: "; backdropUrl
-      return backdropUrl
-    else
-      print "[backdropUtils] Movie has no BackdropImageTags or tags are empty"
+      return ImageURL(datum.id, "Backdrop", backdropParams)
     end if
 
-  ' Video
+    ' Video
   else if itemType = "video"
     if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
       backdropParams = { "Tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
       return ImageURL(datum.id, "Backdrop", backdropParams)
     end if
 
-  ' MusicAlbum - Try album backdrop first, fallback to parent artist backdrop
+    ' MusicAlbum - Try album backdrop first, fallback to parent artist backdrop
   else if itemType = "musicalbum"
     if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
       backdropParams = { "Tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
@@ -76,14 +73,14 @@ function getBackdropUrl(datum as object, deviceResolution as object) as string
       return ImageURL(datum.ParentBackdropItemId, "Backdrop", backdropParams)
     end if
 
-  ' MusicArtist - Use artist's own backdrop
+    ' MusicArtist - Use artist's own backdrop
   else if itemType = "musicartist"
     if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
       backdropParams = { "Tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
       return ImageURL(datum.id, "Backdrop", backdropParams)
     end if
 
-  ' Audio (Song) - Try song backdrop -> album backdrop -> artist backdrop
+    ' Audio (Song) - Try song backdrop -> album backdrop -> artist backdrop
   else if itemType = "audio"
     ' Priority 1: Song's own backdrop (rare)
     if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
@@ -99,6 +96,5 @@ function getBackdropUrl(datum as object, deviceResolution as object) as string
   end if
 
   ' Default: no backdrop available
-  print "[backdropUtils] No backdrop found for type: "; itemType
   return ""
 end function
