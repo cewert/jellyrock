@@ -11,6 +11,9 @@ end sub
 
 ' JRScreen hook.
 sub OnScreenShown()
+  ' Clear backdrop on login screens
+  m.global.sceneManager.callFunc("setBackgroundImage", "")
+
   scene = m.top.getScene()
   overhang = scene.findNode("overhang")
   if isValid(overhang)
