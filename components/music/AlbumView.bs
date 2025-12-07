@@ -22,9 +22,25 @@ sub setupMainNode()
   main.translation = [96, 175]
 end sub
 
+sub OnScreenShown()
+  ' Set backdrop from album data (only if pageContent is already loaded)
+  ' This handles the case when returning to an already-loaded screen
+  if isValid(m.top.pageContent)
+    if isValid(m.top.pageContent.backdropUrl)
+      m.global.sceneManager.callFunc("setBackgroundImage", m.top.pageContent.backdropUrl)
+    end if
+  end if
+  ' If pageContent not loaded, backdrop will be set in pageContentChanged()
+end sub
+
 ' Set values for displayed values on screen
 sub pageContentChanged()
   item = m.top.pageContent
+
+  ' Set backdrop from album's artist backdrop
+  if isValid(item) and isValid(item.backdropUrl)
+    m.global.sceneManager.callFunc("setBackgroundImage", item.backdropUrl)
+  end if
 
   setPosterImage(item.posterURL)
   setScreenTitle(item.json)
