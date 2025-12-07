@@ -1,10 +1,17 @@
 import "pkg:/source/utils/misc.bs"
+import "pkg:/source/utils/backdropUtils.bs"
+
 sub setFields()
   datum = m.top.json
 
   m.top.id = datum.id
   m.top.title = datum.name
   m.top.type = datum.Type
+
+  ' Add backdrop URL using centralized utility
+  localDevice = m.global.device
+  deviceResolution = [localDevice.uiResolution[0], localDevice.uiResolution[1]]
+  m.top.backdropUrl = getBackdropUrl(datum, deviceResolution)
 end sub
 
 sub setPoster()

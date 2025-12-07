@@ -2,6 +2,7 @@ import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/api/Image.bs"
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/misc.bs"
+import "pkg:/source/utils/backdropUtils.bs"
 
 sub setData()
   ' We keep json around just as a reference,
@@ -12,13 +13,10 @@ sub setData()
   m.top.name = datum.name
   m.top.type = datum.type
 
-  ' Get device UI resolution for backdrop sizing
+  ' Set backdrop URL using centralized utility
   localDevice = m.global.device
-  backdropWidth = localDevice.uiResolution[0]
-  backdropHeight = localDevice.uiResolution[1]
-
-  ' Initialize backdropUrl to empty (will be set if backdrop image available)
-  m.top.backdropUrl = ""
+  deviceResolution = [localDevice.uiResolution[0], localDevice.uiResolution[1]]
+  m.top.backdropUrl = getBackdropUrl(datum, deviceResolution)
 
   if not isValid(datum.CollectionType)
     m.top.CollectionType = datum.type
@@ -49,12 +47,6 @@ sub setData()
       m.top.iconUrl = "pkg:/images/media_type_icons/folder_white.png"
     end if
 
-    ' Set backdrop URL if available
-    if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
-      backdropParams = { "Tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
-      m.top.backdropUrl = ImageURL(datum.id, "Backdrop", backdropParams)
-    end if
-
   else if datum.type = "Episode" or LCase(datum.type) = "recording" or datum.type = "MusicVideo"
     ' Add Tall Poster (Episode Thumbnail)
     imgParams = { "maxHeight": 261, "maxWidth": 464 }
@@ -81,12 +73,6 @@ sub setData()
       m.top.widePosterUrl = ""
     end if
 
-    ' Set backdrop URL from parent series if available
-    if isValid(datum.ParentBackdropImageTags) and isValidAndNotEmpty(datum.ParentBackdropImageTags[0]) and isValid(datum.ParentBackdropItemId)
-      backdropParams = { "Tag": datum.ParentBackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
-      m.top.backdropUrl = ImageURL(datum.ParentBackdropItemId, "Backdrop", backdropParams)
-    end if
-
   else if datum.type = "Series"
     imgParams = { "maxHeight": 261, "maxWidth": 464 }
 
@@ -106,12 +92,6 @@ sub setData()
       m.top.widePosterUrl = ImageURL(datum.Id, "Backdrop", imgParams)
     else
       m.top.widePosterUrl = ""
-    end if
-
-    ' Set backdrop URL if available
-    if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
-      backdropParams = { "Tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
-      m.top.backdropUrl = ImageURL(datum.Id, "Backdrop", backdropParams)
     end if
 
   else if datum.type = "Movie"
@@ -138,12 +118,6 @@ sub setData()
       m.top.thumbnailUrl = ""
     end if
 
-    ' Set backdrop URL if available
-    if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
-      backdropParams = { "Tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
-      m.top.backdropUrl = ImageURL(datum.id, "Backdrop", backdropParams)
-    end if
-
   else if datum.type = "Video"
     imgParams = { "maxHeight": 261, "maxWidth": 464 }
 
@@ -156,12 +130,6 @@ sub setData()
       m.top.thumbnailUrl = ""
     end if
 
-    ' Set backdrop URL if available
-    if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
-      backdropParams = { "Tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
-      m.top.backdropUrl = ImageURL(datum.id, "Backdrop", backdropParams)
-    end if
-
   else if datum.type = "MusicAlbum"
     if isValid(datum.ImageTags) and isValidAndNotEmpty(datum.ImageTags.Primary)
       params = { "Tag": datum.ImageTags.Primary, "maxHeight": 261, "maxWidth": 261 }
@@ -172,15 +140,6 @@ sub setData()
       m.top.thumbnailURL = ""
       m.top.widePosterUrl = ""
       m.top.posterUrl = ""
-    end if
-
-    ' Set backdrop URL from album or fallback to parent artist backdrop
-    if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
-      backdropParams = { "Tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
-      m.top.backdropUrl = ImageURL(datum.id, "Backdrop", backdropParams)
-    else if isValid(datum.ParentBackdropImageTags) and isValidAndNotEmpty(datum.ParentBackdropImageTags[0]) and isValid(datum.ParentBackdropItemId)
-      backdropParams = { "Tag": datum.ParentBackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
-      m.top.backdropUrl = ImageURL(datum.ParentBackdropItemId, "Backdrop", backdropParams)
     end if
 
   else if datum.type = "TvChannel" or datum.type = "Channel"
