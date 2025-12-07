@@ -1,8 +1,13 @@
 import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/api/Image.bs"
+import "pkg:/source/roku_modules/log/LogMixin.brs"
 import "pkg:/source/utils/backdropUtils.bs"
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/misc.bs"
+
+sub init()
+  m.log = log.Logger("MovieData")
+end sub
 
 sub setFields()
   if not isValid(m.top.json) then return
@@ -77,9 +82,9 @@ sub setPoster()
     localDevice = m.global.device
     deviceResolution = [localDevice.uiResolution[0], localDevice.uiResolution[1]]
     m.top.backdropUrl = getBackdropUrl(m.top.json, deviceResolution)
-    print "[MovieData] backdropUrl set to: "; m.top.backdropUrl
+    m.log.info("backdropUrl set to", m.top.backdropUrl)
   else
-    print "[MovieData] json is invalid, cannot set backdrop"
+    m.log.info("cannot set backdropUrl, json is invalid")
   end if
 end sub
 

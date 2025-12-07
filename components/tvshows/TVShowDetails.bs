@@ -1,8 +1,10 @@
+import "pkg:/source/roku_modules/log/LogMixin.brs"
 import "pkg:/source/utils/backdropUtils.bs"
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/misc.bs"
 
 sub init()
+  m.log = log.Logger("TVShowDetails")
   m.top.optionsAvailable = false
   main = m.top.findNode("toplevel")
   main.translation = [96, 175]
@@ -18,22 +20,16 @@ sub init()
 end sub
 
 sub OnScreenShown()
-  ' Set backdrop from series data (only if itemContent is already loaded)
+  ' Set backdrop from series data
   ' This handles the case when returning to an already-loaded screen
-  print "[TVShowDetails] OnScreenShown called"
-  print "[TVShowDetails] itemContent valid: "; isValid(m.top.itemContent)
   if isValid(m.top.itemContent)
-    print "[TVShowDetails] backdropUrl valid: "; isValid(m.top.itemContent.backdropUrl)
-    print "[TVShowDetails] backdropUrl value: "; m.top.itemContent.backdropUrl
-  end if
-
-  if isValid(m.top.itemContent) and isValid(m.top.itemContent.backdropUrl)
-    print "[TVShowDetails] Setting backdrop in OnScreenShown: "; m.top.itemContent.backdropUrl
-    m.global.sceneManager.callFunc("setBackgroundImage", m.top.itemContent.backdropUrl)
+    if isValid(m.top.itemContent.backdropUrl)
+      m.global.sceneManager.callFunc("setBackgroundImage", m.top.itemContent.backdropUrl)
+      m.log.info("backdropUrl set to", m.top.itemContent.backdropUrl)
+    end if
   else
-    print "[TVShowDetails] itemContent not loaded, backdrop will be set in itemContentChanged"
+    m.log.info("cannot set backdropUrl, m.top.itemContent is invalid")
   end if
-  ' If itemContent not loaded, backdrop will be set in itemContentChanged()
 end sub
 
 sub itemContentChanged()
