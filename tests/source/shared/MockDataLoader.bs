@@ -85,6 +85,14 @@ namespace MockDataLoader
     return loadJSONFile(filePath)
   end function
 
+  ' Load backdrop test scenarios (arrays of test cases)
+  ' @param {string} scenarioName - Name of backdrop scenario file without extension
+  ' @returns {object} Array of backdrop test scenarios or invalid if file not found
+  function LoadBackdropScenarios(scenarioName as string) as object
+    filePath = "pkg:/source/tests/mocks/api/items/backdrop/" + scenarioName + ".json"
+    return loadJSONFile(filePath)
+  end function
+
   ' Load mock registry user settings data
   ' @param {string} settingsName - Name of user settings mock file without extension
   ' @returns {object} Registry user settings data or invalid if file not found
