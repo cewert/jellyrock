@@ -1,0 +1,50 @@
+import "pkg:/source/api/sdk.bs"
+import "pkg:/source/api/baserequest.bs"
+import "pkg:/source/utils/misc.bs"
+import "pkg:/source/roku_modules/log/LogMixin.brs"
+
+sub init()
+  m.log = log.Logger("BrandingConfigTask")
+  m.top.functionName = "fetchBrandingConfig"
+end sub
+
+' Fetch branding configuration from server
+' Updates m.global.server.splashscreenEnabled based on server response
+' Sets to true/false (never leaves as invalid after running)
+' IMPORTANT: Non-blocking - never throws errors that stop app flow
+sub fetchBrandingConfig()
+  m.log.info("Fetching branding configuration from server")
+
+  configData = api.branding.GetConfiguration()
+
+  if isValid(configData)
+    m.log.debug("Branding config response received", formatJson(configData))
+
+    ' Update global server node with splashscreen status
+    serverNode = m.global.server
+    if isValid(configData.SplashscreenEnabled)
+      serverNode.splashscreenEnabled = configData.SplashscreenEnabled
+      m.log.info("Splashscreen status cached", "enabled:", configData.SplashscreenEnabled)
+    else
+      ' API returned data but no SplashscreenEnabled field - default to false
+      serverNode.splashscreenEnabled = false
+      m.log.warn("SplashscreenEnabled field not found in response - defaulting to false")
+    end if
+
+    m.top.responseCode = 200
+  else
+    ' API call failed - default to false, log warning, continue normally
+    m.log.warn("Failed to fetch branding configuration - defaulting to disabled")
+    m.global.server.splashscreenEnabled = false
+    m.top.responseCode = -1
+    m.top.failureReason = "API call failed or returned invalid"
+  end if
+
+  m.log.debug("BrandingConfigTask completed", "responseCode:", m.top.responseCode)
+end sub
+
+' Reset task to default state
+sub empty()
+  m.top.responseCode = invalid
+  m.top.failureReason = ""
+end sub
