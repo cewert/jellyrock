@@ -31,6 +31,7 @@
     <field id="displayCollectionsView" type="boolean" />
     <field id="hidePlayedInLatest" type="boolean" />
     <field id="useEpisodeImagesInNextUpAndResume" type="boolean" />
+    <field id="showBackdrop" type="boolean" />
 
     <!-- Playback Settings -->
     <field id="enableNextEpisodeAutoPlay" type="boolean" />

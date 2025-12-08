@@ -140,6 +140,7 @@ class SessionDataTransformer
     end if
     settingsNode.uiDetailsEnableRewatchingNextUp = toBoolean(settingsData["uiDetailsEnableRewatchingNextUp"])
     settingsNode.uiRowLayout = settingsData["uiRowLayout"] ?? ""
+    settingsNode.uiShowBackdrop = settingsData["uiShowBackdrop"] ?? ""
     settingsNode.uiHomeSplashBackground = toBoolean(settingsData["uiHomeSplashBackground"])
     settingsNode.uiHomeUseWebArrangement = toBoolean(settingsData["uiHomeUseWebArrangement"])
     settingsNode.uiDetailsHideTagline = toBoolean(settingsData["uiDetailsHideTagline"])

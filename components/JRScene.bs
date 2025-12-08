@@ -1,4 +1,5 @@
 import "pkg:/source/roku_modules/log/LogMixin.brs"
+import "pkg:/source/utils/backdrop.bs"
 import "pkg:/source/utils/misc.bs"
 
 sub init()
@@ -11,6 +12,9 @@ sub init()
   localDevice = m.global.device
   m.imageFader.width = localDevice.uiResolution[0]
   m.imageFader.height = localDevice.uiResolution[1]
+
+  ' Hide backdrop until setting is resolved on first backdrop request (lazy initialization)
+  m.imageFader.visible = false
 
   ' set text manually to AVOID translation
   defaultFont = m.top.findNode("defaultFont")
@@ -26,9 +30,22 @@ end sub
 sub backgroundImageUriChanged()
   if not isValid(m.imageFader) then return
 
-  ' Always animate by default when using field interface
-  m.imageFader.isAnimated = true
-  m.imageFader.uri = m.top.backgroundImageUri
+  ' Resolve backdrop setting on first use (lazy initialization)
+  if m.top.showBackdrop = invalid
+    localUser = m.global.user
+    if isValid(localUser)
+      m.top.showBackdrop = resolveShowBackdrop(localUser.settings, localUser.config)
+    else
+      m.top.showBackdrop = false ' Don't show backdrops if called before login
+    end if
+    m.imageFader.visible = m.top.showBackdrop
+  end if
+
+  ' Only update URI if backdrops are enabled (performance optimization)
+  if m.top.showBackdrop
+    m.imageFader.isAnimated = true
+    m.imageFader.uri = m.top.backgroundImageUri
+  end if
 end sub
 
 ' Set the background image with animation control
@@ -37,8 +54,39 @@ end sub
 sub setBackgroundImage(uri as string, isAnimated = true as boolean)
   if not isValid(m.imageFader) then return
 
-  m.imageFader.isAnimated = isAnimated
-  m.imageFader.uri = uri
+  ' Resolve backdrop setting on first use (lazy initialization)
+  if m.top.showBackdrop = invalid
+    localUser = m.global.user
+    if isValid(localUser)
+      m.top.showBackdrop = resolveShowBackdrop(localUser.settings, localUser.config)
+    else
+      m.top.showBackdrop = false ' Don't show backdrops if called before login
+    end if
+    m.imageFader.visible = m.top.showBackdrop
+  end if
+
+  ' Only update URI if backdrops are enabled (performance optimization)
+  if m.top.showBackdrop
+    m.imageFader.isAnimated = isAnimated
+    m.imageFader.uri = uri
+  end if
+end sub
+
+' Re-evaluate and apply the backdrop visibility setting
+' Useful when settings change at runtime (e.g., from Settings screen)
+sub refreshBackdropSetting()
+  if not isValid(m.imageFader) then return
+
+  localUser = m.global.user
+  if isValid(localUser)
+    m.top.showBackdrop = resolveShowBackdrop(localUser.settings, localUser.config)
+    m.imageFader.visible = m.top.showBackdrop
+
+    ' Clear backdrop URI if hiding to free memory
+    if not m.top.showBackdrop
+      m.top.backgroundImageUri = ""
+    end if
+  end if
 end sub
 
 ' Triggered when the isLoading boolean component field is changed
