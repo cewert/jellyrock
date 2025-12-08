@@ -13,7 +13,7 @@ sub init()
   m.imageFader.width = localDevice.uiResolution[0]
   m.imageFader.height = localDevice.uiResolution[1]
 
-  ' Don't resolve backdrop setting yet - wait until first backdrop request (after login)
+  ' Hide backdrop until setting is resolved on first backdrop request (lazy initialization)
   m.imageFader.visible = false
 
   ' set text manually to AVOID translation
