@@ -14,4 +14,4 @@ node_modules/
 .settings
 
 .claudesync
-tasks/
+/tasks/
