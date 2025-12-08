@@ -10,6 +10,10 @@ sub init()
   m.buttons = m.top.findNode("buttons")
 
   m.buttons.callFunc("center")
+
+  ' Create branding config task (reusable instance)
+  m.brandingTask = createObject("roSGNode", "BrandingConfigTask")
+  m.log.debug("Created BrandingConfigTask")
 end sub
 
 sub itemContentChanged()
@@ -52,34 +56,46 @@ end sub
 sub OnScreenHidden()
   m.log.info("UserSelect screen hidden - clearing backdrop")
 
-  ' Unobserve if we were waiting for branding config
+  ' Cleanup observers and reset task
   m.global.server.unobserveFieldScoped("splashscreenEnabled")
+  m.brandingTask.unobserveFieldScoped("responseCode")
+  m.brandingTask.callFunc("empty")
 
-  ' ALWAYS animate to transparent when leaving UserSelect
-  m.global.sceneManager.callFunc("setBackgroundImage", "", true)
+  ' Clear backdrop using forceBackdrop to ensure it clears even before login
+  m.global.sceneManager.callFunc("setBackgroundImage", "", true, true)
 end sub
 
 ' Load splashscreen if enabled on server
-' Handles race condition: if cache not loaded yet, observe and wait
+' Always fetches fresh branding config from server
 sub loadSplashscreen()
-  serverNode = m.global.server
-  splashEnabled = serverNode.splashscreenEnabled
+  m.log.info("Loading splashscreen - fetching branding config from server")
 
-  m.log.debug("Loading splashscreen", "splashscreenEnabled:", splashEnabled, "type:", type(splashEnabled))
+  ' Clear backdrop while waiting (forceBackdrop ensures it works before login)
+  m.global.sceneManager.callFunc("setBackgroundImage", "", false, true)
 
-  ' Check if branding config loaded yet (invalid = not loaded)
-  if not isValid(splashEnabled)
-    m.log.info("Branding config not loaded yet - observing for completion")
+  ' Observe field and wait for task to complete
+  m.global.server.observeFieldScoped("splashscreenEnabled", "onSplashscreenEnabledLoaded")
 
-    ' Observe field and wait for task to complete
-    serverNode.observeFieldScoped("splashscreenEnabled", "onSplashscreenEnabledLoaded")
+  ' Run the branding config task
+  m.brandingTask.observeFieldScoped("responseCode", "onBrandingConfigComplete")
+  m.brandingTask.control = "RUN"
+end sub
 
-    ' Show default background while waiting (with animation)
-    m.global.sceneManager.callFunc("setBackgroundImage", "", true)
+' Called when branding config task completes
+sub onBrandingConfigComplete()
+  responseCode = m.brandingTask.responseCode
+  m.log.debug("Branding config fetch completed", "responseCode:", responseCode)
+
+  if responseCode = 200
+    m.log.info("Branding config cached successfully", "splashscreenEnabled:", m.global.server.splashscreenEnabled)
   else
-    ' Already loaded - apply immediately
-    applySplashscreen(splashEnabled)
+    failureReason = m.brandingTask.failureReason
+    m.log.warn("Branding config fetch failed", "reason:", failureReason)
   end if
+
+  ' Cleanup task
+  m.brandingTask.unobserveFieldScoped("responseCode")
+  m.brandingTask.callFunc("empty")
 end sub
 
 ' Called when branding config finishes loading (if we had to wait)
@@ -97,11 +113,13 @@ sub onSplashscreenEnabledLoaded()
     applySplashscreen(splashEnabled)
   else
     m.log.warn("Branding config still invalid after loading - using default")
-    m.global.sceneManager.callFunc("setBackgroundImage", "", true)
+    ' Clear backdrop using forceBackdrop to ensure it works before login
+    m.global.sceneManager.callFunc("setBackgroundImage", "", true, true)
   end if
 end sub
 
 ' Apply splash background based on enabled flag
+' Uses forceBackdrop parameter to show splashscreen before user login
 sub applySplashscreen(splashEnabled as boolean)
   m.log.debug("Applying splashscreen", "enabled:", splashEnabled)
 
@@ -110,12 +128,11 @@ sub applySplashscreen(splashEnabled as boolean)
     splashUrl = buildURL("/Branding/Splashscreen", { "format": "jpg", "tag": "splash" })
     m.log.info("Splashscreen enabled - loading", splashUrl)
 
-    ' Set background with animation
-    m.global.sceneManager.callFunc("setBackgroundImage", splashUrl, true)
+    ' Set backdrop with animation, forceBackdrop=true bypasses user setting check
+    m.global.sceneManager.callFunc("setBackgroundImage", splashUrl, true, true)
   else
     m.log.info("Splashscreen disabled - using default background")
-    ' ALWAYS animate to transparent
-    m.global.sceneManager.callFunc("setBackgroundImage", "", true)
+    m.global.sceneManager.callFunc("setBackgroundImage", "", true, true)
   end if
 end sub
 
