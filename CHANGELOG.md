@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- (ui) add user setting to disable backdrop images ([#239](https://github.com/cewert/jellyrock/pull/239))
 - Add backdrop fade transitions with BackdropFader component ([#235](https://github.com/cewert/jellyrock/pull/235))
 
 ### Dependencies
