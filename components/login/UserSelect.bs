@@ -1,6 +1,11 @@
 import "pkg:/source/utils/misc.bs"
+import "pkg:/source/roku_modules/log/LogMixin.brs"
+import "pkg:/source/api/baserequest.bs"
 
 sub init()
+  m.log = log.Logger("UserSelect")
+  m.log.verbose("Initializing UserSelect component")
+
   m.top.optionsAvailable = false
   m.buttons = m.top.findNode("buttons")
 
@@ -29,14 +34,88 @@ end sub
 
 ' JRScreen hook called when the screen is displayed by the screen manager
 sub OnScreenShown()
-  ' Clear backdrop on login screens
-  m.global.sceneManager.callFunc("setBackgroundImage", "")
+  m.log.info("UserSelect screen shown")
 
   scene = m.top.getScene()
   overhang = scene.findNode("overhang")
   if isValid(overhang)
     overhang.isLogoVisible = true
     overhang.currentUser = ""
+    m.log.debug("Configured overhang for UserSelect")
+  end if
+
+  ' Load splashscreen (handles race condition)
+  loadSplashscreen()
+end sub
+
+' JRScreen hook called when the screen is hidden by the screen manager
+sub OnScreenHidden()
+  m.log.info("UserSelect screen hidden - clearing backdrop")
+
+  ' Unobserve if we were waiting for branding config
+  m.global.server.unobserveFieldScoped("splashscreenEnabled")
+
+  ' ALWAYS animate to transparent when leaving UserSelect
+  m.global.sceneManager.callFunc("setBackgroundImage", "", true)
+end sub
+
+' Load splashscreen if enabled on server
+' Handles race condition: if cache not loaded yet, observe and wait
+sub loadSplashscreen()
+  serverNode = m.global.server
+  splashEnabled = serverNode.splashscreenEnabled
+
+  m.log.debug("Loading splashscreen", "splashscreenEnabled:", splashEnabled, "type:", type(splashEnabled))
+
+  ' Check if branding config loaded yet (invalid = not loaded)
+  if not isValid(splashEnabled)
+    m.log.info("Branding config not loaded yet - observing for completion")
+
+    ' Observe field and wait for task to complete
+    serverNode.observeFieldScoped("splashscreenEnabled", "onSplashscreenEnabledLoaded")
+
+    ' Show default background while waiting (with animation)
+    m.global.sceneManager.callFunc("setBackgroundImage", "", true)
+  else
+    ' Already loaded - apply immediately
+    applySplashscreen(splashEnabled)
+  end if
+end sub
+
+' Called when branding config finishes loading (if we had to wait)
+sub onSplashscreenEnabledLoaded()
+  serverNode = m.global.server
+  splashEnabled = serverNode.splashscreenEnabled
+
+  m.log.debug("Branding config loaded (async)", "splashscreenEnabled:", splashEnabled)
+
+  ' Unobserve (only fire once)
+  serverNode.unobserveFieldScoped("splashscreenEnabled")
+
+  ' Check validity again (defensive)
+  if isValid(splashEnabled)
+    applySplashscreen(splashEnabled)
+  else
+    m.log.warn("Branding config still invalid after loading - using default")
+    m.global.sceneManager.callFunc("setBackgroundImage", "", true)
+  end if
+end sub
+
+' Apply splash background based on enabled flag
+sub applySplashscreen(splashEnabled as boolean)
+  m.log.debug("Applying splashscreen", "enabled:", splashEnabled)
+
+  if splashEnabled = true
+    ' Build splash URL with correct parameters
+    splashUrl = buildURL("/Branding/Splashscreen", { "format": "jpg", "tag": "splash" })
+    m.log.info("Splashscreen enabled - loading", splashUrl)
+
+    ' Set background with animation
+    m.global.sceneManager.callFunc("setBackgroundImage", splashUrl, true)
+  else
+    m.log.info("Splashscreen disabled - using default background")
+    ' ALWAYS animate to transparent
+    m.global.sceneManager.callFunc("setBackgroundImage", "", true)
   end if
 end sub
 
