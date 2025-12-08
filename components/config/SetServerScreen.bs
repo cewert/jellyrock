@@ -16,6 +16,14 @@ sub init()
 
   m.top.observeField("serverUrl", "clearErrorMessage")
 
+  ' Create branding config task (ready to run when server connects)
+  m.brandingTask = createObject("roSGNode", "BrandingConfigTask")
+  m.log.debug("Created BrandingConfigTask")
+
+  ' Observe server connection status to fetch branding ASAP
+  m.global.server.observeFieldScoped("isConnected", "onServerConnected")
+  m.log.debug("Observing m.global.server.isConnected")
+
   ScanForServers()
 end sub
 
@@ -105,6 +113,38 @@ end function
 
 sub clearErrorMessage()
   m.top.errorMessage = ""
+end sub
+
+' Fetch branding config immediately when server connects
+' IMPORTANT: Runs asynchronously - never blocks server connection flow
+sub onServerConnected()
+  isConnected = m.global.server.isConnected
+  m.log.debug("Server connection status changed", "isConnected:", isConnected)
+
+  if isConnected = true
+    m.log.info("Server connected - fetching branding configuration")
+
+    ' Kick off branding config fetch (async, non-blocking)
+    m.brandingTask.observeFieldScoped("responseCode", "onBrandingConfigComplete")
+    m.brandingTask.control = "RUN"
+  end if
+end sub
+
+' Log branding config fetch completion (optional, for debugging)
+sub onBrandingConfigComplete()
+  responseCode = m.brandingTask.responseCode
+  m.log.debug("Branding config fetch completed", "responseCode:", responseCode)
+
+  if responseCode = 200
+    m.log.info("Branding config cached successfully", "splashscreenEnabled:", m.global.server.splashscreenEnabled)
+  else
+    failureReason = m.brandingTask.failureReason
+    m.log.warn("Branding config fetch failed", "reason:", failureReason)
+  end if
+
+  ' Cleanup task
+  m.brandingTask.unobserveFieldScoped("responseCode")
+  m.brandingTask.callFunc("empty")
 end sub
 
 ' JRScreen hook called when the screen is displayed by the screen manager
