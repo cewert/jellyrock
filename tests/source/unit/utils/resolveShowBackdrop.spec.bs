@@ -53,67 +53,91 @@ namespace tests
       m.assertEqual(result, false)
     end function
 
-    @it("uses web client setting when JellyRock setting is empty string")
+    @it("uses web client setting (true) when JellyRock setting is 'webclient'")
     function _()
-      settings = m.createMockUserSettings("")
+      settings = m.createMockUserSettings("webclient")
       config = m.createMockUserConfig(true)
       result = resolveShowBackdrop(settings, config)
       m.assertEqual(result, true)
     end function
 
-    @it("uses web client setting when JellyRock setting is unexpected value")
+    @it("defaults to true when JellyRock setting is empty string")
+    function _()
+      settings = m.createMockUserSettings("")
+      config = m.createMockUserConfig(false)
+      result = resolveShowBackdrop(settings, config)
+      m.assertEqual(result, true)
+    end function
+
+    @it("defaults to true when JellyRock setting is unexpected value")
     function _()
       settings = m.createMockUserSettings("invalid_value")
       config = m.createMockUserConfig(false)
       result = resolveShowBackdrop(settings, config)
-      m.assertEqual(result, false)
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("Web client setting fallback tests")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    @it("returns web client value (true) when no JellyRock override")
-    function _()
-      settings = m.createMockUserSettings("")
-      config = m.createMockUserConfig(true)
-      result = resolveShowBackdrop(settings, config)
       m.assertEqual(result, true)
     end function
 
-    @it("returns web client value (false) when no JellyRock override")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Webclient mode tests")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns web client value (false) when mode is 'webclient'")
     function _()
-      settings = m.createMockUserSettings("")
+      settings = m.createMockUserSettings("webclient")
       config = m.createMockUserConfig(false)
       result = resolveShowBackdrop(settings, config)
       m.assertEqual(result, false)
     end function
 
+    @it("returns web client value (true) when mode is 'webclient'")
+    function _()
+      settings = m.createMockUserSettings("webclient")
+      config = m.createMockUserConfig(true)
+      result = resolveShowBackdrop(settings, config)
+      m.assertEqual(result, true)
+    end function
+
+    @it("defaults to true when mode is 'webclient' but config invalid")
+    function _()
+      settings = m.createMockUserSettings("webclient")
+      config = invalid
+      result = resolveShowBackdrop(settings, config)
+      m.assertEqual(result, true)
+    end function
+
+    @it("defaults to true when mode is 'webclient' but showBackdrop not boolean")
+    function _()
+      settings = m.createMockUserSettings("webclient")
+      config = { showBackdrop: "not a boolean" }
+      result = resolveShowBackdrop(settings, config)
+      m.assertEqual(result, true)
+    end function
+
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("Invalid input handling")
+    @describe("Default behavior and edge cases")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("returns true (default) when both settings and config are invalid")
+    @it("defaults to true when both settings and config are invalid")
     function _()
       result = resolveShowBackdrop(invalid, invalid)
       m.assertEqual(result, true)
     end function
 
-    @it("returns web client value when settings is invalid and config is valid")
+    @it("defaults to true when settings is invalid")
     function _()
       config = m.createMockUserConfig(false)
       result = resolveShowBackdrop(invalid, config)
-      m.assertEqual(result, false)
+      m.assertEqual(result, true)
     end function
 
-    @it("returns true (default) when settings is valid but config is invalid")
+    @it("defaults to true when config is invalid")
     function _()
       settings = m.createMockUserSettings("")
       result = resolveShowBackdrop(settings, invalid)
       m.assertEqual(result, true)
     end function
 
-    @it("returns true when web client setting is not a boolean")
+    @it("defaults to true when config.showBackdrop is not a boolean")
     function _()
       settings = m.createMockUserSettings("")
       config = { showBackdrop: "not a boolean" }
@@ -121,7 +145,7 @@ namespace tests
       m.assertEqual(result, true)
     end function
 
-    @it("overrides invalid web client value when JellyRock setting is 'enabled'")
+    @it("ignores invalid config when JellyRock setting is 'enabled'")
     function _()
       settings = m.createMockUserSettings("enabled")
       config = { showBackdrop: "not a boolean" }
@@ -129,7 +153,7 @@ namespace tests
       m.assertEqual(result, true)
     end function
 
-    @it("overrides invalid web client value when JellyRock setting is 'disabled'")
+    @it("ignores invalid config when JellyRock setting is 'disabled'")
     function _()
       settings = m.createMockUserSettings("disabled")
       config = { showBackdrop: "not a boolean" }
@@ -137,15 +161,15 @@ namespace tests
       m.assertEqual(result, false)
     end function
 
-    @it("handles missing uiShowBackdrop field gracefully")
+    @it("defaults to true when uiShowBackdrop field is missing")
     function _()
       settings = {}
       config = m.createMockUserConfig(false)
       result = resolveShowBackdrop(settings, config)
-      m.assertEqual(result, false)
+      m.assertEqual(result, true)
     end function
 
-    @it("handles missing showBackdrop field gracefully")
+    @it("handles missing showBackdrop field when setting is 'enabled'")
     function _()
       settings = m.createMockUserSettings("enabled")
       config = {}
