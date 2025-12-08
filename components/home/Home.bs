@@ -1,5 +1,6 @@
 import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/roku_modules/log/LogMixin.brs"
+import "pkg:/source/utils/backdrop.bs"
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/deviceCapabilities.bs"
 import "pkg:/source/utils/misc.bs"
@@ -20,21 +21,8 @@ sub init()
   m.log.debug("Created PostTask node", m.postTask)
   m.log.decreaseIndent()
 
-  m.log.increaseIndent("Finding child nodes")
   m.homeRows = m.top.findNode("homeRows")
-  if not isValid(m.homeRows)
-    m.log.error("Failed to find homeRows node")
-  else
-    m.log.debug("Found homeRows node", m.homeRows)
-  end if
-
   m.backdrop = m.top.findNode("backdrop")
-  if not isValid(m.backdrop)
-    m.log.error("Failed to find backdrop node")
-  else
-    m.log.debug("Found backdrop node", m.backdrop)
-  end if
-  m.log.decreaseIndent()
 
   ' Configure splash background if enabled
   splashEnabled = m.global.user.settings.uiHomeSplashBackground
@@ -161,7 +149,18 @@ sub OnScreenShown()
     else
       m.log.warn("Backdrop node invalid - cannot update background")
     end if
+
     m.log.decreaseIndent()
+  end if
+
+  ' Re-evaluate backdrop setting (handles setting changes from Settings screen)
+  showBackdrop = resolveShowBackdrop(globalUser.settings, globalUser.config)
+  scene.showBackdrop = showBackdrop
+  imageFader = scene.findNode("imageFader")
+  if isValid(imageFader)
+    imageFader.visible = showBackdrop
+    if not showBackdrop then scene.backgroundImageUri = "" ' Clear backdrop URI if hiding
+    m.log.debug("Updated backdrop visibility", showBackdrop)
   end if
 
   m.log.decreaseIndent()

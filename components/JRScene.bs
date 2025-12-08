@@ -1,6 +1,6 @@
 import "pkg:/source/roku_modules/log/LogMixin.brs"
-import "pkg:/source/utils/misc.bs"
 import "pkg:/source/utils/backdrop.bs"
+import "pkg:/source/utils/misc.bs"
 
 sub init()
   m.log = log.Logger("JRScene")
@@ -13,14 +13,8 @@ sub init()
   m.imageFader.width = localDevice.uiResolution[0]
   m.imageFader.height = localDevice.uiResolution[1]
 
-  ' Set initial visibility based on user setting
-  localUser = m.global.user
-  if isValid(localUser)
-    m.showBackdrop = resolveShowBackdrop(localUser.settings, localUser.config)
-  else
-    m.showBackdrop = true ' Default to showing backdrops if user not loaded
-  end if
-  m.imageFader.visible = m.showBackdrop
+  ' Don't resolve backdrop setting yet - wait until first backdrop request (after login)
+  m.imageFader.visible = false
 
   ' set text manually to AVOID translation
   defaultFont = m.top.findNode("defaultFont")
@@ -36,8 +30,19 @@ end sub
 sub backgroundImageUriChanged()
   if not isValid(m.imageFader) then return
 
+  ' Resolve backdrop setting on first use (lazy initialization)
+  if m.top.showBackdrop = invalid
+    localUser = m.global.user
+    if isValid(localUser)
+      m.top.showBackdrop = resolveShowBackdrop(localUser.settings, localUser.config)
+    else
+      m.top.showBackdrop = false ' Don't show backdrops if called before login
+    end if
+    m.imageFader.visible = m.top.showBackdrop
+  end if
+
   ' Only update URI if backdrops are enabled (performance optimization)
-  if m.showBackdrop
+  if m.top.showBackdrop
     m.imageFader.isAnimated = true
     m.imageFader.uri = m.top.backgroundImageUri
   end if
@@ -49,8 +54,19 @@ end sub
 sub setBackgroundImage(uri as string, isAnimated = true as boolean)
   if not isValid(m.imageFader) then return
 
+  ' Resolve backdrop setting on first use (lazy initialization)
+  if m.top.showBackdrop = invalid
+    localUser = m.global.user
+    if isValid(localUser)
+      m.top.showBackdrop = resolveShowBackdrop(localUser.settings, localUser.config)
+    else
+      m.top.showBackdrop = false ' Don't show backdrops if called before login
+    end if
+    m.imageFader.visible = m.top.showBackdrop
+  end if
+
   ' Only update URI if backdrops are enabled (performance optimization)
-  if m.showBackdrop
+  if m.top.showBackdrop
     m.imageFader.isAnimated = isAnimated
     m.imageFader.uri = uri
   end if

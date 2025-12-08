@@ -234,7 +234,7 @@
         "children": [
           {
             "title": "Backdrop Images",
-            "description": "Control display of backdrop images throughout the app. Enable for full visual experience, disable for better performance or accessibility, or use web client setting.",
+            "description": "Control display of backdrop images throughout the app. Enable for full visual experience, disable for better performance or accessibility.",
             "settingName": "uiShowBackdrop",
             "type": "radio",
             "default": "enabled",
@@ -246,10 +246,6 @@
               {
                 "title": "Disabled",
                 "id": "disabled"
-              },
-              {
-                "title": "Use Web Client Setting",
-                "id": "webclient"
               }
             ]
           },

@@ -15,6 +15,7 @@
   </children>
   <interface>
     <field id="disableRemote" type="boolean" value="true" />
+    <field id="showBackdrop" type="boolean" value="false" />
     <field id="loadingText" type="string" value="" alwaysNotify="true" onchange="loadingTextChanged" />
     <field id="isLoading" type="boolean" alwaysNotify="true" value="true" onchange="isLoadingChanged" />
     <field id="exit" type="boolean" alwaysNotify="true" />
