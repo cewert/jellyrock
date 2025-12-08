@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Dependencies
 
 - Update markdownlint-cli2 from v0.19.1 to v0.20.0 ([#234](https://github.com/cewert/jellyrock/pull/234))
+- Github actions ([#238](https://github.com/cewert/jellyrock/pull/238))
 
 ## [1.4.2](https://github.com/cewert/jellyrock/compare/v1.4.1...v1.4.2) - 2025-12-06
 
