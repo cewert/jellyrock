@@ -168,6 +168,10 @@
       <extracomment>User Setting - Option title</extracomment>
     </message>
     <message>
+      <source>Backdrop Images</source>
+      <translation>Backdrop Images</translation>
+    </message>
+    <message>
       <source>Biographical information for this person is not currently available.</source>
       <translation>Biographical information for this person is not currently available.</translation>
     </message>
@@ -274,6 +278,10 @@
     <message>
       <source>Continue Watching</source>
       <translation>Continue Watching</translation>
+    </message>
+    <message>
+      <source>Control display of backdrop images throughout the app. Enable for full visual experience, disable for better performance or accessibility.</source>
+      <translation>Control display of backdrop images throughout the app. Enable for full visual experience, disable for better performance or accessibility.</translation>
     </message>
     <message>
       <source>CRITIC_RATING</source>
