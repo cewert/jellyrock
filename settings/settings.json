@@ -233,6 +233,27 @@
         "description": "Settings relating to the appearance of the Home screen and the program in general.",
         "children": [
           {
+            "title": "Backdrop Images",
+            "description": "Control display of backdrop images throughout the app. Enable for full visual experience, disable for better performance or accessibility, or use web client setting.",
+            "settingName": "uiShowBackdrop",
+            "type": "radio",
+            "default": "enabled",
+            "options": [
+              {
+                "title": "Enabled",
+                "id": "enabled"
+              },
+              {
+                "title": "Disabled",
+                "id": "disabled"
+              },
+              {
+                "title": "Use Web Client Setting",
+                "id": "webclient"
+              }
+            ]
+          },
+          {
             "title": "Episode Images Next Up",
             "description": "What type of images to use for Episodes shown in the 'Next Up' and 'Continue Watching' sections.",
             "settingName": "uiGeneralEpisodeImages",

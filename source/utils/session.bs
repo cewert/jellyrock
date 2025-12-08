@@ -343,12 +343,24 @@ namespace user
     resp = APIRequest(url)
     jsonResponse = getJson(resp)
 
+    print "DisplayPreferences response:", jsonResponse
+    print "DisplayPreferences response.ShowBackdrop:", jsonResponse.ShowBackdrop
+    print "DisplayPreferences response.CustomPrefs:", jsonResponse.CustomPrefs
     if isValid(jsonResponse) and isValid(jsonResponse.CustomPrefs)
+      userNode = m.global.user
+
       tmpSetting = jsonResponse.CustomPrefs.useEpisodeImagesInNextUpAndResume
       if isValid(tmpSetting)
-        userNode = m.global.user
         ' Set field on nested config node
         userNode.config.useEpisodeImagesInNextUpAndResume = toBoolean(tmpSetting)
+      end if
+
+      ' Save ShowBackdrop to config node (always save server value regardless of JellyRock override)
+      if isValid(jsonResponse.ShowBackdrop)
+        userNode.config.showBackdrop = toBoolean(jsonResponse.ShowBackdrop)
+      else
+        ' Default to true if server doesn't provide value (assume backdrops enabled)
+        userNode.config.showBackdrop = true
       end if
 
       ' Check if CustomPrefs has any homesection data

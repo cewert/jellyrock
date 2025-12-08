@@ -1,0 +1,33 @@
+' resolveShowBackdrop: Resolves whether to show backdrop images
+'
+' Checks JellyRock override setting first, then falls back to web client setting.
+' Ensures a valid boolean is always returned.
+'
+' @param {object} userSettings - JellyfinUserSettings node (JellyRock settings)
+' @param {object} userConfig - JellyfinUserConfiguration node (web client settings)
+' @returns {boolean} - True to show backdrops, false to hide them
+function resolveShowBackdrop(userSettings as object, userConfig as object) as boolean
+  ' Default to true (enabled) if we can't determine the value
+  defaultValue = true
+
+  ' Try to get web client setting
+  if isValid(userConfig) and isValid(userConfig.showBackdrop)
+    ' Ensure it's actually a boolean before using it
+    valueType = Type(userConfig.showBackdrop)
+    if valueType = "roBoolean" or valueType = "Boolean"
+      defaultValue = userConfig.showBackdrop
+    end if
+  end if
+
+  ' Check for JellyRock override setting
+  if isValid(userSettings) and isValid(userSettings.uiShowBackdrop) and userSettings.uiShowBackdrop <> ""
+    if userSettings.uiShowBackdrop = "enabled"
+      return true
+    else if userSettings.uiShowBackdrop = "disabled"
+      return false
+      ' else "webclient" or other - use web client setting
+    end if
+  end if
+
+  return defaultValue
+end function
