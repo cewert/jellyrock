@@ -61,18 +61,34 @@ namespace tests
       m.assertEqual(result, true)
     end function
 
-    @it("defaults to true when JellyRock setting is empty string")
+    @it("falls back to web client setting when JellyRock setting is empty string")
     function _()
       settings = m.createMockUserSettings("")
       config = m.createMockUserConfig(false)
       result = resolveShowBackdrop(settings, config)
-      m.assertEqual(result, true)
+      m.assertEqual(result, false)
     end function
 
-    @it("defaults to true when JellyRock setting is unexpected value")
+    @it("falls back to web client setting when JellyRock setting is unexpected value")
     function _()
       settings = m.createMockUserSettings("invalid_value")
       config = m.createMockUserConfig(false)
+      result = resolveShowBackdrop(settings, config)
+      m.assertEqual(result, false)
+    end function
+
+    @it("falls back to web client setting (true) when JellyRock setting is empty string")
+    function _()
+      settings = m.createMockUserSettings("")
+      config = m.createMockUserConfig(true)
+      result = resolveShowBackdrop(settings, config)
+      m.assertEqual(result, true)
+    end function
+
+    @it("falls back to web client setting (true) when JellyRock setting is unexpected value")
+    function _()
+      settings = m.createMockUserSettings("invalid_value")
+      config = m.createMockUserConfig(true)
       result = resolveShowBackdrop(settings, config)
       m.assertEqual(result, true)
     end function
@@ -123,11 +139,11 @@ namespace tests
       m.assertEqual(result, true)
     end function
 
-    @it("defaults to true when settings is invalid")
+    @it("falls back to web client setting when settings is invalid")
     function _()
       config = m.createMockUserConfig(false)
       result = resolveShowBackdrop(invalid, config)
-      m.assertEqual(result, true)
+      m.assertEqual(result, false)
     end function
 
     @it("defaults to true when config is invalid")
@@ -161,12 +177,12 @@ namespace tests
       m.assertEqual(result, false)
     end function
 
-    @it("defaults to true when uiShowBackdrop field is missing")
+    @it("falls back to web client setting when uiShowBackdrop field is missing")
     function _()
       settings = {}
       config = m.createMockUserConfig(false)
       result = resolveShowBackdrop(settings, config)
-      m.assertEqual(result, true)
+      m.assertEqual(result, false)
     end function
 
     @it("handles missing showBackdrop field when setting is 'enabled'")

@@ -343,41 +343,44 @@ namespace user
     resp = APIRequest(url)
     jsonResponse = getJson(resp)
 
-    if isValid(jsonResponse) and isValid(jsonResponse.CustomPrefs)
+    if isValid(jsonResponse)
       userNode = m.global.user
-
-      tmpSetting = jsonResponse.CustomPrefs.useEpisodeImagesInNextUpAndResume
-      if isValid(tmpSetting)
-        ' Set field on nested config node
-        userNode.config.useEpisodeImagesInNextUpAndResume = toBoolean(tmpSetting)
-      end if
 
       ' Save ShowBackdrop to config node (always save server value regardless of JellyRock override)
       if isValid(jsonResponse.ShowBackdrop)
         userNode.config.showBackdrop = toBoolean(jsonResponse.ShowBackdrop)
       else
-        ' Default to true if server doesn't provide value (assume backdrops enabled)
+        ' Default to true if server doesn't provide value
         userNode.config.showBackdrop = true
       end if
 
-      ' Check if CustomPrefs has any homesection data
-      if user.hasHomeSectionData(jsonResponse.CustomPrefs)
-        print "LoadUserPreferences: Using server CustomPrefs for home sections"
-        user.SaveUserHomeSections(jsonResponse.CustomPrefs)
+      if isValid(jsonResponse.CustomPrefs)
+        ' Save UseEpisodeImagesInNextUpAndResume to config node
+        tmpSetting = jsonResponse.CustomPrefs.useEpisodeImagesInNextUpAndResume
+        if isValid(tmpSetting)
+          ' Set field on nested config node
+          userNode.config.useEpisodeImagesInNextUpAndResume = toBoolean(tmpSetting)
+        end if
+
+        ' Check if CustomPrefs has any homesection data
+        if user.hasHomeSectionData(jsonResponse.CustomPrefs)
+          print "LoadUserPreferences: Using server CustomPrefs for home sections"
+          user.SaveUserHomeSections(jsonResponse.CustomPrefs)
+        else
+          ' CustomPrefs is empty or has no homesection keys - use defaults
+          print "LoadUserPreferences: CustomPrefs has no homesection data, using defaults"
+          user.SaveUserHomeSections(user.getDefaultHomeSections())
+        end if
+
+        if isValid(jsonResponse.CustomPrefs["landing-livetv"])
+          set_user_setting("displayLiveTvLanding", jsonResponse.CustomPrefs["landing-livetv"])
+        else
+          unset_user_setting("displayLiveTvLanding")
+        end if
       else
-        ' CustomPrefs is empty or has no homesection keys - use defaults
-        print "LoadUserPreferences: CustomPrefs has no homesection data, using defaults"
+        print "LoadUserPreferences: No valid CustomPrefs from server, using defaults"
         user.SaveUserHomeSections(user.getDefaultHomeSections())
       end if
-
-      if isValid(jsonResponse.CustomPrefs["landing-livetv"])
-        set_user_setting("displayLiveTvLanding", jsonResponse.CustomPrefs["landing-livetv"])
-      else
-        unset_user_setting("displayLiveTvLanding")
-      end if
-    else
-      print "LoadUserPreferences: No valid CustomPrefs from server, using defaults"
-      user.SaveUserHomeSections(user.getDefaultHomeSections())
     end if
   end sub
 

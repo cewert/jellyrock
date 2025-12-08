@@ -7,25 +7,27 @@
 ' @param {object} userConfig - JellyfinUserConfiguration node (web client settings)
 ' @returns {boolean} - True to show backdrops, false to hide them
 function resolveShowBackdrop(userSettings as object, userConfig as object) as boolean
+  ' Default to true if we can't determine the value
+  defaultValue = true
+
+  ' Try to get web client setting
+  if isValid(userConfig) and isValid(userConfig.showBackdrop)
+    ' Ensure it's actually a boolean before using it
+    valueType = Type(userConfig.showBackdrop)
+    if valueType = "roBoolean" or valueType = "Boolean"
+      defaultValue = userConfig.showBackdrop
+    end if
+  end if
+
   ' Check for JellyRock override setting
   if isValid(userSettings) and isValid(userSettings.uiShowBackdrop) and userSettings.uiShowBackdrop <> ""
     if userSettings.uiShowBackdrop = "enabled"
       return true
     else if userSettings.uiShowBackdrop = "disabled"
       return false
-    else if userSettings.uiShowBackdrop = "webclient"
-      ' Use web client setting directly from server config
-      if isValid(userConfig) and isValid(userConfig.showBackdrop)
-        valueType = Type(userConfig.showBackdrop)
-        if valueType = "roBoolean" or valueType = "Boolean"
-          return userConfig.showBackdrop
-        end if
-      end if
-      ' Fallback to true if web client setting unavailable or invalid type
-      return true
+      ' else "webclient" or other - use web client setting
     end if
   end if
 
-  ' No JellyRock setting or unknown setting value - default to true
-  return true
+  return defaultValue
 end function

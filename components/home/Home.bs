@@ -152,7 +152,7 @@ sub OnScreenShown()
     m.log.decreaseIndent()
   end if
 
-  ' Re-evaluate backdrop setting (handles setting changes from Settings screen)
+  ' Re-evaluate backdrop setting visibility (updates when user changes setting from Settings screen)
   scene.callFunc("refreshBackdropSetting")
   m.log.debug("Refreshed backdrop setting")
 
