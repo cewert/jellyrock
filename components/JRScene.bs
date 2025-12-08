@@ -72,6 +72,23 @@ sub setBackgroundImage(uri as string, isAnimated = true as boolean)
   end if
 end sub
 
+' Re-evaluate and apply the backdrop visibility setting
+' Useful when settings change at runtime (e.g., from Settings screen)
+sub refreshBackdropSetting()
+  if not isValid(m.imageFader) then return
+
+  localUser = m.global.user
+  if isValid(localUser)
+    m.top.showBackdrop = resolveShowBackdrop(localUser.settings, localUser.config)
+    m.imageFader.visible = m.top.showBackdrop
+
+    ' Clear backdrop URI if hiding to free memory
+    if not m.top.showBackdrop
+      m.top.backgroundImageUri = ""
+    end if
+  end if
+end sub
+
 ' Triggered when the isLoading boolean component field is changed
 sub isLoadingChanged()
   ' toggle visibility of active view/group

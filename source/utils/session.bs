@@ -343,9 +343,6 @@ namespace user
     resp = APIRequest(url)
     jsonResponse = getJson(resp)
 
-    print "DisplayPreferences response:", jsonResponse
-    print "DisplayPreferences response.ShowBackdrop:", jsonResponse.ShowBackdrop
-    print "DisplayPreferences response.CustomPrefs:", jsonResponse.CustomPrefs
     if isValid(jsonResponse) and isValid(jsonResponse.CustomPrefs)
       userNode = m.global.user
 

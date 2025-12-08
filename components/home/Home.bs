@@ -1,6 +1,5 @@
 import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/roku_modules/log/LogMixin.brs"
-import "pkg:/source/utils/backdrop.bs"
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/deviceCapabilities.bs"
 import "pkg:/source/utils/misc.bs"
@@ -154,14 +153,8 @@ sub OnScreenShown()
   end if
 
   ' Re-evaluate backdrop setting (handles setting changes from Settings screen)
-  showBackdrop = resolveShowBackdrop(globalUser.settings, globalUser.config)
-  scene.showBackdrop = showBackdrop
-  imageFader = scene.findNode("imageFader")
-  if isValid(imageFader)
-    imageFader.visible = showBackdrop
-    if not showBackdrop then scene.backgroundImageUri = "" ' Clear backdrop URI if hiding
-    m.log.debug("Updated backdrop visibility", showBackdrop)
-  end if
+  scene.callFunc("refreshBackdropSetting")
+  m.log.debug("Refreshed backdrop setting")
 
   m.log.decreaseIndent()
   m.log.info("Home screen shown configuration complete")
