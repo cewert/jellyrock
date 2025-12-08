@@ -47,11 +47,13 @@ Settings relating to playback and supported codec and media types.
   - [Maximum Bitrate](#playbackBitrateLimit)
 - [Cinema Mode](#playbackCinemaMode)
 - [Custom Subtitles](#playbackSubsCustom)
+- [Decode Multichannel Audio](#playbackDecodeMultichannelAudio)
 - [Maximum Resolution](#playbackResolutionMax)
 - [Next Episode Button Time](#playbackNextUpButtonSeconds)
-- [Play Next Episode Automatically](#playbackPlayNextEpisode)
 - [Play Default Audio Track](#playbackPlayDefaultAudioTrack)
+- [Play Next Episode Automatically](#playbackPlayNextEpisode)
 - [Preferred Surround Audio Codec](#playbackPreferredMultichannelCodec)
+- [Preserve DoVi](#playbackPreserveDovi)
 - [Text Subtitles Only](#playbackSubsOnlyText)
 - [Video Codec Support](#playback-video-codec-support)
   - [MPEG-2](#playbackMpeg2)
@@ -84,6 +86,18 @@ Use custom subtitle rendering for external VTT subtitle files. Enables fallback 
 | Type | `bool` |
 | Default | `true` |
 
+<h3 id="playbackDecodeMultichannelAudio">Decode Multichannel Audio</h3>
+
+<a href="#playback">Playback</a> › <a href="#playbackDecodeMultichannelAudio">Decode Multichannel Audio</a>
+
+Allow the Roku to decode multichannel audio formats (AAC, FLAC, etc.) to stereo. When disabled, forces the server to transcode to 2-channel audio instead of relying on Roku's downmix, which may improve audio quality on some systems.
+
+| Property | Value |
+| --- | --- |
+| Setting Name | `playbackDecodeMultichannelAudio` |
+| Type | `bool` |
+| Default | `true` |
+
 <h3 id="playbackResolutionMax">Maximum Resolution</h3>
 
 <a href="#playback">Playback</a> › <a href="#playbackResolutionMax">Maximum Resolution</a>
@@ -109,19 +123,6 @@ Set how many seconds before the end of an episode the Next Episode button should
 | Type | `integer` |
 | Default | `30` |
 
-<h3 id="playbackPlayNextEpisode">Play Next Episode Automatically</h3>
-
-<a href="#playback">Playback</a> › <a href="#playbackPlayNextEpisode">Play Next Episode Automatically</a>
-
-When finished playing a single episode, play the next one automatically.
-
-| Property | Value |
-| --- | --- |
-| Setting Name | `playbackPlayNextEpisode` |
-| Type | `radio` |
-| Default | `webclient` |
-| Options | <table cellspacing="0" cellpadding="0"><thead><tr><th align="left">Name</th><th align="left">ID</th></tr></thead><tbody><tr><td>Use Web Client Setting</td><td><code>webclient</code></td></tr><tr><td>Enabled</td><td><code>enabled</code></td></tr><tr><td>Disabled</td><td><code>disabled</code></td></tr></tbody></table> |
-
 <h3 id="playbackPlayDefaultAudioTrack">Play Default Audio Track</h3>
 
 <a href="#playback">Playback</a> › <a href="#playbackPlayDefaultAudioTrack">Play Default Audio Track</a>
@@ -131,6 +132,19 @@ Override web client audio preference. When enabled, use the IsDefault flag to se
 | Property | Value |
 | --- | --- |
 | Setting Name | `playbackPlayDefaultAudioTrack` |
+| Type | `radio` |
+| Default | `webclient` |
+| Options | <table cellspacing="0" cellpadding="0"><thead><tr><th align="left">Name</th><th align="left">ID</th></tr></thead><tbody><tr><td>Use Web Client Setting</td><td><code>webclient</code></td></tr><tr><td>Enabled</td><td><code>enabled</code></td></tr><tr><td>Disabled</td><td><code>disabled</code></td></tr></tbody></table> |
+
+<h3 id="playbackPlayNextEpisode">Play Next Episode Automatically</h3>
+
+<a href="#playback">Playback</a> › <a href="#playbackPlayNextEpisode">Play Next Episode Automatically</a>
+
+When finished playing a single episode, play the next one automatically.
+
+| Property | Value |
+| --- | --- |
+| Setting Name | `playbackPlayNextEpisode` |
 | Type | `radio` |
 | Default | `webclient` |
 | Options | <table cellspacing="0" cellpadding="0"><thead><tr><th align="left">Name</th><th align="left">ID</th></tr></thead><tbody><tr><td>Use Web Client Setting</td><td><code>webclient</code></td></tr><tr><td>Enabled</td><td><code>enabled</code></td></tr><tr><td>Disabled</td><td><code>disabled</code></td></tr></tbody></table> |
@@ -147,6 +161,18 @@ When transcoding multichannel audio, prefer this codec. EAC3 supports up to 7.1 
 | Type | `radio` |
 | Default | `eac3` |
 | Options | <table cellspacing="0" cellpadding="0"><thead><tr><th align="left">Name</th><th align="left">ID</th></tr></thead><tbody><tr><td>Dolby Digital Plus (EAC3)</td><td><code>eac3</code></td></tr><tr><td>Dolby Digital (AC3)</td><td><code>ac3</code></td></tr><tr><td>DTS</td><td><code>dts</code></td></tr></tbody></table> |
+
+<h3 id="playbackPreserveDovi">Preserve DoVi</h3>
+
+<a href="#playback">Playback</a> › <a href="#playbackPreserveDovi">Preserve DoVi</a>
+
+Preserve Dolby Vision content when possible by forcing remux instead of direct playback when using MKV container files. This ensures proper Dolby Vision playback on supported devices.
+
+| Property | Value |
+| --- | --- |
+| Setting Name | `playbackPreserveDovi` |
+| Type | `bool` |
+| Default | `true` |
 
 <h3 id="playbackSubsOnlyText">Text Subtitles Only</h3>
 
@@ -259,6 +285,7 @@ Attempt Direct Play for HEVC media with unsupported profile levels before fallin
 Settings relating to how the application looks.
 
 - [General](#user-interface-general)
+  - [Backdrop Images](#uiShowBackdrop)
   - [Episode Images Next Up](#uiGeneralEpisodeImages)
   - [Fallback Fonts](#uiFontFallback)
   - [Hide Clock](#uiDesignHideClock)
@@ -288,6 +315,19 @@ Settings relating to how the application looks.
 <a id="user-interface-general"></a>
 
 Settings relating to the appearance of the Home screen and the program in general.
+
+<h4 id="uiShowBackdrop">Backdrop Images</h4>
+
+<a href="#user-interface">User Interface</a> › <a href="#user-interface-general">General</a> › <a href="#uiShowBackdrop">Backdrop Images</a>
+
+Control display of backdrop images throughout the app. Enable for full visual experience, disable for better performance or accessibility.
+
+| Property | Value |
+| --- | --- |
+| Setting Name | `uiShowBackdrop` |
+| Type | `radio` |
+| Default | `enabled` |
+| Options | <table cellspacing="0" cellpadding="0"><thead><tr><th align="left">Name</th><th align="left">ID</th></tr></thead><tbody><tr><td>Enabled</td><td><code>enabled</code></td></tr><tr><td>Disabled</td><td><code>disabled</code></td></tr></tbody></table> |
 
 <h4 id="uiGeneralEpisodeImages">Episode Images Next Up</h4>
 
