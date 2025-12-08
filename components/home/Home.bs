@@ -23,16 +23,6 @@ sub init()
   m.homeRows = m.top.findNode("homeRows")
   m.backdrop = m.top.findNode("backdrop")
 
-  ' Configure splash background if enabled
-  splashEnabled = m.global.user.settings.uiHomeSplashBackground
-  m.log.debug("Splash background setting", splashEnabled)
-
-  if splashEnabled = true and isValid(m.backdrop)
-    splashUrl = buildURL("/Branding/Splashscreen?format=jpg&foregroundLayer=0.15&fillWidth=1280&width=1280&fillHeight=720&height=720&tag=splash")
-    m.backdrop.uri = splashUrl
-    m.log.info("Applied splash background", splashUrl)
-  end if
-
   m.log.verbose("Home component initialization complete")
 end sub
 
@@ -131,24 +121,6 @@ sub OnScreenShown()
   else
     m.log.increaseIndent("Subsequent run - refreshing content")
     refresh()
-
-    ' Update backdrop based on current splash background setting
-    splashEnabled = globalUser.settings.uiHomeSplashBackground
-    m.log.debug("Current splash background setting", splashEnabled)
-
-    if isValid(m.backdrop)
-      if splashEnabled = true
-        splashUrl = buildURL("/Branding/Splashscreen?format=jpg&foregroundLayer=0.15&fillWidth=1280&width=1280&fillHeight=720&height=720&tag=splash")
-        m.backdrop.uri = splashUrl
-        m.log.info("Updated backdrop with splash background", splashUrl)
-      else
-        m.backdrop.uri = ""
-        m.log.info("Cleared backdrop - splash background disabled")
-      end if
-    else
-      m.log.warn("Backdrop node invalid - cannot update background")
-    end if
-
     m.log.decreaseIndent()
   end if
 
