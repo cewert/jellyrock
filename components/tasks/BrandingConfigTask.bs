@@ -10,7 +10,7 @@ end sub
 
 ' Fetch branding configuration from server
 ' Updates m.global.server.splashscreenEnabled based on server response
-' Sets to true/false (never leaves as invalid after running)
+' Sets to true/false when task completes successfully (may remain invalid if interrupted)
 ' IMPORTANT: Non-blocking - never throws errors that stop app flow
 sub fetchBrandingConfig()
   m.log.info("Fetching branding configuration from server")
