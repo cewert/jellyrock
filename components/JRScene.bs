@@ -62,7 +62,8 @@ sub setBackgroundImage(uri as string, isAnimated = true as boolean, forceBackdro
       m.imageFader.uri = ""
       ' Reset showBackdrop to invalid so next screen can properly initialize
       m.top.showBackdrop = invalid
-      ' Don't set visible = false here - let the next screen's lazy initialization handle visibility
+      ' Explicitly hide imageFader to ensure a clean state if next screen does not reinitialize backdrop visibility
+      m.imageFader.visible = false
     else
       m.imageFader.isAnimated = isAnimated
       m.imageFader.uri = uri
