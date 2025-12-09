@@ -292,7 +292,6 @@ Settings relating to how the application looks.
   - [Max Days Next Up](#uiDetailsMaxDaysNextUp)
   - [Rewatching Next Up](#uiDetailsEnableRewatchingNextUp)
   - [Row Layout](#uiRowLayout)
-  - [Use Splashscreen as Home Background](#uiHomeSplashBackground)
   - [Use Web Client's Home Section Arrangement](#uiHomeUseWebArrangement)
 - [Libraries](#user-interface-libraries)
   - [General](#user-interface-libraries-general)
@@ -402,18 +401,6 @@ Choose how rows are displayed throughout the app.
 | Type | `radio` |
 | Default | `fullwidth` |
 | Options | <table cellspacing="0" cellpadding="0"><thead><tr><th align="left">Name</th><th align="left">ID</th></tr></thead><tbody><tr><td>Original</td><td><code>original</code></td></tr><tr><td>Full Width</td><td><code>fullwidth</code></td></tr></tbody></table> |
-
-<h4 id="uiHomeSplashBackground">Use Splashscreen as Home Background</h4>
-
-<a href="#user-interface">User Interface</a> › <a href="#user-interface-general">General</a> › <a href="#uiHomeSplashBackground">Use Splashscreen as Home Background</a>
-
-Use generated splashscreen image as JellyRock's home background.
-
-| Property | Value |
-| --- | --- |
-| Setting Name | `uiHomeSplashBackground` |
-| Type | `bool` |
-| Default | `false` |
 
 <h4 id="uiHomeUseWebArrangement">Use Web Client's Home Section Arrangement</h4>
 
