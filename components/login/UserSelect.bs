@@ -56,6 +56,9 @@ end sub
 sub OnScreenHidden()
   m.log.info("UserSelect screen hidden - clearing backdrop")
 
+  ' Stop task to prevent wasted resources
+  m.brandingTask.control = "STOP"
+
   ' Cleanup observers and reset task
   m.global.server.unobserveFieldScoped("splashscreenEnabled")
   m.brandingTask.unobserveFieldScoped("responseCode")
@@ -126,6 +129,14 @@ sub applySplashscreen(splashEnabled as boolean)
   if splashEnabled = true
     ' Build splash URL with correct parameters
     splashUrl = buildURL("/Branding/Splashscreen", { "format": "jpg", "tag": "splash" })
+
+    ' buildURL returns invalid when server URL is not configured
+    if not isValid(splashUrl)
+      m.log.warn("Cannot load splashscreen - server URL not configured")
+      m.global.sceneManager.callFunc("setBackgroundImage", "", true, true)
+      return
+    end if
+
     m.log.info("Splashscreen enabled - loading", splashUrl)
 
     ' Set backdrop with animation, forceBackdrop=true bypasses user setting check
