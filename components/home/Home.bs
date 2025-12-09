@@ -21,7 +21,6 @@ sub init()
   m.log.decreaseIndent()
 
   m.homeRows = m.top.findNode("homeRows")
-  m.backdrop = m.top.findNode("backdrop")
 
   m.log.verbose("Home component initialization complete")
 end sub
