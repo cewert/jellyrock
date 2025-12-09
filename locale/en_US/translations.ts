@@ -1276,18 +1276,9 @@
       <extracomment>User Setting - Setting option title</extracomment>
     </message>
     <message>
-      <source>Use generated splashscreen image as JellyRock&apos;s home background.</source>
-      <translation>Use generated splashscreen image as JellyRock&apos;s home background.</translation>
-    </message>
-    <message>
       <source>Use Show Image</source>
       <translation>Use Show Image</translation>
       <extracomment>User Setting - Setting option title</extracomment>
-    </message>
-    <message>
-      <source>Use Splashscreen as Home Background</source>
-      <translation>Use Splashscreen as Home Background</translation>
-      <extracomment>Option Title in user setting screen</extracomment>
     </message>
     <message>
       <source>Use the replay button to slowly animate to the first item in the folder. (If disabled, the folder will reset to the first item immediately).</source>
