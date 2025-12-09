@@ -51,8 +51,26 @@ end sub
 ' Set the background image with animation control
 ' @param {string} uri - The image URI to display
 ' @param {boolean} isAnimated - Whether to animate the transition
-sub setBackgroundImage(uri as string, isAnimated = true as boolean)
+' @param {boolean} forceBackdrop - Force show backdrop regardless of user setting (used for login splashscreen)
+sub setBackgroundImage(uri as string, isAnimated = true as boolean, forceBackdrop = false as boolean)
   if not isValid(m.imageFader) then return
+
+  ' Force backdrop mode bypasses user settings (used for login splashscreen)
+  if forceBackdrop
+    ' For empty URI in force mode, clear URI and reset state for next screen
+    if uri = invalid or uri = ""
+      m.imageFader.uri = ""
+      ' Reset showBackdrop to invalid so next screen can properly initialize
+      m.top.showBackdrop = invalid
+      ' Explicitly hide imageFader to ensure a clean state if next screen does not reinitialize backdrop visibility
+      m.imageFader.visible = false
+    else
+      m.imageFader.isAnimated = isAnimated
+      m.imageFader.uri = uri
+      m.imageFader.visible = true
+    end if
+    return
+  end if
 
   ' Resolve backdrop setting on first use (lazy initialization)
   if m.top.showBackdrop = invalid

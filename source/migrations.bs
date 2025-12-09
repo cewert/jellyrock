@@ -12,6 +12,9 @@ const AUDIO_CODEC_MIGRATION_VERSION = "1.1.5"
 ' client version when empty primaryImageTag entries were cleaned up
 const EMPTY_IMAGE_TAG_CLEANUP_VERSION = "1.4.0"
 
+' client version when uiHomeSplashBackground setting was removed
+const SPLASH_SETTING_REMOVAL_VERSION = "1.5.0"
+
 ' Run all necessary registry migrations on the "global" JellyRock registry section
 sub runGlobalMigrations()
   appLastRunVersion = m.global.app.lastRunVersion
@@ -256,6 +259,24 @@ sub runRegistryUserMigrations(targetSections = invalid as dynamic)
         end if
       else
         print `No primaryImageTag cleanup needed for userid: ${section} (setting not found)`
+      end if
+    end if
+
+    ' SPLASH_SETTING_REMOVAL_VERSION - Remove deprecated uiHomeSplashBackground setting
+    if isValid(lastRunVersion) and not versionChecker(lastRunVersion, SPLASH_SETTING_REMOVAL_VERSION)
+      m.wasMigrated = true
+
+      ' Delete deprecated splash background user setting
+      ' Splash now always displays on UserSelect when server has it enabled
+      settingName = "uiHomeSplashBackground"
+
+      if reg.exists(settingName)
+        print `Removing deprecated ${settingName} setting for userid: ${section}`
+        reg.delete(settingName)
+        reg.flush()
+        print `Deleted deprecated splash background setting`
+      else
+        print `No splash background setting removal needed for userid: ${section} (setting not found)`
       end if
     end if
   end for

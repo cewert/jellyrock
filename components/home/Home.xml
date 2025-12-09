@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="Home" extends="JRScreen">
   <children>
-    <Poster id="backdrop" loadDisplayMode="scaleToZoom" width="1920" height="1200" />
-
     <HomeRows id="homeRows" />
 
     <OptionsSlider id="options" />

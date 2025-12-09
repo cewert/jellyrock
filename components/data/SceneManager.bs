@@ -204,11 +204,12 @@ end sub
 ' Set the background image
 ' @param {string} uri - The image URI to display
 ' @param {boolean} isAnimated - Whether to animate the transition
-sub setBackgroundImage(uri as string, isAnimated = true as boolean)
-  m.log.info("SceneManager.setBackgroundImage called", uri, isAnimated)
+' @param {boolean} forceBackdrop - Force show backdrop regardless of user setting (used for login splashscreen)
+sub setBackgroundImage(uri as string, isAnimated = true as boolean, forceBackdrop = false as boolean)
+  m.log.info("SceneManager.setBackgroundImage called", uri, isAnimated, forceBackdrop)
   ' Passthrough to scene via callFunc
   if isValid(m.scene)
-    m.scene.callFunc("setBackgroundImage", uri, isAnimated)
+    m.scene.callFunc("setBackgroundImage", uri, isAnimated, forceBackdrop)
   else
     m.log.error("SceneManager.setBackgroundImage: m.scene is invalid!")
   end if

@@ -1,10 +1,19 @@
+import "pkg:/source/api/baserequest.bs"
+import "pkg:/source/roku_modules/log/LogMixin.brs"
 import "pkg:/source/utils/misc.bs"
 
 sub init()
+  m.log = log.Logger("UserSelect")
+  m.log.verbose("Initializing UserSelect component")
+
   m.top.optionsAvailable = false
   m.buttons = m.top.findNode("buttons")
 
   m.buttons.callFunc("center")
+
+  ' Create branding config task (reusable instance)
+  m.brandingTask = createObject("roSGNode", "BrandingConfigTask")
+  m.log.debug("Created BrandingConfigTask")
 end sub
 
 sub itemContentChanged()
@@ -29,14 +38,112 @@ end sub
 
 ' JRScreen hook called when the screen is displayed by the screen manager
 sub OnScreenShown()
-  ' Clear backdrop on login screens
-  m.global.sceneManager.callFunc("setBackgroundImage", "")
+  m.log.info("UserSelect screen shown")
 
   scene = m.top.getScene()
   overhang = scene.findNode("overhang")
   if isValid(overhang)
     overhang.isLogoVisible = true
     overhang.currentUser = ""
+    m.log.debug("Configured overhang for UserSelect")
+  end if
+
+  ' Load splashscreen (handles race condition)
+  loadSplashscreen()
+end sub
+
+' JRScreen hook called when the screen is hidden by the screen manager
+sub OnScreenHidden()
+  m.log.info("UserSelect screen hidden - clearing backdrop")
+
+  ' Stop task to prevent wasted resources
+  m.brandingTask.control = "STOP"
+
+  ' Cleanup observers and reset task
+  m.global.server.unobserveFieldScoped("splashscreenEnabled")
+  m.brandingTask.unobserveFieldScoped("responseCode")
+  m.brandingTask.callFunc("empty")
+
+  ' Clear backdrop using forceBackdrop to ensure it clears even before login
+  m.global.sceneManager.callFunc("setBackgroundImage", "", true, true)
+end sub
+
+' Load splashscreen if enabled on server
+' Always fetches fresh branding config from server
+sub loadSplashscreen()
+  m.log.info("Loading splashscreen - fetching branding config from server")
+
+  ' Clear backdrop while waiting (forceBackdrop ensures it works before login)
+  m.global.sceneManager.callFunc("setBackgroundImage", "", false, true)
+
+  ' Observe field and wait for task to complete
+  m.global.server.observeFieldScoped("splashscreenEnabled", "onSplashscreenEnabledLoaded")
+
+  ' Run the branding config task
+  m.brandingTask.observeFieldScoped("responseCode", "onBrandingConfigComplete")
+  m.brandingTask.control = "RUN"
+end sub
+
+' Called when branding config task completes
+sub onBrandingConfigComplete()
+  responseCode = m.brandingTask.responseCode
+  m.log.debug("Branding config fetch completed", "responseCode:", responseCode)
+
+  if responseCode = 200
+    m.log.info("Branding config cached successfully", "splashscreenEnabled:", m.global.server.splashscreenEnabled)
+  else
+    failureReason = m.brandingTask.failureReason
+    m.log.warn("Branding config fetch failed", "reason:", failureReason)
+  end if
+
+  ' Cleanup task
+  m.brandingTask.unobserveFieldScoped("responseCode")
+  m.brandingTask.callFunc("empty")
+end sub
+
+' Called when branding config finishes loading (if we had to wait)
+sub onSplashscreenEnabledLoaded()
+  serverNode = m.global.server
+  splashEnabled = serverNode.splashscreenEnabled
+
+  m.log.debug("Branding config loaded (async)", "splashscreenEnabled:", splashEnabled)
+
+  ' Unobserve (only fire once)
+  serverNode.unobserveFieldScoped("splashscreenEnabled")
+
+  ' Check validity again (defensive)
+  if isValid(splashEnabled)
+    applySplashscreen(splashEnabled)
+  else
+    m.log.warn("Branding config still invalid after loading - using default")
+    ' Clear backdrop using forceBackdrop to ensure it works before login
+    m.global.sceneManager.callFunc("setBackgroundImage", "", true, true)
+  end if
+end sub
+
+' Apply splash background based on enabled flag
+' Uses forceBackdrop parameter to show splashscreen before user login
+sub applySplashscreen(splashEnabled as boolean)
+  m.log.debug("Applying splashscreen", "enabled:", splashEnabled)
+
+  if splashEnabled = true
+    ' Build splash URL with correct parameters
+    splashUrl = buildURL("/Branding/Splashscreen", { "format": "jpg", "tag": "splash" })
+
+    ' buildURL returns invalid when server URL is not configured
+    if not isValid(splashUrl)
+      m.log.warn("Cannot load splashscreen - server URL not configured")
+      m.global.sceneManager.callFunc("setBackgroundImage", "", true, true)
+      return
+    end if
+
+    m.log.info("Splashscreen enabled - loading", splashUrl)
+
+    ' Set backdrop with animation, forceBackdrop=true bypasses user setting check
+    m.global.sceneManager.callFunc("setBackgroundImage", splashUrl, true, true)
+  else
+    m.log.info("Splashscreen disabled - using default background")
+    m.global.sceneManager.callFunc("setBackgroundImage", "", true, true)
   end if
 end sub
 
