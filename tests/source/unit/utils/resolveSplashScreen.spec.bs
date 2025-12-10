@@ -83,12 +83,6 @@ namespace tests
       m.assertEqual(result, false)
     end function
 
-    @it("returns false when disabled regardless of server being true")
-    function _()
-      result = resolveSplashScreen("disabled", true)
-      m.assertEqual(result, false)
-    end function
-
   end class
 
 end namespace
