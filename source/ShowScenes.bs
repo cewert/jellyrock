@@ -22,7 +22,9 @@ function LoginFlow()
   end if
 
   m.serverSelection = "Saved"
+  ' Always ensure server select is on the stack before user select (for back button)
   if startOver or invalidServer
+    ' Need to show server select interactively
     print "Get server details"
     SendPerformanceBeacon("AppDialogInitiate") ' Roku Performance monitoring - Dialog Starting
     m.serverSelection = CreateServerGroup()
@@ -33,6 +35,15 @@ function LoginFlow()
       return false
     end if
     SaveServerList()
+  else
+    ' Server is valid - push placeholder to maintain consistent stack depth
+    ' This ensures the scene stack has the same depth regardless of whether
+    ' server selection UI was shown, preventing stack corruption on cleanup
+    ' Using Group because it has a visible field (ContentNode does not)
+    print "Server valid, pushing placeholder to stack"
+    placeholderNode = CreateObject("roSGNode", "Group")
+    placeholderNode.visible = false
+    m.global.sceneManager.callFunc("pushScene", placeholderNode)
   end if
 
   localUser = m.global.user
@@ -92,8 +103,10 @@ function LoginFlow()
       userSelected = CreateUserSelectGroup(publicUsersNodes)
       SendPerformanceBeacon("AppDialogComplete") ' Roku Performance monitoring - Dialog Closed
       if userSelected = "backPressed"
+        ' User wants to change server - clear all scenes and restart
         server.Delete()
         unset_setting("server")
+        m.global.sceneManager.callFunc("clearScenes")
         goto start_login
       else if userSelected <> ""
         startLoadingSpinner()
@@ -415,6 +428,7 @@ function CreateUserSelectGroup(users = [])
       group.visible = false
       return -1
     else if isNodeEvent(msg, "backPressed")
+      group.visible = false
       return "backPressed"
     else if type(msg) = "roSGNodeEvent" and msg.getField() = "userSelected"
       return msg.GetData()
