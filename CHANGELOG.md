@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- prevent crash when using back button from user select screen ([#246](https://github.com/cewert/jellyrock/pull/246))
+
 ## [1.5.0](https://github.com/cewert/jellyrock/compare/v1.4.2...v1.5.0) - 2025-12-10
 
 ### Added
