@@ -15,6 +15,9 @@ Visit the [Roku Channel Store](https://channelstore.roku.com/details/232f9e82db1
 
 ## Screenshots
 
+  <a href="docs/screenshots/userSelect.png" target="_blank" title="User Select">
+    <img src="docs/screenshots/userSelect.png" width="400" alt="User Select" />
+  </a>
   <a href="docs/screenshots/home.png" target="_blank" title="Home">
     <img src="docs/screenshots/home.png" width="400" alt="Home" />
   </a>
