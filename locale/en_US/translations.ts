@@ -284,6 +284,10 @@
       <translation>Control display of backdrop images throughout the app. Enable for full visual experience, disable for better performance or accessibility.</translation>
     </message>
     <message>
+      <source>Control whether the server&apos;s splash screen image is displayed on the User Select screen. Server admin must enable this feature in branding settings.</source>
+      <translation>Control whether the server&apos;s splash screen image is displayed on the User Select screen. Server admin must enable this feature in branding settings.</translation>
+    </message>
+    <message>
       <source>CRITIC_RATING</source>
       <translation>Critics Rating</translation>
     </message>
@@ -1127,6 +1131,10 @@
     <message>
       <source>Special Features</source>
       <translation>Special Features</translation>
+    </message>
+    <message>
+      <source>Splash Screen Image</source>
+      <translation>Splash Screen Image</translation>
     </message>
     <message>
       <source>Start over from the beginning.</source>
