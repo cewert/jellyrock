@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- splash image not displaying after logout ([#242](https://github.com/cewert/jellyrock/pull/242))
 - Fix splashscreen feature - Move to login screen with proper API verification ([#240](https://github.com/cewert/jellyrock/pull/240))
 
 ### Dependencies
