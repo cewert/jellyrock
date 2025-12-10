@@ -21,6 +21,7 @@ This page documents all configurable settings available in the JellyRock app.
 Global settings that affect everyone that uses this Roku device.
 
 - [Remember Me?](#globalRememberMe)
+- [Splash Screen Image](#globalSplashScreen)
 
 <h3 id="globalRememberMe">Remember Me?</h3>
 
@@ -33,6 +34,19 @@ Remember the currently logged in user and try to log them in again next time you
 | Setting Name | `globalRememberMe` |
 | Type | `bool` |
 | Default | `false` |
+
+<h3 id="globalSplashScreen">Splash Screen Image</h3>
+
+<a href="#global">Global</a> › <a href="#globalSplashScreen">Splash Screen Image</a>
+
+Control whether the server's splash screen image is displayed on the User Select screen. Server admin must enable this feature in branding settings.
+
+| Property | Value |
+| --- | --- |
+| Setting Name | `globalSplashScreen` |
+| Type | `radio` |
+| Default | `enabled` |
+| Options | <table cellspacing="0" cellpadding="0"><thead><tr><th align="left">Name</th><th align="left">ID</th></tr></thead><tbody><tr><td>Enabled</td><td><code>enabled</code></td></tr><tr><td>Disabled</td><td><code>disabled</code></td></tr></tbody></table> |
 
 <p><a href="#top">⬆️ Back to top</a></p>
 
