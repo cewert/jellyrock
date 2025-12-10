@@ -36,8 +36,9 @@ function LoginFlow()
     end if
     SaveServerList()
   else
-    ' Server is valid - push dummy placeholder to stack for back button support
-    ' This allows UserSelect back button to pop and trigger server select flow
+    ' Server is valid - push placeholder to maintain consistent stack depth
+    ' This ensures the scene stack has the same depth regardless of whether
+    ' server selection UI was shown, preventing stack corruption on cleanup
     ' Using Group because it has a visible field (ContentNode does not)
     print "Server valid, pushing placeholder to stack"
     placeholderNode = CreateObject("roSGNode", "Group")
