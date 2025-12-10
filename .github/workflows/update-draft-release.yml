@@ -111,7 +111,7 @@ jobs:
           # Update the draft release with new ZIP and updated body
           UPDATED_BODY="## Release Schedule
 
-          JellyRock $TAG_NAME is scheduled for release on the [Roku Channel Store](https://channelstore.roku.com/details/232f9e82db11ce628e3fe7e01382a330:a85d6e9e520567806e8dae1c0cabadd5/jellyrock) DAY, MONTH 27, 2025 5:00 PM PT
+          JellyRock $TAG_NAME is scheduled for release on the [Roku Channel Store](https://channelstore.roku.com/details/232f9e82db11ce628e3fe7e01382a330:a85d6e9e520567806e8dae1c0cabadd5/jellyrock) DAY, MONTH 27, 2025 6:00 PM PT
 
           $RELEASE_NOTES"
 
