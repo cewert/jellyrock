@@ -5,12 +5,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [1.5.0](https://github.com/cewert/jellyrock/compare/v1.4.2...v1.5.0) - 2025-12-10
 
 ### Added
 
-- (settings) add global splash screen setting ([#243](https://github.com/cewert/jellyrock/pull/243))
-- (ui) add user setting to disable backdrop images ([#239](https://github.com/cewert/jellyrock/pull/239))
+- add global splash screen setting ([#243](https://github.com/cewert/jellyrock/pull/243))
+- add user setting to disable backdrop images ([#239](https://github.com/cewert/jellyrock/pull/239))
 - Add backdrop fade transitions with BackdropFader component ([#235](https://github.com/cewert/jellyrock/pull/235))
 
 ### Fixed
