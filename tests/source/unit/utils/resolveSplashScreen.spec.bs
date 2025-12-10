@@ -1,0 +1,94 @@
+import "pkg:/source/utils/misc.bs"
+
+namespace tests
+
+  @suite("misc - resolveSplashScreen()")
+  class ResolveSplashScreenTests extends tests.BaseTestSuite
+
+    protected override function setup()
+      super.setup()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Global setting behavior")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns false when global setting is 'disabled' (ignores server)")
+    function _()
+      result = resolveSplashScreen("disabled", true)
+      m.assertEqual(result, false)
+    end function
+
+    @it("returns server value (true) when global setting is 'enabled'")
+    function _()
+      result = resolveSplashScreen("enabled", true)
+      m.assertEqual(result, true)
+    end function
+
+    @it("returns server value (false) when global setting is 'enabled'")
+    function _()
+      result = resolveSplashScreen("enabled", false)
+      m.assertEqual(result, false)
+    end function
+
+    @it("returns server value (true) when global setting is empty string")
+    function _()
+      result = resolveSplashScreen("", true)
+      m.assertEqual(result, true)
+    end function
+
+    @it("returns server value (false) when global setting is empty string")
+    function _()
+      result = resolveSplashScreen("", false)
+      m.assertEqual(result, false)
+    end function
+
+    @it("returns server value when global setting is unexpected value")
+    function _()
+      result = resolveSplashScreen("invalid_value", true)
+      m.assertEqual(result, true)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Invalid input handling")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns false when both global setting and server value are invalid")
+    function _()
+      result = resolveSplashScreen(invalid, invalid)
+      m.assertEqual(result, false)
+    end function
+
+    @it("returns server value when global setting is invalid and server value is valid")
+    function _()
+      result = resolveSplashScreen(invalid, true)
+      m.assertEqual(result, true)
+    end function
+
+    @it("returns false when global setting is valid but server value is invalid")
+    function _()
+      result = resolveSplashScreen("enabled", invalid)
+      m.assertEqual(result, false)
+    end function
+
+    @it("returns false when server value is not a boolean")
+    function _()
+      result = resolveSplashScreen("enabled", "not a boolean")
+      m.assertEqual(result, false)
+    end function
+
+    @it("returns false when disabled regardless of invalid server value")
+    function _()
+      result = resolveSplashScreen("disabled", "not a boolean")
+      m.assertEqual(result, false)
+    end function
+
+    @it("returns false when disabled regardless of server being true")
+    function _()
+      result = resolveSplashScreen("disabled", true)
+      m.assertEqual(result, false)
+    end function
+
+  end class
+
+end namespace

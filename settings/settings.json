@@ -9,6 +9,23 @@
         "settingName": "globalRememberMe",
         "type": "bool",
         "default": "false"
+      },
+      {
+        "title": "Splash Screen Image",
+        "description": "Control whether the server's splash screen image is displayed on the User Select screen. Server admin must enable this feature in branding settings.",
+        "settingName": "globalSplashScreen",
+        "type": "radio",
+        "default": "enabled",
+        "options": [
+          {
+            "title": "Enabled",
+            "id": "enabled"
+          },
+          {
+            "title": "Disabled",
+            "id": "disabled"
+          }
+        ]
       }
     ]
   },
