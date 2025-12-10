@@ -703,3 +703,55 @@ function getRokuAudioTrackPosition(jellyfinAudioIndex as integer, audioStreamsAr
   return "1"
 end function
 
+' resolveSplashScreen: Resolves whether to show the splash screen on User Select screen
+'
+' Checks JellyRock global setting. If "disabled", never shows splash. Otherwise follows
+' server branding configuration. Ensures a valid boolean is always returned.
+'
+' @param {dynamic} globalSplashSetting - JellyRock global splash screen setting ("enabled", "disabled", or invalid)
+' @param {dynamic} serverSplashEnabled - Server's splashscreenEnabled setting (boolean or invalid)
+' @returns {boolean} - Resolved splash screen enabled state (guaranteed boolean)
+function resolveSplashScreen(globalSplashSetting as dynamic, serverSplashEnabled as dynamic) as boolean
+  ' If user explicitly disabled it, never show splash
+  if isValid(globalSplashSetting) and globalSplashSetting = "disabled"
+    return false
+  end if
+
+  ' Otherwise follow server setting (default behavior when "enabled" or not set)
+  ' Default to false if server value is invalid
+  if isValid(serverSplashEnabled)
+    valueType = Type(serverSplashEnabled)
+    if valueType = "roBoolean" or valueType = "Boolean"
+      return serverSplashEnabled
+    end if
+  end if
+
+  return false
+end function
+
+' getGlobalSplashScreenSetting: Gets the global splash screen setting from registry or default
+'
+' Reads from global registry first. If not found (user never changed it), reads default
+' from settings.json (single source of truth). Works before user login since global
+' settings are device-wide.
+'
+' @returns {string} - Global splash screen setting value ("enabled" or "disabled")
+function getGlobalSplashScreenSetting() as string
+  ' Read from global registry (returns invalid if user never changed it)
+  globalSetting = get_setting("globalSplashScreen")
+
+  ' If not in registry (user never changed it), get default from settings.json
+  if not isValid(globalSetting) or globalSetting = ""
+    configTree = GetConfigTree()
+    settingDef = findConfigTreeKey("globalSplashScreen", configTree)
+    if isValid(settingDef) and isValid(settingDef.default)
+      return settingDef.default
+    else
+      ' Fallback if settings.json is missing/invalid - default to enabled
+      return "enabled"
+    end if
+  end if
+
+  return globalSetting
+end function
+

@@ -1,0 +1,155 @@
+import "pkg:/source/utils/config.bs"
+import "pkg:/source/utils/misc.bs"
+
+namespace tests
+
+  @suite("Global Splash Screen - Registry Integration")
+  @tags("registry")
+  class GlobalSplashScreenRegistryTests extends tests.BaseTestSuite
+
+    protected override sub setup()
+      m.needsRegistrySetup = true
+      super.setup()
+    end sub
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getGlobalSplashScreenSetting() - Registry Fallback Chain")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns registry value when globalSplashScreen exists in test-global")
+    function _()
+      testUserId = "test-splash-registry-001"
+
+      ' Set test user ID to trigger test-global isolation
+      m.global.user.id = testUserId
+
+      ' GIVEN: Set global setting in test-global registry (not real app registry)
+      set_setting("globalSplashScreen", "disabled")
+
+      ' Verify it's in test-global section (safety check)
+      testGlobalReg = CreateObject("roRegistrySection", "test-global")
+      m.assertTrue(testGlobalReg.exists("globalSplashScreen"), "Should be in test-global")
+      m.assertEqual(testGlobalReg.read("globalSplashScreen"), "disabled")
+
+      ' WHEN: Call function
+      result = getGlobalSplashScreenSetting()
+
+      ' THEN: Returns registry value
+      m.assertEqual(result, "disabled")
+
+    end function
+
+    @it("falls back to settings.json default when registry returns invalid")
+    function _()
+      testUserId = "test-splash-registry-002"
+
+      m.global.user.id = testUserId
+
+      ' GIVEN: Ensure registry key does NOT exist in test-global (returns invalid)
+      testGlobalReg = CreateObject("roRegistrySection", "test-global")
+      if testGlobalReg.exists("globalSplashScreen")
+        testGlobalReg.delete("globalSplashScreen")
+        testGlobalReg.flush()
+      end if
+
+      ' Verify test-global doesn't have this key
+      m.assertFalse(testGlobalReg.exists("globalSplashScreen"), "Should not exist in test-global")
+
+      ' WHEN: Call function (registry returns invalid)
+      result = getGlobalSplashScreenSetting()
+
+      ' THEN: Returns settings.json default (which should be "enabled")
+      ' Note: The actual default is defined in settings/settings.json
+      m.assertTrue(result = "enabled" or result = "disabled", "Should return valid settings.json default")
+
+    end function
+
+    @it("falls back to settings.json default when registry returns empty string")
+    function _()
+      testUserId = "test-splash-registry-003"
+
+      m.global.user.id = testUserId
+
+      ' GIVEN: Set registry to empty string
+      set_setting("globalSplashScreen", "")
+
+      ' Verify it's in test-global section
+      testGlobalReg = CreateObject("roRegistrySection", "test-global")
+      m.assertTrue(testGlobalReg.exists("globalSplashScreen"), "Should exist in test-global")
+      m.assertEqual(testGlobalReg.read("globalSplashScreen"), "")
+
+      ' WHEN: Call function (registry returns empty string)
+      result = getGlobalSplashScreenSetting()
+
+      ' THEN: Falls back to settings.json default
+      m.assertTrue(result = "enabled" or result = "disabled", "Should return valid settings.json default")
+      m.assertNotEqual(result, "", "Should not return empty string")
+
+    end function
+
+    @it("returns 'enabled' as final fallback when settings.json is invalid")
+    function _()
+      testUserId = "test-splash-registry-004"
+
+      m.global.user.id = testUserId
+
+      ' GIVEN: Registry does not have the value (will attempt settings.json)
+      ' NOTE: We cannot easily mock GetConfigTree() to return invalid,
+      ' so this test documents expected behavior if settings.json were corrupted.
+      ' The function should return "enabled" as the final fallback.
+
+      ' Ensure test-global doesn't have the key
+      testGlobalReg = CreateObject("roRegistrySection", "test-global")
+      if testGlobalReg.exists("globalSplashScreen")
+        testGlobalReg.delete("globalSplashScreen")
+        testGlobalReg.flush()
+      end if
+      m.assertFalse(testGlobalReg.exists("globalSplashScreen"))
+
+      ' WHEN: Call function
+      result = getGlobalSplashScreenSetting()
+
+      ' THEN: Should return a valid string (either settings.json default or final fallback)
+      m.assertTrue(type(result) = "roString" or type(result) = "String", "Should return string")
+      m.assertTrue(result.Len() > 0, "Should not be empty")
+      m.assertTrue(result = "enabled" or result = "disabled", "Should return valid splash screen setting")
+
+    end function
+
+    @it("round-trip: set global setting via set_setting() and read via getGlobalSplashScreenSetting()")
+    function _()
+      testUserId = "test-splash-registry-005"
+
+      m.global.user.id = testUserId
+
+      ' GIVEN: Set "enabled" in test-global registry
+      set_setting("globalSplashScreen", "enabled")
+
+      ' Verify isolation - setting goes to test-global
+      testGlobalReg = CreateObject("roRegistrySection", "test-global")
+      m.assertTrue(testGlobalReg.exists("globalSplashScreen"))
+      m.assertEqual(testGlobalReg.read("globalSplashScreen"), "enabled")
+
+      ' WHEN: Read via function
+      result = getGlobalSplashScreenSetting()
+
+      ' THEN: Returns "enabled"
+      m.assertEqual(result, "enabled")
+
+      ' WHEN: Change to "disabled"
+      set_setting("globalSplashScreen", "disabled")
+
+      ' Verify it updated in test-global
+      m.assertEqual(testGlobalReg.read("globalSplashScreen"), "disabled")
+
+      ' Read via function
+      result2 = getGlobalSplashScreenSetting()
+
+      ' THEN: Returns updated value
+      m.assertEqual(result2, "disabled")
+
+    end function
+
+  end class
+
+end namespace

@@ -17,6 +17,7 @@
   <interface>
     <!-- Global Settings -->
     <field id="globalRememberMe" type="boolean" alwaysNotify="true" />
+    <field id="globalSplashScreen" type="string" alwaysNotify="true" />
 
     <!-- Playback Settings -->
     <field id="playbackBitrateMaxLimited" type="boolean" alwaysNotify="true" />

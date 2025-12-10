@@ -131,8 +131,15 @@ end sub
 
 ' Apply splash background based on enabled flag
 ' Uses forceBackdrop parameter to show splashscreen before user login
-sub applySplashscreen(splashEnabled as boolean)
-  m.log.debug("Applying splashscreen", "enabled:", splashEnabled)
+sub applySplashscreen(serverSplashEnabled as boolean)
+  ' Get global splash screen setting (reads from registry or settings.json default)
+  ' This works before user login since global settings are device-wide
+  globalSetting = getGlobalSplashScreenSetting()
+
+  ' Resolve splash screen setting (JellyRock global override or server setting)
+  splashEnabled = resolveSplashScreen(globalSetting, serverSplashEnabled)
+
+  m.log.debug("Applying splashscreen", "globalSetting:", globalSetting, "serverSetting:", serverSplashEnabled, "resolvedValue:", splashEnabled)
 
   if splashEnabled = true
     ' Build splash URL with correct parameters
