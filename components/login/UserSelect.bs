@@ -76,10 +76,18 @@ sub loadSplashscreen()
   ' Clear backdrop while waiting (forceBackdrop ensures it works before login)
   m.global.sceneManager.callFunc("setBackgroundImage", "", false, true)
 
-  ' Observe field and wait for task to complete
-  m.global.server.observeFieldScoped("splashscreenEnabled", "onSplashscreenEnabledLoaded")
+  ' Check if value is already cached (from previous session)
+  serverNode = m.global.server
+  if isValid(serverNode.splashscreenEnabled)
+    ' Already cached, apply immediately for instant display
+    m.log.debug("Splashscreen setting already cached, applying immediately")
+    applySplashscreen(serverNode.splashscreenEnabled)
+  else
+    m.log.debug("Splashscreen setting not cached")
+  end if
 
-  ' Run the branding config task
+  ' Always observe and refresh in case cached value is stale
+  serverNode.observeFieldScoped("splashscreenEnabled", "onSplashscreenEnabledLoaded")
   m.brandingTask.observeFieldScoped("responseCode", "onBrandingConfigComplete")
   m.brandingTask.control = "RUN"
 end sub
