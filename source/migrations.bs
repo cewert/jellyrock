@@ -15,6 +15,9 @@ const EMPTY_IMAGE_TAG_CLEANUP_VERSION = "1.4.0"
 ' client version when uiHomeSplashBackground setting was removed
 const SPLASH_SETTING_REMOVAL_VERSION = "1.5.0"
 
+' client version when globalSplashScreen was incorrectly saved to user registry sections
+const GLOBAL_SETTINGS_CLEANUP_VERSION = "1.5.2"
+
 ' Run all necessary registry migrations on the "global" JellyRock registry section
 sub runGlobalMigrations()
   appLastRunVersion = m.global.app.lastRunVersion
@@ -277,6 +280,25 @@ sub runRegistryUserMigrations(targetSections = invalid as dynamic)
         print `Deleted deprecated splash background setting`
       else
         print `No splash background setting removal needed for userid: ${section} (setting not found)`
+      end if
+    end if
+
+    ' GLOBAL_SETTINGS_CLEANUP_VERSION - Remove globalSplashScreen from user registry sections
+    if isValid(lastRunVersion) and not versionChecker(lastRunVersion, GLOBAL_SETTINGS_CLEANUP_VERSION)
+      m.wasMigrated = true
+
+      ' globalSplashScreen was incorrectly saved to user registry sections due to a bug in radioSettingChanged()
+      ' This setting should ONLY exist in the global "JellyRock" or "test-global" section
+      ' Delete it from user sections to prevent confusion and ensure single source of truth
+      settingName = "globalSplashScreen"
+
+      if reg.exists(settingName)
+        print `Cleaning up incorrectly saved ${settingName} for userid: ${section}`
+        reg.delete(settingName)
+        reg.flush()
+        print `Deleted ${settingName} from user ${section}`
+      else
+        print `No global splash screen cleanup needed for userid: ${section} (setting not found)`
       end if
     end if
   end for

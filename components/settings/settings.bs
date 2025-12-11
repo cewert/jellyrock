@@ -44,7 +44,11 @@ end sub
 
 sub onKeyGridSubmit()
   selectedSetting = m.userLocation.peek().children[m.settingsMenu.itemFocused]
-  set_user_setting(selectedSetting.settingName, m.integerSetting.text)
+  newValue = m.integerSetting.text
+
+  ' Update node field - observer handles registry persistence
+  user.settings.Save(selectedSetting.settingName, newValue)
+
   m.settingsMenu.setFocus(true)
 end sub
 
@@ -174,34 +178,20 @@ sub boolSettingChanged()
   selectedSetting = m.userLocation.peek().children[m.settingsMenu.itemFocused]
 
   if m.boolSetting.checkedItem
+    ' Update node field - observer handles registry persistence
     user.settings.Save(selectedSetting.settingName, "true")
-    if Left(selectedSetting.settingName, 6) = "global"
-      ' global user setting
-      ' save to main registry block
-      set_setting(selectedSetting.settingName, "true")
-      ' setting specific triggers
-      if selectedSetting.settingName = "globalRememberMe"
-        set_setting("active_user", m.global.user.id)
-      end if
-    else
-      ' regular user setting
-      ' save to user specific registry block
-      set_user_setting(selectedSetting.settingName, "true")
+
+    ' Special handling for globalRememberMe - set active_user in global registry
+    if selectedSetting.settingName = "globalRememberMe"
+      set_setting("active_user", m.global.user.id)
     end if
   else
+    ' Update node field - observer handles registry persistence
     user.settings.Save(selectedSetting.settingName, "false")
-    if Left(selectedSetting.settingName, 6) = "global"
-      ' global user setting
-      ' save to main registry block
-      set_setting(selectedSetting.settingName, "false")
-      ' setting specific triggers
-      if selectedSetting.settingName = "globalRememberMe"
-        unset_setting("active_user")
-      end if
-    else
-      ' regular user setting
-      ' save to user specific registry block
-      set_user_setting(selectedSetting.settingName, "false")
+
+    ' Special handling for globalRememberMe - remove active_user from global registry
+    if selectedSetting.settingName = "globalRememberMe"
+      unset_setting("active_user")
     end if
   end if
 end sub
@@ -209,7 +199,10 @@ end sub
 sub radioSettingChanged()
   if not isValid(m.radioSetting.focusedChild) then return
   selectedSetting = m.userLocation.peek().children[m.settingsMenu.itemFocused]
-  set_user_setting(selectedSetting.settingName, m.radioSetting.content.getChild(m.radioSetting.checkedItem).id)
+  newValue = m.radioSetting.content.getChild(m.radioSetting.checkedItem).id
+
+  ' Update node field - observer handles registry persistence
+  user.settings.Save(selectedSetting.settingName, newValue)
 end sub
 
 ' JRScreen hook that gets ran as needed.

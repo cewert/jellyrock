@@ -1,0 +1,263 @@
+import "pkg:/source/migrations.bs"
+import "pkg:/source/utils/config.bs"
+
+namespace tests
+
+  @suite("Global Settings Cleanup Migration - v1.5.2")
+  @tags("migration")
+  class GlobalSettingsCleanupTests extends tests.BaseTestSuite
+
+    protected override sub setup()
+      m.needsRegistrySetup = true
+      super.setup()
+    end sub
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Global Splash Screen Cleanup")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("deletes globalSplashScreen from user registry section when set to enabled")
+    function _()
+      ' GIVEN: User on v1.5.1 with globalSplashScreen incorrectly in user section
+      testUserId = "test-global-cleanup-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.5.1")
+      reg.write("serverId", "test-server-123")
+      reg.write("globalSplashScreen", "enabled")
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations([testUserId])
+
+      ' THEN: globalSplashScreen is deleted from user section
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertFalse(reg.exists("globalSplashScreen"), "globalSplashScreen should be deleted from user section")
+    end function
+
+    @it("deletes globalSplashScreen from user registry section when set to disabled")
+    function _()
+      ' GIVEN: User with globalSplashScreen disabled in user section
+      testUserId = "test-global-cleanup-002"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.5.1")
+      reg.write("serverId", "test-server-123")
+      reg.write("globalSplashScreen", "disabled")
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations([testUserId])
+
+      ' THEN: globalSplashScreen is deleted from user section
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertFalse(reg.exists("globalSplashScreen"), "globalSplashScreen should be deleted from user section")
+    end function
+
+    @it("handles missing globalSplashScreen gracefully")
+    function _()
+      ' GIVEN: User without globalSplashScreen in user section
+      testUserId = "test-global-missing-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.5.1")
+      reg.write("serverId", "test-server-123")
+      ' Don't write globalSplashScreen
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations([testUserId])
+
+      ' THEN: No error occurs, setting still doesn't exist
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertFalse(reg.exists("globalSplashScreen"), "globalSplashScreen should not exist")
+    end function
+
+    @it("preserves other user settings during migration")
+    function _()
+      ' GIVEN: User with multiple settings including globalSplashScreen
+      testUserId = "test-preserve-other-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.5.1")
+      reg.write("serverId", "test-server-123")
+      reg.write("globalSplashScreen", "enabled")
+      reg.write("uiDesignHideClock", "false")
+      reg.write("playbackBitrateLimit", "8000")
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations([testUserId])
+
+      ' THEN: Only globalSplashScreen is deleted, others preserved
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertFalse(reg.exists("globalSplashScreen"), "globalSplashScreen should be deleted")
+      m.assertTrue(reg.exists("uiDesignHideClock"), "Other settings should be preserved")
+      m.assertEqual(reg.read("uiDesignHideClock"), "false")
+      m.assertTrue(reg.exists("playbackBitrateLimit"), "Other settings should be preserved")
+      m.assertEqual(reg.read("playbackBitrateLimit"), "8000")
+    end function
+
+    @it("does not delete globalRememberMe since it was handled correctly by boolSettingChanged")
+    function _()
+      ' GIVEN: User with globalRememberMe in user section (this shouldn't happen, but test defensive)
+      testUserId = "test-remember-me-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.5.1")
+      reg.write("serverId", "test-server-123")
+      reg.write("globalRememberMe", "true")
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations([testUserId])
+
+      ' THEN: globalRememberMe is NOT deleted (only globalSplashScreen is cleaned up)
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertTrue(reg.exists("globalRememberMe"), "globalRememberMe should NOT be deleted by this migration")
+      m.assertEqual(reg.read("globalRememberMe"), "true")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Version Checking")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("skips migration when version already >= v1.5.2")
+    function _()
+      ' GIVEN: User already on v1.5.2 with globalSplashScreen in user section
+      testUserId = "test-skip-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.5.2")
+      reg.write("serverId", "test-server-123")
+      reg.write("globalSplashScreen", "enabled")
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations([testUserId])
+
+      ' THEN: Setting is NOT deleted (migration skipped)
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertTrue(reg.exists("globalSplashScreen"), "Migration should be skipped for v1.5.2+")
+      m.assertEqual(reg.read("globalSplashScreen"), "enabled")
+    end function
+
+    @it("runs migration for version v1.5.1")
+    function _()
+      ' GIVEN: User on v1.5.1
+      testUserId = "test-run-1-5-1"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.5.1")
+      reg.write("serverId", "test-server-123")
+      reg.write("globalSplashScreen", "disabled")
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations([testUserId])
+
+      ' THEN: Migration executes and deletes setting
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertFalse(reg.exists("globalSplashScreen"))
+    end function
+
+    @it("runs migration for older version v1.0.0")
+    function _()
+      ' GIVEN: User on very old version
+      testUserId = "test-run-1-0-0"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("LastRunVersion", "1.0.0")
+      reg.write("serverId", "test-server-123")
+      reg.write("globalSplashScreen", "enabled")
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations([testUserId])
+
+      ' THEN: Migration executes and deletes setting
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertFalse(reg.exists("globalSplashScreen"))
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Multi-User Independence")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("migrates multiple users independently")
+    function _()
+      ' GIVEN: Multiple users with different globalSplashScreen values
+      user1 = "test-multi-user-001"
+      user2 = "test-multi-user-002"
+      user3 = "test-multi-user-003"
+
+      ' User 1: splash enabled (should be deleted)
+      reg1 = CreateObject("roRegistrySection", user1)
+      reg1.write("LastRunVersion", "1.5.1")
+      reg1.write("serverId", "test-server-123")
+      reg1.write("globalSplashScreen", "enabled")
+      reg1.flush()
+
+      ' User 2: splash disabled (should be deleted)
+      reg2 = CreateObject("roRegistrySection", user2)
+      reg2.write("LastRunVersion", "1.5.1")
+      reg2.write("serverId", "test-server-123")
+      reg2.write("globalSplashScreen", "disabled")
+      reg2.flush()
+
+      ' User 3: no splash setting (nothing to delete)
+      reg3 = CreateObject("roRegistrySection", user3)
+      reg3.write("LastRunVersion", "1.5.1")
+      reg3.write("serverId", "test-server-123")
+      reg3.flush()
+
+      ' WHEN: All users migrate
+      runRegistryUserMigrations([user1, user2, user3])
+
+      ' THEN: Each user migrated correctly
+      reg1 = CreateObject("roRegistrySection", user1)
+      m.assertFalse(reg1.exists("globalSplashScreen"), "User 1 setting should be deleted")
+
+      reg2 = CreateObject("roRegistrySection", user2)
+      m.assertFalse(reg2.exists("globalSplashScreen"), "User 2 setting should be deleted")
+
+      reg3 = CreateObject("roRegistrySection", user3)
+      m.assertFalse(reg3.exists("globalSplashScreen"), "User 3 should still have no setting")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Global Section Preservation")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("does not touch globalSplashScreen in the global JellyRock section")
+    function _()
+      ' GIVEN: globalSplashScreen exists in global test-global section (correct location)
+      testUserId = "test-preserve-global-001"
+
+      ' Write to user section (incorrect, will be deleted)
+      userReg = CreateObject("roRegistrySection", testUserId)
+      userReg.write("LastRunVersion", "1.5.1")
+      userReg.write("serverId", "test-server-123")
+      userReg.write("globalSplashScreen", "disabled")
+      userReg.flush()
+
+      ' Also write to global section (correct location, should be preserved)
+      globalReg = CreateObject("roRegistrySection", "test-global")
+      globalReg.write("globalSplashScreen", "enabled")
+      globalReg.flush()
+
+      ' WHEN: Migration runs on user section
+      runRegistryUserMigrations([testUserId])
+
+      ' THEN: User section cleaned up, but global section preserved
+      userReg = CreateObject("roRegistrySection", testUserId)
+      m.assertFalse(userReg.exists("globalSplashScreen"), "User section should be cleaned")
+
+      globalReg = CreateObject("roRegistrySection", "test-global")
+      m.assertTrue(globalReg.exists("globalSplashScreen"), "Global section should be preserved")
+      m.assertEqual(globalReg.read("globalSplashScreen"), "enabled")
+    end function
+
+  end class
+
+end namespace
