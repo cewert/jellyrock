@@ -15,6 +15,10 @@ sub init()
   m.dscr = m.top.findNode("overview")
   m.dscr.ellipsisText = tr("... (Press * to read more)")
   createDialogPallete()
+
+  ' Set initial focus to song list
+  m.songList.setFocus(true)
+  m.top.lastFocus = m.songList
 end sub
 
 sub setupMainNode()
@@ -31,6 +35,13 @@ sub OnScreenShown()
     end if
   end if
   ' If pageContent not loaded, backdrop will be set in pageContentChanged()
+
+  ' Restore focus to previously focused element
+  if isValid(m.top.lastFocus)
+    m.top.lastFocus.setFocus(true)
+  else
+    m.top.setFocus(true)
+  end if
 end sub
 
 ' Set values for displayed values on screen

@@ -18,6 +18,10 @@ sub init()
   m.dscr = m.top.findNode("overview")
   m.dscr.ellipsisText = tr("... (Press * to read more)")
   createDialogPallete()
+
+  ' Set initial focus to song list
+  m.songList.setFocus(true)
+  m.top.lastFocus = m.songList
 end sub
 
 sub setupMainNode()
@@ -29,6 +33,13 @@ sub OnScreenShown()
   ' Start with transparent backdrop for playlists
   ' Backdrop updates based on focused item as user navigates
   m.global.sceneManager.callFunc("setBackgroundImage", "")
+
+  ' Restore focus to previously focused element
+  if isValid(m.top.lastFocus)
+    m.top.lastFocus.setFocus(true)
+  else
+    m.top.setFocus(true)
+  end if
 end sub
 
 ' Set values for displayed values on screen

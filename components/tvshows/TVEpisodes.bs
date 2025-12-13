@@ -108,10 +108,19 @@ sub OnScreenShown()
 
   if m.isFirstRun
     m.isFirstRun = false
+    ' Set initial focus to episode row on first run
+    m.tvEpisodeRow.setFocus(true)
+    m.top.lastFocus = m.tvEpisodeRow
     return
   end if
 
-  m.tvEpisodeRow.setFocus(true)
+  ' Restore focus to previously focused element
+  if isValid(m.top.lastFocus)
+    m.top.lastFocus.setFocus(true)
+  else
+    m.tvEpisodeRow.setFocus(true)
+  end if
+
   m.top.refreshSeasonDetailsData = not m.top.refreshSeasonDetailsData
 end sub
 
