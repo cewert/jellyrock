@@ -17,11 +17,21 @@ sub init()
 
   ' Observe row item focus for backdrop updates
   m.searchSelect.observeField("rowItemFocused", "onSearchItemFocused")
+
+  ' Set initial focus for scene navigation
+  m.top.lastFocus = m.top.findNode("SearchBox")
 end sub
 
 sub OnScreenShown()
   ' Start with transparent backdrop - will update on item focus
   m.global.sceneManager.callFunc("setBackgroundImage", "")
+
+  ' Restore focus for scene navigation
+  if isValid(m.top.lastFocus)
+    m.top.lastFocus.setFocus(true)
+  else
+    m.top.setFocus(true)
+  end if
 end sub
 
 ' onSearchItemFocused: Update backdrop when search result is focused

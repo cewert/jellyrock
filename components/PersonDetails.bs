@@ -13,12 +13,22 @@ sub init()
   m.extrasGrp.opacity = 1.0
   createDialogPallete()
   m.top.optionsAvailable = false
+
+  ' Set initial focus for scene navigation
+  m.top.lastFocus = m.dscr
 end sub
 
 sub OnScreenShown()
   ' Always set transparent backdrop for person screens
   ' Prevents stale movie/TV backdrops from persisting
   m.global.sceneManager.callFunc("setBackgroundImage", "")
+
+  ' Restore focus for scene navigation
+  if isValid(m.top.lastFocus)
+    m.top.lastFocus.setFocus(true)
+  else
+    m.top.setFocus(true)
+  end if
 end sub
 
 sub loadPerson()

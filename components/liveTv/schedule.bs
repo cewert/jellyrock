@@ -30,6 +30,15 @@ sub init()
   m.channelIndex = {}
 end sub
 
+sub OnScreenShown()
+  ' Restore focus for scene navigation
+  if isValid(m.top.lastFocus)
+    m.top.lastFocus.setFocus(true)
+  else
+    m.top.setFocus(true)
+  end if
+end sub
+
 sub channelFilterSet()
   m.scheduleGrid.jumpToChannel = 0
   if isValid(m.top.filter) and m.LoadChannelsTask.filter <> m.top.filter
