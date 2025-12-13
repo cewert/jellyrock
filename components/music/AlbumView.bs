@@ -17,7 +17,6 @@ sub init()
   createDialogPallete()
 
   ' Set initial focus to song list
-  m.songList.setFocus(true)
   m.top.lastFocus = m.songList
 end sub
 
