@@ -17,6 +17,9 @@ sub init()
   m.overview = m.top.findNode("overview")
 
   m.overview.ellipsisText = tr("... (Press * to read more)")
+
+  ' Set initial focus for scene navigation
+  m.top.lastFocus = m.shuffle
 end sub
 
 sub OnScreenShown()
@@ -29,6 +32,13 @@ sub OnScreenShown()
     end if
   else
     m.log.info("cannot set backdropUrl, m.top.itemContent is invalid")
+  end if
+
+  ' Restore focus for scene navigation
+  if isValid(m.top.lastFocus)
+    m.top.lastFocus.setFocus(true)
+  else
+    m.top.setFocus(true)
   end if
 end sub
 
@@ -81,8 +91,6 @@ sub itemContentChanged()
   end if
 
   setFieldText("overview", itemData.overview)
-
-  m.shuffle.visible = true
 
   if type(itemData.RunTimeTicks) = "LongInteger"
     setFieldText("runtime", stri(getRuntime()) + " mins")

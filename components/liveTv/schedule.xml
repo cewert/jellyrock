@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component name="Schedule" extends="JRGroup">
+<component name="Schedule" extends="JRScreen">
   <children>
     <RectangleBackgroundPrimary translation="[0,140]" width="1920" height="940" />
 
