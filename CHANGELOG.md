@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- validate VideoType to prevent crash ([5888568](https://github.com/cewert/jellyrock/commit/5888568))
 - restore focus when returning to AlbumView, PlaylistView, and TVEpisodes ([#254](https://github.com/cewert/jellyrock/pull/254))
 
 ## [1.5.2](https://github.com/cewert/jellyrock/compare/v1.5.1...v1.5.2) - 2025-12-12
