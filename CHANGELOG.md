@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- full-screen components to extend JRScreen ([#255](https://github.com/cewert/jellyrock/pull/255))
+
 ### Fixed
 
 - validate VideoType to prevent crash ([5888568](https://github.com/cewert/jellyrock/commit/5888568))
