@@ -10,10 +10,9 @@ sub init()
   m.options = m.top.findNode("movieOptions")
   m.infoGroup = m.top.findNode("infoGroup")
 
-  main = m.top.findNode("main_group")
-  main.translation = [96, 175]
+  ' Set overview width (full width minus margins)
   overview = m.top.findNode("overview")
-  overview.width = 1920 - 96 - 300 - 96 - 30
+  overview.width = 1920 - 96 - 96
 
   m.details = m.top.findNode("details")
   m.tagline = m.top.findNode("tagline")
@@ -23,41 +22,8 @@ sub init()
   m.top.lastFocus = m.buttonGrp
 
   m.isFirstRun = true
+  m.allowButtonUpdates = true ' Allow button updates on init and when returning to screen
   m.top.observeField("itemContent", "itemContentChanged")
-
-  ' Animation used to swap out posters on reloads
-  m.moviePosterSwapAnimation = m.top.findNode("moviePosterSwapAnimation")
-  m.moviePosterSwapAnimation.observeField("state", "onMoviePosterSwapAnimationStateChange")
-
-  m.top.observeField("newPosterImageURI", "onNewPosterImageURIChange")
-
-  m.moviePoster = m.top.findNode("moviePoster")
-  m.moviePosterSwap = m.top.findNode("moviePosterSwap")
-  m.moviePosterSwap.observeField("loadStatus", "onPosterLoadStatusChanged")
-end sub
-
-' onNewPosterImageURIChange: Handler for newPosterImageURI param change
-'
-sub onNewPosterImageURIChange()
-  m.moviePosterSwap.uri = m.top.newPosterImageURI
-end sub
-
-' onPosterLoadStatusChanged: Handler for changes to m.moviePosterSwap.loadStatus
-'
-sub onPosterLoadStatusChanged()
-  if LCase(m.moviePosterSwap.loadStatus) <> "ready" then return
-  m.moviePosterSwapAnimation.control = "start"
-end sub
-
-' onMoviePosterSwapAnimationStateChange: Handler for changes to m.moviePosterSwapAnimation.state
-'
-sub onMoviePosterSwapAnimationStateChange()
-  if not isValid(m.moviePosterSwapAnimation) then return
-  if LCase(m.moviePosterSwapAnimation.state) <> "stopped" then return
-  m.moviePoster.uri = m.moviePosterSwap.uri
-  m.moviePoster.opacity = 1
-  m.moviePosterSwap.opacity = 0
-  m.moviePosterSwap.uri = ""
 end sub
 
 ' OnScreenShown: Callback function when view is presented on screen
@@ -82,6 +48,8 @@ sub OnScreenShown()
   if m.isFirstRun
     m.isFirstRun = false
   else
+    ' Trigger data refresh when returning to screen
+    m.allowButtonUpdates = true ' Allow button updates for upcoming data refresh
     m.top.refreshMovieDetailsData = not m.top.refreshMovieDetailsData
   end if
 end sub
@@ -103,6 +71,76 @@ sub trailerAvailableChanged()
   end if
 end sub
 
+' manageResumeButton: Add or remove Resume button based on playback position
+'
+sub manageResumeButton()
+  resumeButton = m.top.findNode("resumeButton")
+
+  if isValid(m.top.itemContent) and isValid(m.top.itemContent.json) and isValid(m.top.itemContent.json.UserData)
+    if isValid(m.top.itemContent.json.UserData.PlaybackPositionTicks) and m.top.itemContent.json.UserData.PlaybackPositionTicks > 0
+      ' Add resume button if not already present
+      if not isValid(resumeButton)
+        ' Capture current focus state before modifying button group
+        currentFocusIndex = m.buttonGrp.buttonFocused
+        currentFocusedButton = invalid
+        if isValid(currentFocusIndex) and currentFocusIndex >= 0 and currentFocusIndex < m.buttonGrp.getChildCount()
+          currentFocusedButton = m.buttonGrp.getChild(currentFocusIndex)
+        end if
+
+        resumeButton = CreateObject("roSGNode", "ResumeButton")
+        resumeButton.id = "resumeButton"
+        resumeButton.icon = "pkg:/images/icons/resume.png"
+        resumeButton.text = tr("Resume")
+        resumeButton.playbackPositionTicks = m.top.itemContent.json.UserData.PlaybackPositionTicks
+        resumeButton.runtimeTicks = m.top.itemContent.json.RunTimeTicks
+
+        ' Insert at index 0 (first position)
+        m.buttonGrp.insertChild(resumeButton, 0)
+
+        ' Update focus: move to Resume if previously on Play, otherwise maintain focus on same button
+        if isValid(currentFocusedButton) and currentFocusedButton.id = "playButton"
+          ' User was on Play button, move them to Resume
+          m.buttonGrp.buttonFocused = 0
+        else if isValid(currentFocusIndex) and currentFocusIndex >= 0
+          ' User was on another button, adjust index to account for insertion at index 0
+          m.buttonGrp.buttonFocused = currentFocusIndex + 1
+        else
+          ' No previous focus or invalid state, default to Resume
+          m.buttonGrp.buttonFocused = 0
+        end if
+
+        m.buttonGrp.callFunc("focus")
+      else
+        ' Resume button already exists, update its tick values (data may have refreshed)
+        resumeButton.playbackPositionTicks = m.top.itemContent.json.UserData.PlaybackPositionTicks
+        resumeButton.runtimeTicks = m.top.itemContent.json.RunTimeTicks
+      end if
+    else
+      ' Remove resume button if present
+      if isValid(resumeButton)
+        ' Reset tick values before removing to clean up state
+        resumeButton.playbackPositionTicks = 0
+        resumeButton.runtimeTicks = 0
+        m.buttonGrp.removeChild(resumeButton)
+
+        ' Focus shifts to Play button (now at index 0)
+        m.buttonGrp.buttonFocused = 0
+        m.buttonGrp.callFunc("focus")
+      end if
+    end if
+  else
+    ' No valid data, remove resume button if present
+    if isValid(resumeButton)
+      ' Reset tick values before removing to clean up state
+      resumeButton.playbackPositionTicks = 0
+      resumeButton.runtimeTicks = 0
+      m.buttonGrp.removeChild(resumeButton)
+      m.buttonGrp.buttonFocused = 0
+      m.buttonGrp.callFunc("focus")
+    end if
+  end if
+end sub
+
 sub itemContentChanged()
   ' Updates video metadata
   item = m.top.itemContent
@@ -118,7 +156,6 @@ sub itemContentChanged()
     userSettings = m.global.user.settings
     itemData = item.json
     m.top.id = itemData.id
-    m.top.findNode("moviePoster").uri = m.top.itemContent.posterURL
 
     ' Set default video source if user hasn't selected one yet
     if m.top.selectedVideoStreamId = "" and isValid(itemData.MediaSources)
@@ -129,7 +166,7 @@ sub itemContentChanged()
 
     ' Handle all "As Is" fields
     m.top.overhangTitle = itemData.name
-    setFieldText("releaseYear", itemData.productionYear)
+    setFieldText("releaseYear", itemData.productionYear.toStr().trim())
     setFieldText("overview", itemData.overview)
 
     if isValid(itemData.officialRating)
@@ -212,7 +249,15 @@ sub itemContentChanged()
     updateWatchedButton()
     SetUpVideoOptions(itemData.mediaSources)
     SetUpAudioOptions(itemData.mediaStreams)
+
+    ' Only manage resume button when explicitly allowed (initial load or returning to screen)
+    ' Prevents button changes during playback transition
+    if m.allowButtonUpdates
+      manageResumeButton()
+      m.allowButtonUpdates = false ' Disable until next OnScreenShown
+    end if
   end if
+
   m.buttonGrp.visible = true
   stopLoadingSpinner()
 end sub
