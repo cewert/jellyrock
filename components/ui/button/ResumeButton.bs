@@ -36,8 +36,6 @@ sub updateProgressBar()
   ' Multiply by 100.0 (float literal) first to maintain precision
   percentage = (m.top.playbackPositionTicks * 100.0) / m.top.runtimeTicks
 
-  print "ResumeButton: playbackPosition="; m.top.playbackPositionTicks; " runtime="; m.top.runtimeTicks; " percentage="; percentage
-
   ' Find or create progress bar
   progressBar = m.top.findNode("resumeProgressBar")
   if not isValid(progressBar)
@@ -53,8 +51,6 @@ sub updateProgressBar()
   ' X: 6px (textExtension offset) + 6px (left border) = 12px from left
   ' Y: buttonBg.height - 9px (progress height) - 6px (bottom border) = 15px from bottom
   progressBar.translation = [12 + barMargin, buttonBg.height - (15 + barMargin)]
-
-  print "ResumeButton: progressBar width="; progressBar.width; " translation="; progressBar.translation
 end sub
 
 ' createProgressBar: Creates and appends progress bar to button

@@ -118,24 +118,42 @@ sub manageResumeButton()
     else
       ' Remove resume button if present
       if isValid(resumeButton)
+        ' Preserve user's focus position when removing Resume button
+        currentFocusIndex = m.buttonGrp.buttonFocused
+
         ' Reset tick values before removing to clean up state
         resumeButton.playbackPositionTicks = 0
         resumeButton.runtimeTicks = 0
         m.buttonGrp.removeChild(resumeButton)
 
-        ' Focus shifts to Play button (now at index 0)
-        m.buttonGrp.buttonFocused = 0
+        ' Adjust focus: if user was on Resume (index 0), move to Play (new index 0)
+        ' Otherwise, shift focus index down by 1 to maintain same logical button
+        if isValid(currentFocusIndex) and currentFocusIndex > 0
+          m.buttonGrp.buttonFocused = currentFocusIndex - 1
+        else
+          m.buttonGrp.buttonFocused = 0
+        end if
         m.buttonGrp.callFunc("focus")
       end if
     end if
   else
     ' No valid data, remove resume button if present
     if isValid(resumeButton)
+      ' Preserve user's focus position when removing Resume button
+      currentFocusIndex = m.buttonGrp.buttonFocused
+
       ' Reset tick values before removing to clean up state
       resumeButton.playbackPositionTicks = 0
       resumeButton.runtimeTicks = 0
       m.buttonGrp.removeChild(resumeButton)
-      m.buttonGrp.buttonFocused = 0
+
+      ' Adjust focus: if user was on Resume (index 0), move to Play (new index 0)
+      ' Otherwise, shift focus index down by 1 to maintain same logical button
+      if isValid(currentFocusIndex) and currentFocusIndex > 0
+        m.buttonGrp.buttonFocused = currentFocusIndex - 1
+      else
+        m.buttonGrp.buttonFocused = 0
+      end if
       m.buttonGrp.callFunc("focus")
     end if
   end if
@@ -166,7 +184,7 @@ sub itemContentChanged()
 
     ' Handle all "As Is" fields
     m.top.overhangTitle = itemData.name
-    setFieldText("releaseYear", itemData.productionYear.toStr().trim())
+    setFieldText("releaseYear", itemData.productionYear)
     setFieldText("overview", itemData.overview)
 
     if isValid(itemData.officialRating)
@@ -376,11 +394,13 @@ sub setFieldText(field, value)
 
   ' Handle non strings... Which _shouldn't_ happen, but hey
   if type(value) = "roInt" or type(value) = "Integer"
-    value = str(value)
+    value = str(value).trim()
   else if type(value) = "roFloat" or type(value) = "Float"
-    value = str(value)
+    value = str(value).trim()
   else if type(value) <> "roString" and type(value) <> "String"
     value = ""
+  else
+    value = value.trim()
   end if
 
   node.text = value
