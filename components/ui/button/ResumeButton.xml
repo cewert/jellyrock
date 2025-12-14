@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component name="ResumeButton" extends="IconButton">
+  <interface>
+    <field id="playbackPositionTicks" type="longinteger" value="0" onChange="onTicksChanged" />
+    <field id="runtimeTicks" type="longinteger" value="0" onChange="onTicksChanged" />
+  </interface>
+</component>
