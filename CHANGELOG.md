@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - add Resume button with progress bar to MovieDetails ([#256](https://github.com/cewert/jellyrock/pull/256))
 
+### Dependencies
+
+- Github actions (major) ([#261](https://github.com/cewert/jellyrock/pull/261))
+
 ## [1.5.3](https://github.com/cewert/jellyrock/compare/v1.5.2...v1.5.3) - 2025-12-15
 
 ### Changed
