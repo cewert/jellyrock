@@ -1,8 +1,10 @@
+import "pkg:/source/roku_modules/log/LogMixin.brs"
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/misc.bs"
 import "pkg:/source/utils/streamSelection.bs"
 
 sub init()
+  m.log = log.Logger("MovieDetails")
   m.extrasGrp = m.top.findnode("extrasGrp")
   m.extrasGrid = m.top.findNode("extrasGrid")
   m.top.optionsAvailable = false
@@ -496,7 +498,7 @@ sub updateOptionsButtonVisibility()
       end if
     else
       ' Play button not found; append options button to end and log warning
-      print "MovieDetails: playButton not found in button group; appending optionsButton to end"
+      m.log.warn("playButton not found in button group; appending optionsButton to end")
       m.buttonGrp.appendChild(m.optionsButton)
     end if
   else if not shouldShowOptions and buttonExists
