@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Added
+
+- add Resume button with progress bar to MovieDetails ([#256](https://github.com/cewert/jellyrock/pull/256))
+
 ## [1.5.3](https://github.com/cewert/jellyrock/compare/v1.5.2...v1.5.3) - 2025-12-15
 
 ### Changed
