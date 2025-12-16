@@ -932,6 +932,10 @@
       <translation>Resumable</translation>
     </message>
     <message>
+      <source>Resume</source>
+      <translation>Resume</translation>
+    </message>
+    <message>
       <source>Resume playing at</source>
       <translation>Resume playing at</translation>
     </message>
