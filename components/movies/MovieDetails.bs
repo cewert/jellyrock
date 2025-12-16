@@ -453,7 +453,7 @@ end sub
 
 ' updateOptionsButtonVisibility: Create/remove options button based on available tracks
 ' Creates button if there are multiple video or audio tracks to choose from
-' Removes button if there's only 1 video and 1 or fewer audio tracks
+' Removes button if there is 1 or fewer video tracks AND 1 or fewer audio tracks
 '
 sub updateOptionsButtonVisibility()
   videoCount = 0
@@ -477,6 +477,9 @@ sub updateOptionsButtonVisibility()
 
   if shouldShowOptions and not buttonExists
     ' Create and add the options button (always right after play button)
+    ' Capture current focus state before modifying button group
+    currentFocusIndex = m.buttonGrp.buttonFocused
+
     m.optionsButton = CreateObject("roSGNode", "IconButton")
     m.optionsButton.id = "optionsButton"
     m.optionsButton.icon = "pkg:/images/icons/settings.png"
@@ -486,11 +489,29 @@ sub updateOptionsButtonVisibility()
     if playButtonIndex >= 0
       insertIndex = playButtonIndex + 1
       m.buttonGrp.insertChild(m.optionsButton, insertIndex)
+
+      ' Adjust focus index if user was on a button after the insertion point
+      if isValid(currentFocusIndex) and currentFocusIndex >= insertIndex
+        m.buttonGrp.buttonFocused = currentFocusIndex + 1
+      end if
+    else
+      ' Play button not found; append options button to end and log warning
+      print "MovieDetails: playButton not found in button group; appending optionsButton to end"
+      m.buttonGrp.appendChild(m.optionsButton)
     end if
   else if not shouldShowOptions and buttonExists
+    ' Capture current focus state before removing button
+    currentFocusIndex = m.buttonGrp.buttonFocused
+    optionsButtonIndex = getButtonIndex("optionsButton")
+
     ' Remove the button and clear reference
     m.buttonGrp.removeChild(m.optionsButton)
     m.optionsButton = invalid
+
+    ' Adjust focus index if user was on a button after the removed button
+    if isValid(currentFocusIndex) and isValid(optionsButtonIndex) and currentFocusIndex > optionsButtonIndex
+      m.buttonGrp.buttonFocused = currentFocusIndex - 1
+    end if
   end if
 end sub
 
@@ -561,7 +582,7 @@ end sub
 function onKeyEvent(key as string, press as boolean) as boolean
   ' Due to the way the button pressed event works, need to catch the release for the button as the press is being sent
   ' directly to the main loop.  Will get this sorted in the layout update for Movie Details
-  if key = "OK" and m.top.findNode("optionsButton").isInFocusChain()
+  if key = "OK" and isValid(m.optionsButton) and m.optionsButton.isInFocusChain()
     m.options.visible = true
     m.options.setFocus(true)
   end if
