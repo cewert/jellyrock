@@ -3,17 +3,23 @@ sub init()
   m.top.observeField("runtimeTicks", "onTicksChanged")
 
   ' Wait for icon to load before creating progress bar
-  buttonIcon = m.top.findNode("buttonIcon")
-  if isValid(buttonIcon)
-    buttonIcon.observeField("loadStatus", "onIconLoaded")
+  m.buttonIcon = m.top.findNode("buttonIcon")
+  if isValid(m.buttonIcon)
+    m.buttonIcon.observeField("loadStatus", "onIconLoaded")
   end if
 end sub
 
 ' onIconLoaded: Called when button icon finishes loading
 '
 sub onIconLoaded()
+  ' Only proceed if icon is fully loaded
+  if m.buttonIcon.loadStatus <> "ready" then return
+
   ' Icon is loaded, buttonBackground should now have valid dimensions
   updateProgressBar()
+
+  ' Clean up observer to prevent memory leaks
+  m.buttonIcon.unobserveField("loadStatus")
 end sub
 
 ' onTicksChanged: Updates progress bar when playback position or runtime changes
@@ -35,6 +41,16 @@ sub updateProgressBar()
   ' Calculate percentage (0-100) - force float division to avoid integer truncation
   ' Multiply by 100.0 (float literal) first to maintain precision
   percentage = (m.top.playbackPositionTicks * 100.0) / m.top.runtimeTicks
+
+  ' Clamp percentage to valid range and warn if out of bounds
+  if percentage < 0 or percentage > 100
+    ? "[ResumeButton] Warning: Progress percentage out of range (" ; percentage ; "%), clamping to 0-100"
+    if percentage < 0
+      percentage = 0
+    else if percentage > 100
+      percentage = 100
+    end if
+  end if
 
   ' Find or create progress bar
   progressBar = m.top.findNode("resumeProgressBar")

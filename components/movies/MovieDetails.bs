@@ -117,46 +117,36 @@ sub manageResumeButton()
       end if
     else
       ' Remove resume button if present
-      if isValid(resumeButton)
-        ' Preserve user's focus position when removing Resume button
-        currentFocusIndex = m.buttonGrp.buttonFocused
-
-        ' Reset tick values before removing to clean up state
-        resumeButton.playbackPositionTicks = 0
-        resumeButton.runtimeTicks = 0
-        m.buttonGrp.removeChild(resumeButton)
-
-        ' Adjust focus: if user was on Resume (index 0), move to Play (new index 0)
-        ' Otherwise, shift focus index down by 1 to maintain same logical button
-        if isValid(currentFocusIndex) and currentFocusIndex > 0
-          m.buttonGrp.buttonFocused = currentFocusIndex - 1
-        else
-          m.buttonGrp.buttonFocused = 0
-        end if
-        m.buttonGrp.callFunc("focus")
-      end if
+      removeResumeButtonWithFocus(resumeButton)
     end if
   else
     ' No valid data, remove resume button if present
-    if isValid(resumeButton)
-      ' Preserve user's focus position when removing Resume button
-      currentFocusIndex = m.buttonGrp.buttonFocused
-
-      ' Reset tick values before removing to clean up state
-      resumeButton.playbackPositionTicks = 0
-      resumeButton.runtimeTicks = 0
-      m.buttonGrp.removeChild(resumeButton)
-
-      ' Adjust focus: if user was on Resume (index 0), move to Play (new index 0)
-      ' Otherwise, shift focus index down by 1 to maintain same logical button
-      if isValid(currentFocusIndex) and currentFocusIndex > 0
-        m.buttonGrp.buttonFocused = currentFocusIndex - 1
-      else
-        m.buttonGrp.buttonFocused = 0
-      end if
-      m.buttonGrp.callFunc("focus")
-    end if
+    removeResumeButtonWithFocus(resumeButton)
   end if
+end sub
+
+' removeResumeButtonWithFocus: Helper to remove resume button while preserving focus
+' @param {object} resumeButton - The resume button node to remove (if valid)
+'
+sub removeResumeButtonWithFocus(resumeButton as object)
+  if not isValid(resumeButton) then return
+
+  ' Preserve user's focus position when removing Resume button
+  currentFocusIndex = m.buttonGrp.buttonFocused
+
+  ' Reset tick values before removing to clean up state
+  resumeButton.playbackPositionTicks = 0
+  resumeButton.runtimeTicks = 0
+  m.buttonGrp.removeChild(resumeButton)
+
+  ' Adjust focus: if user was on Resume (index 0), move to Play (new index 0)
+  ' Otherwise, shift focus index down by 1 to maintain same logical button
+  if isValid(currentFocusIndex) and currentFocusIndex > 0
+    m.buttonGrp.buttonFocused = currentFocusIndex - 1
+  else
+    m.buttonGrp.buttonFocused = 0
+  end if
+  m.buttonGrp.callFunc("focus")
 end sub
 
 sub itemContentChanged()
