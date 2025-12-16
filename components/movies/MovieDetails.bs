@@ -77,6 +77,13 @@ sub manageResumeButton()
   resumeButton = m.top.findNode("resumeButton")
 
   if isValid(m.top.itemContent) and isValid(m.top.itemContent.json) and isValid(m.top.itemContent.json.UserData)
+    ' Validate RunTimeTicks before proceeding - required for progress bar calculation
+    if not isValid(m.top.itemContent.json.RunTimeTicks) or m.top.itemContent.json.RunTimeTicks <= 0
+      ' Invalid runtime, remove resume button if present and exit
+      removeResumeButtonWithFocus(resumeButton)
+      return
+    end if
+
     if isValid(m.top.itemContent.json.UserData.PlaybackPositionTicks) and m.top.itemContent.json.UserData.PlaybackPositionTicks > 0
       ' Add resume button if not already present
       if not isValid(resumeButton)
