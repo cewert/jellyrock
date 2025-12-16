@@ -21,6 +21,9 @@ sub init()
   m.buttonGrp.callFunc("focus")
   m.top.lastFocus = m.buttonGrp
 
+  ' Options button will be created dynamically as needed
+  m.optionsButton = invalid
+
   m.isFirstRun = true
   m.allowButtonUpdates = true ' Allow button updates on init and when returning to screen
   m.top.observeField("itemContent", "itemContentChanged")
@@ -264,6 +267,7 @@ sub itemContentChanged()
     updateWatchedButton()
     SetUpVideoOptions(itemData.mediaSources)
     SetUpAudioOptions(itemData.mediaStreams)
+    updateOptionsButtonVisibility()
 
     ' Only manage resume button when explicitly allowed (initial load or returning to screen)
     ' Prevents button changes during playback transition
@@ -446,6 +450,63 @@ sub updateWatchedButton()
     end if
   end if
 end sub
+
+' updateOptionsButtonVisibility: Create/remove options button based on available tracks
+' Creates button if there are multiple video or audio tracks to choose from
+' Removes button if there's only 1 video and 1 or fewer audio tracks
+'
+sub updateOptionsButtonVisibility()
+  videoCount = 0
+  audioCount = 0
+
+  ' Count video tracks
+  if isValid(m.options.options) and isValid(m.options.options.videos)
+    videoCount = m.options.options.videos.count()
+  end if
+
+  ' Count audio tracks
+  if isValid(m.options.options) and isValid(m.options.options.audios)
+    audioCount = m.options.options.audios.count()
+  end if
+
+  ' Determine if options button should be shown
+  shouldShowOptions = videoCount > 1 or audioCount > 1
+
+  ' Check current state
+  buttonExists = isValid(m.optionsButton)
+
+  if shouldShowOptions and not buttonExists
+    ' Create and add the options button (always right after play button)
+    m.optionsButton = CreateObject("roSGNode", "IconButton")
+    m.optionsButton.id = "optionsButton"
+    m.optionsButton.icon = "pkg:/images/icons/settings.png"
+    m.optionsButton.text = tr("Options")
+
+    playButtonIndex = getButtonIndex("playButton")
+    if playButtonIndex >= 0
+      insertIndex = playButtonIndex + 1
+      m.buttonGrp.insertChild(m.optionsButton, insertIndex)
+    end if
+  else if not shouldShowOptions and buttonExists
+    ' Remove the button and clear reference
+    m.buttonGrp.removeChild(m.optionsButton)
+    m.optionsButton = invalid
+  end if
+end sub
+
+' getButtonIndex: Helper to find button index in button group
+' @param {string} buttonId - The id of the button to find
+' @returns {integer} - The index of the button, or -1 if not found
+'
+function getButtonIndex(buttonId as string) as integer
+  for i = 0 to m.buttonGrp.getChildCount() - 1
+    child = m.buttonGrp.getChild(i)
+    if isValid(child) and child.id = buttonId
+      return i
+    end if
+  end for
+  return -1
+end function
 
 function round(f as float) as integer
   ' BrightScript only has a "floor" round

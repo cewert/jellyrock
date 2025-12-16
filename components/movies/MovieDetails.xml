@@ -35,7 +35,6 @@
 
       <JRButtonGroup id="buttons">
         <IconButton id="playButton" icon="pkg:/images/icons/play.png" text="Play" />
-        <IconButton id="optionsButton" icon="pkg:/images/icons/settings.png" text="Options" />
         <IconButton id="watchedButton" icon="pkg:/images/icons/check.png" text="Watched" />
         <IconButton id="favoriteButton" icon="pkg:/images/icons/heart.png" text="Favorite" />
       </JRButtonGroup>
