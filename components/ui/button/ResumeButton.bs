@@ -1,0 +1,80 @@
+sub init()
+  m.top.observeField("playbackPositionTicks", "onTicksChanged")
+  m.top.observeField("runtimeTicks", "onTicksChanged")
+
+  ' Wait for icon to load before creating progress bar
+  m.buttonIcon = m.top.findNode("buttonIcon")
+  if isValid(m.buttonIcon)
+    m.buttonIcon.observeField("loadStatus", "onIconLoaded")
+  end if
+end sub
+
+' onIconLoaded: Called when button icon finishes loading
+'
+sub onIconLoaded()
+  ' Only proceed if icon is fully loaded
+  if m.buttonIcon.loadStatus <> "ready" then return
+
+  ' Icon is loaded, buttonBackground should now have valid dimensions
+  updateProgressBar()
+
+  ' Clean up observer to prevent memory leaks
+  m.buttonIcon.unobserveField("loadStatus")
+end sub
+
+' onTicksChanged: Updates progress bar when playback position or runtime changes
+'
+sub onTicksChanged()
+  updateProgressBar()
+end sub
+
+' updateProgressBar: Creates/updates the progress bar based on current tick values
+'
+sub updateProgressBar()
+  ' Need valid runtime to calculate percentage
+  if m.top.runtimeTicks = 0 then return
+
+  ' Wait for buttonBackground to be ready (has valid dimensions)
+  buttonBg = m.top.findNode("buttonBackground")
+  if not isValid(buttonBg) or buttonBg.width = 0 then return
+
+  ' Calculate percentage (0-100) - force float division to avoid integer truncation
+  ' Multiply by 100.0 (float literal) first to maintain precision
+  percentage = (m.top.playbackPositionTicks * 100.0) / m.top.runtimeTicks
+
+  ' Clamp percentage to valid range and warn if out of bounds
+  if percentage < 0 or percentage > 100
+    ? "[ResumeButton] Warning: Progress percentage out of range (" ; percentage ; "%), clamping to 0-100"
+    if percentage < 0
+      percentage = 0
+    else if percentage > 100
+      percentage = 100
+    end if
+  end if
+
+  ' Find or create progress bar
+  progressBar = m.top.findNode("resumeProgressBar")
+  if not isValid(progressBar)
+    progressBar = createProgressBar()
+  end if
+
+  ' Update progress bar size and percentage
+  ' Width: reduce by 12px to account for 6px border on left and right
+  barMargin = 3
+  progressBar.width = buttonBg.width - (12 + barMargin * 2)
+  progressBar.playedPercentage = percentage
+  ' Position at bottom of button, inside the 6px focus border
+  ' X: 6px (textExtension offset) + 6px (left border) = 12px from left
+  ' Y: buttonBg.height - 9px (progress height) - 6px (bottom border) = 15px from bottom
+  progressBar.translation = [12 + barMargin, buttonBg.height - (15 + barMargin)]
+end sub
+
+' createProgressBar: Creates and appends progress bar to button
+'
+function createProgressBar() as object
+  progressBar = CreateObject("roSGNode", "VideoProgressBar")
+  progressBar.id = "resumeProgressBar"
+  m.top.appendChild(progressBar)
+
+  return progressBar
+end function

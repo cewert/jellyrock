@@ -90,11 +90,12 @@ function onKeyEvent(key as string, press as boolean) as boolean
   ' print "m.top.getChildCount() =", m.top.getChildCount()
 
   if key = "right"
-    ' Move right, skipping disabled buttons
+    ' Move right, skipping disabled buttons and non-button nodes
     for i = currentFocus + 1 to m.top.getChildCount() - 1
       button = m.top.getChild(i)
 
-      if button.enabled
+      ' Skip non-button nodes (Animation, etc)
+      if isValid(button) and button.hasField("enabled") and button.enabled
         currentFocusButton.setFocus(false)
         m.top.buttonFocused = i
         button.setFocus(true)
@@ -105,7 +106,8 @@ function onKeyEvent(key as string, press as boolean) as boolean
     for i = 0 to currentFocus - 1
       button = m.top.getChild(i)
 
-      if button.enabled
+      ' Skip non-button nodes (Animation, etc)
+      if isValid(button) and button.hasField("enabled") and button.enabled
         currentFocusButton.setFocus(false)
         m.top.buttonFocused = i
         button.setFocus(true)
@@ -113,11 +115,12 @@ function onKeyEvent(key as string, press as boolean) as boolean
       end if
     end for
   else if key = "left"
-    ' Move left, skipping disabled buttons
+    ' Move left, skipping disabled buttons and non-button nodes
     for i = currentFocus - 1 to 0 step -1
       button = m.top.getChild(i)
 
-      if button.enabled
+      ' Skip non-button nodes (Animation, etc)
+      if isValid(button) and button.hasField("enabled") and button.enabled
         currentFocusButton.setFocus(false)
         m.top.buttonFocused = i
         button.setFocus(true)
@@ -128,7 +131,8 @@ function onKeyEvent(key as string, press as boolean) as boolean
     for i = m.top.getChildCount() - 1 to currentFocus + 1 step -1
       button = m.top.getChild(i)
 
-      if button.enabled
+      ' Skip non-button nodes (Animation, etc)
+      if isValid(button) and button.hasField("enabled") and button.enabled
         currentFocusButton.setFocus(false)
         m.top.buttonFocused = i
         button.setFocus(true)

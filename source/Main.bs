@@ -590,15 +590,63 @@ sub Main (args as dynamic) as void
           group.itemContent.selectedAudioStreamIndex = audio_stream_idx
           group.itemContent.id = group.selectedVideoStreamId
 
-          ' Display playback options dialog
-          if isValid(group.itemContent.json) and isValid(group.itemContent.json.userdata) and isValid(group.itemContent.json.userdata.PlaybackPositionTicks) and group.itemContent.json.userdata.PlaybackPositionTicks > 0
-            m.global.queueManager.callFunc("hold", group.itemContent)
-            playbackOptionDialog(group.itemContent.json.userdata.PlaybackPositionTicks, group.itemContent.json)
-          else
+          ' MovieDetails: Play button always starts from beginning (Resume button handles resume)
+          ' Other screens: Show playback options dialog if resumable
+          if group.subtype() = "MovieDetails"
+            group.itemContent.startingPoint = 0
             m.global.queueManager.callFunc("clear")
             m.global.queueManager.callFunc("push", group.itemContent)
             m.global.queueManager.callFunc("playQueue")
+          else
+            ' Display playback options dialog
+            if isValid(group.itemContent.json) and isValid(group.itemContent.json.userdata) and isValid(group.itemContent.json.userdata.PlaybackPositionTicks) and group.itemContent.json.userdata.PlaybackPositionTicks > 0
+              m.global.queueManager.callFunc("hold", group.itemContent)
+              playbackOptionDialog(group.itemContent.json.userdata.PlaybackPositionTicks, group.itemContent.json)
+            else
+              m.global.queueManager.callFunc("clear")
+              m.global.queueManager.callFunc("push", group.itemContent)
+              m.global.queueManager.callFunc("playQueue")
+            end if
           end if
+        end if
+
+        if isValid(group.lastFocus) and isValid(group.lastFocus.id) and group.lastFocus.id = "main_group"
+          buttons = group.findNode("buttons")
+          if isValid(buttons)
+            group.lastFocus = group.findNode("buttons")
+          end if
+        end if
+
+        if isValid(group.lastFocus)
+          group.lastFocus.setFocus(true)
+        end if
+
+      else if btn.id = "resumeButton"
+        if not isValid(group) then return
+
+        ' User chose Resume button from movie detail view
+        startLoadingSpinner()
+        ' Check if a specific Audio Stream was selected
+        audio_stream_idx = 0
+        if isValid(group.selectedAudioStreamIndex)
+          audio_stream_idx = group.selectedAudioStreamIndex
+        end if
+
+        if isValid(group.itemContent)
+          group.itemContent.selectedAudioStreamIndex = audio_stream_idx
+          group.itemContent.id = group.selectedVideoStreamId
+
+          ' Set starting point to saved position
+          if isValid(group.itemContent.json) and isValid(group.itemContent.json.UserData) and isValid(group.itemContent.json.UserData.PlaybackPositionTicks)
+            group.itemContent.startingPoint = group.itemContent.json.UserData.PlaybackPositionTicks
+          else
+            ' Fallback to beginning if position somehow became invalid
+            group.itemContent.startingPoint = 0
+          end if
+
+          m.global.queueManager.callFunc("clear")
+          m.global.queueManager.callFunc("push", group.itemContent)
+          m.global.queueManager.callFunc("playQueue")
         end if
 
         if isValid(group.lastFocus) and isValid(group.lastFocus.id) and group.lastFocus.id = "main_group"
@@ -647,6 +695,27 @@ sub Main (args as dynamic) as void
             MarkItemWatched(movie.id)
             movie.watched = true
             watchedButton.selected = true
+
+            ' Remove Resume button when marking as watched (MovieDetails only)
+            if group.subtype() = "MovieDetails"
+              buttons = group.findNode("buttons")
+              if isValid(buttons)
+                resumeButton = buttons.findNode("resumeButton")
+                if isValid(resumeButton)
+                  ' Reset tick values before removing
+                  resumeButton.playbackPositionTicks = 0
+                  resumeButton.runtimeTicks = 0
+                  buttons.removeChild(resumeButton)
+
+                  ' Adjust focus index since we removed button at index 0
+                  ' All other buttons shifted left by 1, so decrement focus index
+                  if buttons.buttonFocused > 0
+                    buttons.buttonFocused = buttons.buttonFocused - 1
+                  end if
+                  buttons.callFunc("focus")
+                end if
+              end if
+            end if
           end if
         end if
       else if btn.id = "favoriteButton"
