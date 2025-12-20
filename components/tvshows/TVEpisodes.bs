@@ -29,7 +29,9 @@ sub setExtraButtonVisibility()
 end sub
 
 sub updateSeason()
-  if isValid(m.top.seasonData) and isValid(m.top.seasonData.UserData)
+  if not isValid(m.top.seasonData) then return
+
+  if isValid(m.top.seasonData.UserData)
     userData = m.top.seasonData.UserData
     if isValid(userData.UnplayedItemCount)
       m.poster.unplayedCount = userData.UnplayedItemCount
