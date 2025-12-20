@@ -579,10 +579,9 @@ sub showNextEpisodeButton()
   if m.top.content.contenttype <> 4 then return ' only display when content is type "Episode"
   if m.nextupbuttonseconds = 0 then return ' is the button disabled?
   if m.nextEpisodeButton.opacity <> 0 then return
-  globalUser = m.global.user
-  userSettings = globalUser.settings
-  if userSettings.playbackPlayNextEpisode = "disabled" then return
-  if userSettings.playbackPlayNextEpisode = "webclient" and not globalUser.config.enableNextEpisodeAutoPlay then return
+
+  ' Button always shows for manual next episode selection
+  ' Auto-play setting only controls automatic advancement (not button visibility)
 
   ' align button with bottom right edge with 5% padding
   boundingRect = m.notifyButtons.localBoundingRect()
