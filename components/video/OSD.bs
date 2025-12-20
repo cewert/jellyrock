@@ -116,13 +116,15 @@ sub setFields()
   numVideoStreams = 0
   numAudioStreams = 0
 
-  for each stream in mediaStreams
-    if stream.Type = "Video"
-      numVideoStreams++
-    else if stream.Type = "Audio"
-      numAudioStreams++
-    end if
-  end for
+  if isValid(mediaStreams)
+    for each stream in mediaStreams
+      if stream.Type = "Video"
+        numVideoStreams++
+      else if stream.Type = "Audio"
+        numAudioStreams++
+      end if
+    end for
+  end if
 
   m.top.numVideoStreams = numVideoStreams
   m.top.numAudioStreams = numAudioStreams

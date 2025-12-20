@@ -463,18 +463,21 @@ namespace quickplay
   sub tvChannel(itemNode as object)
     if not isValid(itemNode) or not isValid(itemNode.id) then return
 
-    group = CreateVideoPlayerGroup(itemNode.id)
-    stopLoadingSpinner()
-    m.global.sceneManager.callFunc("pushScene", group)
+    ' Push TV channel to queue
+    ' Keep loading spinner active until video content loads
+    m.global.queueManager.callFunc("push", itemNode.json)
   end sub
 
   ' Quick Play A Live Program
   sub program(itemNode as object)
-    if not isValid(itemNode) or not isValid(itemNode.json) or not isValid(itemNode.json.ChannelId) then return
+    if not isValid(itemNode) or not isValid(itemNode.json) or not isValid(itemNode.json.ChannelId)
+      print "ERROR: quickplay.program() - missing ChannelId in itemNode.json"
+      return
+    end if
 
-    group = CreateVideoPlayerGroup(itemNode.json.ChannelId)
-    stopLoadingSpinner()
-    m.global.sceneManager.callFunc("pushScene", group)
+    ' Push program to queue - playQueue is called by Main.bs after this returns
+    ' Keep loading spinner active until video content loads
+    m.global.queueManager.callFunc("push", itemNode.json)
   end sub
 
   ' Quick Play A Playlist.

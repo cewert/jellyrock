@@ -549,8 +549,9 @@ sub Main (args as dynamic) as void
         group = CreateVideoPlayerGroup(node.id)
         m.global.sceneManager.callFunc("pushScene", group)
       else if LCase(node.type) = "recording"
-        group = CreateVideoPlayerGroup(node.id)
-        m.global.sceneManager.callFunc("pushScene", group)
+        m.global.queueManager.callFunc("clear")
+        m.global.queueManager.callFunc("push", node.json)
+        m.global.queueManager.callFunc("playQueue")
       else if node.type = "Audio"
         selectedIndex = msg.getData()
         screenContent = msg.getRoSGNode()
