@@ -546,8 +546,23 @@ sub Main (args as dynamic) as void
         group = CreateVideoPlayerGroup(node.id)
         m.global.sceneManager.callFunc("pushScene", group)
       else if node.type = "Episode"
-        group = CreateVideoPlayerGroup(node.id)
-        m.global.sceneManager.callFunc("pushScene", group)
+        ' Show playback options dialog if episode has resume position
+        if isValid(node.json) and isValid(node.json.UserData) and isValid(node.json.UserData.PlaybackPositionTicks)
+          if node.json.UserData.PlaybackPositionTicks > 0
+            m.global.queueManager.callFunc("hold", node)
+            playbackOptionDialog(node.json.UserData.PlaybackPositionTicks, node.json)
+          else
+            ' No resume position, play from beginning via queue
+            m.global.queueManager.callFunc("clear")
+            m.global.queueManager.callFunc("push", node)
+            m.global.queueManager.callFunc("playQueue")
+          end if
+        else
+          ' No UserData, play from beginning via queue
+          m.global.queueManager.callFunc("clear")
+          m.global.queueManager.callFunc("push", node)
+          m.global.queueManager.callFunc("playQueue")
+        end if
       else if LCase(node.type) = "recording"
         m.global.queueManager.callFunc("clear")
         m.global.queueManager.callFunc("push", node.json)
