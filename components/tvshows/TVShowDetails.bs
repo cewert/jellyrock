@@ -219,9 +219,11 @@ end sub
 function onKeyEvent(key as string, press as boolean) as boolean
   if key = "OK" or key = "play"
     if m.shuffle.hasFocus()
-      m.getShuffleEpisodesTask.showID = m.top.itemContent.id
-      m.getShuffleEpisodesTask.observeField("data", "onShuffleEpisodeDataLoaded")
-      m.getShuffleEpisodesTask.control = "RUN"
+      if isValidAndNotEmpty(m.top.itemContent)
+        m.getShuffleEpisodesTask.showID = m.top.itemContent.id
+        m.getShuffleEpisodesTask.observeField("data", "onShuffleEpisodeDataLoaded")
+        m.getShuffleEpisodesTask.control = "RUN"
+      end if
       return true
     end if
   end if
