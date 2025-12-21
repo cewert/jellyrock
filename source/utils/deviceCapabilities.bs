@@ -619,13 +619,10 @@ function getCodecProfiles() as object
 
   ' VP9
   vp9Profiles = ["profile 0", "profile 2"]
-  vp9Levels = ["4.1", "5.0", "5.1"]
   for each profile in vp9Profiles
-    for each level in vp9Levels
-      if di.CanDecodeVideo({ Codec: "vp9", Profile: profile, Level: level }).Result
-        profileSupport = updateProfileArray(profileSupport, "vp9", profile, level)
-      end if
-    end for
+    if di.CanDecodeVideo({ Codec: "vp9", Profile: profile }).Result
+      profileSupport = updateProfileArray(profileSupport, "vp9", profile)
+    end if
   end for
 
   ' MPEG2
@@ -853,10 +850,7 @@ function getCodecProfiles() as object
       end for
     end for
 
-    hevcLevelString = "120"
-    if hevcLevelSupported = 5.1
-      hevcLevelString = "153"
-    end if
+    hevcLevelString = (hevcLevelSupported * 30).toStr()
 
     hevcProfileArray = {
       "Type": "Video",
@@ -909,22 +903,10 @@ function getCodecProfiles() as object
 
   if di.CanDecodeVideo({ Codec: "vp9" }).Result
     vp9Profiles = []
-    vp9LevelSupported = 0.0
 
     for each profile in profileSupport["vp9"]
       vp9Profiles.push(profile)
-      for each level in profileSupport["vp9"][profile]
-        levelFloat = level.ToFloat()
-        if levelFloat > vp9LevelSupported
-          vp9LevelSupported = levelFloat
-        end if
-      end for
     end for
-
-    vp9LevelString = "120"
-    if vp9LevelSupported = 5.1
-      vp9LevelString = "153"
-    end if
 
     vp9ProfileArray = {
       "Type": "Video",
@@ -940,12 +922,6 @@ function getCodecProfiles() as object
           "Condition": "EqualsAny",
           "Property": "VideoRangeType",
           "Value": vp9VideoRangeTypes,
-          "IsRequired": false
-        },
-        {
-          "Condition": "LessThanEqual",
-          "Property": "VideoLevel",
-          "Value": vp9LevelString,
           "IsRequired": false
         }
       ]
