@@ -59,7 +59,16 @@ function ItemPostPlaybackInfo(id as string, mediaSourceId = "" as string, audioT
         ' always use the first video stream for now
         ' Note: don't force remux on AV1 codec - see #194
         if isValid(stream.Type) and stream.Type = "Video" and isValid(stream.Codec) and LCase(stream.Codec) <> "av1"
-          if videoMetadata.container = "mkv" and isValid(stream.VideoRangeType) and stream.VideoRangeType <> ""
+          ' Determine container string
+          ' NOTE: remove once #107 is completed and metadata location is standardized
+          containerString = invalid
+          if isValid(videoMetadata.container)
+            containerString = LCase(videoMetadata.container)
+          else if isValid(videoMetadata.json) and isValid(videoMetadata.json.Container)
+            containerString = LCase(videoMetadata.json.Container)
+          end if
+
+          if isValid(containerString) and containerString = "mkv" and isValid(stream.VideoRangeType) and stream.VideoRangeType <> ""
             ' is DOVI in the string?
             if Instr(LCase(stream.VideoRangeType), "dovi") > 0
               ' add a condition to the mkv container profile to force remux (container swap)
