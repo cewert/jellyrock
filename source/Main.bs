@@ -863,35 +863,6 @@ sub Main (args as dynamic) as void
         end if
         m.global.sceneManager.callFunc("settings")
       end if
-    else if isNodeEvent(msg, "selectSubtitlePressed")
-      node = m.scene.focusedChild
-      if isValid(node.focusedChild) and node.focusedChild.isSubType("JRVideo")
-        trackSelected = selectSubtitleTrack(node.Subtitles, node.SelectedSubtitle)
-        if isValid(trackSelected) and trackSelected <> -2
-          changeSubtitleDuringPlayback(trackSelected)
-        end if
-      end if
-    else if isNodeEvent(msg, "selectPlaybackInfoPressed")
-      node = m.scene.focusedChild
-      if isValid(node.focusedChild) and node.focusedChild.isSubType("JRVideo")
-        info = GetPlaybackInfo()
-        show_dialog(tr("Playback Information"), info)
-      end if
-    else if isNodeEvent(msg, "state")
-      node = msg.getRoSGNode()
-      if isValid(node) and isValid(node.state)
-        ' Legacy video player state handling - only for code paths not yet migrated
-        if node.state = "finished"
-          node.control = "stop"
-
-          ' Legacy: Auto-play next episode (only used if legacy player is still active)
-          if not isValid(node.showID)
-            m.global.sceneManager.callFunc("popScene")
-          else
-            autoPlayNextEpisode(node.id, node.showID)
-          end if
-        end if
-      end if
     else if type(msg) = "roDeviceInfoEvent"
       event = msg.GetInfo()
 

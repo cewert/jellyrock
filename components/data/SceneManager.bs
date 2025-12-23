@@ -61,10 +61,6 @@ sub pushScene(newGroup)
       if newGroup.isInFocusChain() = false
         newGroup.setFocus(true)
       end if
-    else if newGroup.isSubType("JRVideo")
-      newGroup.setFocus(true)
-      newGroup.control = "play"
-      m.overhang.visible = false
     end if
   else
     currentGroup.focusedChild.setFocus(true)
@@ -78,7 +74,7 @@ sub popScene()
   if isValid(group)
     if group.isSubType("JRGroup")
       unregisterOverhangData(group)
-    else if group.isSubType("JRVideo")
+    else if group.isSubType("Video")
       ' Stop video to make sure app communicates stop playstate to server
       group.control = "stop"
     end if
@@ -167,10 +163,6 @@ sub registerOverhangData(group)
       m.overhang.visible = false
     end if
     group.observeField("overhangVisible", "updateOverhangVisible")
-  else if group.isSubType("JRVideo")
-    m.overhang.visible = false
-  else
-    m.log.error("registerOverhangData(): Unexpected group type.", group, group.subtype())
   end if
 end sub
 
