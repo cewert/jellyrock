@@ -461,7 +461,11 @@ namespace quickplay
 
   ' Quick Play A TVChannel
   sub tvChannel(itemNode as object)
-    if not isValid(itemNode) or not isValid(itemNode.id) then return
+    if not isValid(itemNode) or not isValid(itemNode.id)
+      print "ERROR: quickplay.tvChannel() - missing ChannelId"
+      stopLoadingSpinner()
+      return
+    end if
 
     ' Push TV channel to queue
     ' Keep loading spinner active until video content loads
@@ -471,7 +475,8 @@ namespace quickplay
   ' Quick Play A Live Program
   sub program(itemNode as object)
     if not isValid(itemNode) or not isValid(itemNode.json) or not isValid(itemNode.json.ChannelId)
-      print "ERROR: quickplay.program() - missing ChannelId in itemNode.json"
+      print "ERROR: quickplay.program() - missing ChannelId"
+      stopLoadingSpinner()
       return
     end if
 
