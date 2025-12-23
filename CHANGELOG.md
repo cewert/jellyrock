@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Complete video player migration to VideoPlayerView ([#266](https://github.com/cewert/jellyrock/pull/266))
+
 ### Fixed
 
 - prevent crash when using shuffle on TV Show ([9556953](https://github.com/cewert/jellyrock/commit/9556953))
