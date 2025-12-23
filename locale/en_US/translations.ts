@@ -111,11 +111,6 @@
       <translation>Always Show</translation>
     </message>
     <message>
-      <source>An error was encountered while playing this item.</source>
-      <translation>An error was encountered while playing this item.</translation>
-      <extracomment>Dialog detail when error occurs during playback</extracomment>
-    </message>
-    <message>
       <source>An error was encountered while playing this item. Server did not provide required transcoding data.</source>
       <translation>An error was encountered while playing this item. Server did not provide required transcoding data.</translation>
       <extracomment>Content of message box when trying to play an item which requires transcoding, and the server did not provide transcode url</extracomment>
@@ -455,11 +450,6 @@
     <message>
       <source>Error loading Season</source>
       <translation>Error loading Season</translation>
-    </message>
-    <message>
-      <source>Error Retrieving Content</source>
-      <translation>Error Retrieving Content</translation>
-      <extracomment>Dialog title when unable to load Content from Server</extracomment>
     </message>
     <message>
       <source>Error:</source>
@@ -835,10 +825,6 @@
     <message>
       <source>Playback Info</source>
       <translation>Playback Info</translation>
-    </message>
-    <message>
-      <source>Playback Information</source>
-      <translation>Playback Information</translation>
     </message>
     <message>
       <source>Playback Options</source>
