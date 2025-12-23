@@ -92,18 +92,22 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
     end if
   end if
 
-  if isValid(meta.json.MediaSources[0].RunTimeTicks)
-    if meta.json.MediaSources[0].RunTimeTicks = 0
-      video.length = 0
-    else
-      video.length = meta.json.MediaSources[0].RunTimeTicks / 10000000
+  ' Early metadata extraction - MediaSources may not exist yet for Live TV
+  if isValidAndNotEmpty(meta.json.MediaSources)
+    if isValid(meta.json.MediaSources[0].RunTimeTicks)
+      if meta.json.MediaSources[0].RunTimeTicks = 0
+        video.length = 0
+      else
+        video.length = meta.json.MediaSources[0].RunTimeTicks / 10000000
+      end if
     end if
-  end if
-  ' Find first video stream - MediaStreams[0] might be subtitle/audio
-  if isValid(meta.json.MediaSources[0]) and isValid(meta.json.MediaSources[0].MediaStreams)
-    videoStream = getFirstVideoStream(meta.json.MediaSources[0].MediaStreams)
-    if isValid(videoStream) and isValid(videoStream.Width) and isValid(videoStream.Height)
-      video.MaxVideoDecodeResolution = [videoStream.Width, videoStream.Height]
+
+    ' Find first video stream - MediaStreams[0] might be subtitle/audio
+    if isValid(meta.json.MediaSources[0].MediaStreams)
+      videoStream = getFirstVideoStream(meta.json.MediaSources[0].MediaStreams)
+      if isValid(videoStream) and isValid(videoStream.Width) and isValid(videoStream.Height)
+        video.MaxVideoDecodeResolution = [videoStream.Width, videoStream.Height]
+      end if
     end if
   end if
 

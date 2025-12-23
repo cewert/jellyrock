@@ -270,20 +270,22 @@ sub Main (args as dynamic) as void
             audio_stream_idx = selectedItem.selectedAudioStreamIndex
           end if
 
-          selectedItem.selectedAudioStreamIndex = audio_stream_idx
+          ' Cache reference to prevent multiple field accesses
+          itemData = selectedItem.json
+          itemData.selectedAudioStreamIndex = audio_stream_idx
           ' Display playback options dialog
-          if isValid(selectedItem.json) and isValid(selectedItem.json.userdata) and isValid(selectedItem.json.userdata.PlaybackPositionTicks)
-            if selectedItem.json.userdata.PlaybackPositionTicks > 0
-              m.global.queueManager.callFunc("hold", selectedItem)
-              playbackOptionDialog(selectedItem.json.userdata.PlaybackPositionTicks, selectedItem.json)
+          if isValid(itemData) and isValid(itemData.userdata) and isValid(itemData.userdata.PlaybackPositionTicks)
+            if itemData.userdata.PlaybackPositionTicks > 0
+              m.global.queueManager.callFunc("hold", itemData)
+              playbackOptionDialog(itemData.userdata.PlaybackPositionTicks, itemData)
             else
               m.global.queueManager.callFunc("clear")
-              m.global.queueManager.callFunc("push", selectedItem)
+              m.global.queueManager.callFunc("push", itemData)
               m.global.queueManager.callFunc("playQueue")
             end if
           else
             m.global.queueManager.callFunc("clear")
-            m.global.queueManager.callFunc("push", selectedItem)
+            m.global.queueManager.callFunc("push", itemData)
             m.global.queueManager.callFunc("playQueue")
           end if
 
@@ -308,18 +310,21 @@ sub Main (args as dynamic) as void
           dialog.title = tr("Loading Channel Data")
           m.scene.dialog = dialog
 
+          ' Cache reference to prevent multiple field accesses
+          itemData = selectedItem.json
+
           ' User selected a program. Play the channel the program is on
           if LCase(selectedItemType) = "program"
-            selectedItem.id = selectedItem.json.ChannelId
+            itemData.id = itemData.ChannelId
           end if
 
           ' Display playback options dialog
           showPlaybackOptionDialog = false
 
-          if isValid(selectedItem.json)
-            if isValid(selectedItem.json.userdata)
-              if isValid(selectedItem.json.userdata.PlaybackPositionTicks)
-                if selectedItem.json.userdata.PlaybackPositionTicks > 0
+          if isValid(itemData)
+            if isValid(itemData.userdata)
+              if isValid(itemData.userdata.PlaybackPositionTicks)
+                if itemData.userdata.PlaybackPositionTicks > 0
                   showPlaybackOptionDialog = true
                 end if
               end if
@@ -328,11 +333,11 @@ sub Main (args as dynamic) as void
 
           if showPlaybackOptionDialog
             dialog.close = true
-            m.global.queueManager.callFunc("hold", selectedItem)
-            playbackOptionDialog(selectedItem.json.userdata.PlaybackPositionTicks, selectedItem.json)
+            m.global.queueManager.callFunc("hold", itemData)
+            playbackOptionDialog(itemData.userdata.PlaybackPositionTicks, itemData)
           else
             m.global.queueManager.callFunc("clear")
-            m.global.queueManager.callFunc("push", selectedItem)
+            m.global.queueManager.callFunc("push", itemData)
             m.global.queueManager.callFunc("playQueue")
             dialog.close = true
           end if
@@ -543,14 +548,33 @@ sub Main (args as dynamic) as void
       else if node.type = "Person"
         group = CreatePersonView(node)
       else if node.type = "TvChannel"
-        group = CreateVideoPlayerGroup(node.id)
-        m.global.sceneManager.callFunc("pushScene", group)
+        m.global.queueManager.callFunc("clear")
+        m.global.queueManager.callFunc("push", node.json)
+        m.global.queueManager.callFunc("playQueue")
       else if node.type = "Episode"
-        group = CreateVideoPlayerGroup(node.id)
-        m.global.sceneManager.callFunc("pushScene", group)
+        ' Cache reference to prevent multiple field accesses
+        itemData = node.json
+        ' Show playback options dialog if episode has resume position
+        if isValid(itemData) and isValid(itemData.UserData) and isValid(itemData.UserData.PlaybackPositionTicks)
+          if itemData.UserData.PlaybackPositionTicks > 0
+            m.global.queueManager.callFunc("hold", itemData)
+            playbackOptionDialog(itemData.UserData.PlaybackPositionTicks, itemData)
+          else
+            ' No resume position, play from beginning via queue
+            m.global.queueManager.callFunc("clear")
+            m.global.queueManager.callFunc("push", itemData)
+            m.global.queueManager.callFunc("playQueue")
+          end if
+        else
+          ' No UserData, play from beginning via queue
+          m.global.queueManager.callFunc("clear")
+          m.global.queueManager.callFunc("push", itemData)
+          m.global.queueManager.callFunc("playQueue")
+        end if
       else if LCase(node.type) = "recording"
-        group = CreateVideoPlayerGroup(node.id)
-        m.global.sceneManager.callFunc("pushScene", group)
+        m.global.queueManager.callFunc("clear")
+        m.global.queueManager.callFunc("push", node.json)
+        m.global.queueManager.callFunc("playQueue")
       else if node.type = "Audio"
         selectedIndex = msg.getData()
         screenContent = msg.getRoSGNode()
@@ -587,24 +611,26 @@ sub Main (args as dynamic) as void
         end if
 
         if isValid(group.itemContent)
-          group.itemContent.selectedAudioStreamIndex = audio_stream_idx
-          group.itemContent.id = group.selectedVideoStreamId
+          ' Cache reference to prevent multiple field accesses
+          itemData = group.itemContent.json
+          itemData.selectedAudioStreamIndex = audio_stream_idx
+          itemData.id = group.selectedVideoStreamId
 
           ' MovieDetails: Play button always starts from beginning (Resume button handles resume)
           ' Other screens: Show playback options dialog if resumable
           if group.subtype() = "MovieDetails"
-            group.itemContent.startingPoint = 0
+            itemData.startingPoint = 0
             m.global.queueManager.callFunc("clear")
-            m.global.queueManager.callFunc("push", group.itemContent)
+            m.global.queueManager.callFunc("push", itemData)
             m.global.queueManager.callFunc("playQueue")
           else
             ' Display playback options dialog
-            if isValid(group.itemContent.json) and isValid(group.itemContent.json.userdata) and isValid(group.itemContent.json.userdata.PlaybackPositionTicks) and group.itemContent.json.userdata.PlaybackPositionTicks > 0
-              m.global.queueManager.callFunc("hold", group.itemContent)
-              playbackOptionDialog(group.itemContent.json.userdata.PlaybackPositionTicks, group.itemContent.json)
+            if isValid(itemData.userdata) and isValid(itemData.userdata.PlaybackPositionTicks) and itemData.userdata.PlaybackPositionTicks > 0
+              m.global.queueManager.callFunc("hold", itemData)
+              playbackOptionDialog(itemData.userdata.PlaybackPositionTicks, itemData)
             else
               m.global.queueManager.callFunc("clear")
-              m.global.queueManager.callFunc("push", group.itemContent)
+              m.global.queueManager.callFunc("push", itemData)
               m.global.queueManager.callFunc("playQueue")
             end if
           end if
@@ -633,19 +659,21 @@ sub Main (args as dynamic) as void
         end if
 
         if isValid(group.itemContent)
-          group.itemContent.selectedAudioStreamIndex = audio_stream_idx
-          group.itemContent.id = group.selectedVideoStreamId
+          ' Cache reference to prevent multiple field accesses
+          itemData = group.itemContent.json
+          itemData.selectedAudioStreamIndex = audio_stream_idx
+          itemData.id = group.selectedVideoStreamId
 
           ' Set starting point to saved position
-          if isValid(group.itemContent.json) and isValid(group.itemContent.json.UserData) and isValid(group.itemContent.json.UserData.PlaybackPositionTicks)
-            group.itemContent.startingPoint = group.itemContent.json.UserData.PlaybackPositionTicks
+          if isValid(itemData.UserData) and isValid(itemData.UserData.PlaybackPositionTicks)
+            itemData.startingPoint = itemData.UserData.PlaybackPositionTicks
           else
             ' Fallback to beginning if position somehow became invalid
-            group.itemContent.startingPoint = 0
+            itemData.startingPoint = 0
           end if
 
           m.global.queueManager.callFunc("clear")
-          m.global.queueManager.callFunc("push", group.itemContent)
+          m.global.queueManager.callFunc("push", itemData)
           m.global.queueManager.callFunc("playQueue")
         end if
 
@@ -846,44 +874,6 @@ sub Main (args as dynamic) as void
         end if
         m.global.sceneManager.callFunc("settings")
       end if
-    else if isNodeEvent(msg, "selectSubtitlePressed")
-      node = m.scene.focusedChild
-      if isValid(node.focusedChild) and node.focusedChild.isSubType("JRVideo")
-        trackSelected = selectSubtitleTrack(node.Subtitles, node.SelectedSubtitle)
-        if isValid(trackSelected) and trackSelected <> -2
-          changeSubtitleDuringPlayback(trackSelected)
-        end if
-      end if
-    else if isNodeEvent(msg, "selectPlaybackInfoPressed")
-      node = m.scene.focusedChild
-      if isValid(node.focusedChild) and node.focusedChild.isSubType("JRVideo")
-        info = GetPlaybackInfo()
-        show_dialog(tr("Playback Information"), info)
-      end if
-    else if isNodeEvent(msg, "state")
-      node = msg.getRoSGNode()
-      if isValid(node) and isValid(node.state)
-        if node.selectedItemType = "TvChannel" and node.state = "finished"
-          video = CreateVideoPlayerGroup(node.id)
-          m.global.sceneManager.callFunc("pushScene", video)
-          m.global.sceneManager.callFunc("deleteSceneAtIndex", 2)
-        else if node.state = "finished"
-          node.control = "stop"
-
-          ' If node allows retrying using Transcode Url, give that shot
-          if isValid(node.retryWithTranscoding) and node.retryWithTranscoding
-            retryVideo = CreateVideoPlayerGroup(node.Id, invalid, node.audioIndex, true, false)
-            m.global.sceneManager.callFunc("popScene")
-            if isValid(retryVideo)
-              m.global.sceneManager.callFunc("pushScene", retryVideo)
-            end if
-          else if not isValid(node.showID)
-            m.global.sceneManager.callFunc("popScene")
-          else
-            autoPlayNextEpisode(node.id, node.showID)
-          end if
-        end if
-      end if
     else if type(msg) = "roDeviceInfoEvent"
       event = msg.GetInfo()
 
@@ -972,9 +962,9 @@ sub Main (args as dynamic) as void
             startLoadingSpinner()
             startingPoint = 0
 
-            if isValid(selectedItem[0].json) and isValid(selectedItem[0].json.UserData) and isValid(selectedItem[0].json.UserData.PlaybackPositionTicks)
-              if selectedItem[0].json.UserData.PlaybackPositionTicks > 0
-                startingPoint = selectedItem[0].json.UserData.PlaybackPositionTicks
+            if isValid(selectedItem[0].UserData) and isValid(selectedItem[0].UserData.PlaybackPositionTicks)
+              if selectedItem[0].UserData.PlaybackPositionTicks > 0
+                startingPoint = selectedItem[0].UserData.PlaybackPositionTicks
               end if
             end if
 
@@ -991,11 +981,11 @@ sub Main (args as dynamic) as void
             m.global.queueManager.callFunc("playQueue")
           else if popupNode.returnData.indexselected = 2
             ' User chose Go to series
-            CreateSeriesDetailsGroup(selectedItem[0].json.SeriesId)
+            CreateSeriesDetailsGroup(selectedItem[0].SeriesId)
           else if popupNode.returnData.indexselected = 3
             ' User chose Go to season
-            if isValid(selectedItem[0].json) and isValid(selectedItem[0].json.SeriesId) and isValid(selectedItem[0].json.seasonID)
-              CreateSeasonDetailsGroupByID(selectedItem[0].json.SeriesId, selectedItem[0].json.seasonID)
+            if isValid(selectedItem[0].SeriesId) and isValid(selectedItem[0].seasonID)
+              CreateSeasonDetailsGroupByID(selectedItem[0].SeriesId, selectedItem[0].seasonID)
             else
               stopLoadingSpinner()
               message_dialog(tr("Error loading Season"))

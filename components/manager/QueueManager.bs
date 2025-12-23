@@ -159,6 +159,16 @@ sub playQueue()
     CreateVideoPlayerView()
     return
   end if
+
+  if nextItemMediaType = "program"
+    CreateVideoPlayerView()
+    return
+  end if
+
+  if nextItemMediaType = "tvchannel"
+    CreateVideoPlayerView()
+    return
+  end if
 end sub
 
 ' Remove item at end of play queue
