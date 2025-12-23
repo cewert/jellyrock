@@ -233,6 +233,18 @@ sub onStateChange()
       sceneManager.callFunc("dismissDialog")
     end if
 
+    ' Check if this is a Live TV channel that should auto-restart
+    currentItem = queueManager.callFunc("getCurrentItem")
+    if isValid(currentItem)
+      currentItemType = queueManager.callFunc("getItemType", currentItem)
+      if currentItemType = "tvchannel"
+        ' Restart the same channel
+        sceneManager.callFunc("clearPreviousScene")
+        queueManager.callFunc("playQueue")
+        return
+      end if
+    end if
+
     ' If there is something next in the queue, play it
     if queueManager.callFunc("getPosition") < queueManager.callFunc("getCount") - 1
       sceneManager.callFunc("clearPreviousScene")

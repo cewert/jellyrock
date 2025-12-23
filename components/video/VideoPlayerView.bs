@@ -686,7 +686,7 @@ sub onState()
       m.bufferCheckTimer.ObserveField("fire", "bufferCheck")
     end if
   else if m.top.state = "error"
-    m.log.error(m.top.errorCode, m.top.errorMsg, m.top.errorStr, m.top.errorCode)
+    m.log.error(m.top.errorCode, m.top.errorMsg, m.top.errorStr, m.top.errorCode, m.playReported, m.top.transcodeAvailable)
 
     print m.top.errorInfo
 
