@@ -317,6 +317,30 @@ namespace tests
       m.assertEqual(removeDecimals("42"), "42") ' No decimals
     end function
 
+    @it("convertHevcLevelToString() converts HEVC levels correctly")
+    @params(5.0, "150")
+    @params(5.1, "153")
+    @params(4.1, "123")
+    @params(4.0, "120")
+    @params(3.0, "90")
+    @params(3.1, "93")
+    @params(6.0, "180")
+    @params(6.1, "183")
+    @params(6.2, "186")
+    function _(level, expectedString)
+      result = convertHevcLevelToString(level)
+      m.assertEqual(result, expectedString, "HEVC level " + level.toStr() + " should convert to " + expectedString)
+    end function
+
+    @it("convertHevcLevelToString() handles edge cases")
+    @params(0.0, "0")
+    @params(1.0, "30")
+    @params(2.0, "60")
+    function _(level, expectedString)
+      result = convertHevcLevelToString(level)
+      m.assertEqual(result, expectedString, "Edge case level " + level.toStr() + " should convert to " + expectedString)
+    end function
+
     @it("updateProfileArray() creates nested structure for codec")
     function _()
       profileArray = {}

@@ -850,7 +850,7 @@ function getCodecProfiles() as object
       end for
     end for
 
-    hevcLevelString = (hevcLevelSupported * 30).toStr()
+    hevcLevelString = convertHevcLevelToString(hevcLevelSupported)
 
     hevcProfileArray = {
       "Type": "Video",
@@ -1080,6 +1080,13 @@ function removeDecimals(value as string) as string
   r = CreateObject("roRegex", "\.", "")
   value = r.ReplaceAll(value, "")
   return value
+end function
+
+' Convert HEVC level from float format (e.g., 5.0, 5.1, 4.1) to Jellyfin string format
+' HEVC levels are multiplied by 30 to convert to the integer representation
+' Examples: 5.0 → "150", 5.1 → "153", 4.1 → "123"
+function convertHevcLevelToString(level as float) as string
+  return (level * 30).toStr()
 end function
 
 ' does this roku device support playing 4k video?
