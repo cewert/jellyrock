@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- device profile level calculation ([#268](https://github.com/cewert/jellyrock/pull/268))
 - prevent crash when using shuffle on TV Show ([9556953](https://github.com/cewert/jellyrock/commit/9556953))
 - preserve dovi not working when type = episode ([ece7107](https://github.com/cewert/jellyrock/commit/ece7107))
 - show Next Episode button regardless of auto-play setting ([f0e1cb5](https://github.com/cewert/jellyrock/commit/f0e1cb5))
