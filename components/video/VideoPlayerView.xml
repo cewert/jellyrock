@@ -43,7 +43,7 @@
     </Rectangle>
 
     <JRButtonGroup id="notifyButtons" horizAlignment="right">
-      <TextButton id="nextEpisode" text="Next Episode" opacity="0" />
+      <TextButton id="nextEpisode" text="" opacity="0" visible="false" />
     </JRButtonGroup>
     <!--animation for the play next episode button-->
     <Animation id="showNextEpisodeButton" duration="1.0" repeat="false" easeFunction="inQuad">

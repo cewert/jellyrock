@@ -583,15 +583,29 @@ sub showNextEpisodeButton()
   ' Button always shows for manual next episode selection
   ' Auto-play setting only controls automatic advancement (not button visibility)
 
+  ' Set button text with countdown FIRST, before making visible
+  updateCount()
+
+  ' Make visible so button can render with correct text
+  m.nextEpisodeButton.visible = true
+
   ' align button with bottom right edge with 5% padding
   boundingRect = m.notifyButtons.localBoundingRect()
 
+  ' Use boundingRect height if valid and button has rendered with text (height > 35)
+  ' Height < 35 means button hasn't finished rendering with countdown text yet
+  if boundingRect.height <> invalid and boundingRect.height > 35
+    buttonHeight = boundingRect.height
+  else
+    buttonHeight = 83 ' default height
+  end if
+
   m.notifyButtons.translation = [
     1920 - (1920 * 0.05),
-    1080 - (1080 * 0.05) - boundingRect.height
+    1080 - (1080 * 0.05) - buttonHeight
   ]
 
-  m.nextEpisodeButton.visible = true
+  ' Start opacity animation
   m.showNextEpisodeButtonAnimation.control = "start"
   m.nextEpisodeButton.setFocus(true)
 end sub
@@ -629,14 +643,18 @@ sub checkTimeToDisplayNextEpisode()
       hideNextEpisodeButton()
       return
     else if nextEpisodeCountdown > 1 and int(m.top.position) >= (m.top.duration - m.nextupbuttonseconds - 1)
-      updateCount()
       if m.nextEpisodeButton.opacity = 0
+        ' First time showing - showNextEpisodeButton will set the text
         showNextEpisodeButton()
+      else
+        ' Button already showing - just update the countdown text
+        updateCount()
       end if
       return
     end if
   end if
 
+  ' If button is showing but shouldn't be, hide it
   if m.nextEpisodeButton.visible or m.nextEpisodeButton.hasFocus()
     m.nextEpisodeButton.visible = false
     m.nextEpisodeButton.setFocus(false)
