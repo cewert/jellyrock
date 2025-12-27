@@ -18,8 +18,8 @@ sub updateQueueBackdrop()
   end if
 
   ' Generate backdrop URL from current item
-  deviceResolution = [m.global.device.uiResolution[0], m.global.device.uiResolution[1]]
-  backdropUrl = getBackdropUrl(currentItem.json, deviceResolution)
+  uiResolution = m.global.device.uiResolution
+  backdropUrl = getBackdropUrl(currentItem.json, [uiResolution[0], uiResolution[1]])
 
   if backdropUrl = "" or not isValid(backdropUrl)
     ' Clear backdrop if none available
