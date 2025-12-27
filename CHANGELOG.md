@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- stale backdrops during video playlist playback ([#269](https://github.com/cewert/jellyrock/pull/269))
 - Next Episode button positioning on first appearance ([5bcd978](https://github.com/cewert/jellyrock/commit/5bcd978))
 - device profile level calculation ([#268](https://github.com/cewert/jellyrock/pull/268))
 - prevent crash when using shuffle on TV Show ([9556953](https://github.com/cewert/jellyrock/commit/9556953))
