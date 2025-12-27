@@ -1,5 +1,6 @@
 import "pkg:/source/enums/SubtitleSelection.bs"
 import "pkg:/source/utils/misc.bs"
+import "pkg:/source/utils/queueBackdropHelper.bs"
 
 ' Play Audio
 sub CreateAudioPlayerView()
@@ -30,6 +31,9 @@ sub CreateVideoPlayerView()
   m.getPlaybackInfoTask = createObject("roSGNode", "GetPlaybackInfoTask")
   m.getPlaybackInfoTask.videoID = mediaSourceId
   m.getPlaybackInfoTask.observeField("data", "onPlaybackInfoLoaded")
+
+  ' Update backdrop for current queue item (handles first item, shuffle, library play, etc.)
+  updateQueueBackdrop()
 
   m.global.sceneManager.callFunc("pushScene", m.view)
 end sub
@@ -249,6 +253,7 @@ sub onStateChange()
     if queueManager.callFunc("getPosition") < queueManager.callFunc("getCount") - 1
       sceneManager.callFunc("clearPreviousScene")
       queueManager.callFunc("moveForward")
+      updateQueueBackdrop()
       queueManager.callFunc("playQueue")
       return
     end if
