@@ -1,5 +1,5 @@
-import "pkg:/source/utils/queueBackdropHelper.bs"
 import "pkg:/source/utils/backdropUtils.bs"
+import "pkg:/source/utils/queueBackdropHelper.bs"
 
 namespace tests
 
