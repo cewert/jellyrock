@@ -2,6 +2,7 @@ import "pkg:/source/enums/SubtitleSelection.bs"
 import "pkg:/source/roku_modules/log/LogMixin.brs"
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/misc.bs"
+import "pkg:/source/utils/queueBackdropHelper.bs"
 import "pkg:/source/utils/session.bs"
 
 sub init()
@@ -116,6 +117,7 @@ sub handleItemSkipAction(action as string)
       m.top.control = "stop"
       m.global.sceneManager.callFunc("clearPreviousScene")
       queueManager.callFunc("moveForward")
+      updateQueueBackdrop()
       queueManager.callFunc("playQueue")
     end if
 
@@ -130,6 +132,7 @@ sub handleItemSkipAction(action as string)
       m.top.control = "stop"
       m.global.sceneManager.callFunc("clearPreviousScene")
       queueManager.callFunc("moveBack")
+      updateQueueBackdrop()
       queueManager.callFunc("playQueue")
     end if
 
