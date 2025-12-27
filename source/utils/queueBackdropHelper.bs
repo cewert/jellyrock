@@ -6,7 +6,7 @@ import "pkg:/source/utils/backdropUtils.bs"
 ' updateQueueBackdrop: Updates backdrop based on current queue item
 ' Should be called whenever queue position changes or playback starts
 '
-' @return {void}
+' @returns {void}
 sub updateQueueBackdrop()
   queueManager = m.global.queueManager
   currentItem = queueManager.callFunc("getCurrentItem")
@@ -18,8 +18,7 @@ sub updateQueueBackdrop()
   end if
 
   ' Generate backdrop URL from current item
-  uiResolution = m.global.device.uiResolution
-  backdropUrl = getBackdropUrl(currentItem.json, [uiResolution[0], uiResolution[1]])
+  backdropUrl = getBackdropUrl(currentItem.json, m.global.device.uiResolution)
 
   if backdropUrl = "" or not isValid(backdropUrl)
     ' Clear backdrop if none available
