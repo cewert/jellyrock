@@ -1,5 +1,5 @@
-import "pkg:/source/utils/Subtitles.bs"
 import "pkg:/source/enums/SubtitleSelection.bs"
+import "pkg:/source/utils/Subtitles.bs"
 
 namespace tests
 
