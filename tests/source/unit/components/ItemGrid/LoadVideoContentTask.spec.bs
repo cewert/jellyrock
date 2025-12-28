@@ -15,7 +15,7 @@ namespace tests
       return {
         id: "test-video-id",
         json: {
-          mediaSources: [
+          MediaSources: [
             {
               MediaStreams: streams
             }
@@ -51,11 +51,11 @@ namespace tests
       m.assertEqual(result, SubtitleSelection.none)
     end function
 
-    @it("returns SubtitleSelection.none when mediaSources is empty array")
+    @it("returns SubtitleSelection.none when MediaSources is empty array")
     function _()
       meta = {
         id: "test-id",
-        json: { mediaSources: [] }
+        json: { MediaSources: [] }
       }
       result = defaultSubtitleTrackFromVid(meta, 1)
       m.assertEqual(result, SubtitleSelection.none)
@@ -66,7 +66,7 @@ namespace tests
       meta = {
         id: "test-id",
         json: {
-          mediaSources: [{}]
+          MediaSources: [{}]
         }
       }
       result = defaultSubtitleTrackFromVid(meta, 1)
