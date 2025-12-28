@@ -19,59 +19,127 @@ function availSubtitleTrackIdx(video, sub_idx) as integer
   return SubtitleSelection.none
 end function
 
-' Identify the default subtitle track for a given video id
-' returns the server-side track index for the appriate subtitle
-function defaultSubtitleTrackFromVid(video_id) as integer
-  meta = ItemMetaData(video_id)
-  if isValid(meta) and isValid(meta.json) and isValid(meta.json.mediaSources)
-    subtitles = sortSubtitles(meta.id, meta.json.MediaSources[0].MediaStreams)
-    default_text_subs = defaultSubtitleTrack(subtitles["all"], true) ' Find correct subtitle track (forced text)
-    if default_text_subs <> SubtitleSelection.none
-      return default_text_subs
-    else
-      if m.global.user.settings.playbackSubsOnlyText = false
-        return defaultSubtitleTrack(subtitles["all"]) ' if no appropriate text subs exist, allow non-text
-      else
-        return SubtitleSelection.none
-      end if
-    end if
+' defaultSubtitleTrackFromVid: Identifies the default subtitle track given metadata and audio index
+'
+' @param {object} meta - metadata object containing MediaSources with MediaStreams
+' @param {integer} selectedAudioIndex - index of selected audio stream (used for Smart mode language matching)
+' @return {integer} subtitle track index or SubtitleSelection.none if not found
+function defaultSubtitleTrackFromVid(meta as object, selectedAudioIndex as integer) as integer
+  userSession = m.global.user
+  if userSession.config.subtitleMode = "None"
+    return SubtitleSelection.none ' No subtitles desired: return none
   end if
-  ' No valid mediaSources (i.e. LiveTV)
+
+  if not isValid(meta) then return SubtitleSelection.none
+  if not isValid(meta.json) then return SubtitleSelection.none
+  if not isValidAndNotEmpty(meta.json.MediaSources) then return SubtitleSelection.none
+  if not isValidAndNotEmpty(meta.json.MediaSources[0].MediaStreams) then return SubtitleSelection.none
+
+  subtitles = sortSubtitles(meta.id, meta.json.MediaSources[0].MediaStreams)
+
+  selectedAudioLanguage = ""
+  ' Find the audio stream with the matching Jellyfin index
+  audioMediaStream = invalid
+  for each stream in meta.json.MediaSources[0].MediaStreams
+    if isValid(stream.index) and stream.index = selectedAudioIndex
+      audioMediaStream = stream
+      exit for
+    end if
+  end for
+
+  ' Ensure audio media stream is valid before using language property
+  if isValid(audioMediaStream)
+    selectedAudioLanguage = audioMediaStream.Language ?? ""
+  end if
+
+  defaultTextSubs = defaultSubtitleTrack(subtitles["text"], selectedAudioLanguage, true) ' Find correct subtitle track (forced text)
+  if defaultTextSubs <> SubtitleSelection.none
+    return defaultTextSubs
+  end if
+
+  if not userSession.settings.playbackSubsOnlyText
+    return defaultSubtitleTrack(subtitles["all"], selectedAudioLanguage) ' if no appropriate text subs exist, allow non-text
+  end if
+
   return SubtitleSelection.none
 end function
 
-
-' Identify the default subtitle track
-' if "requires_text" is true, only return a track if it is textual
-'     This allows forcing text subs, since roku requires transcoding of non-text subs
-' returns the server-side track index for the appriate subtitle
-function defaultSubtitleTrack(sorted_subtitles, require_text = false) as integer
+' defaultSubtitleTrack:
+'
+' @param {dynamic} sortedSubtitles - array of subtitles sorted by type and language
+' @param {string} selectedAudioLanguage - language for selected audio track
+' @param {boolean} [requireText=false] - indicates if only text subtitles should be considered
+' @return {integer} indicating the default track's server-side index. Defaults to {SubtitleSelection.none} if one is not found
+function defaultSubtitleTrack(sortedSubtitles, selectedAudioLanguage as string, requireText = false as boolean) as integer
   ' ONE rendezvous to get user node
   localUser = m.global.user
 
-  if localUser.config.subtitleMode = "None"
-    return SubtitleSelection.none ' No subtitles desired: select none
+  subtitleMode = isValid(localUser.config.subtitleMode) ? LCase(localUser.config.subtitleMode) : ""
+
+  allowSmartMode = false
+
+  ' Only evaluate selected audio language if we have a value
+  if selectedAudioLanguage <> ""
+    allowSmartMode = selectedAudioLanguage <> localUser.config.subtitleLanguagePreference
   end if
 
-  for each item in sorted_subtitles
-    ' Only auto-select subtitle if language matches preference
-    languageMatch = (localUser.config.subtitleLanguagePreference = item.Track.Language)
-    ' Ensure textuality of subtitle matches preferenced passed as arg
-    matchTextReq = ((require_text and item.IsTextSubtitleStream) or not require_text)
+  for each item in sortedSubtitles
+    ' Only auto-select subtitle if language matches SubtitleLanguagePreference
+    languageMatch = true
+    if localUser.config.subtitleLanguagePreference <> ""
+      languageMatch = (localUser.config.subtitleLanguagePreference = item.Track.Language)
+    end if
+
+    ' Ensure textuality of subtitle matches preference passed as arg
+    matchTextReq = ((requireText and item.IsTextSubtitleStream) or not requireText)
+
     if languageMatch and matchTextReq
-      if localUser.config.subtitleMode = "Default" and (item.isForced or item.IsDefault or item.IsExternal)
-        return item.Index ' Finds first forced, or default, or external subs in sorted list
-      else if localUser.config.subtitleMode = "Always" and not item.IsForced
-        return item.Index ' Select the first non-forced subtitle option in the sorted list
-      else if localUser.config.subtitleMode = "OnlyForced" and item.IsForced
-        return item.Index ' Select the first forced subtitle option in the sorted list
-      else if localUser.config.subtitleMode = "Smart" and (item.isForced or item.IsDefault or item.IsExternal)
-        ' Simplified "Smart" logic here mimics Default (as that is fallback behavior normally)
-        ' Avoids detecting preferred audio language (as is utilized in main client)
+      if subtitleMode = "default" and (item.IsForced or item.IsDefault)
+        ' Return first forced or default subtitle track
+        return item.Index
+      else if subtitleMode = "always" and not item.IsForced
+        ' Return the first non-forced subtitle track (full subs preferred over forced)
+        return item.Index
+      else if subtitleMode = "onlyforced" and item.IsForced
+        ' Return first forced subtitle track
+        return item.Index
+      else if subtitleMode = "smart" and allowSmartMode and not item.IsForced
+        ' Return the first non-forced subtitle track (full subs when audio differs from preference)
         return item.Index
       end if
     end if
   end for
+
+  ' Always mode fallback: if no full (non-forced) subtitles found, fall back to forced/default
+  if subtitleMode = "always"
+    for each item in sortedSubtitles
+      ' Ensure textuality of subtitle matches preference passed as arg
+      matchTextReq = ((requireText and item.IsTextSubtitleStream) or not requireText)
+      if matchTextReq
+        if item.IsForced or item.IsDefault
+          ' Return first forced or default subtitle track as fallback
+          return item.Index
+        end if
+      end if
+    end for
+  end if
+
+  ' User has chosen smart subtitle mode
+  ' We already attempted to load subtitles in preferred language, but none were found.
+  ' Fall back to default behaviour while ignoring preferredlanguage
+  if subtitleMode = "smart" and allowSmartMode
+    for each item in sortedSubtitles
+      ' Ensure textuality of subtitle matches preference passed as arg
+      matchTextReq = ((requireText and item.IsTextSubtitleStream) or not requireText)
+      if matchTextReq
+        if item.IsForced or item.IsDefault
+          ' Return first forced or default subtitle track
+          return item.Index
+        end if
+      end if
+    end for
+  end if
+
   return SubtitleSelection.none ' Keep current default behavior of "None", if no correct subtitle is identified
 end function
 
@@ -119,7 +187,7 @@ end function
 
 'Checks available subtitle tracks and puts subtitles in forced, default, and non-default/forced but preferred language at the top
 function sortSubtitles(id as string, MediaStreams)
-  tracks = { "forced": [], "default": [], "normal": [] }
+  tracks = { "forced": [], "default": [], "normal": [], "text": [] }
   ' ONE rendezvous to get user node
   localUser = m.global.user
   prefered_lang = localUser.config.subtitleLanguagePreference
@@ -133,24 +201,34 @@ function sortSubtitles(id as string, MediaStreams)
 
       stream = {
         "Track": { "Language": stream.language, "Description": stream.displaytitle, "TrackName": url },
-        "IsTextSubtitleStream": stream.IsTextSubtitleStream,
+        "IsTextSubtitleStream": stream.IsTextSubtitleStream ?? false,
         "Index": stream.index,
-        "IsDefault": stream.IsDefault,
-        "IsForced": stream.IsForced,
-        "IsExternal": stream.IsExternal,
+        "IsDefault": stream.IsDefault ?? false,
+        "IsForced": stream.IsForced ?? false,
+        "IsExternal": stream.IsExternal ?? false,
         "IsEncoded": stream.DeliveryMethod = "Encode"
       }
-      if stream.isForced
+
+      if stream.IsForced = true
         trackType = "forced"
-      else if stream.IsDefault
+      else if stream.IsDefault = true
         trackType = "default"
       else
         trackType = "normal"
       end if
+
       if prefered_lang <> "" and prefered_lang = stream.Track.Language
         tracks[trackType].unshift(stream)
+
+        if stream.IsTextSubtitleStream
+          tracks["text"].unshift(stream)
+        end if
       else
         tracks[trackType].push(stream)
+
+        if stream.IsTextSubtitleStream
+          tracks["text"].push(stream)
+        end if
       end if
     end if
   end for
@@ -158,13 +236,7 @@ function sortSubtitles(id as string, MediaStreams)
   tracks["default"].append(tracks["normal"])
   tracks["forced"].append(tracks["default"])
 
-  textTracks = []
-  for i = 0 to tracks["forced"].count() - 1
-    if tracks["forced"][i].IsTextSubtitleStream
-      textTracks.push(tracks["forced"][i].Track)
-    end if
-  end for
-  return { "all": tracks["forced"], "text": textTracks }
+  return { "all": tracks["forced"], "text": tracks["text"] }
 end function
 
 function getSubtitleLanguages()
