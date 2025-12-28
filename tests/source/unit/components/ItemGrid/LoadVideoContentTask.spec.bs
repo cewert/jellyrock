@@ -1,0 +1,386 @@
+import "pkg:/source/utils/Subtitles.bs"
+import "pkg:/source/enums/SubtitleSelection.bs"
+
+namespace tests
+
+  @suite("LoadVideoContentTask - defaultSubtitleTrackFromVid()")
+  class LoadVideoContentTaskSubtitleTests extends tests.BaseTestSuite
+
+    protected override function setup()
+      super.setup()
+    end function
+
+    ' Helper to create meta object with MediaStreams
+    private function createMetaWithSubtitles(streams as object) as object
+      return {
+        id: "test-video-id",
+        json: {
+          mediaSources: [
+            {
+              MediaStreams: streams
+            }
+          ]
+        }
+      }
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Edge cases - validation")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns SubtitleSelection.none when meta is invalid")
+    function _()
+      result = defaultSubtitleTrackFromVid(invalid, 1)
+      m.assertEqual(result, SubtitleSelection.none)
+    end function
+
+    @it("returns SubtitleSelection.none when meta.json is invalid")
+    function _()
+      meta = { id: "test-id" }
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, SubtitleSelection.none)
+    end function
+
+    @it("returns SubtitleSelection.none when mediaSources is invalid")
+    function _()
+      meta = {
+        id: "test-id",
+        json: {}
+      }
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, SubtitleSelection.none)
+    end function
+
+    @it("returns SubtitleSelection.none when mediaSources is empty array")
+    function _()
+      meta = {
+        id: "test-id",
+        json: { mediaSources: [] }
+      }
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, SubtitleSelection.none)
+    end function
+
+    @it("returns SubtitleSelection.none when MediaStreams is invalid")
+    function _()
+      meta = {
+        id: "test-id",
+        json: {
+          mediaSources: [{}]
+        }
+      }
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, SubtitleSelection.none)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Subtitle mode 'None'")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns SubtitleSelection.none when subtitleMode = 'None'")
+    function _()
+      m.global.user.config.subtitleMode = "None"
+      meta = m.createMetaWithSubtitles([
+        { Type: "Subtitle", index: 2, language: "eng", IsTextSubtitleStream: true, IsForced: true, displaytitle: "English (Forced)" }
+      ])
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, SubtitleSelection.none)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Text-only subtitle preference")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns text subtitle when playbackSubsOnlyText = true")
+    function _()
+      m.global.user.settings.playbackSubsOnlyText = true
+      m.global.user.config.subtitleMode = "Always"
+      m.global.user.config.subtitleLanguagePreference = "eng"
+
+      meta = m.createMetaWithSubtitles([
+        { Type: "Subtitle", index: 2, language: "eng", IsTextSubtitleStream: true, IsForced: false, displaytitle: "English", DeliveryUrl: "/text" }
+      ])
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, 2)
+    end function
+
+    @it("returns SubtitleSelection.none when only non-text subs exist and playbackSubsOnlyText = true")
+    function _()
+      m.global.user.settings.playbackSubsOnlyText = true
+      m.global.user.config.subtitleMode = "Always"
+      m.global.user.config.subtitleLanguagePreference = "eng"
+
+      meta = m.createMetaWithSubtitles([
+        { Type: "Subtitle", index: 2, language: "eng", IsTextSubtitleStream: false, IsForced: false, displaytitle: "English", DeliveryMethod: "Encode" }
+      ])
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, SubtitleSelection.none)
+    end function
+
+    @it("returns non-text subtitle when playbackSubsOnlyText = false")
+    function _()
+      m.global.user.settings.playbackSubsOnlyText = false
+      m.global.user.config.subtitleMode = "Always"
+      m.global.user.config.subtitleLanguagePreference = "eng"
+
+      meta = m.createMetaWithSubtitles([
+        { Type: "Subtitle", index: 2, language: "eng", IsTextSubtitleStream: false, IsForced: false, displaytitle: "English", DeliveryMethod: "Encode" }
+      ])
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, 2)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Subtitle mode 'Default'")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns forced subtitle when subtitleMode = 'Default'")
+    function _()
+      m.global.user.config.subtitleMode = "Default"
+      m.global.user.config.subtitleLanguagePreference = "eng"
+
+      meta = m.createMetaWithSubtitles([
+        { Type: "Subtitle", index: 2, language: "eng", IsTextSubtitleStream: true, IsForced: true, IsDefault: false, displaytitle: "English (Forced)", DeliveryUrl: "/forced" },
+        { Type: "Subtitle", index: 3, language: "eng", IsTextSubtitleStream: true, IsForced: false, IsDefault: false, displaytitle: "English", DeliveryUrl: "/normal" }
+      ])
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, 2)
+    end function
+
+    @it("returns default subtitle when subtitleMode = 'Default' and no forced exists")
+    function _()
+      m.global.user.config.subtitleMode = "Default"
+      m.global.user.config.subtitleLanguagePreference = "eng"
+
+      meta = m.createMetaWithSubtitles([
+        { Type: "Subtitle", index: 2, language: "eng", IsTextSubtitleStream: true, IsForced: false, IsDefault: true, displaytitle: "English", DeliveryUrl: "/default" },
+        { Type: "Subtitle", index: 3, language: "eng", IsTextSubtitleStream: true, IsForced: false, IsDefault: false, displaytitle: "English SDH", DeliveryUrl: "/normal" }
+      ])
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, 2)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Subtitle mode 'Always'")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns first matching subtitle when subtitleMode = 'Always'")
+    function _()
+      m.global.user.config.subtitleMode = "Always"
+      m.global.user.config.subtitleLanguagePreference = "eng"
+
+      meta = m.createMetaWithSubtitles([
+        { Type: "Subtitle", index: 2, language: "eng", IsTextSubtitleStream: true, IsForced: false, IsDefault: false, displaytitle: "English", DeliveryUrl: "/eng" },
+        { Type: "Subtitle", index: 3, language: "spa", IsTextSubtitleStream: true, IsForced: false, IsDefault: false, displaytitle: "Spanish", DeliveryUrl: "/spa" }
+      ])
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, 2)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Subtitle mode 'OnlyForced'")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns forced subtitle when subtitleMode = 'OnlyForced'")
+    function _()
+      m.global.user.config.subtitleMode = "OnlyForced"
+      m.global.user.config.subtitleLanguagePreference = "eng"
+
+      meta = m.createMetaWithSubtitles([
+        { Type: "Subtitle", index: 2, language: "eng", IsTextSubtitleStream: true, IsForced: true, IsDefault: false, displaytitle: "English (Forced)", DeliveryUrl: "/forced" },
+        { Type: "Subtitle", index: 3, language: "eng", IsTextSubtitleStream: true, IsForced: false, IsDefault: false, displaytitle: "English", DeliveryUrl: "/normal" }
+      ])
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, 2)
+    end function
+
+    @it("returns SubtitleSelection.none when no forced subs and subtitleMode = 'OnlyForced'")
+    function _()
+      m.global.user.config.subtitleMode = "OnlyForced"
+      m.global.user.config.subtitleLanguagePreference = "eng"
+
+      meta = m.createMetaWithSubtitles([
+        { Type: "Subtitle", index: 2, language: "eng", IsTextSubtitleStream: true, IsForced: false, IsDefault: false, displaytitle: "English", DeliveryUrl: "/normal" }
+      ])
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, SubtitleSelection.none)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Subtitle mode 'Smart' with audio language matching")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns SubtitleSelection.none when audio matches subtitle preference in Smart mode")
+    function _()
+      m.global.user.config.subtitleMode = "Smart"
+      m.global.user.config.subtitleLanguagePreference = "eng"
+
+      ' Audio stream index 1 is English
+      meta = m.createMetaWithSubtitles([
+        { Type: "Audio", index: 1, Language: "eng" },
+        { Type: "Subtitle", index: 2, language: "eng", IsTextSubtitleStream: true, IsForced: false, IsDefault: false, displaytitle: "English", DeliveryUrl: "/eng" }
+      ])
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, SubtitleSelection.none)
+    end function
+
+    @it("returns subtitle when audio does NOT match subtitle preference in Smart mode")
+    function _()
+      m.global.user.config.subtitleMode = "Smart"
+      m.global.user.config.subtitleLanguagePreference = "eng"
+
+      ' Audio stream index 1 is Japanese
+      meta = m.createMetaWithSubtitles([
+        { Type: "Audio", index: 1, Language: "jpn" },
+        { Type: "Subtitle", index: 2, language: "eng", IsTextSubtitleStream: true, IsForced: false, IsDefault: false, displaytitle: "English", DeliveryUrl: "/eng" }
+      ])
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, 2)
+    end function
+
+    @it("falls back to forced/default in Smart mode when audio differs from subtitle preference")
+    function _()
+      m.global.user.config.subtitleMode = "Smart"
+      m.global.user.config.subtitleLanguagePreference = "eng"
+
+      ' Audio stream index 1 is Japanese, no eng subs but has jpn forced
+      meta = m.createMetaWithSubtitles([
+        { Type: "Audio", index: 1, Language: "jpn" },
+        { Type: "Subtitle", index: 2, language: "jpn", IsTextSubtitleStream: true, IsForced: true, IsDefault: false, displaytitle: "Japanese (Forced)", DeliveryUrl: "/jpn-forced" }
+      ])
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, 2)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Language preference matching")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns SubtitleSelection.none when no matching language")
+    function _()
+      m.global.user.config.subtitleMode = "Always"
+      m.global.user.config.subtitleLanguagePreference = "eng"
+
+      meta = m.createMetaWithSubtitles([
+        { Type: "Subtitle", index: 2, language: "spa", IsTextSubtitleStream: true, IsForced: false, IsDefault: false, displaytitle: "Spanish", DeliveryUrl: "/spa" }
+      ])
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, SubtitleSelection.none)
+    end function
+
+    @it("respects empty language preference")
+    function _()
+      m.global.user.config.subtitleMode = "Always"
+      m.global.user.config.subtitleLanguagePreference = ""
+
+      meta = m.createMetaWithSubtitles([
+        { Type: "Subtitle", index: 2, language: "spa", IsTextSubtitleStream: true, IsForced: false, IsDefault: false, displaytitle: "Spanish", DeliveryUrl: "/spa" }
+      ])
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, 2)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Priority: full (non-forced) subs > forced subs > fallback")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("prefers full text subtitle over forced text subtitle in Always mode")
+    function _()
+      m.global.user.config.subtitleMode = "Always"
+      m.global.user.config.subtitleLanguagePreference = "eng"
+      m.global.user.settings.playbackSubsOnlyText = false
+
+      meta = m.createMetaWithSubtitles([
+        { Type: "Subtitle", index: 2, language: "eng", IsTextSubtitleStream: true, IsForced: false, IsDefault: false, displaytitle: "English", DeliveryUrl: "/eng" },
+        { Type: "Subtitle", index: 3, language: "eng", IsTextSubtitleStream: true, IsForced: true, IsDefault: false, displaytitle: "English (Forced)", DeliveryUrl: "/eng-forced" }
+      ])
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      ' Should prefer full subs (index 2) over forced subs (index 3)
+      m.assertEqual(result, 2)
+    end function
+
+    @it("falls back to forced subtitle when no full subs available in Always mode")
+    function _()
+      m.global.user.config.subtitleMode = "Always"
+      m.global.user.config.subtitleLanguagePreference = "eng"
+      m.global.user.settings.playbackSubsOnlyText = false
+
+      ' Only forced subtitle available
+      meta = m.createMetaWithSubtitles([
+        { Type: "Subtitle", index: 3, language: "eng", IsTextSubtitleStream: true, IsForced: true, IsDefault: false, displaytitle: "English (Forced)", DeliveryUrl: "/eng-forced" }
+      ])
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      ' Should fall back to forced subs (index 3) when no full subs available
+      ' Always mode fallback at lines 113-125 in Subtitles.bs
+      m.assertEqual(result, 3)
+    end function
+
+    @it("prefers regular text over non-text when no forced exists")
+    function _()
+      m.global.user.config.subtitleMode = "Always"
+      m.global.user.config.subtitleLanguagePreference = "eng"
+      m.global.user.settings.playbackSubsOnlyText = false
+
+      meta = m.createMetaWithSubtitles([
+        { Type: "Subtitle", index: 2, language: "eng", IsTextSubtitleStream: false, IsForced: false, IsDefault: false, displaytitle: "English (Graphical)", DeliveryMethod: "Encode" },
+        { Type: "Subtitle", index: 3, language: "eng", IsTextSubtitleStream: true, IsForced: false, IsDefault: false, displaytitle: "English", DeliveryUrl: "/eng" }
+      ])
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, 3)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Real-world scenarios")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("handles anime with Japanese audio and English subs - Smart mode")
+    function _()
+      m.global.user.config.subtitleMode = "Smart"
+      m.global.user.config.subtitleLanguagePreference = "eng"
+
+      ' Anime: Japanese audio (index 1), English subtitles available
+      meta = m.createMetaWithSubtitles([
+        { Type: "Audio", index: 1, Language: "jpn" },
+        { Type: "Subtitle", index: 2, language: "eng", IsTextSubtitleStream: true, IsForced: false, IsDefault: false, displaytitle: "English", DeliveryUrl: "/eng" }
+      ])
+      ' Audio (jpn) ≠ preference (eng), should enable English subtitles
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, 2)
+    end function
+
+    @it("handles English movie with forced subtitles for foreign parts - Default mode")
+    function _()
+      m.global.user.config.subtitleMode = "Default"
+      m.global.user.config.subtitleLanguagePreference = "eng"
+
+      ' English movie with forced subs for foreign language scenes
+      meta = m.createMetaWithSubtitles([
+        { Type: "Audio", index: 1, Language: "eng" },
+        { Type: "Subtitle", index: 2, language: "eng", IsTextSubtitleStream: true, IsForced: true, IsDefault: false, displaytitle: "English (Forced)", DeliveryUrl: "/eng-forced" },
+        { Type: "Subtitle", index: 3, language: "eng", IsTextSubtitleStream: true, IsForced: false, IsDefault: false, displaytitle: "English (Full)", DeliveryUrl: "/eng-full" }
+      ])
+      ' Should auto-select forced subtitles only
+      result = defaultSubtitleTrackFromVid(meta, 1)
+      m.assertEqual(result, 2)
+    end function
+
+    @it("handles Live TV with missing audio stream index - graceful fallback")
+    function _()
+      m.global.user.config.subtitleMode = "Smart"
+      m.global.user.config.subtitleLanguagePreference = "eng"
+      m.global.user.settings.playbackSubsOnlyText = false
+
+      ' Live TV scenario: audio stream index 99 doesn't exist in MediaStreams
+      meta = m.createMetaWithSubtitles([
+        { Type: "Audio", index: 1, Language: "eng" },
+        { Type: "Subtitle", index: 2, language: "eng", IsTextSubtitleStream: true, IsForced: false, IsDefault: false, displaytitle: "English", DeliveryUrl: "/eng" }
+      ])
+      ' Audio stream 99 not found, selectedAudioLanguage will be ""
+      ' Smart mode correctly returns none when audio language is unknown (no forced/default to fall back to)
+      result = defaultSubtitleTrackFromVid(meta, 99)
+      m.assertEqual(result, SubtitleSelection.none)
+    end function
+
+  end class
+
+end namespace
