@@ -375,7 +375,20 @@ sub onSubtitleChange()
       m.log.debug("Changing custom subtitle mode to", shouldUseCustomSubtitles)
       m.top.suppressCaptions = shouldUseCustomSubtitles
       if m.top.suppressCaptions
+        ' Turn on globalCaptionMode so toggleCaption() will show the caption group
+        m.top.globalCaptionMode = "On"
+        ' Manually load the caption since loadCaption() observer may have already fired
+        ' with the wrong suppressCaptions value
+        if isValid(m.captionTask) and isValid(m.top.subtitleTrack)
+          m.captionTask.url = m.top.subtitleTrack
+        end if
         toggleCaption()
+      else
+        ' Explicitly clean up custom subtitle system when switching away from custom subs
+        m.captionGroup.visible = false
+        if isValid(m.captionTask)
+          m.captionTask.url = ""
+        end if
       end if
     end if
   end if
@@ -492,6 +505,16 @@ sub onVideoContentLoaded()
     end if
   end for
 
+  m.top.selectedSubtitle = videoContent[0].selectedSubtitle
+
+  ' Update custom subtitle behavior based on the selected subtitle
+  ' IMPORTANT: This must happen BEFORE setting subtitleTrack to ensure suppressCaptions
+  ' is set correctly when the loadCaption() observer fires
+  if m.top.allowCaptions
+    shouldUseCustomSubtitles = shouldUseCustomSubtitlesForCurrentSelection()
+    m.top.suppressCaptions = shouldUseCustomSubtitles
+  end if
+
   if isValid(selectedSubtitle)
     availableSubtitleTrackIndex = availSubtitleTrackIdx(selectedSubtitle.Track.TrackName)
     if availableSubtitleTrackIndex <> -1
@@ -505,16 +528,11 @@ sub onVideoContentLoaded()
         m.top.subtitleTrack = m.top.availableSubtitleTracks[availableSubtitleTrackIndex].TrackName
       end if
     end if
-  end if
-
-  m.top.selectedSubtitle = videoContent[0].selectedSubtitle
-
-  ' Update custom subtitle behavior based on the selected subtitle
-  if m.top.allowCaptions
-    shouldUseCustomSubtitles = shouldUseCustomSubtitlesForCurrentSelection()
-    m.top.suppressCaptions = shouldUseCustomSubtitles
-    if m.top.suppressCaptions
-      toggleCaption()
+  else
+    ' No subtitle selected - turn off Roku's native caption system
+    ' Only turn off if we're not restoring to a saved state from forced subs
+    if not isValid(m.originalClosedCaptionState)
+      m.top.globalCaptionMode = "Off"
     end if
   end if
 
