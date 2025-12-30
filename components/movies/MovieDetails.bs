@@ -167,7 +167,7 @@ end sub
 
 ' createInfoLabel: Create a label for the info/director rows
 ' @param labelId - Unique ID for the label
-' @return Configured LabelPrimarySmall node (bold)
+' @return Configured LabelPrimaryMedium node (bold)
 function createInfoLabel(labelId as string) as object
   labelNode = CreateObject("roSGNode", "LabelPrimaryMedium")
   labelNode.id = labelId
@@ -224,7 +224,7 @@ sub populateInfoGroup()
   itemData = m.top.itemContent.json
   userSettings = m.global.user.settings
 
-  print "itemData:", itemData
+  ' print "itemData:", itemData
 
   ' === ROW 1: Info Group ===
   ' Order: year, officialRating, communityRating, criticRating, runtime, ends-at
@@ -293,37 +293,19 @@ sub populateInfoGroup()
   end for
   if directors.count() > 0
     directorNode = createInfoLabel("director")
-    directorNode.text = tr("Directed by") + " " + directors.join(", ")
+    directorNode.text = tr("Directed by %1").Replace("%1", directors.join(", "))
     displayDirectorGenreNode(directorNode)
   end if
 
   ' 2. Genres (concatenated with " / ")
   if itemData.genres.count() > 0
-    genreText = ""
-    for i = 0 to itemData.genres.count() - 1
-      if i > 0
-        genreText = genreText + " / " + itemData.genres[i].trim()
-      else
-        genreText = itemData.genres[i].trim()
-      end if
-    end for
-
     genreNode = createInfoLabel("genre")
-    genreNode.text = genreText
+    genreNode.text = itemData.genres.join(" / ")
     displayDirectorGenreNode(genreNode)
   else if isValid(itemData.tags) and itemData.tags.count() > 0
     ' Fallback to tags if no genres
-    tagText = ""
-    for i = 0 to itemData.tags.count() - 1
-      if i > 0
-        tagText = tagText + " / " + itemData.tags[i].trim()
-      else
-        tagText = itemData.tags[i].trim()
-      end if
-    end for
-
     tagNode = createInfoLabel("tag")
-    tagNode.text = tagText
+    tagNode.text = itemData.tags.join(" / ")
     displayDirectorGenreNode(tagNode)
   end if
 end sub

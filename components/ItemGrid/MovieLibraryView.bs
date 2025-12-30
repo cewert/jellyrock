@@ -33,6 +33,11 @@ sub init()
   setupNodes()
   userSettings = m.global.user.settings
 
+  ' Set star icon color
+  if isValid(m.star)
+    m.star.blendColor = m.global.constants.colorYellow
+  end if
+
   m.overhang.isVisible = false
 
   m.showItemCount = userSettings.itemGridShowItemCount

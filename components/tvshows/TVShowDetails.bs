@@ -18,6 +18,12 @@ sub init()
 
   m.overview.ellipsisText = tr("... (Press * to read more)")
 
+  ' Set star icon color
+  star = m.top.findNode("star")
+  if isValid(star)
+    star.blendColor = m.global.constants.colorYellow
+  end if
+
   ' Set initial focus for scene navigation
   m.top.lastFocus = m.shuffle
 end sub
