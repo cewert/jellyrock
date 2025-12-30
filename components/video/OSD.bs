@@ -68,7 +68,7 @@ sub setFields()
       ' If it has series/episode metadata, it's a series
       if isValid(checkData.SeriesName) or isValid(checkData.SeasonNumber) or isValid(checkData.ParentIndexNumber)
         m.top.isSeries = true
-      ' Otherwise, assume it's movie content
+        ' Otherwise, assume it's movie content
       else
         m.top.isMovie = true
       end if
