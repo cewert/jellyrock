@@ -286,11 +286,13 @@ sub populateInfoGroup()
 
   ' 1. Director
   directors = []
-  for each person in itemData.people
-    if person.type = "Director"
-      directors.push(person.name)
-    end if
-  end for
+  if isValid(itemData.people)
+    for each person in itemData.people
+      if person.type = "Director"
+        directors.push(person.name)
+      end if
+    end for
+  end if
   if directors.count() > 0
     directorNode = createInfoLabel("director")
     directorNode.text = tr("Directed by %1").Replace("%1", directors.join(", "))
