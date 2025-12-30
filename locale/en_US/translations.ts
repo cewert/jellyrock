@@ -343,8 +343,8 @@
       <translation>Direct playing</translation>
     </message>
     <message>
-      <source>Director</source>
-      <translation>Director</translation>
+      <source>Directed by %1</source>
+      <translation>Directed by %1</translation>
     </message>
     <message>
       <source>Disable Community Rating for Episodes</source>
@@ -1176,10 +1176,6 @@
       <source>Support Direct Play of MPEG-4 content. This may need to be disabled for playback of DIVX encoded video files.</source>
       <translation>Support Direct Play of MPEG-4 content. This may need to be disabled for playback of DIVX encoded video files.</translation>
       <extracomment>Settings Menu - Description for option</extracomment>
-    </message>
-    <message>
-      <source>Tags</source>
-      <translation>Tags</translation>
     </message>
     <message>
       <source>Text Subtitles Only</source>
