@@ -99,7 +99,7 @@ sub setFields()
       ' Recording types are episode-like content (same as Episode handling elsewhere)
       if m.top.type = "Recording"
         m.top.isSeries = true
-      ' If it has series/episode metadata, it's a series
+        ' If it has series/episode metadata, it's a series
       else if isValid(checkData.SeriesName) or isValid(checkData.SeasonNumber) or isValid(checkData.ParentIndexNumber)
         m.top.isSeries = true
         ' Otherwise, assume it's movie content
