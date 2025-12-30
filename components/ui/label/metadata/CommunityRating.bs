@@ -1,10 +1,38 @@
 import "pkg:/source/utils/misc.bs"
+
 sub init()
+  m.star = m.top.findNode("star")
   m.communityRating = m.top.findNode("communityRating")
+  m.star.blendColor = m.global.constants.colorYellow
+
+  ' Set initial text position based on iconSize
+  onIconSizeChanged()
 end sub
 
 sub onRatingChanged()
-  if not isValid(m.top.rating) or m.top.rating = 0 then return
+  if not isValid(m.top.rating) then return
+  if m.top.rating = 0 then return
 
-  m.communityRating.text = m.top.rating
+  ' Ensure label node is initialized
+  if not isValid(m.communityRating)
+    m.communityRating = m.top.findNode("communityRating")
+  end if
+
+  if isValid(m.communityRating)
+    ' Format rating to one decimal place
+    m.communityRating.text = str(int(m.top.rating * 10) / 10)
+  end if
+end sub
+
+sub onIconSizeChanged()
+  if not isValid(m.star) then return
+  if not isValid(m.communityRating) then return
+
+  ' Update icon dimensions (both display and load dimensions for optimized texture memory)
+  m.star.height = m.top.iconSize
+  m.star.width = m.top.iconSize
+  m.star.loadHeight = m.top.iconSize
+  m.star.loadWidth = m.top.iconSize
+
+  m.communityRating.translation = [m.top.iconSize - 8, 0]
 end sub

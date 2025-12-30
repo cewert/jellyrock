@@ -29,6 +29,8 @@
     <!-- Black for Alpha Assembly (6 hex digits) -->
     <field id="colorBlack" type="string" value="0x000000" />
 
+    <field id="colorYellow" type="string" value="0xEAB308" />
+
     <!-- Alpha Values (2 hex digits) -->
     <field id="alpha0" type="string" value="00" />
     <field id="alpha10" type="string" value="1A" />
