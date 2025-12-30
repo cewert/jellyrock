@@ -300,7 +300,7 @@ sub populateInfoGroup()
   end if
 
   ' 2. Genres (concatenated with " / ")
-  if itemData.genres.count() > 0
+  if isValid(itemData.genres) and itemData.genres.count() > 0
     genreNode = createInfoLabel("genre")
     genreNode.text = itemData.genres.join(" / ")
     displayDirectorGenreNode(genreNode)
