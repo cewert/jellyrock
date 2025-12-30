@@ -29,6 +29,10 @@ sub init()
   m.isFirstRun = true
   m.allowButtonUpdates = true ' Allow button updates on init and when returning to screen
   m.top.observeField("itemContent", "itemContentChanged")
+
+  m.directorGenreGroup = m.top.findNode("directorGenreGroup")
+  m.infoDividerCount = 0
+  m.directorGenreDividerCount = 0
 end sub
 
 ' OnScreenShown: Callback function when view is presented on screen
@@ -161,6 +165,153 @@ sub removeResumeButtonWithFocus(resumeButton as object)
   m.buttonGrp.callFunc("focus")
 end sub
 
+' createInfoLabel: Create a label for the info/director rows
+' @param labelId - Unique ID for the label
+' @return Configured LabelPrimaryMedium node (bold)
+function createInfoLabel(labelId as string) as object
+  labelNode = CreateObject("roSGNode", "LabelPrimaryMedium")
+  labelNode.id = labelId
+  labelNode.vertAlign = "center"
+  labelNode.bold = true
+  return labelNode
+end function
+
+' createDividerNode: Create a bullet divider node for separating info items
+' @param dividerId - Unique ID for the divider
+' @return Configured divider node
+function createDividerNode(dividerId as string) as object
+  labelNode = CreateObject("roSGNode", "LabelPrimarySmall")
+  labelNode.id = dividerId
+  labelNode.horizAlign = "left"
+  labelNode.vertAlign = "center"
+  labelNode.height = 40
+  labelNode.width = 0
+  labelNode.text = "•"
+  labelNode.bold = true
+  return labelNode
+end function
+
+' displayInfoNode: Add a node to the info group with dividers
+sub displayInfoNode(node as object)
+  if not isValid(node) then return
+  if m.infoGroup.getChildCount() > 0
+    m.infoDividerCount++
+    divider = createDividerNode("infoDivider" + m.infoDividerCount.toStr())
+    m.infoGroup.appendChild(divider)
+  end if
+  m.infoGroup.appendChild(node)
+end sub
+
+' displayDirectorGenreNode: Add a node to the director/genre group with dividers
+sub displayDirectorGenreNode(node as object)
+  if not isValid(node) then return
+  if m.directorGenreGroup.getChildCount() > 0
+    m.directorGenreDividerCount++
+    divider = createDividerNode("directorGenreDivider" + m.directorGenreDividerCount.toStr())
+    m.directorGenreGroup.appendChild(divider)
+  end if
+  m.directorGenreGroup.appendChild(node)
+end sub
+
+' populateInfoGroup: Dynamically populate info and director/genre groups
+sub populateInfoGroup()
+  ' Clear existing nodes
+  m.infoGroup.removeChildrenIndex(m.infoGroup.getChildCount(), 0)
+  m.directorGenreGroup.removeChildrenIndex(m.directorGenreGroup.getChildCount(), 0)
+  m.infoDividerCount = 0
+  m.directorGenreDividerCount = 0
+
+  itemData = m.top.itemContent.json
+  userSettings = m.global.user.settings
+
+  ' print "itemData:", itemData
+
+  ' === ROW 1: Info Group ===
+  ' Order: year, officialRating, communityRating, criticRating, runtime, ends-at
+
+  ' 1. Release Year
+  if isValid(itemData.productionYear) and itemData.Type <> "Episode"
+    yearNode = createInfoLabel("releaseYear")
+    yearNode.text = itemData.productionYear.toStr().trim()
+    displayInfoNode(yearNode)
+  end if
+
+  ' 2. Official Rating (PG, R, etc.)
+  if isValid(itemData.officialRating)
+    ratingNode = createInfoLabel("officialRating")
+    ratingNode.text = itemData.officialRating
+    displayInfoNode(ratingNode)
+  end if
+
+  ' 3. Community Rating (star + number)
+  if userSettings.uiMoviesShowRatings and isValid(itemData.CommunityRating)
+    communityRatingNode = CreateObject("roSGNode", "CommunityRating")
+    communityRatingNode.id = "communityRating"
+    communityRatingNode.rating = itemData.CommunityRating
+    displayInfoNode(communityRatingNode)
+  end if
+
+  ' 4. Critic Rating (tomato + number)
+  if userSettings.uiMoviesShowRatings and isValid(itemData.CriticRating)
+    criticRatingNode = CreateObject("roSGNode", "CriticRating")
+    criticRatingNode.id = "criticRating"
+    criticRatingNode.rating = itemData.CriticRating
+    displayInfoNode(criticRatingNode)
+  end if
+
+  ' 5. Runtime
+  if type(itemData.RunTimeTicks) = "LongInteger"
+    runtimeNode = createInfoLabel("runtime")
+    runtimeNode.text = stri(getRuntime()).trim() + " " + tr("mins")
+    displayInfoNode(runtimeNode)
+  end if
+
+  ' 6. Ends At
+  if type(itemData.RunTimeTicks) = "LongInteger" and userSettings.uiDesignHideClock <> true
+    endsAtNode = createInfoLabel("ends-at")
+    endsAtNode.text = tr("Ends at %1").Replace("%1", getEndTime())
+    displayInfoNode(endsAtNode)
+  end if
+
+  ' 7. Aired (Episodes only)
+  if isValid(itemData.PremiereDate) and itemData.Type = "Episode"
+    airDate = CreateObject("roDateTime")
+    airDate.FromISO8601String(itemData.PremiereDate)
+    airedNode = createInfoLabel("aired")
+    airedNode.text = tr("Aired") + ": " + airDate.AsDateString("short-month-no-weekday")
+    displayInfoNode(airedNode)
+  end if
+
+  ' === ROW 2: Director & Genres ===
+
+  ' 1. Director
+  directors = []
+  if isValid(itemData.people)
+    for each person in itemData.people
+      if person.type = "Director"
+        directors.push(person.name)
+      end if
+    end for
+  end if
+  if directors.count() > 0
+    directorNode = createInfoLabel("director")
+    directorNode.text = tr("Directed by %1").Replace("%1", directors.join(", "))
+    displayDirectorGenreNode(directorNode)
+  end if
+
+  ' 2. Genres (concatenated with " / ")
+  if isValid(itemData.genres) and itemData.genres.count() > 0
+    genreNode = createInfoLabel("genre")
+    genreNode.text = itemData.genres.join(" / ")
+    displayDirectorGenreNode(genreNode)
+  else if isValid(itemData.tags) and itemData.tags.count() > 0
+    ' Fallback to tags if no genres
+    tagNode = createInfoLabel("tag")
+    tagNode.text = itemData.tags.join(" / ")
+    displayDirectorGenreNode(tagNode)
+  end if
+end sub
+
 sub itemContentChanged()
   ' Updates video metadata
   item = m.top.itemContent
@@ -184,69 +335,12 @@ sub itemContentChanged()
 
     SetDefaultAudioTrack(itemData)
 
+    ' Populate info rows dynamically
+    populateInfoGroup()
+
     ' Handle all "As Is" fields
     m.top.overhangTitle = itemData.name
-    setFieldText("releaseYear", itemData.productionYear)
     setFieldText("overview", itemData.overview)
-
-    if isValid(itemData.officialRating)
-      setFieldText("officialRating", itemData.officialRating)
-    else
-      m.infoGroup.removeChild(m.top.findNode("officialRating"))
-    end if
-
-    if userSettings.uiMoviesShowRatings
-      if isValid(itemData.communityRating)
-        setFieldText("communityRating", int(itemData.communityRating * 10) / 10)
-      else
-        m.infoGroup.removeChild(m.top.findNode("communityRatingGroup"))
-      end if
-      if isValid(itemData.CriticRating)
-        setFieldText("criticRatingLabel", itemData.criticRating)
-        if itemData.CriticRating > 60
-          tomato = m.global.constants.iconTomatoFresh
-        else
-          tomato = m.global.constants.iconTomatoRotten
-        end if
-        criticRatingIcon = m.top.findNode("criticRatingIcon")
-        if isValid(criticRatingIcon) then criticRatingIcon.uri = tomato
-      else
-        m.infoGroup.removeChild(m.top.findNode("criticRatingGroup"))
-      end if
-    else
-      m.infoGroup.removeChild(m.top.findNode("communityRatingGroup"))
-      m.infoGroup.removeChild(m.top.findNode("criticRatingGroup"))
-    end if
-
-    if type(itemData.RunTimeTicks) = "LongInteger"
-      setFieldText("runtime", stri(getRuntime()) + " mins")
-      if userSettings.uiDesignHideClock <> true
-        setFieldText("ends-at", tr("Ends at %1").Replace("%1", getEndTime()))
-      end if
-    end if
-
-    if itemData.genres.count() > 0
-      setFieldText("genres", tr("Genres") + ": " + itemData.genres.join(", "))
-    else
-      m.top.findNode("details").removeChild(m.top.findNode("genres"))
-    end if
-
-    ' show tags if there are no genres to display
-    if itemData.genres.count() = 0 and isValid(itemData.tags) and itemData.tags.count() > 0
-      setFieldText("genres", tr("Tags") + ": " + itemData.tags.join(", "))
-    end if
-
-    directors = []
-    for each person in itemData.people
-      if person.type = "Director"
-        directors.push(person.name)
-      end if
-    end for
-    if directors.count() > 0
-      setFieldText("director", tr("Director") + ": " + directors.join(", "))
-    else
-      m.top.findNode("details").removeChild(m.top.findNode("director"))
-    end if
 
     if userSettings.uiDetailsHideTagline = false
       if itemData.taglines.count() > 0
@@ -254,15 +348,6 @@ sub itemContentChanged()
       end if
     else
       m.details.removeChild(m.tagline)
-    end if
-
-    'set aired date if type is Episode
-    if isValid(itemData.PremiereDate) and itemData.Type = "Episode"
-      airDate = CreateObject("roDateTime")
-      airDate.FromISO8601String(itemData.PremiereDate)
-      m.top.findNode("aired").text = tr("Aired") + ": " + airDate.AsDateString("short-month-no-weekday")
-      'remove movie release year label
-      m.infoGroup.removeChild(m.top.findNode("releaseYear"))
     end if
 
     updateFavoriteButton()

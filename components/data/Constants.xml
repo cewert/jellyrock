@@ -15,6 +15,7 @@
     <!-- Theme Colors (6 hex digits, no alpha) -->
     <field id="colorPrimary" type="string" value="0x8b5cf6" />
     <field id="colorSecondary" type="string" value="0x3b82f6" />
+    <field id="colorYellow" type="string" value="0xEAB308" />
 
     <!-- Text Colors (6 hex digits, no alpha) -->
     <field id="colorTextPrimary" type="string" value="0xf0f0f0" />

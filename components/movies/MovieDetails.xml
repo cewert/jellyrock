@@ -1,27 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="MovieDetails" extends="JRScreen">
   <children>
-    <LayoutGroup layoutDirection="vert" translation="[96, 114]" itemSpacings="[25]" id="details">
-      <LayoutGroup layoutDirection="horiz" itemSpacings="[100]" id="infoGroup">
-        <LabelPrimaryMedium id="releaseYear" />
-        <LabelPrimaryMedium id="runtime" />
-        <LabelPrimaryMedium id="officialRating" />
-
-        <LayoutGroup id="communityRatingGroup" layoutDirection="horiz" itemSpacings="[-5]">
-          <Poster id="star" uri="pkg:/images/icons/sharp_star_white_18dp.png" height="32" width="32" blendColor="#cb272a" />
-          <LabelPrimaryMedium id="communityRating" />
-        </LayoutGroup>
-
-        <LayoutGroup id="criticRatingGroup" layoutDirection="horiz" itemSpacings="[-5]">
-          <Poster id="criticRatingIcon" height="32" width="32" />
-          <LabelPrimaryMedium id="criticRatingLabel" />
-        </LayoutGroup>
-
-        <LabelPrimaryMedium id="ends-at" />
-        <LabelPrimaryMedium id="aired" />
-      </LayoutGroup>
-      <LabelPrimaryMedium id="genres" />
-      <LabelPrimaryMedium id="director" />
+    <LayoutGroup layoutDirection="vert" translation="[96, 114]" itemSpacings="[8]" id="details">
+      <LayoutGroup layoutDirection="horiz" itemSpacings="[9]" id="infoGroup" />
+      <LayoutGroup layoutDirection="horiz" itemSpacings="[9]" id="directorGenreGroup" />
 
       <LayoutGroup layoutDirection="horiz">
         <LabelPrimaryMedium id="video_codec" vertAlign="bottom" height="39" />

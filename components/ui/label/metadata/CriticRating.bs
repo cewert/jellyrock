@@ -1,0 +1,49 @@
+import "pkg:/source/utils/misc.bs"
+
+sub init()
+  m.tomatoIcon = m.top.findNode("tomatoIcon")
+  m.criticRating = m.top.findNode("criticRating")
+
+  ' Set initial text position based on iconSize
+  onIconSizeChanged()
+end sub
+
+sub onRatingChanged()
+  if not isValid(m.top.rating) then return
+  if m.top.rating = 0 then return
+
+  ' Ensure nodes are initialized
+  if not isValid(m.criticRating)
+    m.criticRating = m.top.findNode("criticRating")
+  end if
+  if not isValid(m.tomatoIcon)
+    m.tomatoIcon = m.top.findNode("tomatoIcon")
+  end if
+
+  if isValid(m.criticRating)
+    m.criticRating.text = str(m.top.rating)
+  end if
+
+  ' Select tomato icon based on rating
+  if isValid(m.tomatoIcon)
+    if m.top.rating > 60
+      m.tomatoIcon.uri = m.global.constants.iconTomatoFresh
+    else
+      m.tomatoIcon.uri = m.global.constants.iconTomatoRotten
+    end if
+  end if
+end sub
+
+sub onIconSizeChanged()
+  if not isValid(m.tomatoIcon) then return
+  if not isValid(m.criticRating) then return
+
+  ' Update icon dimensions (both display and load dimensions for optimized texture memory)
+  m.tomatoIcon.height = m.top.iconSize
+  m.tomatoIcon.width = m.top.iconSize
+  m.tomatoIcon.loadHeight = m.top.iconSize
+  m.tomatoIcon.loadWidth = m.top.iconSize
+
+  ' Update text position to maintain 0 horizontal spacing (no vertical offset)
+  m.criticRating.translation = [m.top.iconSize - 4, 0]
+end sub
