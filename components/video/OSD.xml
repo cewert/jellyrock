@@ -64,6 +64,8 @@
     <field id="officialRating" type="string" value="" />
     <!-- eg. 7.3 (out of 10) -->
     <field id="communityRating" type="float" />
+    <!-- eg. 95 (out of 100) -->
+    <field id="criticRating" type="float" />
     <!-- eg. "2011-01-17T00:00:00.0000000Z" -->
     <field id="premiereDate" type="string" value="" />
     <field id="productionYear" type="integer" />

@@ -89,6 +89,10 @@ sub setFields()
     m.top.communityRating = videoData.CommunityRating
   end if
 
+  if isValid(videoData.CriticRating)
+    m.top.criticRating = videoData.CriticRating
+  end if
+
   if isValid(videoData.OfficialRating)
     m.top.officialRating = videoData.OfficialRating
   end if
@@ -325,6 +329,24 @@ sub setVideoSubTitle()
 
   ' append these to all video types
   '
+  ' communityRating (star + rating)
+  if isValid(m.top.communityRating) and m.top.communityRating <> 0
+    communityRatingNode = CreateObject("roSGNode", "CommunityRating")
+    communityRatingNode.id = "communityRating"
+    communityRatingNode.rating = m.top.communityRating
+    communityRatingNode.iconSize = 30
+    displaySubtitleNode(communityRatingNode)
+  end if
+
+  ' criticRating (tomato + rating)
+  if isValid(m.top.criticRating) and m.top.criticRating <> 0
+    criticRatingNode = CreateObject("roSGNode", "CriticRating")
+    criticRatingNode.id = "criticRating"
+    criticRatingNode.rating = m.top.criticRating
+    criticRatingNode.iconSize = 30
+    displaySubtitleNode(criticRatingNode)
+  end if
+
   ' videoAirDate if needed
   if not airDateNodeCreated and isValid(m.top.premiereDate) and m.top.premiereDate <> ""
     premiereDateNode = createSubtitleLabelNode("videoAirDate")
