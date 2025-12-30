@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- display community and critic ratings in OSD ([#274](https://github.com/cewert/jellyrock/pull/274))
+
 ### Changed
 
 - MovieDetails metadata display with dynamic rating components ([#273](https://github.com/cewert/jellyrock/pull/273))
