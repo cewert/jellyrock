@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- MovieDetails metadata display with dynamic rating components ([#273](https://github.com/cewert/jellyrock/pull/273))
 - Complete video player migration to VideoPlayerView ([#266](https://github.com/cewert/jellyrock/pull/266))
 
 ### Fixed
