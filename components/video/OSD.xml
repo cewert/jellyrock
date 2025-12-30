@@ -53,6 +53,8 @@
   </children>
   <interface>
     <field id="type" type="string" value="" />
+    <field id="isMovie" type="boolean" value="false" />
+    <field id="isSeries" type="boolean" value="false" />
     <field id="videoTitle" type="string" value="" />
     <field id="seasonNumber" type="integer" />
     <field id="episodeNumber" type="integer" />

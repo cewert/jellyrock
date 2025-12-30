@@ -45,6 +45,36 @@ sub setFields()
     m.top.type = videoData.Type
   end if
 
+  ' Set isMovie and isSeries flags
+  ' For TvChannel and Program types, check CurrentProgram if available; for others, check top-level
+  checkData = invalid
+  if (m.top.type = "TvChannel" or m.top.type = "Program" or m.top.type = "LiveTvProgram") and isValid(videoData.CurrentProgram)
+    checkData = videoData.CurrentProgram
+  else
+    checkData = videoData
+  end if
+
+  if isValid(checkData)
+    ' Try using API flags first
+    if isValid(checkData.IsMovie)
+      m.top.isMovie = checkData.IsMovie
+    end if
+    if isValid(checkData.IsSeries)
+      m.top.isSeries = checkData.IsSeries
+    end if
+
+    ' Fallback heuristic: if no flags provided, infer from metadata
+    if not m.top.isMovie and not m.top.isSeries
+      ' If it has series/episode metadata, it's a series
+      if isValid(checkData.SeriesName) or isValid(checkData.SeasonNumber) or isValid(checkData.ParentIndexNumber)
+        m.top.isSeries = true
+      ' Otherwise, assume it's movie content
+      else
+        m.top.isMovie = true
+      end if
+    end if
+  end if
+
   if isValid(videoData.logoImage) and videoData.logoImage <> ""
     m.top.videoLogo = videoData.logoImage
   end if
@@ -85,12 +115,21 @@ sub setFields()
     m.top.episodeNumberEnd = videoData.IndexNumberEnd
   end if
 
-  if isValid(videoData.CommunityRating)
-    m.top.communityRating = videoData.CommunityRating
-  end if
-
-  if isValid(videoData.CriticRating)
-    m.top.criticRating = videoData.CriticRating
+  ' For TvChannel/Program, ratings come from CurrentProgram; for others, top-level
+  if (m.top.type = "TvChannel" or m.top.type = "Program" or m.top.type = "LiveTvProgram") and isValid(videoData.CurrentProgram)
+    if isValid(videoData.CurrentProgram.CommunityRating)
+      m.top.communityRating = videoData.CurrentProgram.CommunityRating
+    end if
+    if isValid(videoData.CurrentProgram.CriticRating)
+      m.top.criticRating = videoData.CurrentProgram.CriticRating
+    end if
+  else
+    if isValid(videoData.CommunityRating)
+      m.top.communityRating = videoData.CommunityRating
+    end if
+    if isValid(videoData.CriticRating)
+      m.top.criticRating = videoData.CriticRating
+    end if
   end if
 
   if isValid(videoData.OfficialRating)
@@ -329,22 +368,39 @@ sub setVideoSubTitle()
 
   ' append these to all video types
   '
-  ' communityRating (star + rating)
-  if isValid(m.top.communityRating) and m.top.communityRating <> 0
-    communityRatingNode = CreateObject("roSGNode", "CommunityRating")
-    communityRatingNode.id = "communityRating"
-    communityRatingNode.rating = m.top.communityRating
-    communityRatingNode.iconSize = 30
-    displaySubtitleNode(communityRatingNode)
+  userSettings = m.global.user.settings
+
+  ' Determine if ratings should be shown based on content type and user settings
+  showRatings = false
+  if m.top.isMovie
+    ' Movie content - respect uiMoviesShowRatings setting
+    showRatings = userSettings.uiMoviesShowRatings
+  else if m.top.isSeries
+    ' Series content - respect uiTvShowsDisableCommunityRating setting
+    showRatings = not userSettings.uiTvShowsDisableCommunityRating
+  else
+    ' Unknown/other content types - show if metadata exists
+    showRatings = true
   end if
 
-  ' criticRating (tomato + rating)
-  if isValid(m.top.criticRating) and m.top.criticRating <> 0
-    criticRatingNode = CreateObject("roSGNode", "CriticRating")
-    criticRatingNode.id = "criticRating"
-    criticRatingNode.rating = m.top.criticRating
-    criticRatingNode.iconSize = 30
-    displaySubtitleNode(criticRatingNode)
+  if showRatings
+    ' communityRating (star + rating)
+    if isValid(m.top.communityRating) and m.top.communityRating <> 0
+      communityRatingNode = CreateObject("roSGNode", "CommunityRating")
+      communityRatingNode.id = "communityRating"
+      communityRatingNode.rating = m.top.communityRating
+      communityRatingNode.iconSize = 30
+      displaySubtitleNode(communityRatingNode)
+    end if
+
+    ' criticRating (tomato + rating)
+    if isValid(m.top.criticRating) and m.top.criticRating <> 0
+      criticRatingNode = CreateObject("roSGNode", "CriticRating")
+      criticRatingNode.id = "criticRating"
+      criticRatingNode.rating = m.top.criticRating
+      criticRatingNode.iconSize = 30
+      displaySubtitleNode(criticRatingNode)
+    end if
   end if
 
   ' videoAirDate if needed
