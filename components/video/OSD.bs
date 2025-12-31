@@ -403,7 +403,6 @@ sub setVideoSubTitle()
   ' Official Rating
   if isValid(m.top.officialRating) and m.top.officialRating <> ""
     officialRatingNode = createSubtitleLabelNode("officialRating")
-    officialRatingNode.id = "officialRating"
     officialRatingNode.text = m.top.officialRating
     displaySubtitleNode(officialRatingNode)
   end if
