@@ -4,7 +4,6 @@ sub init()
   m.inactivityTimer = m.top.findNode("inactivityTimer")
   m.endsAtTime = m.top.findNode("endsAtTime")
   m.videoLogo = m.top.findNode("videoLogo")
-  m.videoOfficialRating = m.top.findNode("videoOfficialRating")
   m.videoTitle = m.top.findNode("videoTitle")
   m.videoSubtitleGroup = m.top.findNode("videoSubtitleGroup")
   m.videoPlayPause = m.top.findNode("videoPlayPause")
@@ -55,6 +54,7 @@ sub setFields()
   if not isValid(m.top.json) or m.top.json = "" then return
 
   videoData = parseJson(m.top.json)
+  ' print "OSD videoData = ", videoData
   mediaStreams = videoData.MediaStreams
   m.top.json = ""
 
@@ -283,10 +283,6 @@ end sub
 sub setVideoLogoGroup()
   m.videoLogo.uri = m.top.videoLogo
 
-  ' if isValid(m.top.officialRating) and m.top.officialRating <> ""
-  '     m.videoOfficialRating.text = m.top.officialRating
-  ' end if
-
   if m.top.currentProgram = "" then return
   currentProgram = ParseJson(m.top.currentProgram)
 
@@ -368,13 +364,13 @@ sub setVideoSubTitle()
     end if
   else if m.top.type = "Movie"
     ' videoAirDate
-    if isValid(m.top.premiereDate) and m.top.premiereDate <> ""
+    if isValid(m.top.productionYear) and m.top.productionYear > 0
       airDateNodeCreated = true
 
-      premiereDateNode = createSubtitleLabelNode("videoAirDate")
-      premiereDateNode.text = formatIsoDateVideo(m.top.premiereDate)
+      productionYearNode = createSubtitleLabelNode("productionYear")
+      productionYearNode.text = m.top.productionYear.toStr().trim()
 
-      displaySubtitleNode(premiereDateNode)
+      displaySubtitleNode(productionYearNode)
     end if
   else if m.top.type = "TvChannel"
     ' TvChannel
@@ -403,6 +399,13 @@ sub setVideoSubTitle()
   ' append these to all video types
   '
   userSettings = m.global.user.settings
+
+  ' Official Rating
+  if isValid(m.top.officialRating) and m.top.officialRating <> ""
+    officialRatingNode = createSubtitleLabelNode("officialRating")
+    officialRatingNode.text = m.top.officialRating
+    displaySubtitleNode(officialRatingNode)
+  end if
 
   ' Determine if ratings should be shown based on content type and user settings
   showRatings = false
