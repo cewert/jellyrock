@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- improve OSD metadata display ([#275](https://github.com/cewert/jellyrock/pull/275))
 - display community and critic ratings in OSD ([#274](https://github.com/cewert/jellyrock/pull/274))
 
 ### Changed
