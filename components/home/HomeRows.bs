@@ -502,6 +502,7 @@ sub updateFavoritesItems()
   if sectionExists(sectionName)
     m.top.content.replaceChild(row, getSectionIndex(sectionName))
     setRowItemSize()
+    updateBackdropForFocusedItem()
     return
   end if
 
@@ -544,6 +545,7 @@ sub updateContinueWatchingItems()
   if sectionExists(sectionName)
     m.top.content.replaceChild(row, getSectionIndex(sectionName))
     setRowItemSize()
+    updateBackdropForFocusedItem()
     return
   end if
 
@@ -584,6 +586,7 @@ sub updateNextUpItems()
   if sectionExists(sectionName)
     m.top.content.replaceChild(row, getSectionIndex(sectionName))
     setRowItemSize()
+    updateBackdropForFocusedItem()
     return
   end if
 
@@ -637,6 +640,7 @@ sub updateLatestItems(msg)
     ' Row already exists, replace it with new content
     m.top.content.replaceChild(row, getSectionIndex(sectionName))
     setRowItemSize()
+    updateBackdropForFocusedItem()
     return
   end if
 
@@ -684,6 +688,7 @@ sub updateOnNowItems()
   if sectionExists(sectionName)
     m.top.content.replaceChild(row, getSectionIndex(sectionName))
     setRowItemSize()
+    updateBackdropForFocusedItem()
     return
   end if
 
@@ -701,18 +706,39 @@ sub itemSelected()
   m.top.selectedItem = invalid
 end sub
 
-' Handle item focus changes and update background image
+' Observer for rowItemFocused field - delegates to updateBackdropForFocusedItem
 sub onItemFocused()
+  updateBackdropForFocusedItem()
+end sub
+
+' Update backdrop to match currently focused item
+' Handles all validation and edge cases
+' Used by: onItemFocused observer and row update functions after replaceChild
+sub updateBackdropForFocusedItem()
   ' Check if valid focus position
   if not isValid(m.top.rowItemFocused) or m.top.rowItemFocused[0] = -1 or m.top.rowItemFocused[1] = -1
     return
   end if
 
-  ' Get focused item
-  focusedItem = m.top.content.getChild(m.top.rowItemFocused[0]).getChild(m.top.rowItemFocused[1])
+  ' Ensure content exists
+  if not isValid(m.top.content) or m.top.content.getChildCount() = 0
+    return
+  end if
+
+  ' Get the focused row
+  focusedRow = m.top.content.getChild(m.top.rowItemFocused[0])
+  if not isValid(focusedRow) or focusedRow.getChildCount() = 0
+    return
+  end if
+
+  ' Get the focused item within that row
+  focusedItem = focusedRow.getChild(m.top.rowItemFocused[1])
+  if not isValid(focusedItem)
+    return
+  end if
 
   ' Set background to item backdrop if available
-  if isValid(focusedItem) and isValid(focusedItem.backdropUrl)
+  if isValid(focusedItem.backdropUrl)
     m.global.sceneManager.callFunc("setBackgroundImage", focusedItem.backdropUrl)
   end if
 end sub
