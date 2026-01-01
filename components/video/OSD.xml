@@ -30,7 +30,7 @@
 
     <!-- Progress bar -->
     <LabelSecondaryMedium id="videoPositionTime" bold="true" translation="[96,868]" />
-    <RectangleBackgroundSecondary id="progressBarBackground" width="1350" height="9" translation="[270,880]">
+    <RectangleBackgroundSecondary id="progressBarBackground" width="1425" height="9" translation="[240,880]">
       <RectangleSecondary id="progressBar" width="0" height="9" />
     </RectangleBackgroundSecondary>
     <LabelSecondaryMedium id="videoRemainingTime" bold="true" horizAlign="right" width="200" translation="[1624,868]" />
