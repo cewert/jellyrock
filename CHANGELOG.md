@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- reduce maxHeight to 300 for OSD logo image ([91c5fe1](https://github.com/cewert/jellyrock/commit/91c5fe1))
 - resolve external SubRip subtitle display issues ([#272](https://github.com/cewert/jellyrock/pull/272))
 - eliminate duplicate ItemPostPlaybackInfo calls during video load ([#271](https://github.com/cewert/jellyrock/pull/271))
 - stale backdrops during video playlist playback ([#269](https://github.com/cewert/jellyrock/pull/269))
