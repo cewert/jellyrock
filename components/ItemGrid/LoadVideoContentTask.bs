@@ -164,7 +164,7 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
 
   logoImageExists = api.items.HeadImageURLByName(logoLookupID, "logo")
   if logoImageExists
-    video.json.logoImage = api.items.GetImageURL(logoLookupID, "logo", 0, { "maxHeight": 500, "maxWidth": 500, "quality": "90" })
+    video.json.logoImage = api.items.GetImageURL(logoLookupID, "logo", 0, { "maxHeight": 300, "maxWidth": 500, "quality": "90" })
   end if
 
   if LCase(m.top.itemType) = "episode"
@@ -203,6 +203,11 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
 
   ' Playback info can be logged here for debugging playback issues
   print "LoadItems_AddVideoContent() m.playbackInfo =", m.playbackInfo
+  if m.playbackInfo.MediaSources.Count() > 0
+    for each mediaSource in m.playbackInfo.MediaSources
+      print "mediaSource =", mediaSource
+    end for
+  end if
 
   ' Call addSubtitlesToVideo ONCE after ItemPostPlaybackInfo
   addSubtitlesToVideo(video, meta)
