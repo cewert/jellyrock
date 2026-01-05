@@ -25,7 +25,7 @@ function getBackdropUrl(datum as object, deviceResolution as object) as string
   ' CollectionFolder or UserView
   if itemType = "collectionfolder" or itemType = "userview"
     if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
-      backdropParams = { "Tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
+      backdropParams = { "tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
       return ImageURL(datum.id, "Backdrop", backdropParams)
     end if
 
@@ -33,50 +33,50 @@ function getBackdropUrl(datum as object, deviceResolution as object) as string
   else if itemType = "episode" or itemType = "recording" or itemType = "musicvideo" or itemType = "program"
     ' Try parent backdrop first (for series-based content)
     if isValid(datum.ParentBackdropImageTags) and isValidAndNotEmpty(datum.ParentBackdropImageTags[0]) and isValid(datum.ParentBackdropItemId)
-      backdropParams = { "Tag": datum.ParentBackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
+      backdropParams = { "tag": datum.ParentBackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
       return ImageURL(datum.ParentBackdropItemId, "Backdrop", backdropParams)
     end if
     ' Fallback to own backdrop (rare for LiveTV, but possible)
     if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
-      backdropParams = { "Tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
+      backdropParams = { "tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
       return ImageURL(datum.Id, "Backdrop", backdropParams)
     end if
 
     ' Series
   else if itemType = "series"
     if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
-      backdropParams = { "Tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
+      backdropParams = { "tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
       return ImageURL(datum.Id, "Backdrop", backdropParams)
     end if
 
     ' Movie
   else if itemType = "movie"
     if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
-      backdropParams = { "Tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
+      backdropParams = { "tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
       return ImageURL(datum.id, "Backdrop", backdropParams)
     end if
 
     ' Video
   else if itemType = "video"
     if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
-      backdropParams = { "Tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
+      backdropParams = { "tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
       return ImageURL(datum.id, "Backdrop", backdropParams)
     end if
 
     ' MusicAlbum - Try album backdrop first, fallback to parent artist backdrop
   else if itemType = "musicalbum"
     if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
-      backdropParams = { "Tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
+      backdropParams = { "tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
       return ImageURL(datum.id, "Backdrop", backdropParams)
     else if isValid(datum.ParentBackdropImageTags) and isValidAndNotEmpty(datum.ParentBackdropImageTags[0]) and isValid(datum.ParentBackdropItemId)
-      backdropParams = { "Tag": datum.ParentBackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
+      backdropParams = { "tag": datum.ParentBackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
       return ImageURL(datum.ParentBackdropItemId, "Backdrop", backdropParams)
     end if
 
     ' MusicArtist - Use artist's own backdrop
   else if itemType = "musicartist"
     if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
-      backdropParams = { "Tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
+      backdropParams = { "tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
       return ImageURL(datum.id, "Backdrop", backdropParams)
     end if
 
@@ -84,12 +84,12 @@ function getBackdropUrl(datum as object, deviceResolution as object) as string
   else if itemType = "audio"
     ' Priority 1: Song's own backdrop (rare)
     if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
-      backdropParams = { "Tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
+      backdropParams = { "tag": datum.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
       return ImageURL(datum.id, "Backdrop", backdropParams)
     end if
     ' Priority 2: Album backdrop (via ParentBackdropImageTags - this is the album's backdrop for songs)
     if isValid(datum.ParentBackdropImageTags) and isValidAndNotEmpty(datum.ParentBackdropImageTags[0]) and isValid(datum.ParentBackdropItemId)
-      backdropParams = { "Tag": datum.ParentBackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
+      backdropParams = { "tag": datum.ParentBackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
       return ImageURL(datum.ParentBackdropItemId, "Backdrop", backdropParams)
     end if
 

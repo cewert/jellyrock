@@ -1,13 +1,17 @@
 import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/api/Image.bs"
+import "pkg:/source/roku_modules/log/LogMixin.brs"
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/misc.bs"
 
 sub init()
+  m.log = log.Logger("AudioPlayerView")
+
   m.top.optionsAvailable = false
   m.inScrubMode = false
   m.lastRecordedPositionTimestamp = 0
   m.scrubTimestamp = -1
+  m.currentBackdropUrl = ""
 
   m.queueManager = m.global.queueManager
   m.playlistTypeCount = m.queueManager.callFunc("getQueueUniqueTypes").count()
@@ -47,8 +51,6 @@ end sub
 
 sub applyTheme()
   constants = m.global.constants
-
-  m.backDropMask.color = constants.colorBlack + constants.alpha40
 
   m.seekBar.color = constants.colorBlack + constants.alpha60
   m.bufferPosition.color = constants.colorBackgroundSecondary
@@ -92,10 +94,6 @@ sub setupDataTasks()
   ' Load meta data
   m.LoadMetaDataTask = CreateObject("roSGNode", "LoadItemsTask")
   m.LoadMetaDataTask.itemsToLoad = "metaData"
-
-  ' Load background image
-  m.LoadBackdropImageTask = CreateObject("roSGNode", "LoadItemsTask")
-  m.LoadBackdropImageTask.itemsToLoad = "backdropImage"
 
   ' Load audio stream
   m.LoadAudioStreamTask = CreateObject("roSGNode", "LoadItemsTask")
@@ -158,8 +156,6 @@ end sub
 
 sub setupInfoNodes()
   m.albumCover = m.top.findNode("albumCover")
-  m.backDrop = m.top.findNode("backdrop")
-  m.backDropMask = m.top.findNode("backDropMask")
   m.playPosition = m.top.findNode("playPosition")
   m.bufferPosition = m.top.findNode("bufferPosition")
   m.seekBar = m.top.findNode("seekBar")
@@ -565,21 +561,28 @@ sub onAudioStreamLoaded()
       useMetaTask = true
     end if
 
-    ' If we don't have enough data to populate the screen, load metadata
+    ' Set backdrop immediately from available data (will be set once in onMetaDataLoaded if useMetaTask = true)
+    if not useMetaTask
+      ' We have all data, set backdrop now from parent backdrop
+      if isValid(currentItem.ParentBackdropItemId) and isValid(currentItem.ParentBackdropImageTags) and currentItem.ParentBackdropImageTags.count() > 0
+        localDevice = m.global.device
+        backdropUri = ImageURL(currentItem.ParentBackdropItemId, "Backdrop", { "maxHeight": localDevice.uiResolution[1], "maxWidth": localDevice.uiResolution[0], "tag": currentItem.ParentBackdropImageTags[0] })
+        m.log.info("Backdrop change (immediate): old=", m.currentBackdropUrl, "new=", backdropUri)
+        m.currentBackdropUrl = backdropUri
+        m.global.sceneManager.callFunc("setBackgroundImage", backdropUri)
+      else
+        m.log.info("Backdrop change (immediate): old=", m.currentBackdropUrl, "new=(empty)")
+        m.currentBackdropUrl = ""
+        m.global.sceneManager.callFunc("setBackgroundImage", "")
+      end if
+    end if
+
+    ' If we don't have enough data to populate the screen, load metadata (which will also set backdrop)
     if useMetaTask
       m.LoadMetaDataTask.itemId = currentItem.id
       m.LoadMetaDataTask.observeField("content", "onMetaDataLoaded")
       m.LoadMetaDataTask.control = "RUN"
     else
-      ' backdrop image
-      if isValid(currentItem.ParentBackdropItemId) and isValid(currentItem.ParentBackdropImageTags) and currentItem.ParentBackdropImageTags.count() > 0
-        ' Use UI resolution for backdrop images
-        localDevice = m.global.device
-        setBackdropImage(ImageURL(currentItem.ParentBackdropItemId, "Backdrop", { "maxHeight": localDevice.uiResolution[1], "maxWidth": localDevice.uiResolution[0], "tag": currentItem.ParentBackdropImageTags[0] }))
-      else
-        ' no backdrop available, clear existing backdrop
-        setBackdropImage("pkg:/images/transparent-16x9.png")
-      end if
 
       ' poster image
       if isValid(currentItem.AlbumId) and isValid(currentItem.AlbumPrimaryImageTag) and currentItem.AlbumPrimaryImageTag <> ""
@@ -607,23 +610,42 @@ sub onAudioStreamLoaded()
   end if
 end sub
 
-sub onBackdropImageLoaded()
-  data = m.LoadBackdropImageTask.content[0]
-  m.LoadBackdropImageTask.unobserveField("content")
-  if isValid(data) and data <> ""
-    setBackdropImage(data)
-  end if
-end sub
-
 sub onMetaDataLoaded()
   data = m.LoadMetaDataTask.content[0]
   m.LoadMetaDataTask.unobserveField("content")
   if isValid(data) and data.count() > 0 and isValid(data.json)
-    ' Use metadata to load backdrop image
+    ' Set backdrop with fallback strategy: artist backdrop → parent backdrop → clear
+    backdropSet = false
+    localDevice = m.global.device
+
+    ' Try artist backdrop first (preferred)
     if isValid(data.json.ArtistItems) and isValid(data.json.ArtistItems[0]) and isValid(data.json.ArtistItems[0].id)
-      m.LoadBackdropImageTask.itemId = data.json.ArtistItems[0].id
-      m.LoadBackdropImageTask.observeField("content", "onBackdropImageLoaded")
-      m.LoadBackdropImageTask.control = "RUN"
+      artist = data.json.ArtistItems[0]
+      if isValid(artist.BackdropImageTags) and artist.BackdropImageTags.count() > 0
+        backdropUri = ImageURL(artist.id, "Backdrop", { "maxHeight": localDevice.uiResolution[1], "maxWidth": localDevice.uiResolution[0], "tag": artist.BackdropImageTags[0] })
+        m.log.info("Backdrop change (artist): old=", m.currentBackdropUrl, "new=", backdropUri)
+        m.currentBackdropUrl = backdropUri
+        m.global.sceneManager.callFunc("setBackgroundImage", backdropUri)
+        backdropSet = true
+      end if
+    end if
+
+    ' Fall back to parent backdrop if no artist backdrop
+    if not backdropSet
+      if isValid(data.json.ParentBackdropItemId) and isValid(data.json.ParentBackdropImageTags) and data.json.ParentBackdropImageTags.count() > 0
+        backdropUri = ImageURL(data.json.ParentBackdropItemId, "Backdrop", { "maxHeight": localDevice.uiResolution[1], "maxWidth": localDevice.uiResolution[0], "tag": data.json.ParentBackdropImageTags[0] })
+        m.log.info("Backdrop change (parent): old=", m.currentBackdropUrl, "new=", backdropUri)
+        m.currentBackdropUrl = backdropUri
+        m.global.sceneManager.callFunc("setBackgroundImage", backdropUri)
+        backdropSet = true
+      end if
+    end if
+
+    ' Clear backdrop if no valid source found
+    if not backdropSet
+      m.log.info("Backdrop change (clear): old=", m.currentBackdropUrl, "new=(empty)")
+      m.currentBackdropUrl = ""
+      m.global.sceneManager.callFunc("setBackgroundImage", "")
     end if
 
     setPosterImage(data.posterURL)
@@ -689,15 +711,6 @@ sub setOnScreenTextValues(json)
 
     setFieldTextValue("artist", json.Artists[0])
     setFieldTextValue("song", json.name)
-  end if
-end sub
-
-' Add backdrop image to screen
-sub setBackdropImage(data)
-  if isValid(data)
-    if m.backDrop.uri <> data
-      m.backDrop.uri = data
-    end if
   end if
 end sub
 

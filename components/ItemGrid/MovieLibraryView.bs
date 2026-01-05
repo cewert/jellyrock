@@ -104,6 +104,9 @@ end sub
 sub OnScreenShown()
   m.overhang.isVisible = false
 
+  ' backdrop not supported on this screen. clear it to prevent stale images and visual bugs
+  m.global.sceneManager.callFunc("setBackgroundImage", "")
+
   if isValid(m.top.lastFocus)
     m.top.lastFocus.setFocus(true)
   else

@@ -77,6 +77,15 @@ sub changeImage(uri as string, isAnimated as boolean)
   transparentImage = "pkg:/images/transparent-16x9.png"
   constants = m.global.constants
 
+  ' Normalize empty URI to transparent image for comparison
+  newUri = uri
+  if uri = invalid or uri = ""
+    newUri = transparentImage
+  end if
+
+  ' Early return if URI hasn't changed - no need to re-set same image
+  if newUri = oldUrl then return
+
   ' Handle empty URI - use transparent image
   if uri = invalid or uri = ""
     m.currentUri = transparentImage
