@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- integrate AudioPlayerView with app-wide BackdropFader component ([#277](https://github.com/cewert/jellyrock/pull/277))
 - improve OSD metadata display ([#275](https://github.com/cewert/jellyrock/pull/275))
 - display community and critic ratings in OSD ([#274](https://github.com/cewert/jellyrock/pull/274))
 
