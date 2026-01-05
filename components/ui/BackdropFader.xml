@@ -14,7 +14,7 @@
       visible="false" />
 
     <Animation
-      id="fadeoutAnimation"
+      id="oldBackgroundFadeout"
       repeat="false"
       duration="0.5">
       <FloatFieldInterpolator
@@ -22,6 +22,12 @@
         key="[0.0, 1.0]"
         keyValue="[0.4, 0.0]"
         fieldToInterp="oldBackground.opacity" />
+    </Animation>
+
+    <Animation
+      id="shadeFadeoutAnimation"
+      repeat="false"
+      duration="0.5">
       <FloatFieldInterpolator
         id="shadeInterpolator"
         key="[0.0, 1.0]"

@@ -3,7 +3,8 @@ sub init()
   m.oldBackground = m.top.findNode("oldBackground")
   m.oldbackgroundInterpolator = m.top.findNode("oldbackgroundInterpolator")
   m.shade = m.top.findNode("shade")
-  m.fadeoutAnimation = m.top.findNode("fadeoutAnimation")
+  m.oldBackgroundFadeout = m.top.findNode("oldBackgroundFadeout")
+  m.shadeFadeoutAnimation = m.top.findNode("shadeFadeoutAnimation")
   m.fadeinAnimation = m.top.findNode("fadeinAnimation")
   m.currentUri = "pkg:/images/transparent-16x9.png"
   applyTheme()
@@ -54,17 +55,16 @@ sub onBackgroundLoaded()
     ' Keep background transparent (don't touch oldBackground - let fadeout animation handle it)
     m.background.opacity = 0
   else if m.top.isAnimated
-    ' Fade in new background
-    m.fadeinAnimation.control = "start"
-    ' Show shade at full opacity
-    m.shade.visible = true
+    ' Fade in new background and show shade
     m.shade.opacity = 0.6
+    m.shade.visible = true
+    m.fadeinAnimation.control = "start"
   else
     ' No animation: immediately show background and shade
     m.background.opacity = 0.4
     m.oldBackground.opacity = 0
-    m.shade.visible = true
     m.shade.opacity = 0.6
+    m.shade.visible = true
   end if
 end sub
 
@@ -100,7 +100,9 @@ sub changeImage(uri as string, isAnimated as boolean)
     m.background.uri = m.currentUri
   end if
 
-  m.fadeoutAnimation.control = "stop"
+  ' Stop any ongoing fadeout animations
+  m.oldBackgroundFadeout.control = "stop"
+  m.shadeFadeoutAnimation.control = "stop"
 
   ' Handle transition from old image (same logic for both transparent and real images)
   if oldUrl <> invalid and oldUrl <> "" and oldUrl <> transparentImage
@@ -109,7 +111,12 @@ sub changeImage(uri as string, isAnimated as boolean)
     if isAnimated
       ' Animate the old background from its current opacity to 0
       m.oldbackgroundInterpolator.keyValue = [0.4, 0.0]
-      m.fadeoutAnimation.control = "start"
+      m.oldBackgroundFadeout.control = "start"
+
+      ' Only fade out shade if transitioning TO transparent image
+      if m.currentUri = transparentImage
+        m.shadeFadeoutAnimation.control = "start"
+      end if
     else
       m.background.opacity = 0.4
       m.oldBackground.opacity = 0
