@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="AudioPlayerView" extends="JRScreen">
   <children>
-    <Poster id="backdrop" opacity=".5" loadDisplayMode="scaleToZoom" width="1920" height="1200" />
-    <Rectangle id="backDropMask" width="1920" height="1080" />
     <LabelSecondarySmallest id="positionTimestamp" width="100" height="25" horizAlign="right" translation="[590,838]" text="0:00" />
     <LabelSecondarySmallest id="totalLengthTimestamp" width="100" height="25" horizAlign="left" translation="[1230,838]" />
 
