@@ -703,7 +703,7 @@ end sub
 ' @return {dynamic} - ContentNode if valid, invalid otherwise
 function getItemAtIndices(indices as object) as dynamic
   ' Validate indices and content exist
-  if not isValid(indices) or not isValid(m.top.content)
+  if not isValidAndNotEmpty(indices) or not isValid(m.top.content)
     return invalid
   end if
 
