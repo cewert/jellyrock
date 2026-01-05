@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- (tvshows) restore smaller community rating in TV list details ([34a6469](https://github.com/cewert/jellyrock/commit/34a6469))
 - Backdrop not updating when watched item removed from home row ([#276](https://github.com/cewert/jellyrock/pull/276))
 - reduce maxHeight to 300 for OSD logo image ([91c5fe1](https://github.com/cewert/jellyrock/commit/91c5fe1))
 - resolve external SubRip subtitle display issues ([#272](https://github.com/cewert/jellyrock/pull/272))
