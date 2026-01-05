@@ -70,6 +70,17 @@ sub itemContentChanged()
       if not isValid(m.communityRating)
         m.communityRating = CreateObject("roSGNode", "CommunityRating")
         m.communityRating.id = "communityRating"
+
+        ' Customize rating display for TV list details
+        m.communityRating.iconSize = 24
+
+        ' Access the label child directly (second child, index 1)
+        ratingLabel = m.communityRating.getChild(1)
+        if isValid(ratingLabel)
+          globalConstants = m.global.constants
+          ratingLabel.font.size = globalConstants.fontSizeSmall
+          ratingLabel.color = globalConstants.colorTextSecondary
+        end if
       end if
 
       m.communityRating.rating = itemData.communityRating
