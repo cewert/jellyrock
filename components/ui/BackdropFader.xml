@@ -20,7 +20,7 @@
       <FloatFieldInterpolator
         id="oldbackgroundInterpolator"
         key="[0.0, 1.0]"
-        keyValue="[0.4, 0.0]"
+        keyValue="[1.0, 0.0]"
         fieldToInterp="oldBackground.opacity" />
     </Animation>
 
@@ -43,7 +43,7 @@
       <FloatFieldInterpolator
         id="backgroundInterpolator"
         key="[0.0, 1.0]"
-        keyValue="[0.0, 0.4]"
+        keyValue="[0.0, 1.0]"
         fieldToInterp="background.opacity" />
     </Animation>
   </children>

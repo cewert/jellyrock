@@ -61,7 +61,7 @@ sub onBackgroundLoaded()
     m.fadeinAnimation.control = "start"
   else
     ' No animation: immediately show background and shade
-    m.background.opacity = 0.4
+    m.background.opacity = 1.0
     m.oldBackground.opacity = 0
     m.shade.opacity = 0.6
     m.shade.visible = true
@@ -110,7 +110,7 @@ sub changeImage(uri as string, isAnimated as boolean)
 
     if isAnimated
       ' Animate the old background from its current opacity to 0
-      m.oldbackgroundInterpolator.keyValue = [0.4, 0.0]
+      m.oldbackgroundInterpolator.keyValue = [1.0, 0.0]
       m.oldBackgroundFadeout.control = "start"
 
       ' Only fade out shade if transitioning TO transparent image
@@ -118,7 +118,7 @@ sub changeImage(uri as string, isAnimated as boolean)
         m.shadeFadeoutAnimation.control = "start"
       end if
     else
-      m.background.opacity = 0.4
+      m.background.opacity = 1.0
       m.oldBackground.opacity = 0
       ' Immediately hide shade for non-animated transitions
       if m.currentUri = transparentImage
