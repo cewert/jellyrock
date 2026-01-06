@@ -32,7 +32,7 @@ sub setData()
 
   if LCase(datum.type) = "collectionfolder" or LCase(datum.type) = "userview"
     if isValid(datum.ImageTags) and isValidAndNotEmpty(datum.ImageTags.Primary)
-      params = { "Tag": datum.ImageTags.Primary, "maxHeight": 261, "maxWidth": 464 }
+      params = { "tag": datum.ImageTags.Primary, "maxHeight": 261, "maxWidth": 464 }
       m.top.thumbnailURL = ImageURL(datum.id, "Primary", params)
       m.top.widePosterUrl = m.top.thumbnailURL
     else
@@ -52,7 +52,7 @@ sub setData()
     imgParams = { "maxHeight": 261, "maxWidth": 464 }
 
     if isValid(datum.ImageTags) and isValidAndNotEmpty(datum.ImageTags.Primary)
-      param = { "Tag": datum.ImageTags.Primary }
+      param = { "tag": datum.ImageTags.Primary }
       imgParams.Append(param)
       m.top.thumbnailURL = ImageURL(datum.id, "Primary", imgParams)
     else
@@ -61,13 +61,13 @@ sub setData()
 
     ' Add Wide Poster  (Series Backdrop)
     if isValidAndNotEmpty(datum.ParentThumbImageTag) and isValid(datum.ParentThumbItemId)
-      imgParams["Tag"] = datum.ParentThumbImageTag
+      imgParams["tag"] = datum.ParentThumbImageTag
       m.top.widePosterUrl = ImageURL(datum.ParentThumbItemId, "Thumb", imgParams)
     else if isValid(datum.ParentBackdropImageTags) and isValidAndNotEmpty(datum.ParentBackdropImageTags[0]) and isValid(datum.ParentBackdropItemId)
-      imgParams["Tag"] = datum.ParentBackdropImageTags[0]
+      imgParams["tag"] = datum.ParentBackdropImageTags[0]
       m.top.widePosterUrl = ImageURL(datum.ParentBackdropItemId, "Backdrop", imgParams)
     else if isValid(datum.ImageTags) and isValidAndNotEmpty(datum.ImageTags.Primary) and isValidAndNotEmpty(datum.SeriesPrimaryImageTag)
-      imgParams["Tag"] = datum.SeriesPrimaryImageTag
+      imgParams["tag"] = datum.SeriesPrimaryImageTag
       m.top.widePosterUrl = ImageURL(datum.id, "Primary", imgParams)
     else
       m.top.widePosterUrl = ""
@@ -77,7 +77,7 @@ sub setData()
     imgParams = { "maxHeight": 261, "maxWidth": 464 }
 
     if isValid(datum.ImageTags) and isValidAndNotEmpty(datum.ImageTags.Primary)
-      imgParams["Tag"] = datum.ImageTags.Primary
+      imgParams["tag"] = datum.ImageTags.Primary
       m.top.posterURL = ImageURL(datum.id, "Primary", imgParams)
     else
       m.top.posterURL = ""
@@ -85,10 +85,10 @@ sub setData()
 
     ' Add Wide Poster  (Series Backdrop)
     if isValid(datum.ImageTags) and isValidAndNotEmpty(datum.ImageTags.Thumb)
-      imgParams["Tag"] = datum.ImageTags.Thumb
+      imgParams["tag"] = datum.ImageTags.Thumb
       m.top.widePosterUrl = ImageURL(datum.Id, "Thumb", imgParams)
     else if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
-      imgParams["Tag"] = datum.BackdropImageTags[0]
+      imgParams["tag"] = datum.BackdropImageTags[0]
       m.top.widePosterUrl = ImageURL(datum.Id, "Backdrop", imgParams)
     else
       m.top.widePosterUrl = ""
@@ -98,7 +98,7 @@ sub setData()
     imgParams = { "maxHeight": 261, "maxWidth": 175 }
 
     if isValid(datum.ImageTags) and isValidAndNotEmpty(datum.ImageTags.Primary)
-      param = { "Tag": datum.ImageTags.Primary }
+      param = { "tag": datum.ImageTags.Primary }
       imgParams.Append(param)
       m.top.posterURL = ImageURL(datum.id, "Primary", imgParams)
     else
@@ -109,10 +109,10 @@ sub setData()
     imgParams["maxWidth"] = 464
 
     if isValid(datum.ImageTags) and isValidAndNotEmpty(datum.ImageTags.Thumb)
-      imgParams["Tag"] = datum.ImageTags.Thumb
+      imgParams["tag"] = datum.ImageTags.Thumb
       m.top.thumbnailUrl = ImageURL(datum.Id, "Thumb", imgParams)
     else if isValid(datum.BackdropImageTags) and isValidAndNotEmpty(datum.BackdropImageTags[0])
-      imgParams["Tag"] = datum.BackdropImageTags[0]
+      imgParams["tag"] = datum.BackdropImageTags[0]
       m.top.thumbnailUrl = ImageURL(datum.id, "Backdrop", imgParams)
     else
       m.top.thumbnailUrl = ""
@@ -122,7 +122,7 @@ sub setData()
     imgParams = { "maxHeight": 261, "maxWidth": 464 }
 
     if isValid(datum.ImageTags) and isValidAndNotEmpty(datum.ImageTags.Primary)
-      imgParams.Append({ "Tag": datum.ImageTags.Primary })
+      imgParams.Append({ "tag": datum.ImageTags.Primary })
       m.top.posterURL = ImageURL(datum.id, "Primary", imgParams)
       m.top.thumbnailUrl = m.top.posterURL
     else
@@ -132,7 +132,7 @@ sub setData()
 
   else if datum.type = "MusicAlbum"
     if isValid(datum.ImageTags) and isValidAndNotEmpty(datum.ImageTags.Primary)
-      params = { "Tag": datum.ImageTags.Primary, "maxHeight": 261, "maxWidth": 261 }
+      params = { "tag": datum.ImageTags.Primary, "maxHeight": 261, "maxWidth": 261 }
       m.top.thumbnailURL = ImageURL(datum.id, "Primary", params)
       m.top.widePosterUrl = m.top.thumbnailURL
       m.top.posterUrl = m.top.thumbnailURL
@@ -144,7 +144,7 @@ sub setData()
 
   else if datum.type = "TvChannel" or datum.type = "Channel"
     if isValid(datum.ImageTags) and isValidAndNotEmpty(datum.ImageTags.Primary)
-      params = { "Tag": datum.ImageTags.Primary, "maxHeight": 261, "maxWidth": 464 }
+      params = { "tag": datum.ImageTags.Primary, "maxHeight": 261, "maxWidth": 464 }
       m.top.thumbnailURL = ImageURL(datum.id, "Primary", params)
       m.top.widePosterUrl = m.top.thumbnailURL
     else
@@ -154,7 +154,7 @@ sub setData()
     m.top.iconUrl = "pkg:/images/media_type_icons/live_tv_white.png"
   else if datum.type = "Photo"
     if isValid(datum.ImageTags) and isValidAndNotEmpty(datum.ImageTags.Primary)
-      params = { "Tag": datum.ImageTags.Primary, "maxHeight": 261, "maxWidth": 464 }
+      params = { "tag": datum.ImageTags.Primary, "maxHeight": 261, "maxWidth": 464 }
       m.top.thumbnailURL = ImageURL(datum.id, "Primary", params)
       m.top.widePosterUrl = m.top.thumbnailURL
       m.top.posterUrl = m.top.thumbnailURL
@@ -165,7 +165,7 @@ sub setData()
     end if
   else if datum.type = "PhotoAlbum"
     if isValid(datum.ImageTags) and isValidAndNotEmpty(datum.ImageTags.Primary)
-      params = { "Tag": datum.ImageTags.Primary, "maxHeight": 261, "maxWidth": 464 }
+      params = { "tag": datum.ImageTags.Primary, "maxHeight": 261, "maxWidth": 464 }
       m.top.thumbnailURL = ImageURL(datum.id, "Primary", params)
       m.top.widePosterUrl = m.top.thumbnailURL
       m.top.posterUrl = m.top.thumbnailURL

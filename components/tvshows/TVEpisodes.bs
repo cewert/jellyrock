@@ -60,7 +60,7 @@ sub setSeasonBackdrop()
 
   ' Priority 1: Try season's own backdrop first
   if isValid(m.top.seasonData.BackdropImageTags) and isValidAndNotEmpty(m.top.seasonData.BackdropImageTags[0])
-    backdropParams = { "Tag": m.top.seasonData.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
+    backdropParams = { "tag": m.top.seasonData.BackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
     backdropUrl = ImageURL(m.top.seasonData.Id, "Backdrop", backdropParams)
     m.global.sceneManager.callFunc("setBackgroundImage", backdropUrl)
     return
@@ -68,7 +68,7 @@ sub setSeasonBackdrop()
 
   ' Priority 2: Fallback to parent series backdrop
   if isValid(m.top.seasonData.ParentBackdropImageTags) and isValidAndNotEmpty(m.top.seasonData.ParentBackdropImageTags[0]) and isValid(m.top.seasonData.SeriesId)
-    backdropParams = { "Tag": m.top.seasonData.ParentBackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
+    backdropParams = { "tag": m.top.seasonData.ParentBackdropImageTags[0], "maxHeight": backdropHeight, "maxWidth": backdropWidth }
     backdropUrl = ImageURL(m.top.seasonData.SeriesId, "Backdrop", backdropParams)
     m.global.sceneManager.callFunc("setBackgroundImage", backdropUrl)
     return

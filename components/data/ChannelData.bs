@@ -20,10 +20,10 @@ sub setPoster()
   if isValid(m.top.image)
     m.top.posterURL = m.top.image.url
   else if isValid(m.top.json.ImageTags) and isValidAndNotEmpty(m.top.json.ImageTags.Primary)
-    imgParams = { "maxHeight": 60, "Tag": m.top.json.ImageTags.Primary }
+    imgParams = { "maxHeight": 60, "tag": m.top.json.ImageTags.Primary }
     m.top.hdsmalliconurl = ImageURL(m.top.json.id, "Primary", imgParams)
 
-    imgParams = { "maxHeight": 440, "maxWidth": 295, "Tag": m.top.json.ImageTags.Primary }
+    imgParams = { "maxHeight": 440, "maxWidth": 295, "tag": m.top.json.ImageTags.Primary }
     m.top.posterURL = ImageURL(m.top.json.id, "Primary", imgParams)
   else
     ' Set URLs to empty strings when no valid tags exist to prevent 404 requests
