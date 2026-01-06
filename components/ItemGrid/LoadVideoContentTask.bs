@@ -244,7 +244,6 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
 
   ' 'TODO: allow user selection of subtitle track before playback initiated, for now set to no subtitles
   video.directPlaySupported = m.playbackInfo.MediaSources[0].SupportsDirectPlay
-  fully_external = false
 
   ' For h264/hevc video, Roku spec states that it supports specfic encoding levels
   ' The device can decode content with a Higher Encoding level but may play it back with certain
@@ -271,7 +270,7 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
 
   if video.directPlaySupported
     video.isTranscoded = false
-    addVideoContentURL(video, mediaSourceId, audio_stream_idx, fully_external)
+    setupVideoContentWithAuth(video, mediaSourceId, audio_stream_idx)
   else
     if not isValid(m.playbackInfo.MediaSources[0].TranscodingUrl)
       ' If server does not provide a transcode URL, display a message to the user
@@ -289,14 +288,26 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
   setCertificateAuthority(video.content)
   ' Convert Jellyfin audio stream index to Roku's 1-indexed audio track position
   video.audioTrack = getRokuAudioTrackPosition(audio_stream_idx, video.fullAudioData)
-
-  if not fully_external
-    video.content = authRequest(video.content)
-  end if
 end sub
 
-sub addVideoContentURL(video, mediaSourceId, audio_stream_idx, fully_external)
+' setupVideoContentWithAuth: Configures video content URL and applies authentication
+'
+' Determines the appropriate URL based on protocol and stream location, then applies
+' Jellyfin authentication headers for internal streams. External streams (non-localhost)
+' receive the raw URL without authentication to prevent credential leakage.
+'
+' Protocol handling:
+' - "file": Direct stream from Jellyfin server (gets auth)
+' - Non-file with localhost domain: Proxied through Jellyfin (gets auth)
+' - Non-file with external domain: Direct external URL (NO auth)
+'
+' @param {object} video - Video object containing content node to configure
+' @param {dynamic} mediaSourceId - Media source ID or empty string for live streams
+' @param {integer} audio_stream_idx - Selected audio stream index
+sub setupVideoContentWithAuth(video, mediaSourceId, audio_stream_idx)
+  fully_external = false
   protocol = LCase(m.playbackInfo.MediaSources[0].Protocol)
+
   if protocol <> "file"
     uri = parseUrl(m.playbackInfo.MediaSources[0].Path)
     if not isValidAndNotEmpty(uri) then return
@@ -309,10 +320,12 @@ sub addVideoContentURL(video, mediaSourceId, audio_stream_idx, fully_external)
         video.content.url = buildURL(uri[4])
       end if
     else
+      ' External stream - use raw URL without modification
       fully_external = true
       video.content.url = m.playbackInfo.MediaSources[0].Path
     end if
   else
+    ' File protocol - build Jellyfin streaming URL
     params = {
       "Static": "true",
       "Container": video.container,
@@ -325,6 +338,11 @@ sub addVideoContentURL(video, mediaSourceId, audio_stream_idx, fully_external)
     end if
 
     video.content.url = buildURL(Substitute("Videos/{0}/stream", video.id), params)
+  end if
+
+  ' Apply Jellyfin authentication only for internal streams
+  if not fully_external
+    video.content = authRequest(video.content)
   end if
 end sub
 
