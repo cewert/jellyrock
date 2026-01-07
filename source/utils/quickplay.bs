@@ -23,9 +23,9 @@ namespace quickplay
   sub video(itemNode as object)
     if not isValid(itemNode) or not isValid(itemNode.id) or itemNode.id = "" or not isValid(itemNode.json) then return
 
-    ' Create a queue-specific copy to avoid modifying the UI node
+    ' Create a queue-specific item to avoid modifying the UI node
     ' This prevents the quickPlayNode field observer from firing twice
-    queueItem = nodeHelpers.cloneNode(itemNode)
+    queueItem = nodeHelpers.createQueueItem(itemNode)
     if not isValid(queueItem) then return
 
     ' Get user session for audio selection
@@ -64,14 +64,22 @@ namespace quickplay
   sub audio(itemNode as object)
     if not isValid(itemNode) or not isValid(itemNode.id) then return
 
-    m.global.queueManager.callFunc("push", itemNode)
+    ' Create a queue-specific item to avoid modifying the UI node
+    queueItem = nodeHelpers.createQueueItem(itemNode)
+    if not isValid(queueItem) then return
+
+    m.global.queueManager.callFunc("push", queueItem)
   end sub
 
   ' A single music video file.
   sub musicVideo(itemNode as object)
     if not isValid(itemNode) or not isValid(itemNode.id) or not isValid(itemNode.json) then return
 
-    m.global.queueManager.callFunc("push", itemNode)
+    ' Create a queue-specific item to avoid modifying the UI node
+    queueItem = nodeHelpers.createQueueItem(itemNode)
+    if not isValid(queueItem) then return
+
+    m.global.queueManager.callFunc("push", queueItem)
   end sub
 
   ' A single photo.

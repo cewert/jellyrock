@@ -1,79 +1,63 @@
 ' Node utility functions for creating and copying SGNodes
 namespace nodeHelpers
 
-  ' Create a deep copy of an SGNode with all its fields
-  ' This is useful for creating queue items from UI nodes without modifying the original
+  ' createQueueItem: Create a queue-compatible item from any source node
   '
-  ' @param sourceNode - The node to copy from
-  ' @param excludeFields - Optional array of field names to exclude from copying
-  ' @return A new node of the same type with all fields copied
+  ' Extracts only the essential fields needed for playback queue items,
+  ' avoiding issues with cloning complex UI components like SearchData, GridData, etc.
   '
-  ' IMPORTANT: This creates a NEW node that is disconnected from any field observers
-  ' Modifying fields on the returned node will NOT trigger observers on the source node
+  ' @param sourceNode - The source node (any type) to extract data from
+  ' @returns Associative array with essential fields, or invalid if sourceNode is invalid
   '
-  ' Example:
-  '   queueItem = nodeHelpers.cloneNode(uiNode, ["image", "focusable"])
+  ' Essential fields copied:
+  '   - id: Item identifier (required)
+  '   - type: Media type (required)
+  '   - json: Full Jellyfin metadata (required)
+  '   - title: Display title (optional)
+  '   - mediaSourceId: Media source ID (optional)
+  '   - RunTimeTicks: Runtime duration (optional)
   '
-  function cloneNode(sourceNode as object, excludeFields = [] as object) as object
+  ' Additional fields can be set later by quickplay (selectedAudioStreamIndex, startingPoint)
+  '
+  function createQueueItem(sourceNode as object) as object
     if not isValid(sourceNode)
-      print "[nodeHelpers.cloneNode] ERROR: sourceNode is invalid"
+      print "[nodeHelpers.createQueueItem] ERROR: sourceNode is invalid"
       return invalid
     end if
 
-    ' Create new node of same type
-    nodeType = sourceNode.subtype()
-    clonedNode = CreateObject("roSGNode", nodeType)
+    ' Create a simple associative array for queue storage
+    ' The queue accepts both SGNodes and associative arrays (see QueueManager.getItemType)
+    ' Using an AA avoids issues with cloning complex UI component nodes
+    queueItem = {}
 
-    if not isValid(clonedNode)
-      print "[nodeHelpers.cloneNode] ERROR: Failed to create cloned node"
-      return invalid
+    ' Copy essential fields that queue items need
+    ' Required fields
+    if isValidAndNotEmpty(sourceNode.id)
+      queueItem.id = sourceNode.id
     end if
 
-    ' Get all fields from source node (returns AA with fieldName: value pairs)
-    allFields = sourceNode.getFields()
-
-    ' Build associative array of fields to copy (excluding excluded fields)
-    fieldsToCopy = {}
-    for each fieldName in allFields
-      ' Skip if in exclusion list
-      if inArray(excludeFields, fieldName) then continue for
-
-      ' Get value from source - use allFields AA for efficiency
-      fieldValue = allFields[fieldName]
-
-      ' Only copy if value is valid (skip uninitialized fields)
-      if isValid(fieldValue)
-        fieldsToCopy[fieldName] = fieldValue
-      end if
-    end for
-
-    ' Use update() method to add fields and set values in one call
-    ' update(data, addFields=true) will create fields if they don't exist
-    if fieldsToCopy.Count() > 0
-      try
-        clonedNode.update(fieldsToCopy, true)
-      catch error
-        print "[nodeHelpers.cloneNode] update() failed:", error.message
-        ' Fallback: try addFields() + setFields() if update() doesn't exist
-        try
-          clonedNode.addFields(fieldsToCopy)
-        catch addError
-          print "[nodeHelpers.cloneNode] addFields() failed:", addError.message
-          ' If addFields fails, try setting individual fields
-          for each fieldName in fieldsToCopy
-            try
-              clonedNode[fieldName] = fieldsToCopy[fieldName]
-            catch setError
-              print "[nodeHelpers.cloneNode] Failed to set field:", fieldName, setError.message
-            end try
-          end for
-        end try
-      end try
-    else
-      print "[nodeHelpers.cloneNode] WARNING: No fields to copy!"
+    if isValidAndNotEmpty(sourceNode.type)
+      queueItem.type = sourceNode.type
     end if
 
-    return clonedNode
+    if isValid(sourceNode.json)
+      queueItem.json = sourceNode.json
+    end if
+
+    ' Optional fields (if they exist on source)
+    if isValidAndNotEmpty(sourceNode.title)
+      queueItem.title = sourceNode.title
+    end if
+
+    if isValidAndNotEmpty(sourceNode.mediaSourceId)
+      queueItem.mediaSourceId = sourceNode.mediaSourceId
+    end if
+
+    if isValid(sourceNode.RunTimeTicks)
+      queueItem.RunTimeTicks = sourceNode.RunTimeTicks
+    end if
+
+    return queueItem
   end function
 
 end namespace
