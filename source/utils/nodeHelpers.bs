@@ -1,7 +1,7 @@
 ' Node utility functions for creating and copying SGNodes
 namespace nodeHelpers
 
-  ' createQueueItem: Create a queue-compatible ContentNode from any source node
+  ' createQueueItem: Create a queue-compatible item from any source node
   '
   ' Extracts only the essential fields needed for playback queue items,
   ' avoiding issues with cloning complex UI components like SearchData, GridData, etc.
