@@ -369,7 +369,7 @@ sub addSubtitlesToVideo(video, meta)
   if not isValidAndNotEmpty(m.playbackInfo.MediaSources) then return
   if not isValid(m.playbackInfo.MediaSources[0].MediaStreams) then return
 
-  subtitles = sortSubtitles(meta.id, m.playbackInfo.MediaSources[0].MediaStreams)
+  subtitles = sortSubtitles(m.playbackInfo.MediaSources[0].MediaStreams)
   safesubs = subtitles["all"]
   subtitleTracks = []
 

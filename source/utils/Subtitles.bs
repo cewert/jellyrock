@@ -35,7 +35,7 @@ function defaultSubtitleTrackFromVid(meta as object, selectedAudioIndex as integ
   if not isValidAndNotEmpty(meta.json.MediaSources) then return SubtitleSelection.none
   if not isValidAndNotEmpty(meta.json.MediaSources[0].MediaStreams) then return SubtitleSelection.none
 
-  subtitles = sortSubtitles(meta.id, meta.json.MediaSources[0].MediaStreams)
+  subtitles = sortSubtitles(meta.json.MediaSources[0].MediaStreams)
 
   selectedAudioLanguage = ""
   ' Find the audio stream with the matching Jellyfin index
@@ -186,7 +186,7 @@ function getSubtitleSelIdxFromSubIdx(subtitles, sub_idx) as integer
 end function
 
 'Checks available subtitle tracks and puts subtitles in forced, default, and non-default/forced but preferred language at the top
-function sortSubtitles(id as string, MediaStreams)
+function sortSubtitles(MediaStreams)
   tracks = { "forced": [], "default": [], "normal": [], "text": [] }
   ' ONE rendezvous to get user node
   localUser = m.global.user
