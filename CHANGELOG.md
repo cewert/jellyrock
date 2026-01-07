@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- improve search textbox focus UX and address unused param (ref #132) ([9ec1ae1](https://github.com/cewert/jellyrock/commit/9ec1ae1))
+
 ## [1.7.1](https://github.com/cewert/jellyrock/compare/v1.7.0...v1.7.1) - 2026-01-07
 
 ### Fixed
