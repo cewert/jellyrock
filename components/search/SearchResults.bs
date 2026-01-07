@@ -15,11 +15,17 @@ sub init()
 
   m.searchHelpText = m.top.findNode("SearchHelpText")
 
+  ' Cache search keyboard reference and observe focus changes
+  ' to adjust alphabet layout when voice button popup appears
+  searchBox = m.top.findNode("SearchBox")
+  m.searchAlphabox = searchBox.findNode("search_Key")
+  m.searchAlphabox.observeField("focusedChild", "onKeyboardFocusChange")
+
   ' Observe row item focus for backdrop updates
   m.searchSelect.observeField("rowItemFocused", "onSearchItemFocused")
 
   ' Set initial focus for scene navigation
-  m.top.lastFocus = m.top.findNode("SearchBox")
+  m.top.lastFocus = searchBox
 end sub
 
 sub OnScreenShown()
@@ -31,6 +37,21 @@ sub OnScreenShown()
     m.top.lastFocus.setFocus(true)
   else
     m.top.setFocus(true)
+  end if
+end sub
+
+' onKeyboardFocusChange: Adjust alphabet keyboard position when textbox gains/loses focus
+' The voice button popup covers alphabet rows when textbox is focused, so we move the textbox up
+sub onKeyboardFocusChange()
+  if not isValid(m.searchAlphabox) then return
+
+  ' Check if the textEditBox has focus (voice button popup is visible)
+  if m.searchAlphabox.textEditBox.hasFocus()
+    ' Move textbox up so voice button popup doesn't cover alphabet rows below
+    m.searchAlphabox.textEditBox.translation = "[0, -150]"
+  else
+    ' Reset textbox to original position
+    m.searchAlphabox.textEditBox.translation = "[0, 0]"
   end if
 end sub
 
@@ -90,13 +111,7 @@ sub loadResults()
 end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
-
-  m.searchAlphabox = m.top.findNode("search_Key")
-  if m.searchAlphabox.textEditBox.hasFocus()
-    m.searchAlphabox.textEditBox.translation = "[0, -150]"
-  else
-    m.searchAlphabox.textEditBox.translation = "[0, 0]"
-  end if
+  if not press then return false
 
   if key = "left" and m.searchSelect.isinFocusChain()
     m.searchAlphabox.setFocus(true)
@@ -117,6 +132,6 @@ function onKeyEvent(key as string, press as boolean) as boolean
       end if
     end if
   end if
-  return false
 
+  return false
 end function
