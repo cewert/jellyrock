@@ -1,179 +1,417 @@
 
 namespace tests
 
-  @suite("nodeHelpers.bs - cloneNode Utility")
-  class NodeHelpersCloneTests extends tests.BaseTestSuite
+  @suite("nodeHelpers.bs - createQueueItem Utility")
+  class NodeHelpersCreateQueueItemTests extends tests.BaseTestSuite
 
     protected override function setup()
       super.setup()
     end function
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("cloneNode(sourceNode) - basic behavior")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("createQueueItem(sourceNode) - input validation")
+    '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("returns invalid when sourceNode is invalid")
     function _()
-      result = nodeHelpers.cloneNode(invalid)
+      result = nodeHelpers.createQueueItem(invalid)
       m.assertInvalid(result)
     end function
 
-    @it("creates a new node of the same type")
+    '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("createQueueItem(sourceNode) - return type")
+    '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns an associative array, not an SGNode")
     function _()
       sourceNode = CreateObject("roSGNode", "ContentNode")
-      clonedNode = nodeHelpers.cloneNode(sourceNode)
-
-      m.assertNotInvalid(clonedNode)
-      m.assertEqual(clonedNode.subtype(), "ContentNode")
-      ' Verify they are different instances
-      ' Note: ContentNode id defaults to empty string for both, which is expected
-      m.assertEqual(clonedNode.id, sourceNode.id)
-    end function
-
-    @it("copies all valid fields from source to clone")
-    function _()
-      sourceNode = CreateObject("roSGNode", "ContentNode")
-      ' Add custom fields (ContentNode doesn't have title/description by default)
+      sourceNode.id = "test-123"
       sourceNode.addFields({
-        customId: "test-123",
-        title: "Test Movie",
-        description: "Test Description"
+        type: "Movie",
+        json: { name: "Test Movie" }
       })
 
-      clonedNode = nodeHelpers.cloneNode(sourceNode)
+      queueItem = nodeHelpers.createQueueItem(sourceNode)
 
-      m.assertEqual(clonedNode.customId, "test-123")
-      m.assertEqual(clonedNode.title, "Test Movie")
-      m.assertEqual(clonedNode.description, "Test Description")
+      m.assertNotInvalid(queueItem)
+      ' Verify it's an AA by checking it has the count() method
+      m.assertNotInvalid(queueItem.count())
+      ' SGNodes have subtype(), AAs return invalid when accessing non-existent method
+      m.assertInvalid(queueItem.subtype)
     end function
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("cloneNode(sourceNode) - field exclusion")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("createQueueItem(sourceNode) - required fields")
+    '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("excludes system fields by default")
-    function _()
-      ' Create a node with UI fields
-      ' Note: Rectangle width/height are Float type in XML, not Integer
-      sourceNode = CreateObject("roSGNode", "Rectangle")
-      sourceNode.width = 100.0
-      sourceNode.height = 200.0
-
-      clonedNode = nodeHelpers.cloneNode(sourceNode)
-
-      ' Data fields should be copied
-      m.assertEqual(clonedNode.width, 100.0)
-      m.assertEqual(clonedNode.height, 200.0)
-    end function
-
-    @it("excludes user-specified fields from excludeFields array")
+    @it("copies id field when present")
     function _()
       sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.id = "movie-123"
       sourceNode.addFields({
-        customId: "test-123",
-        title: "Test Movie",
-        description: "Should not copy"
+        type: "Movie",
+        json: { name: "Test" }
       })
 
-      clonedNode = nodeHelpers.cloneNode(sourceNode, ["description"])
+      queueItem = nodeHelpers.createQueueItem(sourceNode)
 
-      m.assertEqual(clonedNode.customId, "test-123")
-      m.assertEqual(clonedNode.title, "Test Movie")
-      ' Description should be excluded (will be empty string, not the source value)
-      m.assertNotEqual(clonedNode.description, "Should not copy")
+      m.assertEqual(queueItem.id, "movie-123")
     end function
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("cloneNode(sourceNode) - independence")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    @it("creates disconnected node that doesn't affect source when modified")
+    @it("copies type field when present")
     function _()
       sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.id = "test-123"
       sourceNode.addFields({
-        customId: "original",
+        type: "Episode",
+        json: { name: "Test" }
+      })
+
+      queueItem = nodeHelpers.createQueueItem(sourceNode)
+
+      m.assertEqual(queueItem.type, "Episode")
+    end function
+
+    @it("copies json field when present")
+    function _()
+      jsonData = {
+        id: "123",
+        name: "Test Movie",
+        MediaStreams: [{ index: 0 }]
+      }
+
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.id = "test-123"
+      sourceNode.addFields({
+        type: "Movie",
+        json: jsonData
+      })
+
+      queueItem = nodeHelpers.createQueueItem(sourceNode)
+
+      m.assertNotInvalid(queueItem.json)
+      m.assertEqual(queueItem.json.id, "123")
+      m.assertEqual(queueItem.json.name, "Test Movie")
+      m.assertNotInvalid(queueItem.json.MediaStreams)
+    end function
+
+    @it("handles missing id field gracefully")
+    function _()
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      ' Don't set id, leave it as default empty string
+      sourceNode.addFields({
+        type: "Movie",
+        json: { name: "Test" }
+      })
+
+      queueItem = nodeHelpers.createQueueItem(sourceNode)
+
+      m.assertNotInvalid(queueItem)
+      ' id will be empty string (ContentNode default), which won't be copied
+      m.assertTrue(NOT queueItem.DoesExist("id") or queueItem.id = "")
+    end function
+
+    @it("handles missing type field gracefully")
+    function _()
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.id = "test-123"
+      sourceNode.addFields({
+        json: { name: "Test" }
+      })
+      ' type field doesn't exist on sourceNode
+
+      queueItem = nodeHelpers.createQueueItem(sourceNode)
+
+      m.assertNotInvalid(queueItem)
+      ' type should not exist in the AA
+      m.assertFalse(queueItem.DoesExist("type"))
+    end function
+
+    @it("handles missing json field gracefully")
+    function _()
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.id = "test-123"
+      sourceNode.addFields({
+        type: "Movie"
+      })
+      ' json field doesn't exist on sourceNode
+
+      queueItem = nodeHelpers.createQueueItem(sourceNode)
+
+      m.assertNotInvalid(queueItem)
+      ' json should not exist in the AA
+      m.assertFalse(queueItem.DoesExist("json"))
+    end function
+
+    '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("createQueueItem(sourceNode) - optional fields")
+    '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("copies title field when present")
+    function _()
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.id = "test-123"
+      sourceNode.addFields({
+        type: "Movie",
+        json: { name: "Test" },
+        title: "Movie Title"
+      })
+
+      queueItem = nodeHelpers.createQueueItem(sourceNode)
+
+      m.assertEqual(queueItem.title, "Movie Title")
+    end function
+
+    @it("copies mediaSourceId field when present")
+    function _()
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.id = "test-123"
+      sourceNode.addFields({
+        type: "Movie",
+        json: { name: "Test" },
+        mediaSourceId: "source-456"
+      })
+
+      queueItem = nodeHelpers.createQueueItem(sourceNode)
+
+      m.assertEqual(queueItem.mediaSourceId, "source-456")
+    end function
+
+    @it("copies RunTimeTicks field when present")
+    function _()
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.id = "test-123"
+      sourceNode.addFields({
+        type: "Movie",
+        json: { name: "Test" },
+        RunTimeTicks: 36000000000&
+      })
+
+      queueItem = nodeHelpers.createQueueItem(sourceNode)
+
+      m.assertEqual(queueItem.RunTimeTicks, 36000000000&)
+    end function
+
+    @it("omits title when not present")
+    function _()
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.id = "test-123"
+      sourceNode.addFields({
+        type: "Movie",
+        json: { name: "Test" }
+      })
+      ' Explicitly clear title if ContentNode has default
+      sourceNode.title = ""
+
+      queueItem = nodeHelpers.createQueueItem(sourceNode)
+
+      ' Title should either not exist or be empty (not copied from empty source)
+      m.assertTrue(NOT queueItem.DoesExist("title") OR queueItem.title = "")
+    end function
+
+    @it("omits mediaSourceId when not present")
+    function _()
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.id = "test-123"
+      sourceNode.addFields({
+        type: "Movie",
+        json: { name: "Test" }
+      })
+
+      queueItem = nodeHelpers.createQueueItem(sourceNode)
+
+      m.assertFalse(queueItem.DoesExist("mediaSourceId"))
+    end function
+
+    @it("omits RunTimeTicks when not present")
+    function _()
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.id = "test-123"
+      sourceNode.addFields({
+        type: "Movie",
+        json: { name: "Test" }
+      })
+
+      queueItem = nodeHelpers.createQueueItem(sourceNode)
+
+      m.assertFalse(queueItem.DoesExist("RunTimeTicks"))
+    end function
+
+    '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("createQueueItem(sourceNode) - all fields together")
+    '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("copies all fields when all are present")
+    function _()
+      jsonData = {
+        id: "jellyfin-123",
+        name: "The Matrix",
+        MediaStreams: [{ type: "Video" }, { type: "Audio" }]
+      }
+
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.id = "test-123"
+      sourceNode.addFields({
+        type: "Movie",
+        json: jsonData,
+        title: "The Matrix",
+        mediaSourceId: "source-abc",
+        RunTimeTicks: 82140000000&
+      })
+
+      queueItem = nodeHelpers.createQueueItem(sourceNode)
+
+      ' Verify all required fields
+      m.assertEqual(queueItem.id, "test-123")
+      m.assertEqual(queueItem.type, "Movie")
+      m.assertNotInvalid(queueItem.json)
+      m.assertEqual(queueItem.json.name, "The Matrix")
+
+      ' Verify all optional fields
+      m.assertEqual(queueItem.title, "The Matrix")
+      m.assertEqual(queueItem.mediaSourceId, "source-abc")
+      m.assertEqual(queueItem.RunTimeTicks, 82140000000&)
+    end function
+
+    '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("createQueueItem(sourceNode) - independence")
+    '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("creates independent item that doesn't affect source when modified")
+    function _()
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.id = "original-id"
+      sourceNode.addFields({
+        type: "Movie",
+        json: { name: "Original" },
         title: "Original Title"
       })
 
-      clonedNode = nodeHelpers.cloneNode(sourceNode)
+      queueItem = nodeHelpers.createQueueItem(sourceNode)
 
-      ' Modify the clone
-      clonedNode.customId = "modified"
-      clonedNode.title = "Modified Title"
+      ' Modify the queue item
+      queueItem.id = "modified-id"
+      queueItem.type = "Episode"
+      queueItem.title = "Modified Title"
 
       ' Source should remain unchanged
-      m.assertEqual(sourceNode.customId, "original")
+      m.assertEqual(sourceNode.id, "original-id")
+      m.assertEqual(sourceNode.type, "Movie")
       m.assertEqual(sourceNode.title, "Original Title")
     end function
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("cloneNode(sourceNode) - data type handling")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    @it("handles nested associative array fields")
+    @it("source modifications don't affect returned queue item")
     function _()
       sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.id = "test-123"
       sourceNode.addFields({
+        type: "Movie",
+        json: { name: "Test" },
+        title: "Original"
+      })
+
+      queueItem = nodeHelpers.createQueueItem(sourceNode)
+
+      ' Modify source after creating queue item
+      sourceNode.id = "changed-456"
+      sourceNode.type = "Episode"
+      sourceNode.title = "Changed"
+
+      ' Queue item should retain original values
+      m.assertEqual(queueItem.id, "test-123")
+      m.assertEqual(queueItem.type, "Movie")
+      m.assertEqual(queueItem.title, "Original")
+    end function
+
+    '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("createQueueItem(sourceNode) - ignores extra fields")
+    '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("only copies the 6 specific fields, ignoring all others")
+    function _()
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.id = "test-123"
+      sourceNode.addFields({
+        type: "Movie",
+        json: { name: "Test" },
+        title: "Test Title",
+        mediaSourceId: "source-123",
+        RunTimeTicks: 1000&,
+        ' Extra fields that should NOT be copied
+        extraField1: "should not copy",
+        extraField2: 12345,
+        focusable: true,
+        visible: false
+      })
+
+      queueItem = nodeHelpers.createQueueItem(sourceNode)
+
+      ' Should have the 6 expected fields
+      m.assertEqual(queueItem.id, "test-123")
+      m.assertEqual(queueItem.type, "Movie")
+      m.assertNotInvalid(queueItem.json)
+      m.assertEqual(queueItem.title, "Test Title")
+      m.assertEqual(queueItem.mediaSourceId, "source-123")
+      m.assertEqual(queueItem.RunTimeTicks, 1000&)
+
+      ' Should NOT have extra fields
+      m.assertFalse(queueItem.DoesExist("extraField1"))
+      m.assertFalse(queueItem.DoesExist("extraField2"))
+      m.assertFalse(queueItem.DoesExist("focusable"))
+      m.assertFalse(queueItem.DoesExist("visible"))
+    end function
+
+    '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("createQueueItem(sourceNode) - real-world scenarios")
+    '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("handles SearchData node from search results")
+    function _()
+      ' Simulate a SearchData node with complex structure
+      sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.id = "episode-123"
+      sourceNode.addFields({
+        type: "Episode",
         json: {
-          id: "123",
-          name: "Test",
-          nested: {
-            value: 456
-          }
-        }
+          id: "episode-123",
+          name: "Pilot",
+          SeriesName: "Test Show",
+          MediaStreams: [{ type: "Video" }],
+          UserData: { PlaybackPositionTicks: 0& }
+        },
+        title: "Pilot"
       })
 
-      clonedNode = nodeHelpers.cloneNode(sourceNode)
+      queueItem = nodeHelpers.createQueueItem(sourceNode)
 
-      m.assertNotInvalid(clonedNode.json)
-      m.assertEqual(clonedNode.json.id, "123")
-      m.assertEqual(clonedNode.json.name, "Test")
-      m.assertEqual(clonedNode.json.nested.value, 456)
+      m.assertNotInvalid(queueItem)
+      m.assertEqual(queueItem.id, "episode-123")
+      m.assertEqual(queueItem.type, "Episode")
+      m.assertEqual(queueItem.title, "Pilot")
+      m.assertNotInvalid(queueItem.json)
+      m.assertEqual(queueItem.json.SeriesName, "Test Show")
     end function
 
-    @it("handles integer and float fields")
+    @it("allows additional fields to be set after creation")
     function _()
       sourceNode = CreateObject("roSGNode", "ContentNode")
+      sourceNode.id = "test-123"
       sourceNode.addFields({
-        intField: 42,
-        floatField: 3.14159,
-        longIntField: 9876543210&
+        type: "Movie",
+        json: { name: "Test" }
       })
 
-      clonedNode = nodeHelpers.cloneNode(sourceNode)
+      queueItem = nodeHelpers.createQueueItem(sourceNode)
 
-      m.assertEqual(clonedNode.intField, 42)
-      m.assertEqual(clonedNode.floatField, 3.14159)
-      m.assertEqual(clonedNode.longIntField, 9876543210&)
-    end function
+      ' These fields are set by quickplay after createQueueItem
+      queueItem.selectedAudioStreamIndex = 2
+      queueItem.startingPoint = 15000000000&
 
-    @it("handles boolean fields")
-    function _()
-      sourceNode = CreateObject("roSGNode", "ContentNode")
-      sourceNode.addFields({
-        boolTrue: true,
-        boolFalse: false
-      })
-
-      clonedNode = nodeHelpers.cloneNode(sourceNode)
-
-      m.assertTrue(clonedNode.boolTrue)
-      m.assertFalse(clonedNode.boolFalse)
-    end function
-
-    @it("handles array fields")
-    function _()
-      sourceNode = CreateObject("roSGNode", "ContentNode")
-      sourceNode.addFields({
-        arrayField: ["item1", "item2", "item3"]
-      })
-
-      clonedNode = nodeHelpers.cloneNode(sourceNode)
-
-      m.assertNotInvalid(clonedNode.arrayField)
-      m.assertEqual(clonedNode.arrayField.count(), 3)
-      m.assertEqual(clonedNode.arrayField[0], "item1")
-      m.assertEqual(clonedNode.arrayField[2], "item3")
+      m.assertEqual(queueItem.selectedAudioStreamIndex, 2)
+      m.assertEqual(queueItem.startingPoint, 15000000000&)
+      ' Original source should not have these fields added
+      m.assertInvalid(sourceNode.selectedAudioStreamIndex)
+      m.assertInvalid(sourceNode.startingPoint)
     end function
 
   end class

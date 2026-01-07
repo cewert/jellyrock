@@ -7,13 +7,36 @@ namespace tests
     protected override function setup()
       super.setup()
 
+      ' Ensure user settings has required fields for QueueManager initialization
+      localUser = m.global.user
+      if isValid(localUser) and isValid(localUser.settings)
+        ' QueueManager.init() requires playbackCinemaMode field
+        localUser.settings.playbackCinemaMode = false
+      end if
+
       ' Initialize QueueManager with actual component
-      if not m.global.doesExist("queueManager")
-        m.global.addField("queueManager", "node", false)
-        m.global.queueManager = CreateObject("roSGNode", "QueueManager")
-      else
-        ' Clear the queue for each test
-        m.global.queueManager.callFunc("clear")
+      ' Check both field existence AND value validity
+      needsNewQueueManager = true
+      if m.global.DoesExist("queueManager") and isValid(m.global.queueManager)
+        ' Queue manager exists and is valid, verify it's functional
+        testCount = m.global.queueManager.callFunc("getCount")
+        if isValid(testCount)
+          ' QueueManager is functional, just clear it
+          m.global.queueManager.callFunc("clear")
+          needsNewQueueManager = false
+        end if
+      end if
+
+      if needsNewQueueManager
+        ' Create new QueueManager
+        if not m.global.DoesExist("queueManager")
+          m.global.addField("queueManager", "node", false)
+        end if
+
+        queueMgr = CreateObject("roSGNode", "QueueManager")
+        if isValid(queueMgr)
+          m.global.queueManager = queueMgr
+        end if
       end if
     end function
 
