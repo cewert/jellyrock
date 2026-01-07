@@ -7,7 +7,7 @@ namespace nodeHelpers
   ' avoiding issues with cloning complex UI components like SearchData, GridData, etc.
   '
   ' @param sourceNode - The source node (any type) to extract data from
-  ' @returns ContentNode with essential fields, or invalid if sourceNode is invalid
+  ' @returns Associative array with essential fields, or invalid if sourceNode is invalid
   '
   ' Essential fields copied:
   '   - id: Item identifier (required)
@@ -32,11 +32,11 @@ namespace nodeHelpers
 
     ' Copy essential fields that queue items need
     ' Required fields
-    if isValid(sourceNode.id)
+    if isValidAndNotEmpty(sourceNode.id)
       queueItem.id = sourceNode.id
     end if
 
-    if isValid(sourceNode.type)
+    if isValidAndNotEmpty(sourceNode.type)
       queueItem.type = sourceNode.type
     end if
 
@@ -45,11 +45,11 @@ namespace nodeHelpers
     end if
 
     ' Optional fields (if they exist on source)
-    if isValid(sourceNode.title)
+    if isValidAndNotEmpty(sourceNode.title)
       queueItem.title = sourceNode.title
     end if
 
-    if isValid(sourceNode.mediaSourceId)
+    if isValidAndNotEmpty(sourceNode.mediaSourceId)
       queueItem.mediaSourceId = sourceNode.mediaSourceId
     end if
 

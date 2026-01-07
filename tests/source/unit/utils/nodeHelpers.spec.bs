@@ -107,8 +107,8 @@ namespace tests
       queueItem = nodeHelpers.createQueueItem(sourceNode)
 
       m.assertNotInvalid(queueItem)
-      ' id will be empty string (ContentNode default), which won't be copied
-      m.assertTrue(not queueItem.DoesExist("id") or queueItem.id = "")
+      ' id will be empty string (ContentNode default), and won't be copied due to isValidAndNotEmpty check
+      m.assertFalse(queueItem.DoesExist("id"))
     end function
 
     @it("handles missing type field gracefully")
@@ -205,8 +205,8 @@ namespace tests
 
       queueItem = nodeHelpers.createQueueItem(sourceNode)
 
-      ' Title should either not exist or be empty (not copied from empty source)
-      m.assertTrue(not queueItem.DoesExist("title") or queueItem.title = "")
+      ' Title should not exist in queue item when source has empty string (isValidAndNotEmpty check)
+      m.assertFalse(queueItem.DoesExist("title"))
     end function
 
     @it("omits mediaSourceId when not present")
