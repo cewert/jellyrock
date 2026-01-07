@@ -1,6 +1,65 @@
 ' Node utility functions for creating and copying SGNodes
 namespace nodeHelpers
 
+  ' createQueueItem: Create a queue-compatible ContentNode from any source node
+  '
+  ' Extracts only the essential fields needed for playback queue items,
+  ' avoiding issues with cloning complex UI components like SearchData, GridData, etc.
+  '
+  ' @param sourceNode - The source node (any type) to extract data from
+  ' @returns ContentNode with essential fields, or invalid if sourceNode is invalid
+  '
+  ' Essential fields copied:
+  '   - id: Item identifier (required)
+  '   - type: Media type (required)
+  '   - json: Full Jellyfin metadata (required)
+  '   - title: Display title (optional)
+  '   - mediaSourceId: Media source ID (optional)
+  '   - RunTimeTicks: Runtime duration (optional)
+  '
+  ' Additional fields can be set later by quickplay (selectedAudioStreamIndex, startingPoint)
+  '
+  function createQueueItem(sourceNode as object) as object
+    if not isValid(sourceNode)
+      print "[nodeHelpers.createQueueItem] ERROR: sourceNode is invalid"
+      return invalid
+    end if
+
+    ' Create a simple associative array for queue storage
+    ' The queue accepts both SGNodes and associative arrays (see QueueManager.getItemType)
+    ' Using an AA avoids issues with cloning complex UI component nodes
+    queueItem = {}
+
+    ' Copy essential fields that queue items need
+    ' Required fields
+    if isValid(sourceNode.id)
+      queueItem.id = sourceNode.id
+    end if
+
+    if isValid(sourceNode.type)
+      queueItem.type = sourceNode.type
+    end if
+
+    if isValid(sourceNode.json)
+      queueItem.json = sourceNode.json
+    end if
+
+    ' Optional fields (if they exist on source)
+    if isValid(sourceNode.title)
+      queueItem.title = sourceNode.title
+    end if
+
+    if isValid(sourceNode.mediaSourceId)
+      queueItem.mediaSourceId = sourceNode.mediaSourceId
+    end if
+
+    if isValid(sourceNode.RunTimeTicks)
+      queueItem.RunTimeTicks = sourceNode.RunTimeTicks
+    end if
+
+    return queueItem
+  end function
+
   ' Create a deep copy of an SGNode with all its fields
   ' This is useful for creating queue items from UI nodes without modifying the original
   '
