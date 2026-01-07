@@ -109,9 +109,40 @@ jobs:
           fi
 
           # Update the draft release with new ZIP and updated body
+          # Calculate release date based on Roku release cycle (PT timezone)
+          CURRENT_DAY_PT=$(TZ=America/Los_Angeles date +%A)
+
+          # Determine days to add based on Roku release cycle
+          case $CURRENT_DAY_PT in
+            Monday)
+              DAYS_TO_ADD=1  # Tuesday at 06:00 pm PT
+              ;;
+            Tuesday)
+              DAYS_TO_ADD=1  # Wednesday at 06:00 pm PT
+              ;;
+            Wednesday)
+              DAYS_TO_ADD=1  # Thursday at 06:00 pm PT
+              ;;
+            Thursday)
+              DAYS_TO_ADD=1  # Friday at 06:00 pm PT
+              ;;
+            Friday)
+              DAYS_TO_ADD=3  # Monday at 06:00 pm PT
+              ;;
+            Saturday)
+              DAYS_TO_ADD=2  # Monday at 06:00 pm PT
+              ;;
+            Sunday)
+              DAYS_TO_ADD=1  # Monday at 06:00 pm PT
+              ;;
+          esac
+
+          # Calculate release date in PT timezone
+          RELEASE_DATE=$(TZ=America/Los_Angeles date -d "+${DAYS_TO_ADD} days" +"%A, %B %d, %Y")
+
           UPDATED_BODY="## Release Schedule
 
-          JellyRock $TAG_NAME is scheduled for release on the [Roku Channel Store](https://channelstore.roku.com/details/232f9e82db11ce628e3fe7e01382a330:a85d6e9e520567806e8dae1c0cabadd5/jellyrock) DAY, MONTH 27, 2025 6:00 PM PT
+          JellyRock $TAG_NAME is scheduled for release on the [Roku Channel Store](https://channelstore.roku.com/details/232f9e82db11ce628e3fe7e01382a330:a85d6e9e520567806e8dae1c0cabadd5/jellyrock) $RELEASE_DATE 6:00 PM PT
 
           $RELEASE_NOTES"
 
