@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- silent crash when quickplaying from search results ([#283](https://github.com/cewert/jellyrock/pull/283))
 - external stream (.strm) playback broken ([#282](https://github.com/cewert/jellyrock/pull/282))
 
 ## [1.7.0](https://github.com/cewert/jellyrock/compare/v1.6.0...v1.7.0) - 2026-01-06
