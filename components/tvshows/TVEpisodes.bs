@@ -127,7 +127,7 @@ sub OnScreenShown()
 end sub
 
 ' Handle navigation input from the remote and act on it
-function onKeyEvent(key as string, press as boolean) as boolean
+function onKeyEvent(key as string, _press as boolean) as boolean
   if key = "left" and m.tvEpisodeRow.hasFocus()
     m.shuffle.setFocus(true)
     return true
