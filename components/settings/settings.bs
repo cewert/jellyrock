@@ -6,10 +6,12 @@ import "pkg:/source/utils/deviceCapabilities.bs"
 
 sub init()
   m.log = log.Logger("Settings")
+  m.top.overhangTitle = tr("Settings")
   m.top.optionsAvailable = false
 
   m.userLocation = []
 
+  m.versionLabel = m.top.findNode("versionLabel")
   m.settingsMenu = m.top.findNode("settingsMenu")
   m.settingDetail = m.top.findNode("settingDetail")
   m.settingDesc = m.top.findNode("settingDesc")
@@ -35,11 +37,6 @@ sub init()
   ' Load Configuration Tree
   m.configTree = GetConfigTree()
   LoadMenu({ children: m.configTree })
-end sub
-
-sub OnScreenShown()
-  ' Clear backdrop on settings screens
-  m.global.sceneManager.callFunc("setBackgroundImage", "")
 end sub
 
 sub onKeyGridSubmit()
@@ -84,9 +81,15 @@ sub LoadMenu(configSection)
   end if
 
   ' Set Path display
-  m.path.text = tr("Settings")
+  m.path.text = ""
   for each level in m.userLocation
-    if isValid(level.title) then m.path.text += " / " + tr(level.title)
+    if isValid(level.title)
+      if m.path.text = ""
+        m.path.text = tr(level.title)
+      else
+        m.path.text += " / " + tr(level.title)
+      end if
+    end if
   end for
 end sub
 
@@ -94,7 +97,6 @@ sub settingFocused()
 
   selectedSetting = m.userLocation.peek().children[m.settingsMenu.itemFocused]
   m.settingDesc.text = tr(selectedSetting.Description)
-  m.top.overhangTitle = tr(selectedSetting.Title)
 
   ' Hide Settings
   m.boolSetting.visible = false
@@ -205,10 +207,39 @@ sub radioSettingChanged()
   user.settings.Save(selectedSetting.settingName, newValue)
 end sub
 
+' JRScreen hook that gets ran when the screen is shown.
+' Adds version label to overhang titleGroup
+sub OnScreenShown()
+  ' Clear backdrop on settings screens
+  m.global.sceneManager.callFunc("setBackgroundImage", "")
+
+  ' Get reference to overhang titleGroup via sceneManager
+  overhang = m.top.getScene().findNode("overhang")
+  print "settings overhang: ", overhang
+  if not isValid(overhang) then return
+
+  overhang.isLogoVisible = true
+  overhang.currentUser = m.global.user.name
+  m.versionLabel.text = "v" + m.global.app.version
+
+  ' titleGroup = overhang.findNode("titleGroup")
+  ' print "settings titleGroup: ", titleGroup
+  ' if not isValid(titleGroup) then return
+
+  ' ' Create version label
+  ' versionLabel = createObject("roSGNode", "LabelSecondaryMedium")
+  ' versionLabel.id = "versionLabel"
+  ' versionLabel.text = "v" + m.global.app.version
+
+  ' ' Append to titleGroup
+  ' titleGroup.appendChild(versionLabel)
+end sub
+
 ' JRScreen hook that gets ran as needed.
 ' Assumes settings were changed and they affect the device profile.
-' Posts a new device profile to the server using the task thread
+' Posts a new device profile to the server using the task thread.
 sub OnScreenHidden()
+  ' Post device profile updates
   m.postTask.arrayData = getDeviceCapabilities()
   m.postTask.apiUrl = "/Sessions/Capabilities/Full"
   m.postTask.control = "RUN"

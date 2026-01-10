@@ -138,7 +138,7 @@ sub isLogoVisibleChanged()
       m.logo = m.logoPoster
       m.top.appendChild(m.logoPoster)
 
-      m.title.translation = [420, 51]
+      m.title.translation = [360, 51]
       m.title.maxWidth = 300
     end if
   else

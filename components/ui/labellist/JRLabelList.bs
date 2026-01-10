@@ -1,0 +1,45 @@
+import "pkg:/source/utils/misc.bs"
+
+sub init()
+  constants = m.global.constants
+  globalUser = m.global.user
+
+  m.top.vertFocusAnimationStyle = "floatingFocus"
+  m.top.focusBitmapUri = "pkg:/images/9patch/border-6px.9.png"
+  m.top.focusBitmapBlendColor = constants.colorPrimary ' color of the item selector
+  m.top.focusFootprintBitmapUri = "pkg:/images/9patch/filled-rounded.9.png"
+  m.top.focusFootprintBlendColor = constants.colorBackgroundSecondary
+  m.top.font.size = constants.fontSizeMedium
+  m.top.color = constants.colorTextPrimary
+  m.top.focusedFont = "font:MediumSystemFont"
+  m.top.focusedFont.size = constants.fontSizeMedium
+  m.top.focusedColor = constants.colorTextPrimary
+  m.top.textHorizAlign = "center"
+
+  m.top.numRows = 10
+
+  m.top.itemSpacing = [0, 24] ' spacing between labels
+
+  if globalUser.settings.uiFontFallback = true
+    m.top.rowLabelFont.uri = "tmp:/font"
+    applyFallbackFontScale(globalUser.fontScaleFactor)
+  end if
+
+end sub
+
+sub applyFallbackFontScale(fontScaleFactor as float)
+  if not isValid(fontScaleFactor) and fontScaleFactor > 0
+    print "ERROR - JRRowList applyFallbackFontScale: Invalid font scale factor"
+    return
+  end if
+  ' Get the current font size if one is set, or use a default
+  currentSize = m.top.rowLabelFont.size
+  if currentSize <= 0
+    print "ERROR - JRRowList applyFallbackFontScale: Invalid font size"
+    return
+  end if
+
+  ' Apply the global scale factor
+  scaledSize = currentSize * fontScaleFactor
+  m.top.rowLabelFont.size = scaledSize
+end sub
