@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- build warnings by tagging unused variables ([38fb7d0](https://github.com/cewert/jellyrock/commit/38fb7d0))
 - remove unused id parameter from sortSubtitles function ([5b65680](https://github.com/cewert/jellyrock/commit/5b65680))
 - improve search textbox focus UX and address unused param (ref #132) ([9ec1ae1](https://github.com/cewert/jellyrock/commit/9ec1ae1))
 
