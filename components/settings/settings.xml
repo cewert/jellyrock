@@ -1,25 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="Settings" extends="JRScreen">
   <children>
+    <LabelSecondaryMedium id="versionLabel" translation="[96,112]" />
+    <LabelPrimarySmaller id="path" translation="[96,170]" bold="true" />
 
-    <LabelPrimarySmallest id="path" translation="[95,175]" bold="true" />
-
-    <LabelList
-      translation="[120,250]"
+    <JRLabelList
+      translation="[106,236]"
       id="settingsMenu"
-      itemSize="[510,54]"
-      vertFocusAnimationStyle="floatingFocus"
-      focusBitmapBlendColor="#006fab"
-      focusedColor="#ffffff"
-      itemSpacing="[0,9]"
-      textVertAlign="center" />
+      itemSize="[552,54]"
+      vertFocusAnimationStyle="floatingFocus" />
 
     <Poster
-      translation="[710,230]" id="testRectangle" width="1210" height="830" uri="pkg:/images/9patch/filled-rounded.9.png" />
+      translation="[710,226]" id="testRectangle" width="1114" height="800" uri="pkg:/images/9patch/filled-rounded.9.png" />
 
-    <LayoutGroup translation="[1278,270]" id="settingDetail" vertAlignment="top" horizAlignment="center" itemSpacings="[50]">
+    <LayoutGroup translation="[1268,270]" id="settingDetail" vertAlignment="top" horizAlignment="center" itemSpacings="[50]">
       <LabelPrimaryMedium id="settingDesc"
-        width="1065"
+        width="1030"
         wrap="true"
         horizAlign="center"
         translation="[750,270]" />
