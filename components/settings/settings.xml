@@ -7,8 +7,7 @@
     <JRLabelList
       translation="[106,236]"
       id="settingsMenu"
-      itemSize="[552,54]"
-      vertFocusAnimationStyle="floatingFocus" />
+      itemSize="[552,54]" />
 
     <Poster
       translation="[710,226]" id="testRectangle" width="1114" height="800" uri="pkg:/images/9patch/filled-rounded.9.png" />

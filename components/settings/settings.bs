@@ -11,7 +11,8 @@ sub init()
 
   m.userLocation = []
 
-  m.versionLabel = m.top.findNode("versionLabel")
+  versionLabel = m.top.findNode("versionLabel")
+  versionLabel.text = "v" + m.global.app.version
   m.settingsMenu = m.top.findNode("settingsMenu")
   m.settingDetail = m.top.findNode("settingDetail")
   m.settingDesc = m.top.findNode("settingDesc")
@@ -208,18 +209,15 @@ sub radioSettingChanged()
 end sub
 
 ' JRScreen hook that gets ran when the screen is shown.
-' Adds version label to overhang titleGroup
 sub OnScreenShown()
   ' Clear backdrop on settings screens
   m.global.sceneManager.callFunc("setBackgroundImage", "")
 
-  ' Get reference to overhang titleGroup via sceneManager
   overhang = m.top.getScene().findNode("overhang")
   if not isValid(overhang) then return
 
   overhang.isLogoVisible = true
   overhang.currentUser = m.global.user.name
-  m.versionLabel.text = "v" + m.global.app.version
 end sub
 
 ' JRScreen hook that gets ran as needed.
