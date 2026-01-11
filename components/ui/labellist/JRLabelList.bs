@@ -21,25 +21,28 @@ sub init()
   m.top.itemSpacing = [0, 24] ' spacing between labels
 
   if globalUser.settings.uiFontFallback = true
-    m.top.rowLabelFont.uri = "tmp:/font"
+    m.top.font.uri = "tmp:/font"
+    m.top.focusedFont.uri = "tmp:/font"
     applyFallbackFontScale(globalUser.fontScaleFactor)
   end if
 
 end sub
 
 sub applyFallbackFontScale(fontScaleFactor as float)
-  if not isValid(fontScaleFactor) and fontScaleFactor > 0
-    print "ERROR - JRRowList applyFallbackFontScale: Invalid font scale factor"
-    return
-  end if
   ' Get the current font size if one is set, or use a default
-  currentSize = m.top.rowLabelFont.size
+  currentSize = m.top.font.size
   if currentSize <= 0
-    print "ERROR - JRRowList applyFallbackFontScale: Invalid font size"
+    print "ERROR - JRLabelList applyFallbackFontScale: Invalid font size"
     return
   end if
 
   ' Apply the global scale factor
-  scaledSize = currentSize * fontScaleFactor
-  m.top.rowLabelFont.size = scaledSize
+  if isValid(fontScaleFactor) and fontScaleFactor > 0
+    scaledSize = currentSize * fontScaleFactor
+    m.top.font.size = scaledSize
+    m.top.focusedFont.size = scaledSize
+  else
+    print "ERROR - JRLabelList applyFallbackFontScale: Invalid font scale factor"
+    return
+  end if
 end sub

@@ -215,24 +215,11 @@ sub OnScreenShown()
 
   ' Get reference to overhang titleGroup via sceneManager
   overhang = m.top.getScene().findNode("overhang")
-  print "settings overhang: ", overhang
   if not isValid(overhang) then return
 
   overhang.isLogoVisible = true
   overhang.currentUser = m.global.user.name
   m.versionLabel.text = "v" + m.global.app.version
-
-  ' titleGroup = overhang.findNode("titleGroup")
-  ' print "settings titleGroup: ", titleGroup
-  ' if not isValid(titleGroup) then return
-
-  ' ' Create version label
-  ' versionLabel = createObject("roSGNode", "LabelSecondaryMedium")
-  ' versionLabel.id = "versionLabel"
-  ' versionLabel.text = "v" + m.global.app.version
-
-  ' ' Append to titleGroup
-  ' titleGroup.appendChild(versionLabel)
 end sub
 
 ' JRScreen hook that gets ran as needed.
