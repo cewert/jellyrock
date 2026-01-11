@@ -10,7 +10,7 @@
       itemSize="[552,54]" />
 
     <Poster
-      translation="[710,226]" id="testRectangle" width="1114" height="800" uri="pkg:/images/9patch/filled-rounded.9.png" />
+      translation="[710,226]" id="rightPanelBackground" width="1114" height="800" uri="pkg:/images/9patch/filled-rounded.9.png" />
 
     <LayoutGroup translation="[1268,270]" id="settingDetail" vertAlignment="top" horizAlignment="center" itemSpacings="[50]">
       <LabelPrimaryMedium id="settingDesc"
