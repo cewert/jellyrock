@@ -17,7 +17,7 @@ sub init()
   m.settingDetail = m.top.findNode("settingDetail")
   m.settingDesc = m.top.findNode("settingDesc")
   m.path = m.top.findNode("path")
-  m.top.findNode("testRectangle").blendColor = m.global.constants.colorBackgroundSecondary
+  m.top.findNode("rightPanelBackground").blendColor = m.global.constants.colorBackgroundSecondary
 
   m.boolSetting = m.top.findNode("boolSetting")
   m.integerSetting = m.top.findNode("integerSetting")
