@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- changed: enable loadSync for local UI posters ([bbb5f99](https://github.com/cewert/jellyrock/commit/bbb5f99))
+
 ### Fixed
 
 - incorrect backdrop image dimensions ([19f8b88](https://github.com/cewert/jellyrock/commit/19f8b88))
