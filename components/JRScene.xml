@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="JRScene" extends="Scene">
   <children>
-    <BackdropFader
-      id="imageFader"
-      translation="[0, 0]"
-      scaleMode="scaleToZoom" />
+    <BackdropFader id="imageFader" translation="[0, 0]" />
     <Group id="content" />
     <JROverhang id="overhang" />
     <LabelPrimaryLarge id="loadingText" height="225" width="1266" horizAlign="center" vertAlign="bottom" wrap="true" translation="[327, 210]" visible="false" />

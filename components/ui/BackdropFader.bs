@@ -10,9 +10,6 @@ sub init()
   applyTheme()
 
   m.background.observeField("bitmapWidth", "onBackgroundLoaded")
-  m.top.observeField("width", "onSizeChange")
-  m.top.observeField("height", "onSizeChange")
-  m.top.observeField("scaleMode", "onSizeChange")
   m.top.observeField("uri", "onUriChange")
 end sub
 
@@ -27,24 +24,6 @@ sub applyTheme()
 
   ' Initialize shade opacity
   m.shade.opacity = 0
-end sub
-
-' If Size changed, change parameters to children
-sub onSizeChange()
-  m.background.width = m.top.width
-  m.oldBackground.width = m.top.width
-  m.shade.width = m.top.width
-  m.oldBackground.loadWidth = m.top.width
-  m.background.loadWidth = m.top.width
-
-  m.oldBackground.height = m.top.height
-  m.background.height = m.top.height
-  m.shade.height = m.top.height
-  m.oldBackground.loadHeight = m.top.height
-  m.background.loadHeight = m.top.height
-
-  m.oldBackground.loadDisplayMode = m.top.scaleMode
-  m.background.loadDisplayMode = m.top.scaleMode
 end sub
 
 sub onBackgroundLoaded()

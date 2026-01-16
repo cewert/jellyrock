@@ -9,9 +9,6 @@ sub init()
   m.loadingText = m.top.findNode("loadingText")
   m.spinner = m.top.findNode("spinner")
   m.imageFader = m.top.findNode("imageFader")
-  localDevice = m.global.device
-  m.imageFader.width = localDevice.uiResolution[0]
-  m.imageFader.height = localDevice.uiResolution[1]
 
   ' Hide backdrop until setting is resolved on first backdrop request (lazy initialization)
   m.imageFader.visible = false

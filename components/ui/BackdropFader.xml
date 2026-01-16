@@ -3,15 +3,12 @@
   <interface>
     <field id="uri" type="string" />
     <field id="isAnimated" type="boolean" value="true" />
-    <field id="scaleMode" type="string" value="limitSize" />
   </interface>
 
   <children>
-    <Poster id="oldBackground" opacity="0" />
-    <Poster id="background" opacity="0" />
-    <Rectangle
-      id="shade"
-      visible="false" />
+    <Poster id="oldBackground" height="1080" width="1920" loadDisplayMode="scaleToFit" opacity="0" />
+    <Poster id="background" height="1080" width="1920" loadDisplayMode="scaleToFit" opacity="0" />
+    <Rectangle id="shade" height="1080" width="1920" visible="false" />
 
     <Animation
       id="oldBackgroundFadeout"
