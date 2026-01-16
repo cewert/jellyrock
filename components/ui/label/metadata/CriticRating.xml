@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="CriticRating" extends="Group">
   <children>
-    <Poster id="tomatoIcon" loadDisplayMode="limitSize" translation="[0, 0]" />
+    <Poster id="tomatoIcon" loadDisplayMode="limitSize" loadSync="true" translation="[0, 0]" />
     <LabelPrimaryMedium id="criticRating" bold="true" />
   </children>
   <interface>
