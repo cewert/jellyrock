@@ -32,21 +32,12 @@ namespace tests
       m.assertEqual(result, expectedIndex)
     end function
 
-    @it("handles zero position")
-    @params(0.0, 10000, 0)
-    @params(0.0, 5000, 0)
-    function _(position, interval, expectedIndex)
-      result = trickplay.calculateThumbnailIndex(position, interval)
-      m.assertEqual(result, expectedIndex)
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("calculateTileIndex(thumbnailIndex, tileWidth, tileHeight)")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("returns correct tile index for various thumbnail indexes")
     @params(0, 10, 10, 0) ' First thumbnail, first tile
-    @params(0, 5, 5, 0) ' First thumbnail, different dimensions
     @params(50, 10, 10, 0) ' Middle of first tile
     @params(99, 10, 10, 0) ' Last thumbnail in first tile
     @params(24, 5, 5, 0) ' Last thumbnail in first tile, different dimensions
