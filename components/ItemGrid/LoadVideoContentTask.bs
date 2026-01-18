@@ -204,12 +204,7 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
     end if
 
     ' Pass meta.json (contains .Trickplay), video.id, device width, and initial position
-    trickplayConfig = trickplay.buildConfigFromMetadata(
-    meta.json,
-    video.id,
-    deviceWidth,
-    int(playbackPosition / 10000000)
-    )
+    trickplayConfig = trickplay.buildConfigFromMetadata(meta.json, video.id, deviceWidth, int(playbackPosition / 10000000))
 
     if isValid(trickplayConfig)
       video.content.trickplayMetadata = trickplayConfig

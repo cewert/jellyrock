@@ -142,12 +142,21 @@ sub updateClipGroupsForAspectRatio()
   ' Center poster is tallest, side posters should be vertically centered relative to it
   verticalOffset = int((m.centerDisplayHeight - m.sideDisplayHeight) / 2)
 
-  ' Horizontal positions remain fixed to maintain layout spacing
+  ' Calculate horizontal positions dynamically from display widths
   ' [clipMinus2, clipMinus1, clipCenter, clipPlus1, clipPlus2]
-  ' Positions: 0, 330, 660, 1150, 1480
-  ' - Side posters are 320px wide with 10px gaps between their edges -> origin deltas of 330px (320 + 10)
-  ' - Center poster is 480px wide, so the distance from center to side origins is 490px (480 + 10), creating larger middle gaps
-  horizontalPositions = [0, 330, 660, 1150, 1480]
+  ' Positions are derived from side and center display widths with a fixed gap
+  ' - Side posters use (m.sideDisplayWidth + gap) step
+  ' - Center poster spacing uses (m.centerDisplayWidth + gap) from side to center origins
+  gap = 10
+  sideStep = m.sideDisplayWidth + gap
+  centerStep = m.centerDisplayWidth + gap
+  horizontalPositions = [
+    0, ' clipMinus2
+    sideStep, ' clipMinus1
+    sideStep * 2, ' clipCenter
+    sideStep * 2 + centerStep, ' clipPlus1
+    sideStep * 3 + centerStep ' clipPlus2
+  ]
 
   ' Update side posters (indexes 0, 1, 3, 4)
   sideIndexes = [0, 1, 3, 4]
@@ -286,7 +295,9 @@ function calculateThumbsUntilBoundary(thumbnailIndex as integer) as integer
     return thumbnailIndex - currentTileBoundary + 1
   end if
 
-  return m.thumbsPerTile ' No direction, return full tile
+  ' Should never reach here - caller checks scrubDirection before calling
+  m.log.error("calculateThumbsUntilBoundary called with scrubDirection=0", "thumbnailIndex", thumbnailIndex)
+  return 0 ' Safest fallback - no distance to travel
 end function
 
 ' Calculates the safety threshold - how many thumbnails ahead we need to trigger download
