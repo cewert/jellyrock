@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component name="TrickplayTileLoader" extends="Task">
+  <interface>
+    <!-- Input fields -->
+    <field id="videoID" type="string" />
+    <field id="width" type="integer" />
+    <field id="tileIndexes" type="array" />
+
+    <!-- Output fields -->
+    <field id="loadedTiles" type="assocarray" />
+    <field id="failedTiles" type="array" />
+    <field id="status" type="string" />
+    <field id="avgDownloadTime" type="float" value="3.0" />
+  </interface>
+</component>

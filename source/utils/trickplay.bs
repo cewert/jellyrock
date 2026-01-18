@@ -1,0 +1,207 @@
+namespace trickplay
+
+  ' Calculates which thumbnail index corresponds to a given video position
+  ' @param {Float} position - Current video position in seconds
+  ' @param {Integer} interval - Milliseconds between thumbnails
+  ' @return {Integer} - Zero-based thumbnail index
+  function calculateThumbnailIndex(position as float, interval as integer) as integer
+    if interval <= 0 then return 0
+    ' Convert position to milliseconds and divide by interval
+    return int((position * 1000) / interval)
+  end function
+
+  ' Calculates which tile contains a given thumbnail index
+  ' @param {Integer} thumbnailIndex - Zero-based thumbnail index
+  ' @param {Integer} tileWidth - Number of thumbnails per row in tile
+  ' @param {Integer} tileHeight - Number of thumbnail rows in tile
+  ' @return {Integer} - Zero-based tile index
+  function calculateTileIndex(thumbnailIndex as integer, tileWidth as integer, tileHeight as integer) as integer
+    if tileWidth <= 0 or tileHeight <= 0 then return 0
+    thumbsPerTile = tileWidth * tileHeight
+    if thumbsPerTile <= 0 then return 0
+    return int(thumbnailIndex / thumbsPerTile)
+  end function
+
+  ' Calculates the clipping rectangle within a tile for a specific thumbnail
+  ' @param {Integer} thumbnailIndex - Zero-based thumbnail index
+  ' @param {Integer} tileWidth - Number of thumbnails per row in tile
+  ' @param {Integer} tileHeight - Number of thumbnail rows in tile
+  ' @param {Integer} thumbWidth - Width of individual thumbnail in pixels
+  ' @param {Integer} thumbHeight - Height of individual thumbnail in pixels
+  ' @return {Object} - {x, y, width, height} clipping rectangle
+  function calculateClippingRect(thumbnailIndex as integer, tileWidth as integer, tileHeight as integer, thumbWidth as integer, thumbHeight as integer) as object
+    if tileWidth <= 0 or tileHeight <= 0
+      return { x: 0, y: 0, width: thumbWidth, height: thumbHeight }
+    end if
+
+    thumbsPerTile = tileWidth * tileHeight
+    if thumbsPerTile <= 0
+      return { x: 0, y: 0, width: thumbWidth, height: thumbHeight }
+    end if
+
+    ' Calculate position within tile
+    positionInTile = thumbnailIndex mod thumbsPerTile
+    row = int(positionInTile / tileWidth)
+    col = positionInTile mod tileWidth
+
+    return {
+      x: col * thumbWidth,
+      y: row * thumbHeight,
+      width: thumbWidth,
+      height: thumbHeight
+    }
+  end function
+
+  ' Builds the Jellyfin API URL for a trickplay tile
+  ' @param {String} videoID - Jellyfin video item ID
+  ' @param {Integer} width - Resolution width of trickplay images
+  ' @param {Integer} tileIndex - Zero-based tile index
+  ' @return {String} - API endpoint path
+  function buildTrickplayUrl(videoID as string, width as integer, tileIndex as integer) as string
+    return "Videos/" + videoID + "/Trickplay/" + width.ToStr() + "/" + tileIndex.ToStr() + ".jpg"
+  end function
+
+  ' Builds the cachefs:/ path for storing a trickplay tile
+  ' @param {String} videoID - Jellyfin video item ID
+  ' @param {Integer} width - Resolution width of trickplay images
+  ' @param {Integer} tileIndex - Zero-based tile index
+  ' @return {String} - cachefs:/ file path
+  function buildTrickplayCachePath(videoID as string, width as integer, tileIndex as integer) as string
+    return "cachefs:/trickplay_" + videoID + "_" + width.ToStr() + "_" + tileIndex.ToStr() + ".jpg"
+  end function
+
+  ' Selects the best trickplay resolution based on device capabilities
+  ' SD (720p) uses smallest available, FHD (1920p) uses largest, scales between
+  ' @param {Object} trickplayData - Trickplay data object with width keys (e.g., {"320": {...}, "640": {...}})
+  ' @param {Integer} deviceWidth - Device max video width (e.g., 1920 for FHD, 720 for SD)
+  ' @return {String} - Best width key to use, or invalid if no data available
+  function selectBestResolution(trickplayData as object, deviceWidth as integer) as dynamic
+    if not isValid(trickplayData) or trickplayData.count() = 0
+      return invalid
+    end if
+
+    ' Collect all available widths and sort ascending
+    availableWidths = []
+    for each widthKey in trickplayData
+      width = val(widthKey)
+      if width > 0
+        availableWidths.push(width)
+      end if
+    end for
+
+    if availableWidths.count() = 0 then return invalid
+
+    ' Sort widths ascending
+    for i = 0 to availableWidths.count() - 2
+      for j = i + 1 to availableWidths.count() - 1
+        if availableWidths[j] < availableWidths[i]
+          temp = availableWidths[i]
+          availableWidths[i] = availableWidths[j]
+          availableWidths[j] = temp
+        end if
+      end for
+    end for
+
+    ' Select resolution based on device width:
+    ' <= 720 (SD): smallest available
+    ' >= 1920 (FHD): largest available
+    ' Between: scale proportionally
+    if deviceWidth <= 720
+      ' SD - use smallest
+      return availableWidths[0].ToStr()
+    else if deviceWidth >= 1920
+      ' FHD or higher - use largest
+      return availableWidths[availableWidths.count() - 1].ToStr()
+    else
+      ' HD (between SD and FHD) - pick middle option if available
+      middleIndex = int(availableWidths.count() / 2)
+      return availableWidths[middleIndex].ToStr()
+    end if
+  end function
+
+  ' Converts a thumbnail index to video position in seconds
+  ' @param {Integer} index - Zero-based thumbnail index
+  ' @param {Integer} interval - Milliseconds between thumbnails
+  ' @return {Float} - Video position in seconds
+  function thumbnailIndexToPosition(index as integer, interval as integer) as float
+    if interval <= 0 then return 0.0
+    ' Convert index to milliseconds, then to seconds
+    return (index * interval) / 1000.0
+  end function
+
+  ' buildConfigFromMetadata: Extracts and validates trickplay config from item metadata
+  '
+  ' Provides fail-fast validation at config creation time rather than at usage time.
+  ' Reusable across all content types (movies, episodes, live TV, recordings, etc.)
+  '
+  ' @param {object} itemMeta - Item metadata from ItemMetaData()
+  ' @param {string} videoID - Video item ID
+  ' @param {integer} deviceWidth - Device max video width for resolution selection
+  ' @param {integer} initialPosition - Starting playback position in seconds
+  ' @return {dynamic} - Valid config object or invalid if trickplay unavailable/invalid
+  function buildConfigFromMetadata(itemMeta as object, videoID as string, deviceWidth as integer, initialPosition as integer) as dynamic
+    if not isValid(itemMeta) then return invalid
+    if not isValidAndNotEmpty(itemMeta.Trickplay) then return invalid
+
+    ' Get first video ID key from Trickplay data
+    trickplayData = invalid
+    for each videoKey in itemMeta.Trickplay
+      trickplayData = itemMeta.Trickplay[videoKey]
+      exit for
+    end for
+
+    if not isValid(trickplayData) then return invalid
+
+    ' Select best resolution based on device
+    bestWidthKey = selectBestResolution(trickplayData, deviceWidth)
+    if not isValid(bestWidthKey) then return invalid
+    if not trickplayData.doesExist(bestWidthKey) then return invalid
+
+    widthConfig = trickplayData[bestWidthKey]
+
+    ' Build config object
+    config = {
+      videoID: videoID,
+      width: int(val(bestWidthKey)),
+      height: widthConfig.Height,
+      interval: widthConfig.Interval,
+      thumbnailCount: widthConfig.ThumbnailCount,
+      tileWidth: widthConfig.TileWidth,
+      tileHeight: widthConfig.TileHeight,
+      initialPosition: initialPosition
+    }
+
+    ' Validate config before returning
+    if not validateConfig(config)
+      return invalid
+    end if
+
+    return config
+  end function
+
+  ' validateConfig: Validates trickplay configuration object
+  '
+  ' Ensures all required fields exist and have valid values.
+  ' Numeric fields must be positive.
+  '
+  ' @param {object} config - Config object to validate
+  ' @return {boolean} - True if valid, false otherwise
+  function validateConfig(config as object) as boolean
+    if not isValid(config) then return false
+
+    requiredFields = ["videoID", "width", "height", "interval", "thumbnailCount", "tileWidth", "tileHeight"]
+
+    for each field in requiredFields
+      if not config.doesExist(field) then return false
+      if not isValid(config[field]) then return false
+
+      ' Validate numeric fields are positive
+      if field <> "videoID"
+        if config[field] <= 0 then return false
+      end if
+    end for
+
+    return true
+  end function
+
+end namespace
