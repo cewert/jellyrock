@@ -101,6 +101,9 @@ function downloadTile(tileIndex as integer, cachePath as string) as boolean
   ' Check for timeout (resp = invalid)
   if resp = invalid
     m.log.error("Request timeout for tile", tileIndex)
+    ' Clean up partial file that may have been written before timeout
+    fs = CreateObject("roFileSystem")
+    if fs.Exists(cachePath) then fs.Delete(cachePath)
     return false
   end if
 

@@ -1012,6 +1012,17 @@ sub cleanup()
   m.lastIndexUpdateTime = 0
   m.lastIndexForVelocity = -1
 
+  ' Reset poster state to prevent showing wrong video's thumbnails
+  ' This prevents the early exit optimization in updateSinglePoster from incorrectly
+  ' skipping updates when a new video with the same trickplay structure is loaded
+  m.posterThumbnailIndexes = [-1, -1, -1, -1, -1]
+
+  ' Clear poster URIs and hide them to ensure fresh tiles load for new video
+  for each poster in m.posterArray
+    poster.uri = ""
+    poster.visible = false
+  end for
+
   ' Cancel any in-flight tile loading task
   if m.taskRunning
     m.tileLoader.control = "STOP"
