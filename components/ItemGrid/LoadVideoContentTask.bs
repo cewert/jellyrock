@@ -4,15 +4,18 @@ import "pkg:/source/api/Items.bs"
 import "pkg:/source/api/userauth.bs"
 import "pkg:/source/api/UserLibrary.bs"
 import "pkg:/source/enums/SubtitleSelection.bs"
+import "pkg:/source/roku_modules/log/LogMixin.brs"
 import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/deviceCapabilities.bs"
 import "pkg:/source/utils/misc.bs"
 import "pkg:/source/utils/session.bs"
 import "pkg:/source/utils/streamSelection.bs"
 import "pkg:/source/utils/Subtitles.bs"
+import "pkg:/source/utils/trickplay.bs"
 
 sub init()
   m.top.functionName = "loadItems"
+  m.log = new log.Logger("LoadVideoContentTask")
 end sub
 
 sub loadItems()
@@ -52,6 +55,7 @@ function LoadItems_VideoPlayer(id as string, mediaSourceId as dynamic, audio_str
   video = {}
   video.id = id
   video.content = createObject("RoSGNode", "ContentNode")
+  video.content.addField("trickplayMetadata", "assocarray", false)
 
   LoadItems_AddVideoContent(video, mediaSourceId, audio_stream_idx, forceTranscoding)
 
@@ -189,6 +193,28 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
 
   ' PlayStart requires the time to be in seconds
   video.content.PlayStart = int(playbackPosition / 10000000)
+
+  ' Build complete trickplay config using utility function for fail-fast validation
+  if isValidAndNotEmpty(meta.json.Trickplay)
+    deviceWidth = m.global.device.videoWidth
+    if not isValid(deviceWidth) or deviceWidth = 0
+      deviceWidth = 1920 ' Default to FHD if not available
+    end if
+
+    trickplayConfig = trickplay.buildConfigFromMetadata(
+    meta.json,
+    video.id,
+    deviceWidth,
+    int(playbackPosition / 10000000)
+    )
+
+    if isValid(trickplayConfig)
+      video.content.trickplayMetadata = trickplayConfig
+      m.log.info("Trickplay config created", "selectedWidth", trickplayConfig.width, "deviceWidth", deviceWidth, "initialPos", trickplayConfig.initialPosition)
+    else
+      m.log.warn("Failed to build valid trickplay config for video", video.id)
+    end if
+  end if
 
   if not isValid(mediaSourceId) then mediaSourceId = video.id
   if meta.live then mediaSourceId = ""

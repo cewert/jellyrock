@@ -4,6 +4,12 @@ import "pkg:/source/utils/config.bs"
 import "pkg:/source/utils/misc.bs"
 import "pkg:/source/utils/queueBackdropHelper.bs"
 import "pkg:/source/utils/session.bs"
+import "pkg:/source/utils/trickplay.bs"
+
+' Child index for position label in Roku's built-in trickPlayBar component
+' The trickPlayBar is part of the Video node and doesn't expose child IDs,
+' so we must access by index. Fallback search logic exists if Roku changes the structure.
+const TRICKPLAYBAR_POSITION_LABEL_INDEX = 8
 
 sub init()
   m.log = log.Logger("VideoPlayerView")
@@ -33,6 +39,13 @@ sub init()
   m.chapterContent = m.top.findNode("chapterContent")
   m.osd = m.top.findNode("osd")
   m.osd.observeField("action", "onOSDAction")
+  m.trickplayCarousel = m.top.findNode("trickplayCarousel")
+
+  ' Trickplay seek position tracking - we parse Roku's trickPlayBar text to get
+  ' the authoritative seek position and sync our carousel to it
+  m.isTrackingSeek = false
+  m.carouselHiddenForSeek = false ' Track when carousel is hidden during seek confirmation
+  m.lastSentThumbnailIndex = -1 ' Dedup thumbnail index updates to prevent double-rendering at tile boundaries
 
   m.playbackTimer = m.top.findNode("playbackTimer")
   m.bufferCheckTimer = m.top.findNode("bufferCheckTimer")
@@ -77,7 +90,52 @@ sub init()
   m.top.trickPlayBar.thumbBlendColor = constants.colorTextPrimary
   m.top.trickPlayBar.textColor = constants.colorTextPrimary
   m.top.trickPlayBar.currentTimeMarkerBlendColor = constants.colorTextPrimary
+
+  ' Hook into trickPlayBar's internal position text to sync carousel with Roku's authoritative seek position
+  ' Use defensive search to handle different Roku OS versions
+  m.trickPlayBarPositionText = findTrickPlayBarPositionLabel()
+  if isValid(m.trickPlayBarPositionText)
+    m.trickPlayBarPositionText.observeField("text", "onTrickPlayBarTextChange")
+    m.log.info("TrickPlayBar position text observer attached successfully")
+  else
+    m.log.warn("TrickPlayBar position text not found - carousel will only update during playback, not during scrubbing")
+  end if
 end sub
+
+' findTrickPlayBarPositionLabel: Defensively finds the position text label in trickPlayBar
+'
+' Tries multiple strategies to find the Label that displays seek position:
+' 1. Expected child index (8) - fast path for current Roku OS
+' 2. Search for FIRST Label child - position text comes before remaining time
+' 3. Return invalid if not found - feature gracefully degrades
+'
+' @return {dynamic} - Label node or invalid if not found
+function findTrickPlayBarPositionLabel() as dynamic
+  if not isValid(m.top.trickPlayBar) then return invalid
+
+  ' Strategy 1: Try expected child index (current Roku structure)
+  child = m.top.trickPlayBar.getChild(TRICKPLAYBAR_POSITION_LABEL_INDEX)
+  if isValid(child) and child.subtype() = "Label"
+    m.log.debug("Found trickPlayBar position label at expected index", TRICKPLAYBAR_POSITION_LABEL_INDEX)
+    return child
+  end if
+
+  ' Strategy 2: Search for FIRST Label child (position comes before remaining time)
+  childCount = m.top.trickPlayBar.getChildCount()
+  m.log.warn("Position label not at expected index, searching for first Label child", "count", childCount)
+
+  for i = 0 to childCount - 1
+    child = m.top.trickPlayBar.getChild(i)
+    if isValid(child) and child.subtype() = "Label"
+      m.log.info("Found trickPlayBar position label via search", "index", i)
+      return child
+    end if
+  end for
+
+  ' Strategy 3: Not found - graceful degradation
+  m.log.error("Could not find trickPlayBar position label - carousel sync during scrub will not work")
+  return invalid
+end function
 
 ' handleChapterSkipAction: Handles user command to skip chapters in playing video
 '
@@ -489,6 +547,19 @@ sub onVideoContentLoaded()
 
   populateChapterMenu()
 
+  ' Clean up old carousel cache before loading new video's trickplay data
+  ' This handles all video change paths: OSD nav, next episode, queue changes, etc.
+  if isValid(m.trickplayCarousel)
+    m.trickplayCarousel.callFunc("cleanup")
+  end if
+
+  ' Configure trickplay carousel if metadata is available
+  if isValidAndNotEmpty(videoContent[0].content.trickplayMetadata)
+    m.trickplayCarousel.trickplayConfig = videoContent[0].content.trickplayMetadata
+    m.trickplayCarousel.videoDuration = m.top.duration
+  else
+    m.trickplayCarousel.visible = false
+  end if
 
   ' Allow custom captions for all videos including intro videos
   m.top.allowCaptions = true
@@ -697,6 +768,12 @@ sub onPositionChanged()
     m.captionTask.currentPos = Int(m.top.position * 1000)
   end if
 
+  ' Update trickplay carousel's playback position for proactive tile caching
+  ' This runs even when carousel is not visible to keep cache warm
+  if isValid(m.trickplayCarousel)
+    m.trickplayCarousel.playbackPosition = m.top.position
+  end if
+
   ' Check if dialog is open
   m.dialog = m.top.getScene().findNode("dialogBackground")
   if not isValid(m.dialog)
@@ -704,6 +781,86 @@ sub onPositionChanged()
     if not m.LoadMetaDataTask.isIntro
       checkTimeToDisplayNextEpisode()
     end if
+  end if
+
+  ' Tie carousel visibility to trickPlayBar (only when OSD is not visible)
+  ' BUT not if we've explicitly hidden it during seek confirmation
+  if isValid(m.trickplayCarousel) and not m.carouselHiddenForSeek
+    trickPlayBarVisible = m.top.trickPlayBar.visible and not m.osd.visible
+    m.trickplayCarousel.visible = trickPlayBarVisible
+
+    ' Reset seek tracking when trickPlayBar closes (user confirmed or cancelled seek)
+    if not trickPlayBarVisible
+      m.isTrackingSeek = false
+      m.carouselHiddenForSeek = false
+      m.lastSentThumbnailIndex = -1 ' Reset so next scrub session sends initial position
+    end if
+  end if
+
+  ' Update trickplay carousel position during normal playback only
+  ' When trickPlayBar is visible, onTrickPlayBarTextChange is the authoritative source
+  if isValid(m.trickplayCarousel) and m.trickplayCarousel.visible and not m.top.trickPlayBar.visible
+    updateTrickplayCarousel(m.top.position)
+  end if
+end sub
+
+' Updates trickplay carousel with index calculated from video position
+' Snaps to thumbnail boundaries for cleaner UX
+' @param {Float} position - Video position in seconds
+sub updateTrickplayCarousel(position as float)
+  if not isValid(m.trickplayCarousel) then return
+  if not isValidAndNotEmpty(m.trickplayCarousel.trickplayConfig) then return
+
+  interval = m.trickplayCarousel.trickplayConfig.interval
+
+  ' Calculate thumbnail index from position
+  thumbnailIndex = trickplay.calculateThumbnailIndex(position, interval)
+
+  ' Skip if same index as last sent - prevents double-rendering at tile boundaries
+  ' when both onPositionChanged and onTrickPlayBarTextChange fire with similar positions
+  if thumbnailIndex = m.lastSentThumbnailIndex then return
+  m.lastSentThumbnailIndex = thumbnailIndex
+
+  ' Update carousel with index (triggers shifting logic)
+  m.trickplayCarousel.thumbnailIndex = thumbnailIndex
+end sub
+
+' Called when Roku's trickPlayBar position text changes
+' Parses the time string to get seek position and syncs our carousel
+' This ensures carousel stays in sync with Roku's authoritative seek position
+sub onTrickPlayBarTextChange()
+  if not m.top.trickPlayBar.visible then return
+  if not isValid(m.trickPlayBarPositionText) then return
+
+  timeText = m.trickPlayBarPositionText.text
+  if not isValidAndNotEmpty(timeText) then return
+
+  ' Parse time string "53:50" (MM:SS) or "1:23:45" (H:MM:SS) to seconds
+  seekPosition = timeText.split(":")
+  seekTime = 0
+
+  if seekPosition.count() = 3
+    ' H:MM:SS format
+    seekTime = seekPosition[0].toInt() * 3600 ' hours
+    seekTime = seekTime + seekPosition[1].toInt() * 60 ' minutes
+    seekTime = seekTime + seekPosition[2].toInt() ' seconds
+  else if seekPosition.count() = 2
+    ' MM:SS format
+    seekTime = seekPosition[0].toInt() * 60 ' minutes
+    seekTime = seekTime + seekPosition[1].toInt() ' seconds
+  else
+    ' Unexpected format - use current position as fallback
+    seekTime = m.top.position
+  end if
+
+  m.log.debug("TrickPlayBar text changed", timeText, "parsed to", seekTime, "seconds")
+
+  ' Sync carousel with Roku's authoritative seek position
+  m.isTrackingSeek = true
+
+  ' Update carousel to match
+  if isValid(m.trickplayCarousel) and m.trickplayCarousel.visible
+    updateTrickplayCarousel(seekTime)
   end if
 end sub
 
@@ -763,10 +920,20 @@ sub onState()
     m.playbackTimer.unobserveField("fire")
     ReportPlayback("stop")
     m.playReported = false
+    ' Cleanup trickplay carousel
+    if isValid(m.trickplayCarousel)
+      m.trickplayCarousel.visible = false
+      m.trickplayCarousel.callFunc("cleanup")
+    end if
   else if m.top.state = "finished"
     m.playbackTimer.control = "stop"
     m.playbackTimer.unobserveField("fire")
     ReportPlayback("finished")
+    ' Cleanup trickplay carousel
+    if isValid(m.trickplayCarousel)
+      m.trickplayCarousel.visible = false
+      m.trickplayCarousel.callFunc("cleanup")
+    end if
   else
     m.log.warning("Unhandled state", m.top.state, m.playReported, m.playFinished)
   end if
@@ -965,6 +1132,28 @@ function onKeyEvent(key as string, press as boolean) as boolean
 
   if key = "back"
     m.top.control = "stop"
+  end if
+
+  ' Handle OK/Play key during seek - hide carousel and let Roku seek to its position
+  ' Since we're now synced to Roku's position via the trickPlayBar text observer,
+  ' we don't need to do our own seek - Roku's native seek will match our displayed thumbnail
+  if (key = "OK" or key = "play") and m.top.trickPlayBar.visible
+
+    m.isTrackingSeek = false
+    if isValid(m.trickplayCarousel)
+      m.trickplayCarousel.visible = false
+      m.carouselHiddenForSeek = true ' Prevent auto-show until trickPlayBar closes
+    end if
+    ' Return false to let Roku handle the seek and close the trickPlayBar
+    return false
+  end if
+
+  ' Handle left/right/FF/RW keys - show carousel, observer syncs position from trickPlayBar text
+  if not m.osd.visible and (key = "left" or key = "right" or key = "fastforward" or key = "rewind")
+    if isValid(m.trickplayCarousel)
+      m.trickplayCarousel.visible = true
+    end if
+    return false
   end if
 
   return false
