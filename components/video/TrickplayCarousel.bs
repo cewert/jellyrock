@@ -64,6 +64,7 @@ sub init()
   m.estimatedDownloadTime = 3.0 ' Initial estimate in seconds
   m.minPreloadTiles = 2 ' Minimum tiles to preload ahead
   m.maxPreloadTiles = 6 ' Maximum tiles to preload ahead
+  m.minVelocityThreshold = 0.01 ' Min velocity to prevent division issues (thumbnails/second)
 
   ' Texture preloader - hidden poster that warms GPU texture cache
   ' By loading tile image here first, visible posters get instant display
@@ -257,23 +258,32 @@ sub updateVelocity(newIndex as integer, oldIndex as integer)
   m.log.debug("Velocity update", "instant", instantVelocity, "smoothed", m.currentVelocity, "timeDelta", timeDeltaSec)
 end sub
 
-' Calculates how many thumbnails until we cross into the next tile boundary
-' Based on current position and scrub direction
-' @param {Integer} thumbnailIndex - Current thumbnail index
-' @return {Integer} - Thumbnails until next tile boundary (in scrub direction)
+' Calculates how many thumbnail STEPS until we need to load a different tile
+' Used for proactive tile downloading based on velocity and scrub direction
+'
+' Examples (100 thumbs per tile):
+'   Forward at index 99 (last in tile 0): returns 1 (next step enters tile 1)
+'   Backward at index 100 (first in tile 1): returns 1 (next step enters tile 0)
+'   Forward at index 50 (mid tile 0): returns 50 (50 steps until tile 1)
+'
+' @param {Integer} thumbnailIndex - Current thumbnail index being displayed
+' @return {Integer} - Number of thumbnail steps until crossing tile boundary
 function calculateThumbsUntilBoundary(thumbnailIndex as integer) as integer
   if not isValid(m.thumbsPerTile) or m.thumbsPerTile <= 0 then return 0
 
   currentTile = int(thumbnailIndex / m.thumbsPerTile)
 
   if m.scrubDirection > 0
-    ' FF: next boundary is start of next tile
+    ' Forward: calculate steps until we enter the next tile
+    ' Example: tile 0 ends at index 99, so at 99 we need 1 step to reach 100 (tile 1)
     nextTileBoundary = (currentTile + 1) * m.thumbsPerTile
     return nextTileBoundary - thumbnailIndex
   else if m.scrubDirection < 0
-    ' RW: boundary is start of current tile (we're heading toward previous tile)
+    ' Backward: calculate steps until we enter the previous tile
+    ' Example: tile 1 starts at 100, so at 100 we need 1 step backward to reach 99 (tile 0)
+    ' The +1 is correct: we're currently IN the current tile, need to step OUT of it
     currentTileBoundary = currentTile * m.thumbsPerTile
-    return thumbnailIndex - currentTileBoundary + 1 ' +1 because AT boundary we need prev tile
+    return thumbnailIndex - currentTileBoundary + 1
   end if
 
   return m.thumbsPerTile ' No direction, return full tile
@@ -339,8 +349,8 @@ end sub
 function calculateTilesNeeded() as integer
   if not isValid(m.thumbsPerTile) or m.thumbsPerTile <= 0 then return m.minPreloadTiles
 
-  ' If no velocity (stationary or just started), use minimum
-  if m.currentVelocity <= 0 then return m.minPreloadTiles
+  ' If no velocity or extremely slow (prevents division issues), use minimum
+  if m.currentVelocity <= m.minVelocityThreshold then return m.minPreloadTiles
 
   ' Calculate time to cross one tile at current velocity
   ' tilesPerSecond = velocity / thumbsPerTile
@@ -563,6 +573,8 @@ sub updateSinglePoster(posterIndex as integer, thumbnailIndex as integer)
 
   ' Early exit if poster is already displaying this exact thumbnail and is visible
   ' This prevents width/height/translation changes from triggering texture reloads
+  ' Safe because: tile cache paths are deterministic (never change for same tileIndex)
+  ' and tiles are never re-downloaded once successfully cached during the video session
   if m.posterThumbnailIndexes[posterIndex] = thumbnailIndex and poster.visible
     m.log.debug("Early exit - poster already showing thumbnail", "poster", posterIndex, "thumbIdx", thumbnailIndex)
     return
@@ -589,10 +601,7 @@ sub updateSinglePoster(posterIndex as integer, thumbnailIndex as integer)
   ' Check if tile is cached
   if not m.loadedTileCache.doesExist(tileIndexStr)
     ' Tile not loaded - hide poster and request load
-    if poster.uri <> ""
-      m.log.debug("Clearing URI - tile not cached", "poster", posterIndex, "oldUri", poster.uri, "tile", tileIndex)
-    end if
-    poster.uri = ""
+    ' Don't clear URI to avoid extra render work; refreshPostersWithNewTiles() will update when ready
     poster.visible = false
     m.log.debug("Poster", posterIndex, "tile", tileIndex, "not cached, requesting")
     requestSingleTile(tileIndex)

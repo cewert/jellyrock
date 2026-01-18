@@ -97,12 +97,14 @@ function downloadTile(tileIndex as integer, cachePath as string) as boolean
 
   ' Wait for response
   resp = wait(30000, port)
-  ' Distinguish between timeout and invalid response type
+
+  ' Check for timeout (resp = invalid)
   if resp = invalid
     m.log.error("Request timeout for tile", tileIndex)
     return false
   end if
 
+  ' Check for invalid response type
   if type(resp) <> "roUrlEvent"
     m.log.error("Invalid response type for tile", tileIndex, "type", type(resp))
     return false

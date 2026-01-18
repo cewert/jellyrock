@@ -195,12 +195,15 @@ sub LoadItems_AddVideoContent(video as object, mediaSourceId as dynamic, audio_s
   video.content.PlayStart = int(playbackPosition / 10000000)
 
   ' Build complete trickplay config using utility function for fail-fast validation
+  ' meta.json contains the API response with Trickplay field from ItemMetaData() call
+  ' video.id matches the ID used to fetch metadata and matches Trickplay data structure
   if isValidAndNotEmpty(meta.json.Trickplay)
     deviceWidth = m.global.device.videoWidth
     if not isValid(deviceWidth) or deviceWidth = 0
       deviceWidth = 1920 ' Default to FHD if not available
     end if
 
+    ' Pass meta.json (contains .Trickplay), video.id, device width, and initial position
     trickplayConfig = trickplay.buildConfigFromMetadata(
     meta.json,
     video.id,
