@@ -143,7 +143,9 @@ sub updateClipGroupsForAspectRatio()
 
   ' Horizontal positions remain fixed to maintain layout spacing
   ' [clipMinus2, clipMinus1, clipCenter, clipPlus1, clipPlus2]
-  ' Positions: 0, 330, 660, 1150, 1480 (10px gaps between 320px side posters and 480px center)
+  ' Positions: 0, 330, 660, 1150, 1480
+  ' - Side posters are 320px wide with 10px gaps between their edges -> origin deltas of 330px (320 + 10)
+  ' - Center poster is 480px wide, so the distance from center to side origins is 490px (480 + 10), creating larger middle gaps
   horizontalPositions = [0, 330, 660, 1150, 1480]
 
   ' Update side posters (indexes 0, 1, 3, 4)

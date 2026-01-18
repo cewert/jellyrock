@@ -89,13 +89,22 @@ function downloadTile(tileIndex as integer, cachePath as string) as boolean
   ' AsyncGetToFile downloads directly to the specified path
   if not req.AsyncGetToFile(cachePath)
     m.log.error("Failed to start async download for tile", tileIndex)
+    ' Clean up any partial file if the download fails to start
+    fs = CreateObject("roFileSystem")
+    if fs.Exists(cachePath) then fs.Delete(cachePath)
     return false
   end if
 
   ' Wait for response
   resp = wait(30000, port)
+  ' Distinguish between timeout and invalid response type
+  if resp = invalid
+    m.log.error("Request timeout for tile", tileIndex)
+    return false
+  end if
+
   if type(resp) <> "roUrlEvent"
-    m.log.error("Request timeout or invalid response for tile", tileIndex)
+    m.log.error("Invalid response type for tile", tileIndex, "type", type(resp))
     return false
   end if
 

@@ -6,7 +6,7 @@ namespace trickplay
   ' @return {Integer} - Zero-based thumbnail index
   function calculateThumbnailIndex(position as float, interval as integer) as integer
     if interval <= 0 then return 0
-    ' Convert position to milliseconds and divide by interval
+    ' Convert position from seconds to milliseconds and divide by interval
     return int((position * 1000) / interval)
   end function
 
@@ -125,7 +125,7 @@ namespace trickplay
   ' @return {Float} - Video position in seconds
   function thumbnailIndexToPosition(index as integer, interval as integer) as float
     if interval <= 0 then return 0.0
-    ' Convert index to milliseconds, then to seconds
+    ' Calculate time in milliseconds (index * interval), then convert to seconds
     return (index * interval) / 1000.0
   end function
 
