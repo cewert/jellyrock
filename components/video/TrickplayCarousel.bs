@@ -597,7 +597,7 @@ sub updateSinglePoster(posterIndex as integer, thumbnailIndex as integer)
     ' Only hide poster - DON'T clear URI as that triggers render processing even when invisible
     poster.visible = false
     m.posterThumbnailIndexes[posterIndex] = -1
-    m.log.debug("Hiding poster", posterIndex, "thumbnail OOB", thumbnailIndex)
+
     return
   end if
 
