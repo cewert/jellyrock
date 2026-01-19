@@ -1175,7 +1175,21 @@ end function
 ' destroy: Full teardown releasing all resources before component removal
 ' Called by SceneManager when popping this scene
 sub destroy()
-  ' Stop and release timers first (prevent callbacks during teardown)
+  ' Unobserve all fields first to prevent callbacks during teardown
+  m.top.unobserveField("state")
+  m.top.unobserveField("content")
+  m.top.unobserveField("selectedSubtitle")
+  m.top.unobserveField("audioIndex")
+  m.top.unobserveField("allowCaptions")
+  m.top.unobserveField("subtitleTrack")
+  m.top.unobserveField("globalCaptionMode")
+  m.top.unobserveField("position")
+
+  if isValid(m.osd)
+    m.osd.unobserveField("action")
+  end if
+
+  ' Stop and release timers
   if isValid(m.playbackTimer)
     m.playbackTimer.control = "stop"
     m.playbackTimer.unobserveField("fire")
