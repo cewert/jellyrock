@@ -896,9 +896,11 @@ sub onState()
       m.log.info("retrying with transcoding", m.currentItem.id, m.top.SelectedSubtitle, m.top.audioIndex)
       m.top.retryWithTranscoding = true ' If playback was not reported, retry with transcoding
     else
-      ' If an error was encountered, Display dialog
+      ' If an error was encountered, stop timers and display dialog
       m.top.unobserveField("state")
       m.playbackTimer.control = "stop"
+      m.bufferCheckTimer.control = "stop"
+      m.bufferCheckTimer.unobserveField("fire")
       showPlaybackErrorDialog(tr("Error During Playback"))
     end if
   else if m.top.state = "playing"
@@ -924,9 +926,10 @@ sub onState()
   else if m.top.state = "stopped"
     m.playbackTimer.control = "stop"
     m.playbackTimer.unobserveField("fire")
+    m.bufferCheckTimer.control = "stop"
+    m.bufferCheckTimer.unobserveField("fire")
     ReportPlayback("stop")
     m.playReported = false
-    ' Cleanup trickplay carousel
     if isValid(m.trickplayCarousel)
       m.trickplayCarousel.visible = false
       m.trickplayCarousel.callFunc("cleanup")
@@ -934,8 +937,9 @@ sub onState()
   else if m.top.state = "finished"
     m.playbackTimer.control = "stop"
     m.playbackTimer.unobserveField("fire")
+    m.bufferCheckTimer.control = "stop"
+    m.bufferCheckTimer.unobserveField("fire")
     ReportPlayback("finished")
-    ' Cleanup trickplay carousel
     if isValid(m.trickplayCarousel)
       m.trickplayCarousel.visible = false
       m.trickplayCarousel.callFunc("cleanup")
