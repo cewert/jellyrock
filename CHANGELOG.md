@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Add trickplay carousel for video scrubbing ([#291](https://github.com/cewert/jellyrock/pull/291))
+
 ### Changed
 
 - use bullet instead of dash for movie homeitem subtext ([f7d2dd0](https://github.com/cewert/jellyrock/commit/f7d2dd0))
