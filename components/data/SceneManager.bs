@@ -83,6 +83,9 @@ sub popScene()
 
     if group.isSubType("JRScreen")
       group.callFunc("OnScreenHidden")
+      group.callFunc("destroy")
+    else if group.isSubType("Video")
+      group.callFunc("destroy")
     end if
   else
     ' Exit app if for some reason we don't have anything on the stack
@@ -126,9 +129,13 @@ end function
 sub clearScenes()
   if isValid(m.content) then m.content.removeChildrenIndex(m.content.getChildCount(), 0)
   for each group in m.groups
-    if type(group) = "roSGNode" and group.isSubtype("JRScreen")
-      group.callFunc("OnScreenHidden")
-      group = invalid
+    if type(group) = "roSGNode"
+      if group.isSubtype("JRScreen")
+        group.callFunc("OnScreenHidden")
+        group.callFunc("destroy")
+      else if group.isSubtype("Video")
+        group.callFunc("destroy")
+      end if
     end if
   end for
   m.groups = []

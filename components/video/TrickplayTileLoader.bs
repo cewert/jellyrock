@@ -1,0 +1,165 @@
+import "pkg:/source/api/baserequest.bs"
+import "pkg:/source/roku_modules/log/LogMixin.brs"
+import "pkg:/source/utils/misc.bs"
+import "pkg:/source/utils/trickplay.bs"
+
+' Task node for downloading trickplay tiles
+' No eviction during scrubbing - user should always see preview images
+' cachefs:/ has its own size limits that Roku manages automatically
+sub init()
+  m.top.functionName = "loadTiles"
+  m.log = new log.Logger("TrickplayTileLoader")
+
+  ' Download time tracking for adaptive preloading
+  m.downloadTimes = [] ' Recent download times in seconds
+  m.maxTrackedDownloads = 10 ' Keep last N download times for average
+end sub
+
+' Main task function - runs in background thread
+' Downloads and caches requested trickplay tiles
+sub loadTiles()
+  m.log.info("Loading tiles", m.top.videoID, "width", m.top.width, "count", m.top.tileIndexes.count())
+
+  if not isValid(m.top.tileIndexes) or m.top.tileIndexes.count() = 0
+    m.log.warn("No tiles requested")
+    m.top.status = "no_tiles_requested"
+    return
+  end if
+
+  loadedTiles = {}
+  failedTiles = []
+
+  for each tileIndex in m.top.tileIndexes
+    cachePath = trickplay.buildTrickplayCachePath(m.top.videoID, m.top.width, tileIndex)
+
+    ' Check if tile already exists in cache
+    fs = CreateObject("roFileSystem")
+    if fs.Exists(cachePath)
+      m.log.debug("Cache hit for tile", tileIndex)
+      loadedTiles[tileIndex.ToStr()] = cachePath
+    else
+      ' Download tile
+      m.log.debug("Cache miss, downloading tile", tileIndex)
+      success = downloadTile(tileIndex, cachePath)
+
+      if success
+        loadedTiles[tileIndex.ToStr()] = cachePath
+      else
+        m.log.warn("Failed to download tile", tileIndex)
+        failedTiles.push(tileIndex)
+      end if
+    end if
+  end for
+
+  ' Update output fields
+  m.top.loadedTiles = loadedTiles
+  m.top.failedTiles = failedTiles
+  m.top.avgDownloadTime = getAverageDownloadTime()
+  m.top.status = "complete"
+
+  m.log.info("Tiles loaded", "success", loadedTiles.count(), "failed", failedTiles.count(), "avgTime", m.top.avgDownloadTime)
+end sub
+
+' Downloads a single tile from the Jellyfin API
+' Tracks download time for adaptive preloading calculations
+' @param {Integer} tileIndex - Zero-based tile index
+' @param {String} cachePath - cachefs:/ path to save the tile
+' @return {Boolean} - True if download succeeded
+function downloadTile(tileIndex as integer, cachePath as string) as boolean
+  ' Track download start time
+  startTime = createObject("roDateTime")
+  startMs = startTime.asSeconds() * 1000 + startTime.getMilliseconds()
+
+  ' Build API URL for this tile
+  apiPath = trickplay.buildTrickplayUrl(m.top.videoID, m.top.width, tileIndex)
+
+  ' Create API request
+  req = APIRequest(apiPath, {})
+  if not isValid(req)
+    m.log.error("Failed to create API request for tile", tileIndex)
+    return false
+  end if
+
+  ' Download image directly to file using AsyncGetToFile
+  ' This is the correct way to download binary data (images) on Roku
+  ' Using GetToString + WriteAsciiFile corrupts binary data
+  port = CreateObject("roMessagePort")
+  req.setMessagePort(port)
+
+  ' AsyncGetToFile downloads directly to the specified path
+  if not req.AsyncGetToFile(cachePath)
+    m.log.error("Failed to start async download for tile", tileIndex)
+    ' Clean up any partial file if the download fails to start
+    fs = CreateObject("roFileSystem")
+    if fs.Exists(cachePath) then fs.Delete(cachePath)
+    return false
+  end if
+
+  ' Wait for response
+  resp = wait(30000, port)
+
+  ' Check for timeout (resp = invalid)
+  if resp = invalid
+    m.log.error("Request timeout for tile", tileIndex)
+    ' Clean up partial file that may have been written before timeout
+    fs = CreateObject("roFileSystem")
+    if fs.Exists(cachePath) then fs.Delete(cachePath)
+    return false
+  end if
+
+  ' Check for invalid response type
+  if type(resp) <> "roUrlEvent"
+    m.log.error("Invalid response type for tile", tileIndex, "type", type(resp))
+    return false
+  end if
+
+  if resp.GetResponseCode() <> 200
+    m.log.error("HTTP error for tile", tileIndex, "status", resp.GetResponseCode())
+    ' Clean up partial file if download failed
+    fs = CreateObject("roFileSystem")
+    if fs.Exists(cachePath) then fs.Delete(cachePath)
+    return false
+  end if
+
+  ' Verify file exists and has content
+  fs = CreateObject("roFileSystem")
+  if not fs.Exists(cachePath)
+    m.log.error("File not found after download", cachePath)
+    return false
+  end if
+
+  stat = fs.Stat(cachePath)
+  if not isValid(stat) or stat.size = 0
+    m.log.error("Downloaded file is empty", tileIndex, cachePath)
+    fs.Delete(cachePath)
+    return false
+  end if
+
+  ' Track download time
+  endTime = createObject("roDateTime")
+  endMs = endTime.asSeconds() * 1000 + endTime.getMilliseconds()
+  downloadTimeSec = (endMs - startMs) / 1000.0
+
+  ' Add to tracking array (keep last N)
+  m.downloadTimes.push(downloadTimeSec)
+  if m.downloadTimes.count() > m.maxTrackedDownloads
+    m.downloadTimes.shift()
+  end if
+
+  m.log.debug("Tile downloaded", tileIndex, "time", downloadTimeSec, "size", stat.size)
+
+  return true
+end function
+
+' Calculates average download time from recent downloads
+' @return {Float} - Average download time in seconds, or 3.0 if no data
+function getAverageDownloadTime() as float
+  if m.downloadTimes.count() = 0 then return 3.0
+
+  total = 0.0
+  for each t in m.downloadTimes
+    total = total + t
+  end for
+
+  return total / m.downloadTimes.count()
+end function

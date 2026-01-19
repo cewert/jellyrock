@@ -1,0 +1,1061 @@
+import "pkg:/source/roku_modules/log/LogMixin.brs"
+import "pkg:/source/utils/misc.bs"
+import "pkg:/source/utils/trickplay.bs"
+
+' Trickplay carousel component - displays 5 thumbnails above the trickPlayBar
+' Uses index-based thumbnail shifting for efficient updates
+sub init()
+  m.log = new log.Logger("TrickplayCarousel")
+
+  ' Cache poster references in array for easy shifting [minus2, minus1, center, plus1, plus2]
+  m.posterArray = [
+    m.top.findNode("posterMinus2"),
+    m.top.findNode("posterMinus1"),
+    m.top.findNode("posterCenter"),
+    m.top.findNode("posterPlus1"),
+    m.top.findNode("posterPlus2")
+  ]
+
+  ' Track which thumbnail index each poster is currently displaying
+  m.posterThumbnailIndexes = [-1, -1, -1, -1, -1]
+
+  ' Cache poster group and clip groups for dynamic sizing
+  m.posterGroup = m.top.findNode("posterGroup")
+  m.clipGroups = [
+    m.top.findNode("clipMinus2"),
+    m.top.findNode("clipMinus1"),
+    m.top.findNode("clipCenter"),
+    m.top.findNode("clipPlus1"),
+    m.top.findNode("clipPlus2")
+  ]
+
+  ' Dynamic display dimensions - calculated from trickplay metadata aspect ratio
+  ' These replace the hardcoded 16:9 dimensions (320x180 side, 480x270 center)
+  m.sideDisplayWidth = 320
+  m.sideDisplayHeight = 180
+  m.centerDisplayWidth = 480
+  m.centerDisplayHeight = 270
+
+  ' Create tile loader task
+  m.tileLoader = createObject("roSGNode", "TrickplayTileLoader")
+  m.tileLoader.observeField("state", "onTaskStateChanged")
+
+  ' Cache for loaded tiles {tileIndex: cachePath}
+  m.loadedTileCache = {}
+
+  ' Tile request queue state - prevents request cancellation during rapid scrubbing
+  m.pendingTiles = {} ' Tiles currently loading OR queued (prevents duplicates)
+  m.tileRequestQueue = [] ' Tile indexes waiting for current task to finish
+  m.taskRunning = false
+
+  ' Track current state
+  m.currentThumbnailIndex = -1
+  m.scrubDirection = 0 ' -1 = backward, 0 = none, 1 = forward
+  m.lastCachedTileIndex = -1 ' Tracks which tile we last cached around (prevents redundant requests)
+  m.config = invalid
+
+  ' Velocity tracking for dynamic preload depth
+  m.lastIndexUpdateTime = 0 ' Timestamp of last thumbnail index update (ms)
+  m.lastIndexForVelocity = -1 ' Previous thumbnail index for velocity calc
+  m.currentVelocity = 0 ' Thumbnails per second (smoothed)
+  m.velocitySmoothingFactor = 0.3 ' EMA smoothing (0.3 = 30% new, 70% old)
+
+  ' Download time tracking for preload calculations
+  m.estimatedDownloadTime = 3.0 ' Initial estimate in seconds
+  m.minPreloadTiles = 2 ' Minimum tiles to preload ahead
+  m.maxPreloadTiles = 6 ' Maximum tiles to preload ahead
+  m.minVelocityThreshold = 0.01 ' Min velocity to prevent division issues (thumbnails/second)
+
+  ' Texture preloader - hidden poster that warms GPU texture cache
+  ' By loading tile image here first, visible posters get instant display
+  m.preloaderPoster = m.top.findNode("preloaderPoster")
+  m.preloadedTileIndex = -1 ' Track which tile is currently in preloader
+end sub
+
+' Called when trickplayConfig is set
+sub onConfigChanged()
+  m.config = m.top.trickplayConfig
+
+  if not isValidAndNotEmpty(m.config)
+    m.log.warn("Invalid trickplay config provided")
+    m.top.visible = false
+    return
+  end if
+
+  ' Validate config using authoritative validation function
+  if not trickplay.validateConfig(m.config)
+    m.log.warn("Invalid config - should have been validated at creation")
+    m.top.visible = false
+    return
+  end if
+
+  ' Calculate dynamic display dimensions based on actual thumbnail aspect ratio
+  ' Keep widths fixed (320 side, 480 center) and calculate heights to preserve aspect ratio
+  calculateDisplayDimensions()
+
+  ' Update clipping rectangles and positions based on calculated dimensions
+  updateClipGroupsForAspectRatio()
+
+  m.log.info("Trickplay config loaded", "videoID", m.config.videoID, "thumbSize", `${m.config.width}x${m.config.height}`, "interval", m.config.interval, "count", m.config.thumbnailCount)
+
+  ' Calculate thumbs per tile for velocity calculations
+  m.thumbsPerTile = m.config.tileWidth * m.config.tileHeight
+
+  ' Start early tile caching immediately when config is available
+  ' This ensures tiles are downloading before user starts scrubbing
+  performEarlyCaching()
+end sub
+
+' Calculates display dimensions for thumbnails based on actual aspect ratio from trickplay metadata
+' Keeps widths fixed (320 for sides, 480 for center) and calculates heights to preserve aspect ratio
+' This ensures thumbnails from any video aspect ratio (16:9, 4:3, 21:9, etc.) display correctly
+sub calculateDisplayDimensions()
+  if not isValid(m.config) or m.config.width <= 0 or m.config.height <= 0
+    ' Fallback to default 16:9 dimensions
+    m.sideDisplayWidth = 320
+    m.sideDisplayHeight = 180
+    m.centerDisplayWidth = 480
+    m.centerDisplayHeight = 270
+    return
+  end if
+
+  ' Calculate aspect ratio from actual thumbnail dimensions
+  aspectRatio = m.config.height / m.config.width
+
+  ' Side posters: fixed 320 width, calculate height from aspect ratio
+  m.sideDisplayWidth = 320
+  m.sideDisplayHeight = int(m.sideDisplayWidth * aspectRatio)
+
+  ' Center poster: 1.5x scale of side poster
+  m.centerDisplayWidth = 480
+  m.centerDisplayHeight = int(m.centerDisplayWidth * aspectRatio)
+
+  m.log.debug("Display dimensions", "ratio", aspectRatio, "side", `${m.sideDisplayWidth}x${m.sideDisplayHeight}`, "center", `${m.centerDisplayWidth}x${m.centerDisplayHeight}`)
+end sub
+
+' Updates clip group rectangles and positions based on calculated display dimensions
+' Adjusts vertical positions to keep thumbnails vertically centered regardless of aspect ratio
+sub updateClipGroupsForAspectRatio()
+  if not isValid(m.clipGroups) or m.clipGroups.count() < 5 then return
+
+  ' Calculate vertical offset to center thumbnails
+  ' Center poster is tallest, side posters should be vertically centered relative to it
+  verticalOffset = int((m.centerDisplayHeight - m.sideDisplayHeight) / 2)
+
+  ' Calculate horizontal positions dynamically from display widths
+  ' [clipMinus2, clipMinus1, clipCenter, clipPlus1, clipPlus2]
+  ' Positions are derived from side and center display widths with a fixed gap
+  ' - Side posters use (m.sideDisplayWidth + gap) step
+  ' - Center poster spacing uses (m.centerDisplayWidth + gap) from side to center origins
+  gap = 10
+  sideStep = m.sideDisplayWidth + gap
+  centerStep = m.centerDisplayWidth + gap
+  horizontalPositions = [
+    0, ' clipMinus2
+    sideStep, ' clipMinus1
+    sideStep * 2, ' clipCenter
+    sideStep * 2 + centerStep, ' clipPlus1
+    sideStep * 3 + centerStep ' clipPlus2
+  ]
+
+  ' Update side posters (indexes 0, 1, 3, 4)
+  sideIndexes = [0, 1, 3, 4]
+  for each idx in sideIndexes
+    m.clipGroups[idx].clippingRect = [0, 0, m.sideDisplayWidth, m.sideDisplayHeight]
+    m.clipGroups[idx].translation = [horizontalPositions[idx], verticalOffset]
+  end for
+
+  ' Update center poster (index 2)
+  m.clipGroups[2].clippingRect = [0, 0, m.centerDisplayWidth, m.centerDisplayHeight]
+  m.clipGroups[2].translation = [horizontalPositions[2], 0]
+
+  ' Calculate posterGroup vertical position
+  ' Base position: 620 was for 16:9 (270 height center)
+  ' Adjust so carousel remains visually centered above trickPlayBar
+  ' trickPlayBar is at ~890, we want some space above it
+  baseVerticalPos = 890 - m.centerDisplayHeight - 20 ' 20px gap above trickPlayBar
+  m.posterGroup.translation = [60, baseVerticalPos]
+
+  m.log.debug("Updated clip groups", "verticalOffset", verticalOffset, "posterGroupY", baseVerticalPos)
+end sub
+
+' Performs early tile caching when config is loaded (before carousel is visible)
+' Uses initialPosition from config to cache tiles around the starting playback position
+' This ensures tiles are ready before the user starts scrubbing
+sub performEarlyCaching()
+  ' Skip if we've already done position-based caching (carousel was visible)
+  if m.currentThumbnailIndex >= 0 then return
+
+  m.log.info("Starting early tile caching before carousel visible")
+
+  thumbsPerTile = m.config.tileWidth * m.config.tileHeight
+  maxTileIndex = int((m.config.thumbnailCount - 1) / thumbsPerTile)
+
+  ' Calculate starting thumbnail index from initial position
+  initialPosition = 0
+  if isValid(m.config.initialPosition)
+    initialPosition = m.config.initialPosition
+  end if
+
+  ' Calculate which tile contains the initial position
+  initialThumbnailIndex = trickplay.calculateThumbnailIndex(initialPosition, m.config.interval)
+  initialTileIndex = trickplay.calculateTileIndex(initialThumbnailIndex, m.config.tileWidth, m.config.tileHeight)
+
+  m.log.debug("Early cache", "position", initialPosition, "thumbIndex", initialThumbnailIndex, "tileIndex", initialTileIndex)
+
+  ' Build cache list - current tile + adjacent tiles
+  tilesToCache = []
+
+  ' Priority 1: Tile containing initial position
+  if not m.loadedTileCache.doesExist(initialTileIndex.ToStr())
+    tilesToCache.push(initialTileIndex)
+  end if
+
+  ' Priority 2: Next tile (forward scrubbing is more common)
+  if initialTileIndex + 1 <= maxTileIndex and not m.loadedTileCache.doesExist((initialTileIndex + 1).ToStr())
+    tilesToCache.push(initialTileIndex + 1)
+  end if
+
+  ' Priority 3: Previous tile (if not at start)
+  if initialTileIndex > 0 and not m.loadedTileCache.doesExist((initialTileIndex - 1).ToStr())
+    tilesToCache.push(initialTileIndex - 1)
+  end if
+
+  if tilesToCache.count() > 0
+    m.log.debug("Early cache plan", "tiles", tilesToCache)
+    requestTiles(tilesToCache)
+  end if
+end sub
+
+' Updates velocity tracking when thumbnail index changes
+' Uses exponential moving average for smooth velocity estimation
+' @param {Integer} newIndex - New thumbnail index
+' @param {Integer} oldIndex - Previous thumbnail index
+sub updateVelocity(newIndex as integer, oldIndex as integer)
+  dateTime = createObject("roDateTime")
+  currentTime = dateTime.asSeconds() * 1000 + dateTime.getMilliseconds()
+
+  ' Skip if this is the first update (no previous time reference)
+  if m.lastIndexUpdateTime = 0
+    m.lastIndexUpdateTime = currentTime
+    m.lastIndexForVelocity = oldIndex
+    return
+  end if
+
+  ' Calculate time delta in seconds
+  timeDeltaMs = currentTime - m.lastIndexUpdateTime
+  if timeDeltaMs <= 0 then timeDeltaMs = 1 ' Prevent division by zero
+
+  timeDeltaSec = timeDeltaMs / 1000.0
+
+  ' Calculate instantaneous velocity (thumbnails per second)
+  indexDelta = abs(newIndex - oldIndex)
+  instantVelocity = indexDelta / timeDeltaSec
+
+  ' Apply exponential moving average smoothing
+  ' This prevents spiky velocity readings from single large jumps
+  if m.currentVelocity = 0
+    m.currentVelocity = instantVelocity
+  else
+    m.currentVelocity = (m.velocitySmoothingFactor * instantVelocity) + ((1 - m.velocitySmoothingFactor) * m.currentVelocity)
+  end if
+
+  ' Update tracking state
+  m.lastIndexUpdateTime = currentTime
+  m.lastIndexForVelocity = newIndex
+
+  m.log.debug("Velocity update", "instant", instantVelocity, "smoothed", m.currentVelocity, "timeDelta", timeDeltaSec)
+end sub
+
+' Calculates how many thumbnail STEPS until we need to load a different tile
+' Used for proactive tile downloading based on velocity and scrub direction
+'
+' Examples (100 thumbs per tile):
+'   Forward at index 99 (last in tile 0): returns 1 (next step enters tile 1)
+'   Backward at index 100 (first in tile 1): returns 1 (next step enters tile 0)
+'   Forward at index 50 (mid tile 0): returns 50 (50 steps until tile 1)
+'
+' @param {Integer} thumbnailIndex - Current thumbnail index being displayed
+' @return {Integer} - Number of thumbnail steps until crossing tile boundary
+function calculateThumbsUntilBoundary(thumbnailIndex as integer) as integer
+  if not isValid(m.thumbsPerTile) or m.thumbsPerTile <= 0 then return 0
+
+  currentTile = int(thumbnailIndex / m.thumbsPerTile)
+
+  if m.scrubDirection > 0
+    ' Forward: calculate steps until we enter the next tile
+    ' Example: tile 0 ends at index 99, so at 99 we need 1 step to reach 100 (tile 1)
+    nextTileBoundary = (currentTile + 1) * m.thumbsPerTile
+    return nextTileBoundary - thumbnailIndex
+  else if m.scrubDirection < 0
+    ' Backward: calculate steps until we enter the previous tile
+    ' Example: tile 1 starts at 100, so at 100 we need 1 step backward to reach 99 (tile 0)
+    ' The +1 is correct: we're currently IN the current tile, need to step OUT of it
+    currentTileBoundary = currentTile * m.thumbsPerTile
+    return thumbnailIndex - currentTileBoundary + 1
+  end if
+
+  ' Should never reach here - caller checks scrubDirection before calling
+  m.log.error("calculateThumbsUntilBoundary called with scrubDirection=0", "thumbnailIndex", thumbnailIndex)
+  return 0 ' Safest fallback - no distance to travel
+end function
+
+' Calculates the safety threshold - how many thumbnails ahead we need to trigger download
+' Formula: thumbsPerTick * ticksToDownload * safetyBuffer
+' @return {Integer} - Thumbnail count threshold for triggering next tile download
+function calculateSafetyThreshold() as integer
+  if m.currentVelocity <= 0 then return 50 ' Default when stationary
+
+  ' Tick interval from Roku's trickPlayBar updates (~200ms)
+  tickInterval = 0.2
+
+  ' How many thumbnails we move per tick at current velocity
+  thumbsPerTick = m.currentVelocity * tickInterval
+
+  ' How many ticks until download completes
+  ticksToDownload = m.estimatedDownloadTime / tickInterval
+
+  ' Threshold = thumbs we'll travel while download is in progress
+  ' 1.5x buffer for network variance
+  threshold = int(thumbsPerTick * ticksToDownload * 1.5)
+
+  ' Clamp to reasonable range (at least 10, at most full tile)
+  if threshold < 10 then threshold = 10
+  if threshold > m.thumbsPerTile then threshold = m.thumbsPerTile
+
+  return threshold
+end function
+
+' Proactively checks if we need to request the next tile based on velocity
+' Called on every thumbnail index change - the KEY function for smooth scrubbing
+' Uses formula: if thumbsUntilBoundary < safetyThreshold → request next tile NOW
+' @param {Integer} thumbnailIndex - Current thumbnail index
+sub checkProactiveTileRequest(thumbnailIndex as integer)
+  if m.scrubDirection = 0 then return ' No direction yet
+  if m.currentVelocity <= 0 then return ' Not moving
+
+  thumbsUntilBoundary = calculateThumbsUntilBoundary(thumbnailIndex)
+  threshold = calculateSafetyThreshold()
+
+  currentTile = int(thumbnailIndex / m.thumbsPerTile)
+  nextTile = currentTile + m.scrubDirection
+  maxTileIndex = int((m.config.thumbnailCount - 1) / m.thumbsPerTile)
+
+  ' Check if next tile is valid
+  if nextTile < 0 or nextTile > maxTileIndex then return
+
+  ' If we're within threshold AND tile isn't cached/pending, request it NOW
+  if thumbsUntilBoundary <= threshold
+    nextTileStr = nextTile.ToStr()
+    if not m.loadedTileCache.doesExist(nextTileStr) and not m.pendingTiles.doesExist(nextTileStr)
+      m.log.debug("Proactive tile request", "thumbsLeft", thumbsUntilBoundary, "threshold", threshold, "tile", nextTile)
+      requestTiles([nextTile])
+    end if
+  end if
+end sub
+
+' Calculates how many tiles ahead to preload based on current velocity
+' Uses the formula: tilesNeeded = ceil(downloadTime / timeToNextTile) + 1
+' @return {Integer} - Number of tiles to preload in scrub direction
+function calculateTilesNeeded() as integer
+  if not isValid(m.thumbsPerTile) or m.thumbsPerTile <= 0 then return m.minPreloadTiles
+
+  ' If no velocity or extremely slow (prevents division issues), use minimum
+  if m.currentVelocity <= m.minVelocityThreshold then return m.minPreloadTiles
+
+  ' Calculate time to cross one tile at current velocity
+  ' tilesPerSecond = velocity / thumbsPerTile
+  ' timeToNextTile = 1 / tilesPerSecond = thumbsPerTile / velocity
+  timeToNextTile = m.thumbsPerTile / m.currentVelocity
+
+  ' If time to next tile is very long, we only need minimum preload
+  if timeToNextTile > 30 then return m.minPreloadTiles
+
+  ' Calculate tiles needed: ceil(downloadTime / timeToNextTile) + 1 buffer
+  tilesNeeded = int(m.estimatedDownloadTime / timeToNextTile) + 2 ' +2 for ceiling + buffer
+
+  ' Clamp to min/max range
+  if tilesNeeded < m.minPreloadTiles then tilesNeeded = m.minPreloadTiles
+  if tilesNeeded > m.maxPreloadTiles then tilesNeeded = m.maxPreloadTiles
+
+  m.log.debug("Tiles needed calc", "velocity", m.currentVelocity, "timeToTile", timeToNextTile, "needed", tilesNeeded)
+
+  return tilesNeeded
+end function
+
+' Called when playback position changes during normal video playback
+' Proactively caches tiles around current position so they're ready when user scrubs
+' Only triggers when crossing into a new tile to avoid excessive requests
+sub onPlaybackPositionChanged()
+  if not isValidAndNotEmpty(m.config) then return
+
+  ' Don't update cache while user is actively scrubbing (carousel visible)
+  ' The scrubbing logic handles caching during active scrubbing
+  if m.top.visible then return
+
+  ' Use playbackPosition, or initialPosition as fallback when video hasn't started
+  position = m.top.playbackPosition
+  if position <= 0 and isValid(m.config.initialPosition) and m.config.initialPosition > 0
+    position = m.config.initialPosition
+  end if
+
+  thumbnailIndex = trickplay.calculateThumbnailIndex(position, m.config.interval)
+  currentTileIndex = trickplay.calculateTileIndex(thumbnailIndex, m.config.tileWidth, m.config.tileHeight)
+
+  ' Only cache if we've moved to a different tile
+  if currentTileIndex = m.lastCachedTileIndex then return
+
+  m.lastCachedTileIndex = currentTileIndex
+  m.log.debug("Playback position cache update", "position", position, "tile", currentTileIndex)
+
+  ' Cache current tile ± 2 tiles (aggressive caching during playback)
+  ' This ensures tiles are ready when user starts scrubbing in any direction
+  maxTileIndex = int((m.config.thumbnailCount - 1) / m.thumbsPerTile)
+
+  tilesToCache = []
+
+  ' Cache current tile and ±2 tiles
+  for offset = -2 to 2
+    tileIdx = currentTileIndex + offset
+    if tileIdx >= 0 and tileIdx <= maxTileIndex
+      if not m.loadedTileCache.doesExist(tileIdx.ToStr()) and not m.pendingTiles.doesExist(tileIdx.ToStr())
+        tilesToCache.push(tileIdx)
+      end if
+    end if
+  end for
+
+  if tilesToCache.count() > 0
+    m.log.debug("Playback cache plan", "tiles", tilesToCache)
+    requestTiles(tilesToCache)
+  end if
+end sub
+
+' Called when visible field changes
+' Performs initial tile caching and displays posters when carousel first appears
+sub onVisibilityChanged()
+  if not m.top.visible
+    ' Reset velocity tracking when carousel hides (scrubbing session ended)
+    m.currentVelocity = 0
+    m.lastIndexUpdateTime = 0
+    m.lastIndexForVelocity = -1
+    m.preloadedTileIndex = -1 ' Reset so next session preloads fresh
+    return
+  end if
+
+  if not isValidAndNotEmpty(m.config) then return
+
+  ' Reset velocity tracking for new scrubbing session
+  m.currentVelocity = 0
+  m.lastIndexUpdateTime = 0
+  m.lastIndexForVelocity = -1
+
+  ' ALWAYS cache tiles around current position when carousel becomes visible
+  ' This ensures tiles are ready BEFORE user starts moving, regardless of playback history
+  if m.top.thumbnailIndex >= 0
+    ensureTilesCachedAroundPosition(m.top.thumbnailIndex)
+  end if
+
+  ' If this is first time visible and we have a valid thumbnail index, perform initial setup
+  if m.currentThumbnailIndex = -1 and m.top.thumbnailIndex >= 0
+    m.log.info("Carousel first visible, initializing to thumbnail", m.top.thumbnailIndex)
+    m.currentThumbnailIndex = m.top.thumbnailIndex
+    fullRecalculatePosters(m.top.thumbnailIndex)
+  end if
+
+  ' Preload next tile's texture for when user starts scrubbing
+  nextTileToPreload = getNextTileToPreload()
+  if nextTileToPreload >= 0
+    preloadTextureForTile(nextTileToPreload)
+  end if
+end sub
+
+' Immediately ensures tiles are cached around the given thumbnail position
+' Called when carousel becomes visible to prepare for ANY scrub direction
+' Requests current tile ± 2 tiles to cover both forward and backward scrubbing
+' @param {Integer} thumbnailIndex - Current thumbnail position
+sub ensureTilesCachedAroundPosition(thumbnailIndex as integer)
+  currentTileIndex = trickplay.calculateTileIndex(thumbnailIndex, m.config.tileWidth, m.config.tileHeight)
+  maxTileIndex = int((m.config.thumbnailCount - 1) / m.thumbsPerTile)
+
+  tilesToCache = []
+
+  ' Cache current tile and ±2 tiles in both directions
+  ' This covers: current position, 2 tiles forward, 2 tiles backward
+  for offset = -2 to 2
+    tileIdx = currentTileIndex + offset
+    if tileIdx >= 0 and tileIdx <= maxTileIndex
+      if not m.loadedTileCache.doesExist(tileIdx.ToStr()) and not m.pendingTiles.doesExist(tileIdx.ToStr())
+        tilesToCache.push(tileIdx)
+      end if
+    end if
+  end for
+
+  if tilesToCache.count() > 0
+    m.log.debug("Visibility cache", "currentTile", currentTileIndex, "requesting", tilesToCache)
+    requestTiles(tilesToCache)
+  end if
+end sub
+
+' Main entry point - called when parent component updates thumbnail index
+sub onThumbnailIndexChanged()
+  if not isValidAndNotEmpty(m.config) then return
+  if not m.top.visible then return
+
+  newIndex = m.top.thumbnailIndex
+
+  ' Bounds check
+  if newIndex < 0 or newIndex >= m.config.thumbnailCount
+    m.log.debug("Thumbnail index out of bounds", newIndex)
+    return
+  end if
+
+  ' First time initialization - do full recalc
+  if m.currentThumbnailIndex = -1
+    m.log.debug("Initial thumbnail load", newIndex)
+    m.currentThumbnailIndex = newIndex
+    fullRecalculatePosters(newIndex)
+    ' Preload next tile for when user starts scrubbing
+    nextTileToPreload = getNextTileToPreload()
+    if nextTileToPreload >= 0
+      preloadTextureForTile(nextTileToPreload)
+    end if
+    return
+  end if
+
+  ' No change - skip update
+  if newIndex = m.currentThumbnailIndex then return
+
+  ' Update current index and track scrub direction
+  oldIndex = m.currentThumbnailIndex
+  m.currentThumbnailIndex = newIndex
+
+  ' Track scrub direction for predictive tile loading
+  if newIndex > oldIndex
+    m.scrubDirection = 1 ' Forward
+  else
+    m.scrubDirection = -1 ' Backward
+  end if
+
+  ' Update velocity tracking for dynamic preload depth
+  updateVelocity(newIndex, oldIndex)
+
+  ' CRITICAL: Check if we need to proactively request the next tile
+  ' This uses velocity to predict when we'll need the next tile and requests it early
+  checkProactiveTileRequest(newIndex)
+
+  ' Preload next tile's texture based on current scrub direction
+  ' If tile is already cached, this warms GPU texture cache for instant display
+  nextTileToPreload = getNextTileToPreload()
+  if nextTileToPreload >= 0
+    preloadTextureForTile(nextTileToPreload)
+  end if
+
+  m.log.debug("Index changed", "from", oldIndex, "to", newIndex, "direction", m.scrubDirection, "velocity", m.currentVelocity)
+
+  fullRecalculatePosters(newIndex)
+end sub
+
+' Recalculates and loads all 5 posters for a new center thumbnail index
+' Called on every thumbnail index change - we always recalculate all 5 because
+' center poster (480x270) has different display properties than sides (320x180)
+' @param {Integer} centerThumbnailIndex - New center thumbnail to display
+sub fullRecalculatePosters(centerThumbnailIndex as integer)
+  m.log.debug("Full recalculate posters", "centerIndex", centerThumbnailIndex, "currentThumbnailIndex", m.currentThumbnailIndex, "visible", m.top.visible)
+
+  ' Calculate thumbnail indexes for all 5 poster positions
+  ' [center-2, center-1, center, center+1, center+2]
+  posterOffsets = [-2, -1, 0, 1, 2]
+
+  for i = 0 to 4
+    thumbnailIndex = centerThumbnailIndex + posterOffsets[i]
+    updateSinglePoster(i, thumbnailIndex)
+  end for
+
+  ' Request tile preloading for adjacent tiles
+  preloadAdjacentTiles(centerThumbnailIndex)
+end sub
+
+' Updates a single poster with a new thumbnail
+' Handles tile loading, clipping calculation, and visibility
+' @param {Integer} posterIndex - Poster array index (0-4)
+' @param {Integer} thumbnailIndex - Thumbnail index to display
+sub updateSinglePoster(posterIndex as integer, thumbnailIndex as integer)
+  poster = m.posterArray[posterIndex]
+
+  ' Early exit if poster is already displaying this exact thumbnail and is visible
+  ' This prevents width/height/translation changes from triggering texture reloads
+  ' Safe because: tile cache paths are deterministic (never change for same tileIndex)
+  ' and tiles are never re-downloaded once successfully cached during the video session
+  if m.posterThumbnailIndexes[posterIndex] = thumbnailIndex and poster.visible
+    m.log.debug("Early exit - poster already showing thumbnail", "poster", posterIndex, "thumbIdx", thumbnailIndex)
+    return
+  end if
+
+  ' Check bounds - hide poster if thumbnail out of range
+  if thumbnailIndex < 0 or thumbnailIndex >= m.config.thumbnailCount
+    m.log.debug("Hiding poster - thumbnail out of bounds", "poster", posterIndex, "oldUri", poster.uri, "thumbIndex", thumbnailIndex)
+    ' Only hide poster - DON'T clear URI as that triggers render processing even when invisible
+    poster.visible = false
+    m.posterThumbnailIndexes[posterIndex] = -1
+
+    return
+  end if
+
+  ' Track which thumbnail this poster displays
+  m.posterThumbnailIndexes[posterIndex] = thumbnailIndex
+
+  ' Calculate which tile contains this thumbnail
+  tileIndex = trickplay.calculateTileIndex(thumbnailIndex, m.config.tileWidth, m.config.tileHeight)
+  tileIndexStr = tileIndex.ToStr()
+  m.log.debug("Tile calculation", "poster", posterIndex, "thumb", thumbnailIndex, "tile", tileIndex)
+
+  ' Check if tile is cached
+  if not m.loadedTileCache.doesExist(tileIndexStr)
+    ' Tile not loaded - hide poster and request load
+    ' Don't clear URI to avoid extra render work; refreshPostersWithNewTiles() will update when ready
+    poster.visible = false
+    m.log.debug("Poster", posterIndex, "tile", tileIndex, "not cached, requesting")
+    requestSingleTile(tileIndex)
+    return
+  end if
+
+  ' Tile is cached - calculate display parameters
+  cachePath = m.loadedTileCache[tileIndexStr]
+
+  ' Calculate thumbnail position within tile
+  thumbRect = trickplay.calculateClippingRect(thumbnailIndex, m.config.tileWidth, m.config.tileHeight, m.config.width, m.config.height)
+
+  ' Determine poster display size based on position using dynamic dimensions
+  ' Side posters (0,1,3,4) use sideDisplay*, Center (2) uses centerDisplay*
+  if posterIndex = 2
+    ' Center poster - 1.5x scale
+    displayWidth = m.centerDisplayWidth
+    displayHeight = m.centerDisplayHeight
+  else
+    ' Side posters - 1x scale
+    displayWidth = m.sideDisplayWidth
+    displayHeight = m.sideDisplayHeight
+  end if
+
+  ' Calculate scale factor from source thumbnail to display size
+  scaleX = displayWidth / m.config.width
+  scaleY = displayHeight / m.config.height
+
+  ' Calculate full tile dimensions when scaled
+  fullTileWidth = m.config.tileWidth * m.config.width
+  fullTileHeight = m.config.tileHeight * m.config.height
+
+  ' Set poster to scaled full tile size
+  poster.width = fullTileWidth * scaleX
+  poster.height = fullTileHeight * scaleY
+
+  ' Translate poster negatively so desired thumbnail appears in clip region
+  poster.translation = [-thumbRect.x * scaleX, -thumbRect.y * scaleY]
+
+  ' Only update URI if it changed (avoid redundant texture reload when scrubbing within same tile)
+  if poster.uri <> cachePath
+    m.log.debug("Setting poster URI", "poster", posterIndex, "oldUri", poster.uri, "newUri", cachePath)
+    poster.uri = cachePath
+  end if
+
+  poster.visible = true
+
+  m.log.debug("Updated poster", posterIndex, "thumb", thumbnailIndex, "tile", tileIndex, "uri", cachePath)
+end sub
+
+' Preloads tiles adjacent to current position for smooth scrubbing
+' Uses velocity-based calculation to determine how many tiles ahead to preload
+' Prioritizes tiles in the scrub direction
+' @param {Integer} centerThumbnailIndex - Current center thumbnail
+sub preloadAdjacentTiles(centerThumbnailIndex as integer)
+  ' Calculate current tile and bounds
+  currentTileIndex = trickplay.calculateTileIndex(centerThumbnailIndex, m.config.tileWidth, m.config.tileHeight)
+  thumbsPerTile = m.config.tileWidth * m.config.tileHeight
+  maxTileIndex = int((m.config.thumbnailCount - 1) / thumbsPerTile)
+
+  ' Calculate dynamic preload depth based on velocity
+  tilesNeeded = calculateTilesNeeded()
+
+  ' Build preload list - prioritize based on scrub direction
+  tilesToPreload = []
+
+  ' Priority 1: Current tile (always needed)
+  if not m.loadedTileCache.doesExist(currentTileIndex.ToStr())
+    tilesToPreload.push(currentTileIndex)
+  end if
+
+  if m.scrubDirection > 0
+    ' Scrubbing forward: prioritize tiles ahead, then 1 behind
+    for i = 1 to tilesNeeded
+      tileIdx = currentTileIndex + i
+      if tileIdx <= maxTileIndex and not m.loadedTileCache.doesExist(tileIdx.ToStr())
+        tilesToPreload.push(tileIdx)
+      end if
+    end for
+    ' Also cache 1 tile behind for direction changes
+    if currentTileIndex - 1 >= 0 and not m.loadedTileCache.doesExist((currentTileIndex - 1).ToStr())
+      tilesToPreload.push(currentTileIndex - 1)
+    end if
+  else if m.scrubDirection < 0
+    ' Scrubbing backward: prioritize tiles behind, then 1 ahead
+    for i = 1 to tilesNeeded
+      tileIdx = currentTileIndex - i
+      if tileIdx >= 0 and not m.loadedTileCache.doesExist(tileIdx.ToStr())
+        tilesToPreload.push(tileIdx)
+      end if
+    end for
+    ' Also cache 1 tile ahead for direction changes
+    if currentTileIndex + 1 <= maxTileIndex and not m.loadedTileCache.doesExist((currentTileIndex + 1).ToStr())
+      tilesToPreload.push(currentTileIndex + 1)
+    end if
+  else
+    ' No direction yet (initial load): load tiles in both directions
+    for i = 1 to m.minPreloadTiles
+      if currentTileIndex + i <= maxTileIndex and not m.loadedTileCache.doesExist((currentTileIndex + i).ToStr())
+        tilesToPreload.push(currentTileIndex + i)
+      end if
+      if currentTileIndex - i >= 0 and not m.loadedTileCache.doesExist((currentTileIndex - i).ToStr())
+        tilesToPreload.push(currentTileIndex - i)
+      end if
+    end for
+  end if
+
+  ' Request tiles if any need loading
+  if tilesToPreload.count() > 0
+    m.log.debug("Preload plan", "tiles", tilesToPreload, "tilesNeeded", tilesNeeded, "velocity", m.currentVelocity)
+    requestTiles(tilesToPreload)
+  end if
+end sub
+
+' Sorts tile indexes by priority: closest to current position first, then by scrub direction
+' @param {Array} tileIndexes - Array of tile indexes to sort
+' @return {Array} - Sorted array of tile indexes
+function prioritizeTileQueue(tileIndexes as object) as object
+  if not isValid(tileIndexes) or tileIndexes.count() <= 1 then return tileIndexes
+
+  ' Get current tile for distance calculation
+  currentTileIndex = 0
+  if m.currentThumbnailIndex >= 0 and isValid(m.thumbsPerTile) and m.thumbsPerTile > 0
+    currentTileIndex = int(m.currentThumbnailIndex / m.thumbsPerTile)
+  end if
+
+  ' Simple bubble sort by distance (tile lists are small, <10 items typically)
+  sorted = []
+  for each tile in tileIndexes
+    sorted.push(tile)
+  end for
+
+  for i = 0 to sorted.count() - 2
+    for j = i + 1 to sorted.count() - 1
+      ' Calculate distance from current tile
+      distI = abs(sorted[i] - currentTileIndex)
+      distJ = abs(sorted[j] - currentTileIndex)
+
+      ' If same distance, prioritize by scrub direction
+      shouldSwap = false
+      if distJ < distI
+        shouldSwap = true
+      else if distJ = distI and m.scrubDirection <> 0
+        ' Same distance: prefer tile in scrub direction
+        if m.scrubDirection > 0 and sorted[j] > sorted[i]
+          shouldSwap = true
+        else if m.scrubDirection < 0 and sorted[j] < sorted[i]
+          shouldSwap = true
+        end if
+      end if
+
+      if shouldSwap
+        temp = sorted[i]
+        sorted[i] = sorted[j]
+        sorted[j] = temp
+      end if
+    end for
+  end for
+
+  return sorted
+end function
+
+' Requests a single tile to be loaded (for immediate needs)
+' @param {Integer} tileIndex - Tile index to load
+sub requestSingleTile(tileIndex as integer)
+  requestTiles([tileIndex])
+end sub
+
+' Preloads a tile's texture into GPU memory via the hidden preloader poster
+' This warms Roku's texture cache so visible posters display instantly
+' @param {Integer} tileIndex - Tile index to preload into texture memory
+sub preloadTextureForTile(tileIndex as integer)
+  m.log.debug("Texture preload", "tile", tileIndex, "uri", m.loadedTileCache)
+
+  ' Skip if already preloaded (by index)
+  if tileIndex = m.preloadedTileIndex then return
+
+  tileIndexStr = tileIndex.ToStr()
+
+  ' Only preload if tile is cached to disk
+  if not m.loadedTileCache.doesExist(tileIndexStr) then return
+
+  cachePath = m.loadedTileCache[tileIndexStr]
+
+  ' Skip if URI is already set - once texture is in GPU memory
+  if m.preloaderPoster.uri = cachePath then return
+
+  m.preloaderPoster.uri = cachePath
+  m.preloadedTileIndex = tileIndex
+end sub
+
+' Determines which tile to preload - always ONE TILE AHEAD of the edge poster
+' The preloader must finish loading BEFORE the edge poster needs the tile
+' Edge poster = rightmost (FF) or leftmost (RW) visible poster
+' @return {Integer} - Tile index to preload, or -1 if none needed
+function getNextTileToPreload() as integer
+  if not isValid(m.config) or m.currentThumbnailIndex < 0 then return -1
+
+  maxTileIndex = int((m.config.thumbnailCount - 1) / m.thumbsPerTile)
+
+  ' Calculate edge poster's thumbnail index
+  ' Posters are: [center-2, center-1, center, center+1, center+2]
+  if m.scrubDirection > 0
+    ' FF: edge is rightmost poster (center + 2)
+    edgeThumbIndex = m.currentThumbnailIndex + 2
+  else if m.scrubDirection < 0
+    ' RW: edge is leftmost poster (center - 2)
+    edgeThumbIndex = m.currentThumbnailIndex - 2
+  else
+    ' No direction: default to forward
+    edgeThumbIndex = m.currentThumbnailIndex + 2
+  end if
+
+  ' Clamp to valid range
+  if edgeThumbIndex < 0 then edgeThumbIndex = 0
+  if edgeThumbIndex >= m.config.thumbnailCount then edgeThumbIndex = m.config.thumbnailCount - 1
+
+  ' Get tile the edge poster is currently on
+  edgeTileIndex = trickplay.calculateTileIndex(edgeThumbIndex, m.config.tileWidth, m.config.tileHeight)
+
+  ' Preload ONE TILE AHEAD of the edge poster (in scrub direction)
+  ' This ensures the texture is ready BEFORE the edge poster needs it
+  if m.scrubDirection > 0
+    tileToPreload = edgeTileIndex + 1
+    if tileToPreload <= maxTileIndex then return tileToPreload
+  else if m.scrubDirection < 0
+    tileToPreload = edgeTileIndex - 1
+    if tileToPreload >= 0 then return tileToPreload
+  else
+    tileToPreload = edgeTileIndex + 1
+    if tileToPreload <= maxTileIndex then return tileToPreload
+  end if
+
+  return -1
+end function
+
+' Requests multiple tiles to be loaded via queue system
+' Prevents request cancellation by queuing instead of stopping in-flight requests
+' @param {Array} tileIndexes - Array of tile indexes to load
+sub requestTiles(tileIndexes as dynamic)
+  if not isValid(tileIndexes) or tileIndexes.count() = 0 then return
+
+  ' Filter out tiles already cached or pending
+  tilesToRequest = []
+  for each tileIndex in tileIndexes
+    tileIndexStr = tileIndex.ToStr()
+    if not m.loadedTileCache.doesExist(tileIndexStr) and not m.pendingTiles.doesExist(tileIndexStr)
+      tilesToRequest.push(tileIndex)
+      m.pendingTiles[tileIndexStr] = true ' Mark pending immediately to prevent duplicates
+    end if
+  end for
+
+  if tilesToRequest.count() = 0 then return
+
+  if m.taskRunning
+    ' Queue for later - don't cancel current task
+    m.tileRequestQueue.append(tilesToRequest)
+    m.log.debug("Queued tiles", tilesToRequest, "queueSize", m.tileRequestQueue.count())
+  else
+    startTileLoader(tilesToRequest)
+  end if
+end sub
+
+' Starts the tile loader task with specified tiles
+' @param {Array} tileIndexes - Array of tile indexes to load
+sub startTileLoader(tileIndexes as dynamic)
+  m.log.debug("Starting tile loader", tileIndexes)
+  m.taskRunning = true
+  m.tileLoader.videoID = m.config.videoID
+  m.tileLoader.width = m.config.width
+  m.tileLoader.tileIndexes = tileIndexes
+  m.tileLoader.control = "RUN"
+end sub
+
+' Called when tile loader task state changes
+' Handles task completion: updates cache, clears pending, processes queue
+sub onTaskStateChanged()
+  if m.tileLoader.state <> "stop" then return
+
+  m.taskRunning = false
+  loadedTiles = m.tileLoader.loadedTiles
+
+  ' Process loaded tiles - move from pending to cache
+  if isValid(loadedTiles)
+    for each tileIndexStr in loadedTiles
+      m.pendingTiles.delete(tileIndexStr)
+      cachePath = loadedTiles[tileIndexStr]
+      m.loadedTileCache[tileIndexStr] = cachePath
+      m.log.info("Cached tile", tileIndexStr, "path", cachePath)
+    end for
+  end if
+
+  ' Clear failed tiles from pending so they can be retried
+  failedTiles = m.tileLoader.failedTiles
+  if isValid(failedTiles)
+    for each tileIndex in failedTiles
+      m.pendingTiles.delete(tileIndex.ToStr())
+    end for
+  end if
+
+  ' Update estimated download time from actual measurements
+  if isValid(m.tileLoader.avgDownloadTime) and m.tileLoader.avgDownloadTime > 0
+    ' Use weighted average: 70% new measurement, 30% previous estimate
+    ' This prevents sudden spikes from affecting preload calculations too drastically
+    m.estimatedDownloadTime = (0.7 * m.tileLoader.avgDownloadTime) + (0.3 * m.estimatedDownloadTime)
+    m.log.debug("Updated download time estimate", m.estimatedDownloadTime)
+  end if
+
+  loadedCount = 0
+  if isValid(loadedTiles) then loadedCount = loadedTiles.count()
+  m.log.debug("Task complete", "loaded", loadedCount, "cacheSize", m.loadedTileCache.count(), "estDownloadTime", m.estimatedDownloadTime)
+
+  ' Process queue if anything waiting
+  if m.tileRequestQueue.count() > 0
+    queuedTiles = m.tileRequestQueue
+    m.tileRequestQueue = []
+
+    ' Re-prioritize queue based on current position (user may have moved)
+    prioritizedTiles = prioritizeTileQueue(queuedTiles)
+
+    m.log.debug("Processing queued tiles", "count", prioritizedTiles.count(), "order", prioritizedTiles)
+    startTileLoader(prioritizedTiles)
+  end if
+
+  ' Refresh posters that were waiting for these tiles
+  if isValid(loadedTiles) and m.currentThumbnailIndex >= 0
+    refreshPostersWithNewTiles(loadedTiles)
+  end if
+
+  ' Preload tile into texture memory for instant display when needed
+  if m.top.visible
+    ' During scrubbing - preload next tile in scrub direction
+    nextTileToPreload = getNextTileToPreload()
+    if nextTileToPreload >= 0
+      preloadTextureForTile(nextTileToPreload)
+    end if
+  else if m.currentThumbnailIndex < 0 and isValidAndNotEmpty(m.config)
+    ' Early caching (carousel never opened) - warm GPU texture by setting up posters
+    ' Posters are invisible but loading URIs warms the texture cache
+    initialPosition = 0
+    if isValid(m.config.initialPosition)
+      initialPosition = m.config.initialPosition
+    end if
+    initialThumbnailIndex = trickplay.calculateThumbnailIndex(initialPosition, m.config.interval)
+    fullRecalculatePosters(initialThumbnailIndex)
+    ' Also preload next tile for when user starts scrubbing
+    initialTileIndex = trickplay.calculateTileIndex(initialThumbnailIndex, m.config.tileWidth, m.config.tileHeight)
+    maxTileIndex = int((m.config.thumbnailCount - 1) / m.thumbsPerTile)
+    if initialTileIndex + 1 <= maxTileIndex
+      preloadTextureForTile(initialTileIndex + 1)
+    end if
+  end if
+  ' Normal playback after scrubbing - keep existing texture cache warm, don't change preloader
+end sub
+
+' Refreshes posters that were waiting for newly loaded tiles
+' Only updates posters that have thumbnails in the newly loaded tiles
+' @param {AssocArray} loadedTiles - Map of tileIndex -> cachePath
+sub refreshPostersWithNewTiles(loadedTiles as object)
+  ' Check each poster to see if its thumbnail is in a newly loaded tile
+  for i = 0 to 4
+    posterThumbIndex = m.posterThumbnailIndexes[i]
+
+    ' Skip if poster has no assigned thumbnail
+    if posterThumbIndex < 0 then continue for
+
+    ' Calculate which tile this poster's thumbnail belongs to
+    tileIndex = trickplay.calculateTileIndex(posterThumbIndex, m.config.tileWidth, m.config.tileHeight)
+    tileIndexStr = tileIndex.ToStr()
+
+    ' If this tile was just loaded AND poster is currently hidden, update it
+    if loadedTiles.doesExist(tileIndexStr) and not m.posterArray[i].visible
+      m.log.debug("Refreshing poster", i, "with newly loaded tile", tileIndex)
+      updateSinglePoster(i, posterThumbIndex)
+    end if
+  end for
+end sub
+
+' destroy: Full teardown releasing all resources before component removal
+' Called by parent when popping scene or navigating away
+' Clears task nodes, observers, all node refs, and data structures
+sub destroy()
+  ' First do soft reset (clears caches, resets state, stops task)
+  reset()
+
+  ' Unobserve task field to prevent callbacks on invalid object, then release
+  if isValid(m.tileLoader)
+    m.tileLoader.unobserveField("state")
+    m.tileLoader = invalid
+  end if
+
+  ' Clear all node references
+  m.preloaderPoster = invalid
+  m.posterGroup = invalid
+
+  for i = 0 to m.posterArray.count() - 1
+    m.posterArray[i] = invalid
+  end for
+  m.posterArray = invalid
+
+  for i = 0 to m.clipGroups.count() - 1
+    m.clipGroups[i] = invalid
+  end for
+  m.clipGroups = invalid
+
+  m.config = invalid
+end sub
+
+' reset: Clears all caches when video session ends
+' Called by parent VideoPlayerView when video changes or stops
+' Prevents unbounded cache growth across multiple videos in binge-watching sessions
+sub reset()
+  m.log.info("Cleaning up carousel caches for new video session")
+
+  ' Clear in-memory caches (cachefs:/ files persist for performance)
+  m.loadedTileCache.clear()
+  m.pendingTiles.clear()
+  m.tileRequestQueue.clear()
+
+  ' Reset state tracking
+  m.currentThumbnailIndex = -1
+  m.lastCachedTileIndex = -1
+  m.preloadedTileIndex = -1
+
+  ' Reset velocity tracking
+  m.currentVelocity = 0
+  m.lastIndexUpdateTime = 0
+  m.lastIndexForVelocity = -1
+
+  ' Reset poster state to prevent showing wrong video's thumbnails
+  ' This prevents the early exit optimization in updateSinglePoster from incorrectly
+  ' skipping updates when a new video with the same trickplay structure is loaded
+  m.posterThumbnailIndexes = [-1, -1, -1, -1, -1]
+
+  ' Clear poster URIs and hide them to ensure fresh tiles load for new video
+  for each poster in m.posterArray
+    poster.uri = ""
+    poster.visible = false
+  end for
+
+  ' Cancel any in-flight tile loading task
+  if m.taskRunning
+    m.tileLoader.control = "STOP"
+    m.taskRunning = false
+  end if
+end sub

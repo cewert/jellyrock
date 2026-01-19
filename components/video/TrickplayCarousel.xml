@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component name="TrickplayCarousel" extends="Group">
+  <interface>
+    <field id="trickplayConfig" type="assocarray" onChange="onConfigChanged" />
+    <field id="thumbnailIndex" type="integer" value="-1" onChange="onThumbnailIndexChanged" />
+    <field id="playbackPosition" type="float" value="0" onChange="onPlaybackPositionChanged" />
+    <field id="videoDuration" type="float" />
+    <field id="visible" type="boolean" value="false" onChange="onVisibilityChanged" />
+    <function name="destroy" />
+    <function name="reset" />
+  </interface>
+
+  <children>
+    <!-- Hidden poster for texture preloading - warms GPU cache before visible posters need tile -->
+    <Poster id="preloaderPoster" visible="false" />
+
+    <Group id="posterGroup">
+      <!-- 5 clip groups: each clips a large tile image to show just one thumbnail -->
+      <!-- The inner Poster is translated negatively to position the desired thumbnail in the clip area -->
+      <!-- Side thumbnails: 320x180 display, Center: 480x270 display -->
+
+      <Group id="clipMinus2" clippingRect="[0, 0, 320, 180]" translation="[0, 45]">
+        <Poster id="posterMinus2" />
+      </Group>
+
+      <Group id="clipMinus1" clippingRect="[0, 0, 320, 180]" translation="[330, 45]">
+        <Poster id="posterMinus1" />
+      </Group>
+
+      <Group id="clipCenter" clippingRect="[0, 0, 480, 270]" translation="[660, 0]">
+        <Poster id="posterCenter" />
+      </Group>
+
+      <Group id="clipPlus1" clippingRect="[0, 0, 320, 180]" translation="[1150, 45]">
+        <Poster id="posterPlus1" />
+      </Group>
+
+      <Group id="clipPlus2" clippingRect="[0, 0, 320, 180]" translation="[1480, 45]">
+        <Poster id="posterPlus2" />
+      </Group>
+    </Group>
+  </children>
+</component>

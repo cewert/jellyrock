@@ -1,0 +1,529 @@
+namespace tests
+
+  @suite("trickplay.bs - Trickplay Utility Functions")
+  class TrickplayUtilsTests extends tests.BaseTestSuite
+
+    protected override function setup()
+      super.setup()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("calculateThumbnailIndex(position, interval)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns correct index for various positions")
+    @params(0.0, 10000, 0)
+    @params(5.0, 10000, 0)
+    @params(10.0, 10000, 1)
+    @params(15.0, 10000, 1)
+    @params(20.0, 10000, 2)
+    @params(45.2, 10000, 4)
+    @params(100.5, 10000, 10)
+    function _(position, interval, expectedIndex)
+      result = trickplay.calculateThumbnailIndex(position, interval)
+      m.assertEqual(result, expectedIndex)
+    end function
+
+    @it("handles zero and negative intervals gracefully")
+    @params(10.0, 0, 0)
+    @params(10.0, -100, 0)
+    function _(position, interval, expectedIndex)
+      result = trickplay.calculateThumbnailIndex(position, interval)
+      m.assertEqual(result, expectedIndex)
+    end function
+
+    '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("calculateTileIndex(thumbnailIndex, tileWidth, tileHeight)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns correct tile index for various thumbnail indexes")
+    @params(0, 10, 10, 0) ' First thumbnail, first tile
+    @params(50, 10, 10, 0) ' Middle of first tile
+    @params(99, 10, 10, 0) ' Last thumbnail in first tile
+    @params(24, 5, 5, 0) ' Last thumbnail in first tile, different dimensions
+    @params(100, 10, 10, 1) ' First thumbnail in second tile
+    @params(25, 5, 5, 1) ' First thumbnail in second tile, different dimensions
+    @params(150, 10, 10, 1) ' Middle of second tile
+    @params(200, 10, 10, 2) ' First thumbnail in third tile
+    @params(511, 10, 10, 5) ' Large index
+    function _(thumbnailIndex, tileWidth, tileHeight, expectedTileIndex)
+      result = trickplay.calculateTileIndex(thumbnailIndex, tileWidth, tileHeight)
+      m.assertEqual(result, expectedTileIndex)
+    end function
+
+    @it("handles invalid tile dimensions gracefully")
+    @params(50, 0, 10, 0)
+    @params(50, 10, 0, 0)
+    @params(50, -1, 10, 0)
+    function _(thumbnailIndex, tileWidth, tileHeight, expectedTileIndex)
+      result = trickplay.calculateTileIndex(thumbnailIndex, tileWidth, tileHeight)
+      m.assertEqual(result, expectedTileIndex)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("thumbnailIndexToPosition(index, interval)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("converts thumbnail indexes to video positions correctly")
+    @params(0, 10000, 0.0)
+    @params(1, 10000, 10.0)
+    @params(5, 10000, 50.0)
+    @params(10, 5000, 50.0)
+    @params(100, 10000, 1000.0)
+    function _(index, interval, expectedPosition)
+      result = trickplay.thumbnailIndexToPosition(index, interval)
+      ' Compare as floats - both should be floats
+      m.assertTrue(result = expectedPosition, `Expected ${expectedPosition} but got ${result}`)
+    end function
+
+    @it("handles zero and negative intervals gracefully")
+    @params(10, 0, 0.0)
+    @params(10, -100, 0.0)
+    function _(index, interval, expectedPosition)
+      result = trickplay.thumbnailIndexToPosition(index, interval)
+      ' Compare as floats - both should be floats
+      m.assertTrue(result = expectedPosition, `Expected ${expectedPosition} but got ${result}`)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("calculateClippingRect(thumbnailIndex, tileWidth, tileHeight, thumbWidth, thumbHeight)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns correct clipping rect for first thumbnail")
+    function _()
+      result = trickplay.calculateClippingRect(0, 10, 10, 320, 180)
+      m.assertEqual(result.x, 0)
+      m.assertEqual(result.y, 0)
+      m.assertEqual(result.width, 320)
+      m.assertEqual(result.height, 180)
+    end function
+
+    @it("returns correct clipping rect for middle of first row")
+    function _()
+      result = trickplay.calculateClippingRect(5, 10, 10, 320, 180)
+      m.assertEqual(result.x, 1600) ' 5 * 320
+      m.assertEqual(result.y, 0)
+      m.assertEqual(result.width, 320)
+      m.assertEqual(result.height, 180)
+    end function
+
+    @it("returns correct clipping rect for first thumbnail in second row")
+    function _()
+      result = trickplay.calculateClippingRect(10, 10, 10, 320, 180)
+      m.assertEqual(result.x, 0)
+      m.assertEqual(result.y, 180) ' 1 * 180
+      m.assertEqual(result.width, 320)
+      m.assertEqual(result.height, 180)
+    end function
+
+    @it("returns correct clipping rect for last thumbnail in first tile")
+    function _()
+      result = trickplay.calculateClippingRect(99, 10, 10, 320, 180)
+      m.assertEqual(result.x, 2880) ' 9 * 320 (last column)
+      m.assertEqual(result.y, 1620) ' 9 * 180 (last row)
+      m.assertEqual(result.width, 320)
+      m.assertEqual(result.height, 180)
+    end function
+
+    @it("returns correct clipping rect for first thumbnail in second tile")
+    function _()
+      ' Thumbnail 100 is position 0 within tile 1 (second tile)
+      result = trickplay.calculateClippingRect(100, 10, 10, 320, 180)
+      m.assertEqual(result.x, 0)
+      m.assertEqual(result.y, 0)
+      m.assertEqual(result.width, 320)
+      m.assertEqual(result.height, 180)
+    end function
+
+    @it("returns correct clipping rect for arbitrary position")
+    function _()
+      ' Thumbnail 45 = row 4, col 5 (4*10 + 5)
+      result = trickplay.calculateClippingRect(45, 10, 10, 320, 180)
+      m.assertEqual(result.x, 1600) ' 5 * 320
+      m.assertEqual(result.y, 720) ' 4 * 180
+      m.assertEqual(result.width, 320)
+      m.assertEqual(result.height, 180)
+    end function
+
+    @it("handles invalid tile dimensions gracefully")
+    function _()
+      result = trickplay.calculateClippingRect(50, 0, 10, 320, 180)
+      m.assertEqual(result.x, 0)
+      m.assertEqual(result.y, 0)
+      m.assertEqual(result.width, 320)
+      m.assertEqual(result.height, 180)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("buildTrickplayUrl(videoID, width, tileIndex)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns correct URL format")
+    @params("abc123", 320, 0, "Videos/abc123/Trickplay/320/0.jpg")
+    @params("xyz789", 640, 5, "Videos/xyz789/Trickplay/640/5.jpg")
+    @params("test-id", 160, 10, "Videos/test-id/Trickplay/160/10.jpg")
+    @params("video456", 480, 999, "Videos/video456/Trickplay/480/999.jpg")
+    function _(videoID, width, tileIndex, expectedUrl)
+      result = trickplay.buildTrickplayUrl(videoID, width, tileIndex)
+      m.assertEqual(result, expectedUrl)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("buildTrickplayCachePath(videoID, width, tileIndex)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns correct cachefs path format")
+    @params("abc123", 320, 0, "cachefs:/trickplay_abc123_320_0.jpg")
+    @params("xyz789", 640, 5, "cachefs:/trickplay_xyz789_640_5.jpg")
+    @params("test-id", 160, 10, "cachefs:/trickplay_test-id_160_10.jpg")
+    @params("video456", 480, 999, "cachefs:/trickplay_video456_480_999.jpg")
+    function _(videoID, width, tileIndex, expectedPath)
+      result = trickplay.buildTrickplayCachePath(videoID, width, tileIndex)
+      m.assertEqual(result, expectedPath)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("selectBestResolution(trickplayData, deviceWidth)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("selects smallest resolution for SD devices")
+    function _()
+      trickplayData = {
+        "320": { Height: 180 },
+        "640": { Height: 360 },
+        "960": { Height: 540 }
+      }
+      result = trickplay.selectBestResolution(trickplayData, 720)
+      m.assertEqual(result, "320")
+    end function
+
+    @it("selects largest resolution for FHD devices")
+    function _()
+      trickplayData = {
+        "320": { Height: 180 },
+        "640": { Height: 360 },
+        "960": { Height: 540 }
+      }
+      result = trickplay.selectBestResolution(trickplayData, 1920)
+      m.assertEqual(result, "960")
+    end function
+
+    @it("selects middle resolution for HD devices")
+    function _()
+      trickplayData = {
+        "320": { Height: 180 },
+        "640": { Height: 360 },
+        "960": { Height: 540 }
+      }
+      result = trickplay.selectBestResolution(trickplayData, 1280)
+      m.assertEqual(result, "640")
+    end function
+
+    @it("returns invalid for empty trickplay data")
+    function _()
+      result = trickplay.selectBestResolution({}, 1920)
+      m.assertInvalid(result)
+    end function
+
+    @it("returns invalid for invalid trickplay data")
+    function _()
+      result = trickplay.selectBestResolution(invalid, 1920)
+      m.assertInvalid(result)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("validateConfig(config)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns true for valid config")
+    function _()
+      config = {
+        videoID: "test123",
+        width: 320,
+        height: 180,
+        interval: 10000,
+        thumbnailCount: 500,
+        tileWidth: 10,
+        tileHeight: 10
+      }
+      result = trickplay.validateConfig(config)
+      m.assertTrue(result)
+    end function
+
+    @it("returns false for missing required fields")
+    @params("videoID")
+    @params("width")
+    @params("height")
+    @params("interval")
+    @params("thumbnailCount")
+    @params("tileWidth")
+    @params("tileHeight")
+    function _(missingField)
+      config = {
+        videoID: "test123",
+        width: 320,
+        height: 180,
+        interval: 10000,
+        thumbnailCount: 500,
+        tileWidth: 10,
+        tileHeight: 10
+      }
+      config.delete(missingField)
+      result = trickplay.validateConfig(config)
+      m.assertFalse(result)
+    end function
+
+    @it("returns false for zero or negative numeric values")
+    @params("width", 0)
+    @params("height", -1)
+    @params("interval", 0)
+    @params("thumbnailCount", -10)
+    @params("tileWidth", 0)
+    @params("tileHeight", -5)
+    function _(field, invalidValue)
+      config = {
+        videoID: "test123",
+        width: 320,
+        height: 180,
+        interval: 10000,
+        thumbnailCount: 500,
+        tileWidth: 10,
+        tileHeight: 10
+      }
+      config[field] = invalidValue
+      result = trickplay.validateConfig(config)
+      m.assertFalse(result)
+    end function
+
+    @it("returns false for invalid config")
+    function _()
+      result = trickplay.validateConfig(invalid)
+      m.assertFalse(result)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("buildConfigFromMetadata(itemMeta, videoID, deviceWidth, initialPosition)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns valid config for valid metadata")
+    function _()
+      itemMeta = {
+        Trickplay: {
+          "test-video-id": {
+            "320": {
+              Height: 180,
+              Interval: 10000,
+              ThumbnailCount: 500,
+              TileWidth: 10,
+              TileHeight: 10
+            },
+            "640": {
+              Height: 360,
+              Interval: 10000,
+              ThumbnailCount: 500,
+              TileWidth: 10,
+              TileHeight: 10
+            }
+          }
+        }
+      }
+
+      result = trickplay.buildConfigFromMetadata(itemMeta, "my-video", 1920, 120)
+
+      m.assertNotInvalid(result)
+      m.assertEqual(result.videoID, "my-video")
+      ' Width should be Integer (resolution values are always whole numbers)
+      m.assertEqual(result.width, 640)
+      m.assertEqual(type(result.width), "roInteger")
+      m.assertEqual(result.height, 360)
+      m.assertEqual(result.interval, 10000)
+      m.assertEqual(result.thumbnailCount, 500)
+      m.assertEqual(result.tileWidth, 10)
+      m.assertEqual(result.tileHeight, 10)
+      m.assertEqual(result.initialPosition, 120)
+    end function
+
+    @it("returns invalid for missing trickplay data")
+    function _()
+      itemMeta = { Trickplay: invalid }
+      result = trickplay.buildConfigFromMetadata(itemMeta, "my-video", 1920, 0)
+      m.assertInvalid(result)
+    end function
+
+    @it("returns invalid for empty trickplay data")
+    function _()
+      itemMeta = { Trickplay: {} }
+      result = trickplay.buildConfigFromMetadata(itemMeta, "my-video", 1920, 0)
+      m.assertInvalid(result)
+    end function
+
+    @it("returns invalid for invalid metadata")
+    function _()
+      result = trickplay.buildConfigFromMetadata(invalid, "my-video", 1920, 0)
+      m.assertInvalid(result)
+    end function
+
+    @it("returns invalid for malformed trickplay structure")
+    function _()
+      itemMeta = {
+        Trickplay: {
+          "test-video-id": {
+            "320": {
+              ' Missing required fields
+              Height: 180
+            }
+          }
+        }
+      }
+
+      result = trickplay.buildConfigFromMetadata(itemMeta, "my-video", 1920, 0)
+      m.assertInvalid(result)
+    end function
+
+    @it("returns invalid when Interval is missing")
+    function _()
+      itemMeta = {
+        Trickplay: {
+          "test-video-id": {
+            "320": {
+              Height: 180,
+              ' Interval missing
+              ThumbnailCount: 500,
+              TileWidth: 10,
+              TileHeight: 10
+            }
+          }
+        }
+      }
+
+      result = trickplay.buildConfigFromMetadata(itemMeta, "my-video", 1920, 0)
+      m.assertInvalid(result)
+    end function
+
+    @it("returns invalid when ThumbnailCount is missing")
+    function _()
+      itemMeta = {
+        Trickplay: {
+          "test-video-id": {
+            "320": {
+              Height: 180,
+              Interval: 10000,
+              ' ThumbnailCount missing
+              TileWidth: 10,
+              TileHeight: 10
+            }
+          }
+        }
+      }
+
+      result = trickplay.buildConfigFromMetadata(itemMeta, "my-video", 1920, 0)
+      m.assertInvalid(result)
+    end function
+
+    @it("returns invalid when TileWidth is missing")
+    function _()
+      itemMeta = {
+        Trickplay: {
+          "test-video-id": {
+            "320": {
+              Height: 180,
+              Interval: 10000,
+              ThumbnailCount: 500,
+              ' TileWidth missing
+              TileHeight: 10
+            }
+          }
+        }
+      }
+
+      result = trickplay.buildConfigFromMetadata(itemMeta, "my-video", 1920, 0)
+      m.assertInvalid(result)
+    end function
+
+    @it("returns invalid when TileHeight is missing")
+    function _()
+      itemMeta = {
+        Trickplay: {
+          "test-video-id": {
+            "320": {
+              Height: 180,
+              Interval: 10000,
+              ThumbnailCount: 500,
+              TileWidth: 10
+              ' TileHeight missing
+            }
+          }
+        }
+      }
+
+      result = trickplay.buildConfigFromMetadata(itemMeta, "my-video", 1920, 0)
+      m.assertInvalid(result)
+    end function
+
+    @it("returns invalid when numeric values are zero or negative")
+    function _()
+      itemMeta = {
+        Trickplay: {
+          "test-video-id": {
+            "320": {
+              Height: -180, ' Invalid negative
+              Interval: 0, ' Invalid zero
+              ThumbnailCount: 500,
+              TileWidth: 10,
+              TileHeight: 10
+            }
+          }
+        }
+      }
+
+      result = trickplay.buildConfigFromMetadata(itemMeta, "my-video", 1920, 0)
+      m.assertInvalid(result)
+    end function
+
+    @it("returns invalid when Height is missing")
+    function _()
+      itemMeta = {
+        Trickplay: {
+          "test-video-id": {
+            "320": {
+              ' Height missing
+              Interval: 10000,
+              ThumbnailCount: 500,
+              TileWidth: 10,
+              TileHeight: 10
+            }
+          }
+        }
+      }
+
+      result = trickplay.buildConfigFromMetadata(itemMeta, "my-video", 1920, 0)
+      m.assertInvalid(result)
+    end function
+
+    @it("verifies width is Integer type")
+    function _()
+      itemMeta = {
+        Trickplay: {
+          "test-video-id": {
+            "640": {
+              Height: 360,
+              Interval: 10000,
+              ThumbnailCount: 500,
+              TileWidth: 10,
+              TileHeight: 10
+            }
+          }
+        }
+      }
+
+      result = trickplay.buildConfigFromMetadata(itemMeta, "my-video", 1920, 0)
+
+      m.assertNotInvalid(result)
+      ' int(val()) converts string "640" to Integer 640
+      m.assertEqual(result.width, 640)
+      m.assertEqual(type(result.width), "roInteger")
+    end function
+
+  end class
+
+end namespace
