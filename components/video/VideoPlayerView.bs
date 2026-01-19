@@ -901,6 +901,10 @@ sub onState()
       m.playbackTimer.control = "stop"
       m.bufferCheckTimer.control = "stop"
       m.bufferCheckTimer.unobserveField("fire")
+      ' Ensure trickplay carousel is cleaned up on error just like stopped/finished states
+      if isValid(m.trickplayCarousel)
+        m.trickplayCarousel.visible = false
+      end if
       showPlaybackErrorDialog(tr("Error During Playback"))
     end if
   else if m.top.state = "playing"
