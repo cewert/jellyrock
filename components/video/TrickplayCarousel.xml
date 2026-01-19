@@ -6,6 +6,8 @@
     <field id="playbackPosition" type="float" value="0" onChange="onPlaybackPositionChanged" />
     <field id="videoDuration" type="float" />
     <field id="visible" type="boolean" value="false" onChange="onVisibilityChanged" />
+    <function name="destroy" />
+    <function name="reset" />
   </interface>
 
   <children>

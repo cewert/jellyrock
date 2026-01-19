@@ -991,10 +991,40 @@ sub refreshPostersWithNewTiles(loadedTiles as object)
   end for
 end sub
 
-' cleanup: Clears all caches when video session ends
+' destroy: Full teardown releasing all resources before component removal
+' Called by parent when popping scene or navigating away
+' Clears task nodes, observers, all node refs, and data structures
+sub destroy()
+  ' First do soft reset (clears caches, resets state, stops task)
+  reset()
+
+  ' Unobserve task field to prevent callbacks on invalid object, then release
+  if isValid(m.tileLoader)
+    m.tileLoader.unobserveField("state")
+    m.tileLoader = invalid
+  end if
+
+  ' Clear all node references
+  m.preloaderPoster = invalid
+  m.posterGroup = invalid
+
+  for i = 0 to m.posterArray.count() - 1
+    m.posterArray[i] = invalid
+  end for
+  m.posterArray = invalid
+
+  for i = 0 to m.clipGroups.count() - 1
+    m.clipGroups[i] = invalid
+  end for
+  m.clipGroups = invalid
+
+  m.config = invalid
+end sub
+
+' reset: Clears all caches when video session ends
 ' Called by parent VideoPlayerView when video changes or stops
 ' Prevents unbounded cache growth across multiple videos in binge-watching sessions
-sub cleanup()
+sub reset()
   m.log.info("Cleaning up carousel caches for new video session")
 
   ' Clear in-memory caches (cachefs:/ files persist for performance)

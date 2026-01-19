@@ -552,7 +552,7 @@ sub onVideoContentLoaded()
   ' Clean up old carousel cache before loading new video's trickplay data
   ' This handles all video change paths: OSD nav, next episode, queue changes, etc.
   if isValid(m.trickplayCarousel)
-    m.trickplayCarousel.callFunc("cleanup")
+    m.trickplayCarousel.callFunc("reset")
   end if
 
   ' Configure trickplay carousel if metadata is available
@@ -932,7 +932,7 @@ sub onState()
     m.playReported = false
     if isValid(m.trickplayCarousel)
       m.trickplayCarousel.visible = false
-      m.trickplayCarousel.callFunc("cleanup")
+      m.trickplayCarousel.callFunc("reset")
     end if
   else if m.top.state = "finished"
     m.playbackTimer.control = "stop"
@@ -942,7 +942,7 @@ sub onState()
     ReportPlayback("finished")
     if isValid(m.trickplayCarousel)
       m.trickplayCarousel.visible = false
-      m.trickplayCarousel.callFunc("cleanup")
+      m.trickplayCarousel.callFunc("reset")
     end if
   else
     m.log.warning("Unhandled state", m.top.state, m.playReported, m.playFinished)
