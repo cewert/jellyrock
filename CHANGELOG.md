@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- use bullet instead of dash for movie homeitem subtext ([f7d2dd0](https://github.com/cewert/jellyrock/commit/f7d2dd0))
 - changed: enable loadSync for local UI posters ([bbb5f99](https://github.com/cewert/jellyrock/commit/bbb5f99))
 
 ### Fixed
