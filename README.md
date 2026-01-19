@@ -24,6 +24,9 @@ Visit the [Roku Channel Store](https://channelstore.roku.com/details/232f9e82db1
   <a href="docs/screenshots/osd.png" target="_blank" title="On-Screen Display(OSD)">
     <img src="docs/screenshots/osd.png" width="400" alt="On-Screen Display(OSD)" />
   </a>
+  <a href="docs/screenshots/trickplay.png" target="_blank" title="Trickplay">
+    <img src="docs/screenshots/trickplay.png" width="400" alt="Trickplay" />
+  </a>
 
 ## Sideload
 
