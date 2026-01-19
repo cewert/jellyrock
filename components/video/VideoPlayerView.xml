@@ -28,6 +28,7 @@
     <field id="audioIndex" type="integer" />
     <field id="allowCaptions" type="boolean" value="false" />
     <field id="cachedPlaybackInfo" type="assocarray" />
+    <function name="destroy" />
   </interface>
 
   <children>
