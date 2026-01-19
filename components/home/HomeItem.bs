@@ -199,7 +199,7 @@ sub itemContentChanged()
     end if
     if isValid(itemData.json.OfficialRating)
       if textExtra <> ""
-        textExtra = textExtra + " - " + itemData.json.OfficialRating
+        textExtra = textExtra + " • " + itemData.json.OfficialRating
       else
         textExtra = itemData.json.OfficialRating
       end if
