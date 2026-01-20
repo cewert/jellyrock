@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- prevent video auto-replay when returning to episode list ([21d1538](https://github.com/cewert/jellyrock/commit/21d1538))
+
 ### Dependencies
 
 - Github actions ([#293](https://github.com/cewert/jellyrock/pull/293))
