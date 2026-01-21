@@ -101,7 +101,7 @@ sub itemContentChanged()
     m.itemPoster.height = 290
     m.itemPoster.width = 290
 
-    m.itemText.translation = [0, m.itemPoster.translation[1] + m.itemPoster.height + 7]
+    m.itemText.translation = [0, m.itemPoster.translation[1] + m.itemPoster.height + 18]
 
     m.backdrop.height = 290
     m.backdrop.width = 290
@@ -115,7 +115,7 @@ sub itemContentChanged()
     m.itemPoster.height = 290
     m.itemPoster.width = 290
 
-    m.itemText.translation = [0, m.itemPoster.translation[1] + m.itemPoster.height + 7]
+    m.itemText.translation = [0, m.itemPoster.translation[1] + m.itemPoster.height + 18]
 
     m.backdrop.height = 290
     m.backdrop.width = 290
