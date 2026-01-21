@@ -101,6 +101,7 @@ LOGO := resources/branding/logo.svg
 LOGO_SECONDARY := resources/branding/logo-secondary.svg
 LOGO_DEV := resources/branding/logo-dev.svg
 LOGO_DEV_SECONDARY := resources/branding/logo-dev-secondary.svg
+LOGO_JR := resources/branding/logo-jr.svg
 
 # Directory creation rules
 images/:; mkdir $@
@@ -111,6 +112,7 @@ images/branding/:; mkdir -p $@
 clean_images:
 	rm -f images/branding/*.png
 	rm -f resources/branding/release/*.png
+	rm -f resources/branding/logo-jr.png
 
 # Image generation rules with force rebuild
 images/branding/logo.png: $(LOGO_DEV_SECONDARY) | clean_images ; $(CONVERT_CMD) -background none -resize 180x39 $< $@
@@ -129,6 +131,8 @@ resources/branding/release/splash-screen_fhd.png: $(LOGO) | clean_images ; $(CON
 resources/branding/release/splash-screen_hd.png: $(LOGO) | clean_images ; $(CONVERT_BLUEBG_CMD) -resize 360x360 -extent 1280x720 $< $@
 resources/branding/release/splash-screen_sd.png: $(LOGO) | clean_images ; $(CONVERT_BLUEBG_CMD) -resize 240x240 -extent 720x480 $< $@
 
+resources/branding/logo-jr.png: $(LOGO_JR) | clean_images ; $(CONVERT_BLUEBG_CMD) -resize 96x96 -extent 128x128 $< $@
+
 # Main target with dependency on clean
 .PHONY: make_images
 make_images: clean_images \
@@ -145,4 +149,5 @@ make_images: clean_images \
 	resources/branding/release/channel-poster_sd.png \
 	resources/branding/release/splash-screen_fhd.png \
 	resources/branding/release/splash-screen_hd.png \
-	resources/branding/release/splash-screen_sd.png
+	resources/branding/release/splash-screen_sd.png \
+	resources/branding/logo-jr.png
