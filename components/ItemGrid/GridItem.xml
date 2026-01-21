@@ -3,7 +3,7 @@
   <children>
     <Poster id="backdrop" translation="[0,22]" width="264" height="396" loadDisplayMode="scaleToZoom" uri="pkg:/images/9patch/filled-rounded.9.png" />
     <JRPoster id="itemPoster" translation="[0,22]" width="264" height="396" loadDisplayMode="scaleToZoom" />
-    <Poster id="itemIcon" width="50" height="50" translation="[204,25]" />
+    <Poster id="itemIcon" width="50" height="50" translation="[204,32]" />
     <LabelPrimaryMedium id="posterText" width="254" height="386" translation="[5,27]" horizAlign="center" vertAlign="center" ellipsizeOnBoundary="true" wrap="true" />
 
     <ScrollingLabelPrimarySmaller id="itemText" bold="true" horizAlign="center" maxWidth="264" repeatCount="0" visible="false" />

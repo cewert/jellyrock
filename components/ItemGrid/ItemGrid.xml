@@ -10,7 +10,7 @@
       itemComponentName="GridItem"
       numColumns="6"
       numRows="5"
-      itemSize="[ 264, 394 ]"
+      itemSize="[ 264, 396 ]"
       itemSpacing="[ 30, 72 ]" />
     <JRRowList opacity="0" id="genrelist" translation="[120, 160]" itemComponentName="GridItemSmall" numColumns="1" numRows="3" vertFocusAnimationStyle="fixed" itemSize="[1719, 360]" rowItemSize="[ [230, 320] ]" rowItemSpacing="[ [20, 0] ]" itemSpacing="[0, 60]" />
 
