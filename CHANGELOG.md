@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- replace ItemGrid maskGroup scaling with JRMarkupGrid focus indicator ([#297](https://github.com/cewert/jellyrock/pull/297))
+
 ## [1.9.1](https://github.com/cewert/jellyrock/compare/v1.9.0...v1.9.1) - 2026-01-20
 
 ### Fixed
