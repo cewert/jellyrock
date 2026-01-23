@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component name="TextButton" extends="Group" focusable="true">
   <children>
-    <Poster id="buttonBackground" uri="pkg:/images/9patch/filled-rounded.9.png" loadSync="true" visible="false" />
-    <Poster id="buttonBorder" uri="pkg:/images/9patch/border-6px.9.png" loadSync="true" visible="false" />
+    <Poster id="buttonBackground" uri="pkg:/images/9patch/filled-rounded.9.png" visible="false" />
+    <Poster id="buttonBorder" uri="pkg:/images/9patch/border-6px.9.png" visible="false" />
     <LabelPrimaryMedium id="buttonText" horizAlign="center" vertAlign="center" visible="false" />
   </children>
   <interface>

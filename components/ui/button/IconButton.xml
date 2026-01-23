@@ -7,9 +7,9 @@
 -->
 <component name="IconButton" extends="Group" focusable="true">
   <children>
-    <Poster id="buttonBackground" uri="pkg:/images/9patch/filled-rounded.9.png" loadSync="true" />
-    <Poster id="buttonBorder" uri="pkg:/images/9patch/border-6px.9.png" loadSync="true" />
-    <Poster id="buttonIcon" loadSync="true" />
+    <Poster id="buttonBackground" uri="pkg:/images/9patch/filled-rounded.9.png" />
+    <Poster id="buttonBorder" uri="pkg:/images/9patch/border-6px.9.png" />
+    <Poster id="buttonIcon" />
     <LabelPrimarySmaller id="buttonText" horizAlign="center" wrap="true" maxLines="2" lineSpacing="0" />
   </children>
   <interface>
