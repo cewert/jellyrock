@@ -48,5 +48,6 @@
     <!-- Performance -->
     <field id="memoryLevel" type="string" value="normal" />
     <field id="memoryTotal" type="integer" value="0" />
+    <field id="isLowMemoryDevice" type="boolean" value="false" />
   </interface>
 </component>

@@ -1,3 +1,48 @@
+' Low memory device model prefixes (512MB RAM, ~50MB texture memory)
+' These devices cannot load large textures (e.g., default trickplay 10x10 320 tiles) into memory
+' See: https://github.com/cewert/jellyrock/issues/299
+const LOW_MEMORY_DEVICE_PREFIXES = [
+  ' Current Models
+  "3840", ' Roku Streaming Stick (Lakeport) - 512MB - 720p
+  "K8PX", ' Projector (Avery) - 512MB - 720p
+  "8000", ' Roku TV (Midland/El Paso) - 512MB - 720p
+  "H000", ' 2K Roku TV (Miami) - 512MB - 720p
+  "T100", ' Roku TV (Alpine) - 512MB - 720p
+  ' Updatable Models
+  "3960", ' Roku Express (Rockett) - 512MB - 720p
+  "3931", ' Roku Express+ (Nemo) - 512MB - 720p
+  "3600", ' Roku Streaming Stick (Briscoe) - 512MB - 720p
+  "3700", ' Roku Express (Littlefield) - 512MB - 720p
+  "3710", ' Roku Express+ (Littlefield) - 512MB - 720p
+  "3800", ' Roku Streaming Stick (Amarillo) - 512MB - 720p
+  "4200", ' Roku 3 (Austin) - 512MB - 720p
+  "4210", ' Roku 2 (Mustang) - 512MB - 720p
+  "4230", ' Roku 3 (Mustang) - 512MB - 720p
+  "5000", ' Roku TV (Liberty) - 512MB - 720p
+  "D000", ' Roku TV (Roma) - 512MB - 720p
+  "K000", ' Roku TV (Roxton) - 512MB - 720p
+  ' Legacy Models
+  "2700", ' Roku LT (Tyler) - 512MB - supports OS 11
+  "2710", ' Roku 1, Roku SE (Tyler) - 512MB - supports OS 11
+  "2720", ' Roku 2 (Tyler) - 512MB - supports OS 11
+  "3500" ' Roku Streaming Stick (Sugarland) - 512MB - supports OS 11
+]
+
+' Check if device model matches a low memory device (512MB RAM)
+' @param {String} deviceModel - The device model string from roDeviceInfo.GetModel()
+' @return {Boolean} - true if device is a low memory device
+function checkIsLowMemoryDevice(deviceModel as string) as boolean
+  if deviceModel = "" then return false
+
+  for each prefix in LOW_MEMORY_DEVICE_PREFIXES
+    if deviceModel.left(len(prefix)) = prefix
+      return true
+    end if
+  end for
+
+  return false
+end function
+
 ' Set all global variables that don't require an roSGNode
 sub setGlobals()
   ' Initialize session content nodes
@@ -151,6 +196,7 @@ sub SaveDeviceToGlobal()
   deviceNode.videoWidth = StrToI(videoWidth)
   deviceNode.videoRefresh = StrToI(refreshRate)
   deviceNode.videoBitDepth = bitDepth
+  deviceNode.isLowMemoryDevice = checkIsLowMemoryDevice(deviceInfo.GetModel())
 
   m.global.addFields({ device: deviceNode })
 end sub
