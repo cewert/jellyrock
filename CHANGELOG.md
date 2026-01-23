@@ -12,6 +12,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - enable loadSync for local UI posters ([bc99715](https://github.com/cewert/jellyrock/commit/bc99715))
 - replace ItemGrid maskGroup scaling with JRMarkupGrid focus indicator ([#297](https://github.com/cewert/jellyrock/pull/297))
 
+### Dependencies
+
+- Update ropm from v0.11.2 to v0.11.3 ([#300](https://github.com/cewert/jellyrock/pull/300))
+
 ## [1.9.1](https://github.com/cewert/jellyrock/compare/v1.9.0...v1.9.1) - 2026-01-20
 
 ### Fixed
