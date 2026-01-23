@@ -1,0 +1,277 @@
+
+namespace tests
+
+  @suite("globals.bs - checkIsLowMemoryDevice()")
+  class LowMemoryDeviceTests extends tests.BaseTestSuite
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("checkIsLowMemoryDevice(deviceModel)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns false for empty string")
+    function _()
+      result = checkIsLowMemoryDevice("")
+      m.assertEqual(result, false)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Current 512MB Models")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("detects Roku Streaming Stick (Lakeport) 3840 variants as low memory")
+    @params("3840X")
+    @params("3840R")
+    @params("3840RW")
+    @params("3840EU")
+    @params("3840BR")
+    @params("3840S2")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, true, `Model ${model} should be detected as low memory`)
+    end function
+
+    @it("detects Projector (Avery) K8PXX as low memory")
+    @params("K8PXX")
+    @params("K8PX1")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, true, `Model ${model} should be detected as low memory`)
+    end function
+
+    @it("detects Roku TV (Midland/El Paso) 8000X as low memory")
+    @params("8000X")
+    @params("8000R")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, true, `Model ${model} should be detected as low memory`)
+    end function
+
+    @it("detects 2K Roku TV (Miami) H000X as low memory")
+    @params("H000X")
+    @params("H0001")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, true, `Model ${model} should be detected as low memory`)
+    end function
+
+    @it("detects Roku TV (Alpine) T100X as low memory")
+    @params("T100X")
+    @params("T1001")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, true, `Model ${model} should be detected as low memory`)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Updatable 512MB Models")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("detects Roku Express (Rockett) 3960X as low memory")
+    @params("3960X")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, true, `Model ${model} should be detected as low memory`)
+    end function
+
+    @it("detects Roku Express+ (Nemo) 3931X as low memory")
+    @params("3931X")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, true, `Model ${model} should be detected as low memory`)
+    end function
+
+    @it("detects Roku Streaming Stick (Briscoe) 3600 variants as low memory")
+    @params("3600X")
+    @params("3600R")
+    @params("3600RW")
+    @params("3600EU")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, true, `Model ${model} should be detected as low memory`)
+    end function
+
+    @it("detects Roku Express (Littlefield) 3700 variants as low memory")
+    @params("3700X")
+    @params("3700R")
+    @params("3700RW")
+    @params("3700EU")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, true, `Model ${model} should be detected as low memory`)
+    end function
+
+    @it("detects Roku Streaming Stick (Amarillo) 3800 variants as low memory")
+    @params("3800X")
+    @params("3800R")
+    @params("3800RW")
+    @params("3800EU")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, true, `Model ${model} should be detected as low memory`)
+    end function
+
+    @it("detects Roku 3 (Austin) 4200 variants as low memory")
+    @params("4200X")
+    @params("4200R")
+    @params("4200RW")
+    @params("4200EU")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, true, `Model ${model} should be detected as low memory`)
+    end function
+
+    @it("detects Roku 2 (Mustang) 4210 variants as low memory")
+    @params("4210X")
+    @params("4210R")
+    @params("4210RW")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, true, `Model ${model} should be detected as low memory`)
+    end function
+
+    @it("detects Roku 3 (Mustang) 4230 variants as low memory")
+    @params("4230X")
+    @params("4230R")
+    @params("4230RW")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, true, `Model ${model} should be detected as low memory`)
+    end function
+
+    @it("detects Roku TV (Liberty) 5000 variants as low memory")
+    @params("5000X")
+    @params("5000R")
+    @params("5000RW")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, true, `Model ${model} should be detected as low memory`)
+    end function
+
+    @it("detects Roku TV (Roma) D000 variants as low memory")
+    @params("D000X")
+    @params("D000R")
+    @params("D000RW")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, true, `Model ${model} should be detected as low memory`)
+    end function
+
+    @it("detects Roku TV (Roxton) K000 variants as low memory")
+    @params("K000X")
+    @params("K000R")
+    @params("K000RW")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, true, `Model ${model} should be detected as low memory`)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Legacy 512MB Models")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("detects Roku LT (Tyler) 2700X as low memory")
+    @params("2700X")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, true, `Model ${model} should be detected as low memory`)
+    end function
+
+    @it("detects Roku 1/Roku SE (Tyler) 2710X as low memory")
+    @params("2710X")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, true, `Model ${model} should be detected as low memory`)
+    end function
+
+    @it("detects Roku 2 (Tyler) 2720X as low memory")
+    @params("2720X")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, true, `Model ${model} should be detected as low memory`)
+    end function
+
+    @it("detects Roku Streaming Stick (Sugarland) 3500X as low memory")
+    @params("3500X")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, true, `Model ${model} should be detected as low memory`)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Non-Low-Memory Models (1GB+ RAM)")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns false for Roku Ultra (1GB+ RAM)")
+    @params("4660X")
+    @params("4670X")
+    @params("4800X")
+    @params("4802X")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, false, `Model ${model} should NOT be detected as low memory`)
+    end function
+
+    @it("returns false for Roku Streaming Stick 4K (Madison) 3820 variants (1GB+ RAM)")
+    @params("3820X")
+    @params("3820R")
+    @params("3820R2")
+    @params("3820RW")
+    @params("3820RW2")
+    @params("3820EU")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, false, `Model ${model} should NOT be detected as low memory`)
+    end function
+
+    @it("returns false for Roku Streaming Stick 4K (Bayside) 3830 variants (1GB+ RAM)")
+    @params("3830X")
+    @params("3830R")
+    @params("3830RW")
+    @params("3830EU")
+    @params("3830BR")
+    @params("3830CA")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, false, `Model ${model} should NOT be detected as low memory`)
+    end function
+
+    @it("returns false for Roku Express 4K (Gilbert) 3900 variants (1GB+ RAM)")
+    @params("3900X")
+    @params("3900RW")
+    @params("3900EU")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, false, `Model ${model} should NOT be detected as low memory`)
+    end function
+
+    @it("returns false for Roku Express 4K+ 3940/3941 variants (1GB+ RAM)")
+    @params("3940X")
+    @params("3940RW")
+    @params("3940EU")
+    @params("3941X")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, false, `Model ${model} should NOT be detected as low memory`)
+    end function
+
+    @it("returns false for Roku Streaming Stick 4K (Amarillo_4K) 3810 variants (1GB+ RAM)")
+    @params("3810X")
+    @params("3810R")
+    @params("3810RW")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, false, `Model ${model} should NOT be detected as low memory`)
+    end function
+
+    @it("returns false for unknown models")
+    @params("9999X")
+    @params("ABCDE")
+    @params("1234Z")
+    function _(model)
+      result = checkIsLowMemoryDevice(model)
+      m.assertEqual(result, false, `Unknown model ${model} should NOT be detected as low memory`)
+    end function
+
+  end class
+
+end namespace

@@ -7,6 +7,11 @@ import "pkg:/source/utils/trickplay.bs"
 sub init()
   m.log = new log.Logger("TrickplayCarousel")
 
+  ' Cache low memory device flag for texture size optimization
+  ' Low memory devices (512MB RAM) have limited texture memory (~50MB)
+  ' and cannot load full-size trickplay tiles into GPU memory
+  m.isLowMemoryDevice = m.global.device.isLowMemoryDevice
+
   ' Cache poster references in array for easy shifting [minus2, minus1, center, plus1, plus2]
   m.posterArray = [
     m.top.findNode("posterMinus2"),
@@ -100,6 +105,17 @@ sub onConfigChanged()
 
   ' Calculate thumbs per tile for velocity calculations
   m.thumbsPerTile = m.config.tileWidth * m.config.tileHeight
+
+  ' Configure preloader poster for low memory devices
+  ' Must be done after config is loaded so we know tile dimensions
+  if m.isLowMemoryDevice
+    fullTileWidth = m.config.tileWidth * m.config.width
+    fullTileHeight = m.config.tileHeight * m.config.height
+    m.preloaderPoster.loadWidth = fullTileWidth / 2
+    m.preloaderPoster.loadHeight = fullTileHeight / 2
+    m.preloaderPoster.loadDisplayMode = "limitSize"
+    m.log.info("Low memory device detected - using reduced texture size", "loadWidth", fullTileWidth / 2, "loadHeight", fullTileHeight / 2)
+  end if
 
   ' Start early tile caching immediately when config is available
   ' This ensures tiles are downloading before user starts scrubbing
@@ -641,11 +657,19 @@ sub updateSinglePoster(posterIndex as integer, thumbnailIndex as integer)
   scaleX = displayWidth / m.config.width
   scaleY = displayHeight / m.config.height
 
-  ' Calculate full tile dimensions when scaled
+  ' Calculate full tile dimensions (source image size before display scaling)
   fullTileWidth = m.config.tileWidth * m.config.width
   fullTileHeight = m.config.tileHeight * m.config.height
 
-  ' Set poster to scaled full tile size
+  ' Low memory devices: load texture at half size to fit in limited texture memory (~50MB)
+  ' Roku scales the smaller texture to fill poster.width/height, reducing quality but enabling display
+  if m.isLowMemoryDevice
+    poster.loadWidth = fullTileWidth / 2
+    poster.loadHeight = fullTileHeight / 2
+    poster.loadDisplayMode = "limitSize"
+  end if
+
+  ' Set poster to scaled full tile size for display
   poster.width = fullTileWidth * scaleX
   poster.height = fullTileHeight * scaleY
 
