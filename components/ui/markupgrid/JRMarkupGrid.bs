@@ -26,3 +26,59 @@ sub applySectionDividerFontScale()
     m.top.sectionDividerFont.size = scaledSize
   end if
 end sub
+
+function onKeyEvent(key as string, press as boolean) as boolean
+  if not press then return false
+
+  if key = "down"
+    return handleDownKey()
+  end if
+
+  return false
+end function
+
+' Handles down key press with smart navigation to handle uneven rows
+' @return {boolean} - true if event was handled, false to allow default behavior
+function handleDownKey() as boolean
+  currentIndex = m.top.itemFocused
+
+  if not isValid(m.top.content) then return false
+
+  totalItems = m.top.content.getChildCount()
+  numColumns = m.top.numColumns
+
+  if totalItems = 0 or numColumns = 0 then return false
+
+  ' Calculate current position
+  currentRow = int(currentIndex / numColumns)
+  currentCol = currentIndex - (currentRow * numColumns)
+
+  ' Calculate what the index would be if we moved down one row
+  targetIndex = currentIndex + numColumns
+
+  ' If the item directly below exists, let default behavior handle it
+  if targetIndex < totalItems then return false
+
+  ' No item directly below - check if there's ANY row below
+  lastItemIndex = totalItems - 1
+  lastRow = int(lastItemIndex / numColumns)
+
+  ' If we're already on the last row, can't go down
+  if currentRow >= lastRow then return false
+
+  ' There IS a row below, but no item directly under us
+  ' Jump to the closest item in the last row
+  lastRowFirstItem = lastRow * numColumns
+  lastRowItemCount = totalItems - lastRowFirstItem
+
+  ' Find the closest column in the last row (min of currentCol and last available column)
+  closestCol = currentCol
+  if closestCol >= lastRowItemCount
+    closestCol = lastRowItemCount - 1
+  end if
+
+  jumpIndex = lastRowFirstItem + closestCol
+  m.top.animateToItem = jumpIndex
+
+  return true
+end function
