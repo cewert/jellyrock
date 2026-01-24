@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- add smart down-key navigation for JRMarkupGrid ([187401d](https://github.com/cewert/jellyrock/commit/187401d))
+
 ### Changed
 
 - enable loadSync for local UI posters ([bc99715](https://github.com/cewert/jellyrock/commit/bc99715))
