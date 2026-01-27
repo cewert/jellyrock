@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  PresentationBackdrop: A backdrop component for presentation views
+  Displays a 960x540 (16:9 half-screen) backdrop on the right side with fade animations.
+  Follows BackdropFader pattern with reduced shade (no text overlays presentation backdrops).
+-->
+<component name="PresentationBackdrop" extends="Rectangle">
+  <interface>
+    <field id="uri" type="string" />
+    <field id="isAnimated" type="boolean" value="true" />
+  </interface>
+
+  <children>
+    <!-- Backdrop positioned on right half of screen (960 = 1920/2) on 5% edge -->
+    <Group id="backdropGroup" translation="[864, 112]">
+      <Poster id="oldBackground" height="540" width="960" loadDisplayMode="scaleToFill" opacity="0" />
+      <Poster id="background" height="540" width="960" loadDisplayMode="scaleToFill" opacity="0" />
+      <Rectangle id="shade" height="540" width="960" visible="false" />
+      <Gradient id="leftGradient" height="540" width="102" direction="horizontal" />
+    </Group>
+
+
+    <Animation
+      id="oldBackgroundFadeout"
+      repeat="false"
+      duration="0.5">
+      <FloatFieldInterpolator
+        id="oldbackgroundInterpolator"
+        key="[0.0, 1.0]"
+        keyValue="[1.0, 0.0]"
+        fieldToInterp="oldBackground.opacity" />
+    </Animation>
+
+    <Animation
+      id="shadeFadeoutAnimation"
+      repeat="false"
+      duration="0.5">
+      <FloatFieldInterpolator
+        id="shadeInterpolator"
+        key="[0.0, 1.0]"
+        keyValue="[0.3, 0.0]"
+        fieldToInterp="shade.opacity" />
+    </Animation>
+
+    <Animation
+      id="fadeinAnimation"
+      repeat="false"
+      easeFunction="linear"
+      duration="0.5">
+      <FloatFieldInterpolator
+        id="backgroundInterpolator"
+        key="[0.0, 1.0]"
+        keyValue="[0.0, 1.0]"
+        fieldToInterp="background.opacity" />
+    </Animation>
+  </children>
+</component>
