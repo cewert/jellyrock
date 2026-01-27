@@ -18,6 +18,9 @@ const SPLASH_SETTING_REMOVAL_VERSION = "1.5.0"
 ' client version when globalSplashScreen was incorrectly saved to user registry sections
 const GLOBAL_SETTINGS_CLEANUP_VERSION = "1.5.2"
 
+' client version when music presentation views were removed
+const MUSIC_VIEW_MIGRATION_VERSION = "1.10.0"
+
 ' Run all necessary registry migrations on the "global" JellyRock registry section
 sub runGlobalMigrations()
   appLastRunVersion = m.global.app.lastRunVersion
@@ -299,6 +302,52 @@ sub runRegistryUserMigrations(targetSections = invalid as dynamic)
         print `Deleted ${settingName} from user ${section}`
       else
         print `No global splash screen cleanup needed for userid: ${section} (setting not found)`
+      end if
+    end if
+
+    ' MUSIC_VIEW_MIGRATION_VERSION - Migrate music presentation views to grid views
+    if isValid(lastRunVersion) and not versionChecker(lastRunVersion, MUSIC_VIEW_MIGRATION_VERSION)
+      m.wasMigrated = true
+
+      ' Iterate through all library display settings in registry
+      ' Registry keys are stored as "display.{libraryId}.landing" format
+      keyPrefix = "display."
+      keySuffix = ".landing"
+      allKeys = reg.GetKeyList()
+      migratedCount = 0
+
+      for each key in allKeys
+        ' Check if this is a library landing view setting
+        if key.left(keyPrefix.len()) = keyPrefix and key.right(keySuffix.len()) = keySuffix
+          currentValue = reg.read(key)
+
+          ' Check if value is a presentation view that needs migration
+          valueLower = LCase(currentValue)
+          newValue = invalid
+
+          if valueLower = "artistspresentation"
+            newValue = "ArtistsGrid"
+          else if valueLower = "albumartistspresentation"
+            newValue = "AlbumArtistsGrid"
+          end if
+
+          ' Migrate if needed
+          if isValid(newValue)
+            if migratedCount = 0
+              print `Migrating music presentation views to v${MUSIC_VIEW_MIGRATION_VERSION} for userid: ${section}`
+            end if
+            reg.write(key, newValue)
+            migratedCount++
+            print `Migrated ${key}: '${currentValue}' → '${newValue}'`
+          end if
+        end if
+      end for
+
+      if migratedCount > 0
+        reg.flush()
+        print `Successfully migrated ${migratedCount} music view settings for user ${section}`
+      else
+        print `No music view migration needed for userid: ${section} (no presentation views found)`
       end if
     end if
   end for
