@@ -68,7 +68,7 @@ sub itemContentChanged()
     'm.itemIcon.uri = itemData.iconUrl
     m.itemText.text = itemData.Title
     m.itemPoster.loadDisplayMode = m.itemGrid.imageDisplayMode
-    
+
     ' MusicGenre folders need square 1:1 sizing
     if isValid(itemData.json) and isValid(itemData.json.type) and itemData.json.type = "MusicGenre"
       m.itemPoster.height = 323
