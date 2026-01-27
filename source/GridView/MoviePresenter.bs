@@ -1,0 +1,431 @@
+' MoviePresenter: Presenter for movie library views
+'
+' Handles movie-specific:
+' - View options (Movies Presentation, Movies Grid, Studios, Genres)
+' - Sort/filter options with dynamic filters from API
+' - Movie metadata display (title, year, rating, runtime, overview, logo)
+' - Critic and community ratings
+' - Logo loading
+
+import "pkg:/source/GridView/GridPresenterBase.bs"
+import "pkg:/source/roku_modules/log/LogMixin.brs"
+import "pkg:/source/utils/misc.bs"
+
+class MoviePresenter extends GridPresenterBase
+
+  ' Task for loading filter options from API
+  private getFiltersTask
+
+  ' Cached filter options from API
+  private apiFilters
+
+  ' Counter for generating unique divider IDs
+  private dividerCount
+
+  sub new()
+    super()
+    m.log = log.Logger("MoviePresenter")
+    m.getFiltersTask = invalid
+    m.apiFilters = invalid
+    m.dividerCount = 0
+  end sub
+
+  ' Uses presentation backdrop only for Movies (Presentation) view
+  override function getBackdropMode() as string
+    if isValid(m.view) and isValid(m.view.top) and isValid(m.view.top.currentView)
+      viewLower = LCase(m.view.top.currentView)
+      if viewLower = "movies"
+        return "presentation"
+      end if
+    end if
+    return "fullscreen"
+  end function
+
+  override sub onInit(view as object)
+    super.onInit(view)
+    ' Create task nodes for logo and filter loading
+    ' Store loadLogoTask on view (component scope) so observer callbacks work
+    m.view.loadLogoTask = CreateObject("roSGNode", "LoadItemsTask2")
+    m.getFiltersTask = CreateObject("roSGNode", "GetFiltersTask")
+  end sub
+
+  ' Show presentation info only for Movies (Presentation) view
+  override function shouldShowPresentationInfo(viewMode as string) as boolean
+    lowerView = LCase(viewMode)
+    return lowerView = "movies"
+  end function
+
+  override function getOptions(parentItem as object) as object
+    options = {
+      views: [
+        { "Title": tr("Movies (Presentation)"), "Name": "Movies" },
+        { "Title": tr("Movies (Grid)"), "Name": "MoviesGrid" },
+        { "Title": tr("Studios"), "Name": "Studios" },
+        { "Title": tr("Genres"), "Name": "Genres" }
+      ],
+      sort: [
+        { "Title": tr("TITLE"), "Name": "SortName" },
+        { "Title": tr("IMDB_RATING"), "Name": "CommunityRating" },
+        { "Title": tr("CRITIC_RATING"), "Name": "CriticRating" },
+        { "Title": tr("DATE_ADDED"), "Name": "DateCreated" },
+        { "Title": tr("DATE_PLAYED"), "Name": "DatePlayed" },
+        { "Title": tr("OFFICIAL_RATING"), "Name": "OfficialRating" },
+        { "Title": tr("PLAY_COUNT"), "Name": "PlayCount" },
+        { "Title": tr("RELEASE_DATE"), "Name": "PremiereDate" },
+        { "Title": tr("RUNTIME"), "Name": "Runtime" },
+        { "Title": tr("Random"), "Name": "Random" }
+      ],
+      filter: [
+        { "Title": tr("All"), "Name": "All" },
+        { "Title": tr("Favorites"), "Name": "Favorites" },
+        { "Title": tr("Played"), "Name": "Played" },
+        { "Title": tr("Unplayed"), "Name": "Unplayed" },
+        { "Title": tr("Resumable"), "Name": "Resumable" }
+      ]
+    }
+
+    ' Adjust options for specific views
+    if isValid(parentItem) and isValid(parentItem.json) and parentItem.json.type = "Genre"
+      ' Genre view has limited options
+      options.views = [
+        { "Title": tr("Movies (Presentation)"), "Name": "Movies" },
+        { "Title": tr("Movies (Grid)"), "Name": "MoviesGrid" }
+      ]
+    end if
+
+    ' Add dynamic filters from API if loaded
+    if isValid(m.apiFilters)
+      if isValid(m.apiFilters.genres)
+        options.filter.push({ "Title": tr("Genres"), "Name": "Genres", "Options": m.apiFilters.genres, "Delimiter": "|", "CheckedState": [] })
+      end if
+      if isValid(m.apiFilters.OfficialRatings)
+        options.filter.push({ "Title": tr("Parental Ratings"), "Name": "OfficialRatings", "Options": m.apiFilters.OfficialRatings, "Delimiter": "|", "CheckedState": [] })
+      end if
+      if isValid(m.apiFilters.Years)
+        options.filter.push({ "Title": tr("Years"), "Name": "Years", "Options": m.apiFilters.Years, "Delimiter": ",", "CheckedState": [] })
+      end if
+    end if
+
+    return options
+  end function
+
+  override function getGridConfig(viewMode as string) as object
+    lowerView = LCase(viewMode)
+    ' userSettings = m.view.global.user.settings
+
+    if lowerView = "studios"
+      ' Studios view - scaleToFit for logos
+      return {
+        translation: [96, 102],
+        itemSize: [264, 396],
+        rowHeights: [396],
+        numRows: "3",
+        numColumns: "6",
+        imageDisplayMode: "scaleToFit"
+      }
+    else if lowerView = "moviesgrid"
+      ' Full grid view - rowHeights > itemSize to always leave space for titles
+      return {
+        translation: [96, 102],
+        itemSize: [264, 396],
+        rowHeights: [396],
+        numRows: "3",
+        numColumns: "6",
+        imageDisplayMode: "scaleToZoom"
+      }
+    else if lowerView = "genres"
+      ' Genres view - smaller posters
+      return {
+        translation: [96, 102],
+        itemSize: [230, 315],
+        rowHeights: [315],
+        numRows: "3",
+        numColumns: "7",
+        imageDisplayMode: "scaleToZoom"
+      }
+    else
+      ' Default: Presentation view - shows metadata panel, fewer rows
+      return {
+        translation: [96, 650],
+        itemSize: [264, 396],
+        rowHeights: [396],
+        numRows: "2",
+        numColumns: "6",
+        imageDisplayMode: "scaleToZoom"
+      }
+    end if
+  end function
+
+  override sub configureLoadTask(task as object, parentItem as object, viewMode as string)
+    lowerView = LCase(viewMode)
+
+    task.itemType = "Movie"
+    task.itemId = parentItem.Id
+
+    if lowerView = "studios"
+      task.view = "Networks"
+      task.studioIds = ""
+    else if lowerView = "genres"
+      task.view = "Genres"
+      task.studioIds = parentItem.Id
+    else
+      task.view = "Movies"
+      task.studioIds = ""
+      task.genreIds = ""
+    end if
+
+    ' Handle genre/studio parent items
+    if isValid(parentItem.json)
+      if parentItem.json.type = "Studio"
+        task.studioIds = parentItem.id
+        task.itemId = parentItem.parentFolder
+        task.genreIds = ""
+      else if parentItem.json.type = "Genre"
+        task.genreIds = parentItem.id
+        task.itemId = parentItem.parentFolder
+        task.studioIds = ""
+      end if
+    end if
+  end sub
+
+  ' Load dynamic filters from API
+  sub loadFilters(parentItem as object)
+    if not isValid(m.getFiltersTask) then return
+
+    m.getFiltersTask.observeField("filters", "onFiltersLoaded")
+    m.getFiltersTask.params = {
+      userid: m.view.top.getScene().findNode("global").user.id,
+      parentid: parentItem.Id,
+      includeitemtypes: "Movie"
+    }
+    m.getFiltersTask.control = "RUN"
+  end sub
+
+  ' Called when filters are loaded from API
+  sub onFiltersLoaded(event as object)
+    m.apiFilters = event.getData()
+    m.getFiltersTask.unobserveField("filters")
+  end sub
+
+  override sub onItemFocused(item as object, _currentView as string)
+    if not isValid(m.view) or not isValid(item) then return
+
+    ' Extract item data
+    itemData = item.json
+    if not isValid(itemData) then return
+
+    ' Get info nodes from view
+    infoGroup = m.view.top.findNode("presentationInfo")
+    if not isValid(infoGroup) then return
+
+    movieLogo = infoGroup.findNode("movieLogo")
+    selectedMovieName = infoGroup.findNode("selectedMovieName")
+    movieInfoGroup = infoGroup.findNode("movieInfoGroup")
+    movieGenresGroup = infoGroup.findNode("movieGenres")
+    movieDescriptionGroup = infoGroup.findNode("movieDescription")
+
+    ' Hide logo initially
+    if isValid(movieLogo) then movieLogo.visible = false
+
+    ' Set movie title
+    if isValid(itemData.Name) and isValid(selectedMovieName)
+      selectedMovieName.text = itemData.Name
+    end if
+
+    ' Dynamically populate movieInfoGroup with available metadata
+    if isValid(movieInfoGroup)
+      ' Clear existing children
+      movieInfoGroup.removeChildrenIndex(movieInfoGroup.getChildCount(), 0)
+      m.dividerCount = 0
+
+      ' Production Year
+      if isValid(itemData.ProductionYear)
+        yearNode = m.createInfoLabelNode("selectedMovieProductionYear")
+        yearNode.text = str(itemData.ProductionYear).trim()
+        m.displayInfoNode(movieInfoGroup, yearNode)
+      end if
+
+      ' Official Rating
+      if isValid(itemData.OfficialRating) and itemData.OfficialRating <> ""
+        ratingNode = m.createInfoLabelNode("selectedMovieOfficialRating")
+        ratingNode.text = itemData.OfficialRating
+        m.displayInfoNode(movieInfoGroup, ratingNode)
+      end if
+
+      ' Community Rating (if enabled)
+      if m.view.global.user.settings.uiMoviesShowRatings
+        if isValid(itemData.CommunityRating)
+          communityRating = CreateObject("roSGNode", "CommunityRating")
+          communityRating.id = "communityRatingDisplay"
+          communityRating.rating = itemData.CommunityRating
+          communityRating.iconSize = 28
+          m.displayInfoNode(movieInfoGroup, communityRating)
+        end if
+
+        ' Critic Rating (if enabled)
+        if isValid(itemData.CriticRating)
+          criticRating = CreateObject("roSGNode", "CriticRating")
+          criticRating.id = "criticRatingDisplay"
+          criticRating.rating = itemData.CriticRating
+          criticRating.iconSize = 28
+          m.displayInfoNode(movieInfoGroup, criticRating)
+        end if
+      end if
+
+      ' Runtime
+      if type(itemData.RunTimeTicks) = "LongInteger"
+        runtime = int(itemData.RunTimeTicks / 600000000.0 + 0.5) ' Round to nearest minute
+        runtimeNode = m.createInfoLabelNode("runtime")
+        runtimeNode.text = str(runtime).trim() + " mins"
+        m.displayInfoNode(movieInfoGroup, runtimeNode)
+      end if
+    end if
+
+    ' Dynamically populate movieGenres with genre labels
+    if isValid(movieGenresGroup)
+      ' Clear existing children
+      movieGenresGroup.removeChildrenIndex(movieGenresGroup.getChildCount(), 0)
+
+      ' Add genres concatenated with " / "
+      if isValid(itemData.genres) and itemData.genres.count() > 0
+        genreNode = CreateObject("roSGNode", "LabelPrimaryMedium")
+        genreNode.id = "movieGenres"
+        genreNode.horizAlign = "left"
+        genreNode.vertAlign = "center"
+        genreNode.width = 900
+        genreNode.height = 0
+        genreNode.text = itemData.genres.join(" / ")
+        genreNode.bold = true
+        movieGenresGroup.appendChild(genreNode)
+      end if
+    end if
+
+    ' Dynamically populate movieDescription with tagline and overview
+    if isValid(movieDescriptionGroup)
+      ' Clear existing children
+      movieDescriptionGroup.removeChildrenIndex(movieDescriptionGroup.getChildCount(), 0)
+
+      ' Tagline (stored in taglines array)
+      if isValid(itemData.taglines) and itemData.taglines.count() > 0 and itemData.taglines[0] <> ""
+        taglineNode = CreateObject("roSGNode", "LabelPrimaryMedium")
+        taglineNode.id = "selectedMovieTagline"
+        taglineNode.width = 900
+        taglineNode.text = itemData.taglines[0]
+        movieDescriptionGroup.appendChild(taglineNode)
+      end if
+
+      ' Overview
+      if isValid(itemData.Overview) and itemData.Overview <> ""
+        overviewNode = CreateObject("roSGNode", "LabelPrimarySmall")
+        overviewNode.id = "selectedMovieOverview"
+        overviewNode.wrap = true
+        overviewNode.lineSpacing = 9
+        overviewNode.height = 250
+        overviewNode.width = 800
+        overviewNode.ellipsisText = "..."
+        overviewNode.text = itemData.Overview
+        movieDescriptionGroup.appendChild(overviewNode)
+      end if
+    end if
+
+    ' Load logo (use uppercase Id to match raw API JSON)
+    m.loadLogo(itemData.Id)
+  end sub
+
+  ' Load movie logo image
+  private sub loadLogo(itemId as string)
+    if not isValid(m.view) or not isValid(m.view.loadLogoTask) then return
+
+    m.view.loadLogoTask.unobserveField("content")
+    m.view.loadLogoTask.itemId = itemId
+    m.view.loadLogoTask.itemType = "LogoImage"
+    ' Use "onPresenterLogoLoaded" - bridge function in BaseGridView that forwards to presenter
+    m.view.loadLogoTask.observeField("content", "onPresenterLogoLoaded")
+    m.view.loadLogoTask.control = "RUN"
+  end sub
+
+  ' Called when logo is loaded (via onPresenterLogoLoaded bridge in BaseGridView)
+  sub onLogoLoaded(event as object)
+    data = event.getData()
+    if isValid(m.view) and isValid(m.view.loadLogoTask)
+      m.view.loadLogoTask.unobserveField("content")
+      m.view.loadLogoTask.content = []
+    end if
+
+    if not isValid(m.view) then return
+
+    infoGroup = m.view.top.findNode("presentationInfo")
+    if not isValid(infoGroup) then return
+
+    movieLogo = infoGroup.findNode("movieLogo")
+    selectedMovieName = infoGroup.findNode("selectedMovieName")
+
+    ' Always show the movie title
+    if isValid(selectedMovieName)
+      selectedMovieName.visible = true
+    end if
+
+    ' Show logo if available
+    if isValid(data) and data.Count() > 0
+      if isValid(movieLogo)
+        movieLogo.uri = data[0]
+        movieLogo.visible = true
+      end if
+    end if
+  end sub
+
+  ' Create a label node for movieInfoGroup
+  private function createInfoLabelNode(labelId as string) as object
+    labelNode = CreateObject("roSGNode", "LabelPrimaryMedium")
+    labelNode.id = labelId
+    labelNode.horizAlign = "left"
+    labelNode.vertAlign = "center"
+    labelNode.width = 0
+    labelNode.height = 0
+    labelNode.bold = true
+    return labelNode
+  end function
+
+  ' Create a bullet divider node for movieInfoGroup
+  private function createInfoDividerNode() as object
+    m.dividerCount++
+    dividerNode = CreateObject("roSGNode", "LabelPrimarySmall")
+    dividerNode.id = "divider" + m.dividerCount.toStr()
+    dividerNode.horizAlign = "left"
+    dividerNode.vertAlign = "center"
+    dividerNode.width = 0
+    dividerNode.height = 40
+    dividerNode.text = "•"
+    dividerNode.bold = true
+    return dividerNode
+  end function
+
+  ' Add a node to movieInfoGroup with divider if needed
+  private sub displayInfoNode(infoGroup as object, node as object)
+    if not isValid(node) or not isValid(infoGroup) then return
+
+    ' Add divider if this isn't the first child
+    if infoGroup.getChildCount() > 0
+      dividerNode = m.createInfoDividerNode()
+      infoGroup.appendChild(dividerNode)
+    end if
+
+    infoGroup.appendChild(node)
+  end sub
+
+  override sub destroy()
+    if isValid(m.view) and isValid(m.view.loadLogoTask)
+      m.view.loadLogoTask.control = "stop"
+      m.view.loadLogoTask.unobserveField("content")
+      m.view.loadLogoTask = invalid
+    end if
+    if isValid(m.getFiltersTask)
+      m.getFiltersTask.control = "stop"
+      m.getFiltersTask.unobserveField("filters")
+    end if
+    m.getFiltersTask = invalid
+    m.apiFilters = invalid
+    super.destroy()
+  end sub
+
+end class

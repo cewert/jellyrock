@@ -1,0 +1,176 @@
+import "pkg:/source/GridView/GridPresenterBase.bs"
+import "pkg:/source/roku_modules/log/LogMixin.brs"
+import "pkg:/source/utils/displaySettings.bs"
+
+' TVShowPresenter handles TV show library-specific behavior
+class TVShowPresenter extends GridPresenterBase
+
+  ' TV shows always use fullscreen backdrop
+  override function getBackdropMode() as string
+    return "fullscreen"
+  end function
+
+  ' Initialize TV show-specific nodes and state
+  override sub onInit(view as object)
+    super.onInit(view)
+    m.log = log.Logger("TVShowPresenter")
+
+    ' Create TV show-specific nodes (if needed in future)
+    ' For now, TV shows use basic grid without special metadata display
+    ' This can be extended to show series info similar to music artist info
+
+    m.log.info("TVShowPresenter initialized")
+  end sub
+
+  ' Get TV show-specific view, sort, and filter options
+  override function getOptions(parentItem as object) as object
+    options = {
+      views: [],
+      sort: [],
+      filter: []
+    }
+
+    ' TV show views
+    options.views = [
+      { "Title": tr("Shows"), "Name": "Shows" },
+      { "Title": tr("Networks"), "Name": "Networks" },
+      { "Title": tr("Genres"), "Name": "Genres" }
+    ]
+
+    ' Sort options vary by view - get current view from presenter's view reference
+    currentView = ""
+    if isValid(m.view) and isValid(m.view.top) and isValid(m.view.top.currentView)
+      currentView = m.view.top.currentView
+    end if
+    viewLower = LCase(currentView)
+    if viewLower = "genres"
+      ' Genre view only has title sort
+      options.sort = [
+        { "Title": tr("TITLE"), "Name": "SortName" }
+      ]
+      options.filter = []
+    else
+      ' Standard TV show sort options
+      options.sort = [
+        { "Title": tr("TITLE"), "Name": "SortName" },
+        { "Title": tr("Random"), "Name": "Random" },
+        { "Title": tr("IMDB_RATING"), "Name": "CommunityRating,SortName" },
+        { "Title": tr("DATE_SHOW_ADDED"), "Name": "DateCreated,SortName" },
+        { "Title": tr("DATE_EPISODE_ADDED"), "Name": "DateLastContentAdded,SortName" },
+        { "Title": tr("DATE_PLAYED"), "Name": "SeriesDatePlayed,SortName" },
+        { "Title": tr("OFFICIAL_RATING"), "Name": "OfficialRating,SortName" },
+        { "Title": tr("RELEASE_DATE"), "Name": "PremiereDate,SortName" }
+      ]
+      options.filter = [
+        { "Title": tr("All"), "Name": "All" },
+        { "Title": tr("Favorites"), "Name": "Favorites" },
+        { "Title": tr("Played"), "Name": "Played" },
+        { "Title": tr("Unplayed"), "Name": "Unplayed" }
+      ]
+    end if
+
+    ' Future: Could use parentItem to customize options for specific series types
+    if not isValid(parentItem) then return options
+
+    return options
+  end function
+
+  ' Configure grid layout and positioning for TV show views
+  override function getGridConfig(currentView as string) as object
+    viewLower = LCase(currentView)
+
+    if viewLower = "shows"
+      ' Full grid view - rowHeights > itemSize to always leave space for titles
+      return {
+        translation: [96, 102],
+        itemSize: [264, 396],
+        rowHeights: [396],
+        numRows: "3",
+        numColumns: "6",
+        imageDisplayMode: "scaleToZoom"
+      }
+    else if viewLower = "networks"
+      ' Full grid view - rowHeights > itemSize to always leave space for titles
+      return {
+        translation: [96, 102],
+        itemSize: [264, 396],
+        rowHeights: [396],
+        numRows: "3",
+        numColumns: "6",
+        imageDisplayMode: "scaleToZoom"
+      }
+    else if viewLower = "genres"
+      ' genres - smaller posters
+      return {
+        translation: [96, 102],
+        itemSize: [230, 315],
+        rowHeights: [315],
+        numRows: "4",
+        numColumns: "7",
+        imageDisplayMode: "scaleToFit"
+      }
+    else
+      ' Default: standard grid
+      return {
+        translation: [96, 102],
+        itemSize: [264, 396],
+        rowHeights: [396],
+        numRows: "3",
+        numColumns: "6",
+        imageDisplayMode: "scaleToZoom"
+      }
+    end if
+  end function
+
+  ' TV shows don't have presentation view
+  override function shouldShowPresentationInfo(_currentView as string) as boolean
+    return false
+  end function
+
+  ' No special handling needed for TV shows (no presentation view)
+  override sub onItemFocused(_item as object, _currentView as string)
+    ' No-op - TV shows use standard grid without metadata panel
+  end sub
+
+  ' Configure load task with TV show-specific parameters
+  override sub configureLoadTask(task as object, parentItem as object, currentView as string)
+    viewLower = LCase(currentView)
+
+    ' Configure based on view type
+    if viewLower = "networks"
+      task.itemType = "Series"
+      task.itemId = parentItem.Id
+      task.view = "Networks"
+    else if viewLower = "genres"
+      task.itemType = "Series"
+      task.itemId = parentItem.Id
+      task.view = "Genres"
+    else
+      ' Default: Load TV shows
+      task.itemType = "Series"
+      task.itemId = parentItem.Id
+      task.view = "Shows"
+    end if
+
+    ' Handle network/studio parent items (user clicked on a network)
+    if isValid(parentItem.json)
+      if parentItem.json.type = "Studio"
+        task.studioIds = parentItem.id
+        task.itemId = parentItem.parentFolder
+        task.genreIds = ""
+      else if parentItem.json.type = "Genre"
+        task.genreIds = parentItem.id
+        task.itemId = parentItem.parentFolder
+        task.studioIds = ""
+      end if
+    end if
+    ' Note: filter is set on task by BaseGridView before calling configureLoadTask
+  end sub
+
+  ' Cleanup TV show-specific resources
+  override sub destroy()
+    m.view = invalid
+    m.log.info("TVShowPresenter destroyed")
+  end sub
+
+end class

@@ -1,0 +1,159 @@
+import "pkg:/source/GridView/GridPresenterBase.bs"
+import "pkg:/source/roku_modules/log/LogMixin.brs"
+import "pkg:/source/utils/displaySettings.bs"
+
+' MusicPresenter handles music library-specific behavior
+class MusicPresenter extends GridPresenterBase
+
+  ' Initialize music-specific state
+  override sub onInit(view as object)
+    super.onInit(view)
+    m.log = log.Logger("MusicPresenter")
+
+    m.log.info("MusicPresenter initialized")
+  end sub
+
+  ' Get music-specific view, sort, and filter options
+  override function getOptions(parentItem as object) as object
+    options = {
+      views: [],
+      sort: [],
+      filter: []
+    }
+
+    ' Special case: Genre folders only show Albums view
+    if LCase(parentItem.json.type) = "musicgenre"
+      options.views = [
+        { "Title": tr("Albums"), "Name": "Albums" }
+      ]
+    else
+      ' Standard music views
+      options.views = [
+        { "Title": tr("Album Artists"), "Name": "AlbumArtistsGrid" },
+        { "Title": tr("Albums"), "Name": "Albums" },
+        { "Title": tr("Artists"), "Name": "ArtistsGrid" },
+        { "Title": tr("Genres"), "Name": "Genres" }
+      ]
+    end if
+
+    ' Sort options vary by view - get current view from presenter's view reference
+    currentView = ""
+    if isValid(m.view) and isValid(m.view.top) and isValid(m.view.top.currentView)
+      currentView = m.view.top.currentView
+    end if
+    viewLower = LCase(currentView)
+    if viewLower = "genres"
+      options.sort = [
+        { "Title": tr("TITLE"), "Name": "SortName" },
+        { "Title": tr("Random"), "Name": "Random" }
+      ]
+      options.filter = []
+    else if viewLower = "albums"
+      options.sort = [
+        { "Title": tr("TITLE"), "Name": "SortName" },
+        { "Title": tr("DATE_ADDED"), "Name": "DateCreated" },
+        { "Title": tr("Random"), "Name": "Random" }
+      ]
+      options.filter = [
+        { "Title": tr("All"), "Name": "All" },
+        { "Title": tr("Favorites"), "Name": "Favorites" }
+      ]
+    else
+      ' Default artist sort options
+      options.sort = [
+        { "Title": tr("TITLE"), "Name": "SortName" },
+        { "Title": tr("DATE_ADDED"), "Name": "DateCreated" },
+        { "Title": tr("DATE_PLAYED"), "Name": "DatePlayed" },
+        { "Title": tr("RELEASE_DATE"), "Name": "PremiereDate" },
+        { "Title": tr("Random"), "Name": "Random" }
+      ]
+      options.filter = [
+        { "Title": tr("All"), "Name": "All" },
+        { "Title": tr("Favorites"), "Name": "Favorites" }
+      ]
+    end if
+
+    return options
+  end function
+
+  ' Configure grid layout and positioning for music views
+  override function getGridConfig(currentView as string) as object
+    viewLower = LCase(currentView)
+
+    if viewLower = "albums"
+      ' Albums view - square poster
+      return {
+        translation: [96, 102],
+        itemSize: [323, 323],
+        rowHeights: [323],
+        numRows: "3",
+        numColumns: "5",
+        imageDisplayMode: "scaleToFit"
+      }
+    else if viewLower = "genres"
+      ' Genres view - smaller posters
+      return {
+        translation: [96, 102],
+        itemSize: [323, 323],
+        rowHeights: [323],
+        numRows: "3",
+        numColumns: "5",
+        imageDisplayMode: "scaleToZoom"
+      }
+    else
+      ' Default: Artist grid view (ArtistsGrid or AlbumArtistsGrid)
+      return {
+        translation: [96, 102],
+        itemSize: [323, 323],
+        rowHeights: [323],
+        numRows: "3",
+        numColumns: "5",
+        imageDisplayMode: "scaleToZoom"
+      }
+    end if
+  end function
+
+  ' Configure load task with music-specific parameters
+  override sub configureLoadTask(task as object, parentItem as object, currentView as string)
+    viewLower = LCase(currentView)
+
+    ' Special case: Music genre folders load albums
+    if LCase(parentItem.json.type) = "musicgenre"
+      task.itemType = "MusicAlbum"
+      task.recursive = true
+      task.genreIds = parentItem.id
+      task.itemId = parentItem.parentFolder
+      task.view = "Artists"
+      return
+    end if
+
+    ' Configure based on view type
+    if viewLower = "albums"
+      task.itemType = "MusicAlbum"
+      task.itemId = parentItem.Id
+      task.view = "Artists"
+    else if viewLower = "albumartistsgrid"
+      task.itemType = "AlbumArtists"
+      task.itemId = parentItem.Id
+      task.view = "Artists"
+    else if viewLower = "genres"
+      task.itemType = ""
+      task.recursive = true
+      task.itemId = parentItem.Id
+      task.view = "Genres"
+    else
+      ' Default: Load music artists
+      task.itemType = "MusicArtist"
+      task.itemId = parentItem.Id
+      task.view = "Artists"
+    end if
+    ' Note: filter is set on task by BaseGridView before calling configureLoadTask
+  end sub
+
+  ' Cleanup music-specific resources
+  override sub destroy()
+    m.log.info("MusicPresenter destroyed")
+    super.destroy()
+  end sub
+
+end class
