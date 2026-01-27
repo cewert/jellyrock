@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Dependencies
 
 - Update ropm from v0.11.2 to v0.11.4 ([#300](https://github.com/cewert/jellyrock/pull/300), [#303](https://github.com/cewert/jellyrock/pull/303))
+- Actions/setup-java digest to be666c2 ([#302](https://github.com/cewert/jellyrock/pull/302))
 
 ## [1.9.1](https://github.com/cewert/jellyrock/compare/v1.9.0...v1.9.1) - 2026-01-20
 
