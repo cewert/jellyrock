@@ -44,9 +44,9 @@ class MoviePresenter extends GridPresenterBase
   override sub onInit(view as object)
     super.onInit(view)
     ' Create task nodes for logo and filter loading
-    ' Store loadLogoTask on view (component scope) so observer callbacks work
+    ' Store tasks on view (component scope) so observer callbacks work
     m.view.loadLogoTask = CreateObject("roSGNode", "LoadItemsTask2")
-    m.getFiltersTask = CreateObject("roSGNode", "GetFiltersTask")
+    m.view.getFiltersTask = CreateObject("roSGNode", "GetFiltersTask")
   end sub
 
   ' Show presentation info only for Movies (Presentation) view
@@ -95,8 +95,8 @@ class MoviePresenter extends GridPresenterBase
 
     ' Add dynamic filters from API if loaded
     if isValid(m.apiFilters)
-      if isValid(m.apiFilters.genres)
-        options.filter.push({ "Title": tr("Genres"), "Name": "Genres", "Options": m.apiFilters.genres, "Delimiter": "|", "CheckedState": [] })
+      if isValid(m.apiFilters.Genres)
+        options.filter.push({ "Title": tr("Genres"), "Name": "Genres", "Options": m.apiFilters.Genres, "Delimiter": "|", "CheckedState": [] })
       end if
       if isValid(m.apiFilters.OfficialRatings)
         options.filter.push({ "Title": tr("Parental Ratings"), "Name": "OfficialRatings", "Options": m.apiFilters.OfficialRatings, "Delimiter": "|", "CheckedState": [] })
@@ -186,25 +186,31 @@ class MoviePresenter extends GridPresenterBase
         task.studioIds = ""
       end if
     end if
+
+    ' Load dynamic filters from API (called once per library load)
+    m.loadFilters(parentItem)
   end sub
 
   ' Load dynamic filters from API
   sub loadFilters(parentItem as object)
-    if not isValid(m.getFiltersTask) then return
+    if not isValid(m.view.getFiltersTask) then return
 
-    m.getFiltersTask.observeField("filters", "onFiltersLoaded")
-    m.getFiltersTask.params = {
-      userid: m.view.top.getScene().findNode("global").user.id,
+    ' Use "onPresenterFiltersLoaded" - bridge function in BaseGridView that forwards to presenter
+    m.view.getFiltersTask.observeField("filters", "onPresenterFiltersLoaded")
+    m.view.getFiltersTask.params = {
+      userid: m.view.global.user.id,
       parentid: parentItem.Id,
       includeitemtypes: "Movie"
     }
-    m.getFiltersTask.control = "RUN"
+    m.view.getFiltersTask.control = "RUN"
   end sub
 
-  ' Called when filters are loaded from API
+  ' Called when filters are loaded from API (via onPresenterFiltersLoaded bridge in BaseGridView)
   sub onFiltersLoaded(event as object)
     m.apiFilters = event.getData()
-    m.getFiltersTask.unobserveField("filters")
+    if isValid(m.view) and isValid(m.view.getFiltersTask)
+      m.view.getFiltersTask.unobserveField("filters")
+    end if
   end sub
 
   override sub onItemFocused(item as object, _currentView as string)
@@ -419,11 +425,11 @@ class MoviePresenter extends GridPresenterBase
       m.view.loadLogoTask.unobserveField("content")
       m.view.loadLogoTask = invalid
     end if
-    if isValid(m.getFiltersTask)
-      m.getFiltersTask.control = "stop"
-      m.getFiltersTask.unobserveField("filters")
+    if isValid(m.view) and isValid(m.view.getFiltersTask)
+      m.view.getFiltersTask.control = "stop"
+      m.view.getFiltersTask.unobserveField("filters")
+      m.view.getFiltersTask = invalid
     end if
-    m.getFiltersTask = invalid
     m.apiFilters = invalid
     super.destroy()
   end sub

@@ -79,6 +79,7 @@
     <field id="HomeLibraryItem" type="string" />
     <field id="parentItem" type="node" onChange="loadInitialItems" />
     <field id="selectedItem" type="node" alwaysNotify="true" />
+    <field id="loadLogoTask" type="node" />
     <field id="quickPlayNode" type="node" alwaysNotify="true" />
     <field id="imageDisplayMode" type="string" value="scaleToZoom" />
     <field id="alphaSelected" type="string" alias="alpha.letterSelected" alwaysNotify="true" onChange="alphaSelectedChanged" />

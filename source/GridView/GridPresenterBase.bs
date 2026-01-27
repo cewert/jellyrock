@@ -121,8 +121,8 @@ class GridPresenterBase
   ' Called when an item receives focus
   ' Override to update presentation info display
   ' @param {object} item - The focused ContentNode item
-  ' @param {object} itemData - The item's json data
-  sub onItemFocused(item as object, itemData as object)
+  ' @param {string} currentView - The current view mode (e.g., "Movies", "MoviesGrid")
+  sub onItemFocused(item as object, currentView as string)
     ' Override in subclass
   end sub
 

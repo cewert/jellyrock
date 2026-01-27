@@ -322,23 +322,25 @@ sub runRegistryUserMigrations(targetSections = invalid as dynamic)
           currentValue = reg.read(key)
 
           ' Check if value is a presentation view that needs migration
-          valueLower = LCase(currentValue)
-          newValue = invalid
+          if isValid(currentValue) and currentValue <> ""
+            valueLower = LCase(currentValue)
+            newValue = invalid
 
-          if valueLower = "artistspresentation"
-            newValue = "ArtistsGrid"
-          else if valueLower = "albumartistspresentation"
-            newValue = "AlbumArtistsGrid"
-          end if
-
-          ' Migrate if needed
-          if isValid(newValue)
-            if migratedCount = 0
-              print `Migrating music presentation views to v${MUSIC_VIEW_MIGRATION_VERSION} for userid: ${section}`
+            if valueLower = "artistspresentation"
+              newValue = "ArtistsGrid"
+            else if valueLower = "albumartistspresentation"
+              newValue = "AlbumArtistsGrid"
             end if
-            reg.write(key, newValue)
-            migratedCount++
-            print `Migrated ${key}: '${currentValue}' → '${newValue}'`
+
+            ' Migrate if needed
+            if isValid(newValue)
+              if migratedCount = 0
+                print `Migrating music presentation views to v${MUSIC_VIEW_MIGRATION_VERSION} for userid: ${section}`
+              end if
+              reg.write(key, newValue)
+              migratedCount++
+              print `Migrated ${key}: '${currentValue}' → '${newValue}'`
+            end if
           end if
         end if
       end for
