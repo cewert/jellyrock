@@ -10,8 +10,6 @@ sub init()
   m.itemText = m.top.findNode("itemText")
   m.backdrop = m.top.findNode("backdrop")
 
-  applyTheme()
-
   m.itemPoster.observeField("loadStatus", "onPosterLoadStatusChanged")
 
   ' Add some padding space when Item Titles are always showing
@@ -33,10 +31,6 @@ sub init()
   m.itemText.translation = [0, posterY + m.itemPoster.height + 18]
   m.itemText.visible = m.gridTitles = "showalways"
 
-end sub
-
-sub applyTheme()
-  m.backdrop.blendColor = m.global.constants.colorBackgroundSecondary
 end sub
 
 sub itemContentChanged()
@@ -74,6 +68,24 @@ sub itemContentChanged()
     'm.itemIcon.uri = itemData.iconUrl
     m.itemText.text = itemData.Title
     m.itemPoster.loadDisplayMode = m.itemGrid.imageDisplayMode
+    
+    ' MusicGenre folders need square 1:1 sizing
+    if isValid(itemData.json) and isValid(itemData.json.type) and itemData.json.type = "MusicGenre"
+      m.itemPoster.height = 323
+      m.itemPoster.width = 323
+      m.itemPoster.loadWidth = 323
+      m.itemPoster.loadHeight = 323
+      m.itemPoster.loadDisplayMode = "scaleToFit"
+
+      m.itemText.translation = [0, m.itemPoster.translation[1] + m.itemPoster.height + 18]
+      m.itemText.maxWidth = 323
+
+      m.backdrop.height = 323
+      m.backdrop.width = 323
+
+      m.posterText.height = 313
+      m.posterText.width = 313
+    end if
   else if itemData.type = "Video"
     m.itemPoster.uri = itemData.PosterUrl
     m.itemIcon.uri = itemData.iconUrl
@@ -98,30 +110,40 @@ sub itemContentChanged()
     m.itemPoster.uri = itemData.PosterUrl
     m.itemText.text = itemData.Title
 
-    m.itemPoster.height = 290
-    m.itemPoster.width = 290
+    m.itemPoster.height = 323
+    m.itemPoster.width = 323
+    ' Optimize texture memory: load at display size even though URL requests 440x440
+    m.itemPoster.loadWidth = 323
+    m.itemPoster.loadHeight = 323
+    m.itemPoster.loadDisplayMode = "limitSize"
 
     m.itemText.translation = [0, m.itemPoster.translation[1] + m.itemPoster.height + 18]
+    m.itemText.maxWidth = 323
 
-    m.backdrop.height = 290
-    m.backdrop.width = 290
+    m.backdrop.height = 323
+    m.backdrop.width = 323
 
-    m.posterText.height = 200
-    m.posterText.width = 280
+    m.posterText.height = 313
+    m.posterText.width = 313
   else if isValid(itemData.json.type) and itemData.json.type = "MusicAlbum"
     m.itemPoster.uri = itemData.PosterUrl
     m.itemText.text = itemData.Title
 
-    m.itemPoster.height = 290
-    m.itemPoster.width = 290
+    m.itemPoster.height = 323
+    m.itemPoster.width = 323
+    ' Optimize texture memory: load at display size even though URL requests 440x440
+    m.itemPoster.loadWidth = 323
+    m.itemPoster.loadHeight = 323
+    m.itemPoster.loadDisplayMode = "limitSize"
 
     m.itemText.translation = [0, m.itemPoster.translation[1] + m.itemPoster.height + 18]
+    m.itemText.maxWidth = 323
 
-    m.backdrop.height = 290
-    m.backdrop.width = 290
+    m.backdrop.height = 323
+    m.backdrop.width = 323
 
-    m.posterText.height = 200
-    m.posterText.width = 280
+    m.posterText.height = 313
+    m.posterText.width = 313
   else
     m.log.warn("Unhandled Grid Item Type", itemData.type)
   end if

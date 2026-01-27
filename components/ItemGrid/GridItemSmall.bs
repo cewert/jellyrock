@@ -6,7 +6,6 @@ sub init()
   m.posterText = m.top.findNode("posterText")
   initTitle()
   m.backdrop = m.top.findNode("backdrop")
-  m.backdrop.blendColor = m.global.constants.colorBackgroundSecondary
 
   m.itemPoster.observeField("loadStatus", "onPosterLoadStatusChanged")
 
