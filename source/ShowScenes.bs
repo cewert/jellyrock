@@ -878,42 +878,6 @@ function CreateSeasonDetailsGroupByID(seriesID as string, seasonID as string) as
   return group
 end function
 
-function CreateItemGrid(libraryItem as object) as dynamic
-  ' validate libraryItem
-  if not isValid(libraryItem) then return invalid
-
-  group = CreateObject("roSGNode", "ItemGrid")
-  group.parentItem = libraryItem
-  group.optionsAvailable = true
-  group.observeField("selectedItem", m.port)
-  group.observeField("quickPlayNode", m.port)
-  return group
-end function
-
-function CreateMovieLibraryView(libraryItem as object) as dynamic
-  ' validate libraryItem
-  if not isValid(libraryItem) then return invalid
-
-  group = CreateObject("roSGNode", "MovieLibraryView")
-  group.parentItem = libraryItem
-  group.optionsAvailable = true
-  group.observeField("selectedItem", m.port)
-  group.observeField("quickPlayNode", m.port)
-  return group
-end function
-
-function CreateMusicLibraryView(libraryItem as object) as dynamic
-  ' validate libraryItem
-  if not isValid(libraryItem) then return invalid
-
-  group = CreateObject("roSGNode", "MusicLibraryView")
-  group.parentItem = libraryItem
-  group.optionsAvailable = true
-  group.observeField("selectedItem", m.port)
-  group.observeField("quickPlayNode", m.port)
-  return group
-end function
-
 function CreateSearchPage()
   ' Search + Results Page
   group = CreateObject("roSGNode", "searchResults")
