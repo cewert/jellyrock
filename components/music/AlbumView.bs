@@ -29,15 +29,9 @@ sub OnScreenShown()
   ' Set backdrop from album data (only if pageContent is already loaded)
   ' This handles the case when returning to an already-loaded screen
   if isValid(m.top.pageContent)
-    print "[AlbumView] OnScreenShown - pageContent is valid"
-    print "[AlbumView] backdropUrl:", m.top.pageContent.backdropUrl
     if isValid(m.top.pageContent.backdropUrl)
       m.global.sceneManager.callFunc("setBackgroundImage", m.top.pageContent.backdropUrl)
-    else
-      print "[AlbumView] WARNING: backdropUrl is invalid"
     end if
-  else
-    print "[AlbumView] OnScreenShown - pageContent is INVALID"
   end if
   ' If pageContent not loaded, backdrop will be set in pageContentChanged()
 
@@ -53,16 +47,9 @@ end sub
 sub pageContentChanged()
   item = m.top.pageContent
 
-  print "[AlbumView] pageContentChanged - item:", item
-  if isValid(item)
-    print "[AlbumView] backdropUrl:", item.backdropUrl
-  end if
-
   ' Set backdrop from album's artist backdrop
   if isValid(item) and isValid(item.backdropUrl)
     m.global.sceneManager.callFunc("setBackgroundImage", item.backdropUrl)
-  else
-    print "[AlbumView] WARNING: Not setting backdrop - item or backdropUrl invalid"
   end if
 
   setPosterImage(item.posterURL)
@@ -129,7 +116,6 @@ sub setOnScreenTextValues(json)
 end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
-  ' print "[AlbumView] onKeyEvent: key=", key, ", press=", press
   if not press then return false
 
   if key = "options"
