@@ -311,7 +311,7 @@ sub ItemDataLoaded(msg)
   m.loadItemsTask.content = []
 
   if not isValid(itemData)
-    m.Loading = false
+    m.loading = false
     stopLoadingSpinner()
     return
   end if
@@ -379,7 +379,7 @@ sub ItemDataLoaded(msg)
   ' Update the stored counts
   m.loadedItems = m.itemGrid.content.getChildCount()
   m.loadedRows = m.loadedItems / m.itemGrid.numColumns
-  m.Loading = false
+  m.loading = false
 
   ' If there are no items to display, show message
   if m.loadedItems = 0
@@ -399,10 +399,10 @@ end sub
 
 sub loadMoreData()
   m.log.debug("start loadMoreData()")
-  if m.Loading = true then return
+  if m.loading = true then return
 
   prepareDataLoad(false)
-  m.Loading = true
+  m.loading = true
   m.loadItemsTask.startIndex = m.loadedItems
   m.loadItemsTask.observeField("content", "ItemDataLoaded")
   m.loadItemsTask.control = "RUN"
