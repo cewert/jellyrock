@@ -136,6 +136,9 @@ class TVShowPresenter extends GridPresenterBase
   override sub configureLoadTask(task as object, parentItem as object, currentView as string)
     viewLower = LCase(currentView)
 
+    ' Request Genres for TV shows (used in detail views)
+    task.additionalFields = "Genres"
+
     ' Configure based on view type
     if viewLower = "networks"
       task.itemType = "Series"
@@ -153,7 +156,7 @@ class TVShowPresenter extends GridPresenterBase
     end if
 
     ' Handle network/studio parent items (user clicked on a network)
-    if isValid(parentItem.json)
+    if isValid(parentItem) and isValid(parentItem.json) and isValid(parentItem.json.type)
       if parentItem.json.type = "Studio"
         task.studioIds = parentItem.id
         task.itemId = parentItem.parentFolder

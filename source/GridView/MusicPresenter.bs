@@ -22,7 +22,12 @@ class MusicPresenter extends GridPresenterBase
     }
 
     ' Special case: Genre folders only show Albums view
-    if LCase(parentItem.json.type) = "musicgenre"
+    isMusicGenre = false
+    if isValid(parentItem) and isValid(parentItem.json) and isValid(parentItem.json.type)
+      isMusicGenre = LCase(parentItem.json.type) = "musicgenre"
+    end if
+
+    if isMusicGenre
       options.views = [
         { "Title": tr("Albums"), "Name": "Albums" }
       ]
@@ -118,12 +123,17 @@ class MusicPresenter extends GridPresenterBase
     viewLower = LCase(currentView)
 
     ' Special case: Music genre folders load albums
-    if LCase(parentItem.json.type) = "musicgenre"
+    isMusicGenre = false
+    if isValid(parentItem) and isValid(parentItem.json) and isValid(parentItem.json.type)
+      isMusicGenre = LCase(parentItem.json.type) = "musicgenre"
+    end if
+
+    if isMusicGenre
       task.itemType = "MusicAlbum"
-      task.recursive = true
       task.genreIds = parentItem.id
       task.itemId = parentItem.parentFolder
       task.view = "Artists"
+      task.additionalFields = "Genres"
       return
     end if
 
@@ -132,13 +142,13 @@ class MusicPresenter extends GridPresenterBase
       task.itemType = "MusicAlbum"
       task.itemId = parentItem.Id
       task.view = "Artists"
+      task.additionalFields = "Genres"
     else if viewLower = "albumartistsgrid"
       task.itemType = "AlbumArtists"
       task.itemId = parentItem.Id
       task.view = "Artists"
     else if viewLower = "genres"
       task.itemType = ""
-      task.recursive = true
       task.itemId = parentItem.Id
       task.view = "Genres"
     else

@@ -42,6 +42,12 @@ sub loadItems()
     return
   end if
 
+  ' Build Fields string dynamically - start with Overview, add optional fields
+  fields = "Overview"
+  if m.top.additionalFields <> ""
+    fields = fields + "," + m.top.additionalFields
+  end if
+
   params = {
     limit: m.top.limit,
     StartIndex: m.top.startIndex,
@@ -49,7 +55,7 @@ sub loadItems()
     SortBy: sort_field,
     SortOrder: sort_order,
     recursive: m.top.recursive,
-    Fields: "Overview,Taglines,Genres",
+    Fields: fields,
     StudioIds: m.top.studioIds,
     genreIds: m.top.genreIds
   }
@@ -115,18 +121,26 @@ sub loadItems()
     params.append({ UserId: globalUser.id, includeItemTypes: m.top.itemType })
   else if m.top.ItemType = "MusicArtist"
     url = "Artists"
+    ' Merge Genres with existing fields instead of overriding
+    if fields.Instr(",Genres") = -1 and fields <> "Genres"
+      fields = fields + ",Genres"
+    end if
     params.append({
       UserId: globalUser.id,
-      Fields: "Genres"
+      Fields: fields,
+      IncludeItemTypes: "MusicAlbum,Audio"
     })
-    params.IncludeItemTypes = "MusicAlbum,Audio"
   else if m.top.ItemType = "AlbumArtists"
     url = "Artists/AlbumArtists"
+    ' Merge Genres with existing fields instead of overriding
+    if fields.Instr(",Genres") = -1 and fields <> "Genres"
+      fields = fields + ",Genres"
+    end if
     params.append({
       UserId: globalUser.id,
-      Fields: "Genres"
+      Fields: fields,
+      IncludeItemTypes: "MusicAlbum,Audio"
     })
-    params.IncludeItemTypes = "MusicAlbum,Audio"
   else if m.top.ItemType = "MusicAlbum"
     url = Substitute("Users/{0}/Items/", globalUser.id)
     params.append({ ImageTypeLimit: 1 })
@@ -237,7 +251,12 @@ sub loadItems()
         for each genreItem in genreData.Items
           if LCase(m.top.itemType) = "movie"
             row = tmp.createChild("MovieData")
+          else if LCase(m.top.itemType) = "series"
+            row = tmp.createChild("SeriesData")
+          else if LCase(m.top.itemType) = "musicalbum"
+            row = tmp.createChild("MusicAlbumData")
           else
+            ' Default to SeriesData for backward compatibility
             row = tmp.createChild("SeriesData")
           end if
 

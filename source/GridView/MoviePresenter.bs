@@ -161,6 +161,7 @@ class MoviePresenter extends GridPresenterBase
 
     task.itemType = "Movie"
     task.itemId = parentItem.Id
+    task.additionalFields = "Taglines,Genres"
 
     if lowerView = "studios"
       task.view = "Networks"
@@ -175,7 +176,7 @@ class MoviePresenter extends GridPresenterBase
     end if
 
     ' Handle genre/studio parent items
-    if isValid(parentItem.json)
+    if isValid(parentItem) and isValid(parentItem.json) and isValid(parentItem.json.type)
       if parentItem.json.type = "Studio"
         task.studioIds = parentItem.id
         task.itemId = parentItem.parentFolder

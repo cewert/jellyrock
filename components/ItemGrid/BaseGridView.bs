@@ -125,10 +125,17 @@ end sub
 ' Data Loading
 ' ============================================================================
 
+' Prepare for data loading by stopping any active task, showing spinner, and hiding empty text
+' @param {boolean} [disableRemote=false] - Whether to disable remote input during loading
+sub prepareDataLoad(disableRemote = false as boolean)
+  m.loadItemsTask.control = "stop"
+  startLoadingSpinner(disableRemote)
+  m.emptyText.visible = false
+end sub
+
 sub loadInitialItems()
   m.log.debug("start loadInitialItems()")
-  m.loadItemsTask.control = "stop"
-  startLoadingSpinner(false)
+  prepareDataLoad(false)
 
   if isValid(m.top.parentItem.json) and m.top.parentItem.json.Type = "CollectionFolder"
     m.top.HomeLibraryItem = m.top.parentItem.Id
@@ -164,7 +171,6 @@ sub loadInitialItems()
   end if
 
   m.loadItemsTask.searchTerm = m.voiceBox.text
-  m.emptyText.visible = false
   m.loadItemsTask.sortField = m.sortField
   m.loadItemsTask.sortAscending = m.sortAscending
   m.loadItemsTask.filter = m.filter
@@ -175,7 +181,8 @@ sub loadInitialItems()
   m.loadItemsTask.itemId = m.top.parentItem.Id
 
   ' Reset stateful fields to prevent leakage from previous operations
-  m.loadItemsTask.recursive = false
+  ' recursive defaults to true (matches LoadItemsTask2.xml) - presenters can override
+  m.loadItemsTask.recursive = true
   m.loadItemsTask.itemType = ""
   m.loadItemsTask.view = ""
   m.loadItemsTask.studioIds = ""
@@ -394,7 +401,7 @@ sub loadMoreData()
   m.log.debug("start loadMoreData()")
   if m.Loading = true then return
 
-  startLoadingSpinner(false)
+  prepareDataLoad(false)
   m.Loading = true
   m.loadItemsTask.startIndex = m.loadedItems
   m.loadItemsTask.observeField("content", "ItemDataLoaded")
@@ -705,8 +712,8 @@ sub onVoiceFilter()
     ' Store voice text before any other operations
     voiceSearchTerm = m.voiceBox.text
 
-    ' Configure task for voice search - recursive must be set AFTER loadInitialItems resets
-    m.loadItemsTask.control = "stop"
+    ' Prepare for data loading (stop task, show spinner, hide empty text)
+    prepareDataLoad(false)
     m.loadItemsTask.NameStartsWith = " "
     m.loadItemsTask.sortField = m.sortField
     m.loadItemsTask.sortAscending = m.sortAscending
