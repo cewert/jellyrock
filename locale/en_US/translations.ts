@@ -78,12 +78,8 @@
       <translation>Album</translation>
     </message>
     <message>
-      <source>Album Artists (Grid)</source>
-      <translation>Album Artists (Grid)</translation>
-    </message>
-    <message>
-      <source>Album Artists (Presentation)</source>
-      <translation>Album Artists (Presentation)</translation>
+      <source>Album Artists</source>
+      <translation>Album Artists</translation>
     </message>
     <message>
       <source>Albums</source>
@@ -122,14 +118,6 @@
     <message>
       <source>Artists</source>
       <translation>Artists</translation>
-    </message>
-    <message>
-      <source>Artists (Grid)</source>
-      <translation>Artists (Grid)</translation>
-    </message>
-    <message>
-      <source>Artists (Presentation)</source>
-      <translation>Artists (Presentation)</translation>
     </message>
     <message>
       <source>Attempt Direct Play for H.264 media with unsupported profile levels before falling back to transcoding if it fails.</source>
@@ -225,11 +213,6 @@
     <message>
       <source>Change user</source>
       <translation>Change user</translation>
-    </message>
-    <message>
-      <source>Channels</source>
-      <translation>Channels</translation>
-      <extracomment>Menu option for showing Live TV Channel List</extracomment>
     </message>
     <message>
       <source>Choose how rows are displayed throughout the app.</source>
@@ -474,10 +457,6 @@
     <message>
       <source>Filter</source>
       <translation>Filter</translation>
-    </message>
-    <message>
-      <source>Folders</source>
-      <translation>Folders</translation>
     </message>
     <message>
       <source>Friday</source>
@@ -864,14 +843,6 @@
       <extracomment>General use word when we want to randomize data</extracomment>
     </message>
     <message>
-      <source>Random Off</source>
-      <translation>Random Off</translation>
-    </message>
-    <message>
-      <source>Random On</source>
-      <translation>Random On</translation>
-    </message>
-    <message>
       <source>Ratings for how good a movie is.</source>
       <translation>Ratings for how good a movie is.</translation>
     </message>
@@ -1086,28 +1057,12 @@
       <extracomment>Settings Menu - Title for option</extracomment>
     </message>
     <message>
-      <source>Slideshow Off</source>
-      <translation>Slideshow Off</translation>
-    </message>
-    <message>
-      <source>Slideshow On</source>
-      <translation>Slideshow On</translation>
-    </message>
-    <message>
       <source>Slideshow Paused</source>
       <translation>Slideshow Paused</translation>
     </message>
     <message>
       <source>Slideshow Resumed</source>
       <translation>Slideshow Resumed</translation>
-    </message>
-    <message>
-      <source>Song</source>
-      <translation>Song</translation>
-    </message>
-    <message>
-      <source>Songs</source>
-      <translation>Songs</translation>
     </message>
     <message>
       <source>Sort</source>
@@ -1232,11 +1187,6 @@
       <source>Tuesday</source>
       <translation>Tuesday</translation>
       <extracomment>Day of Week</extracomment>
-    </message>
-    <message>
-      <source>TV Guide</source>
-      <translation>TV Guide</translation>
-      <extracomment>Menu option for showing Live TV Guide / Schedule</extracomment>
     </message>
     <message>
       <source>TV Shows</source>
