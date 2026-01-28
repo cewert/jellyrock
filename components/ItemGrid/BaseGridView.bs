@@ -1,0 +1,937 @@
+' BaseGridView: Unified library grid view component
+'
+' Uses presenter pattern for media-type-specific behavior.
+' Combines common functionality from ItemGrid, MovieLibraryView, and MusicLibraryView.
+
+import "pkg:/source/api/baserequest.bs"
+import "pkg:/source/api/Image.bs"
+import "pkg:/source/GridView/GenericPresenter.bs"
+import "pkg:/source/GridView/MoviePresenter.bs"
+import "pkg:/source/GridView/MusicPresenter.bs"
+import "pkg:/source/GridView/TVShowPresenter.bs"
+import "pkg:/source/roku_modules/log/LogMixin.brs"
+import "pkg:/source/utils/config.bs"
+import "pkg:/source/utils/deviceCapabilities.bs"
+import "pkg:/source/utils/displaySettings.bs"
+import "pkg:/source/utils/misc.bs"
+
+sub init()
+  m.log = log.Logger("BaseGridView")
+  m.log.debug("start init()")
+  setupNodes()
+
+  userSettings = m.global.user.settings
+
+  m.showItemCount = userSettings.itemGridShowItemCount
+
+  m.loadedRows = 0
+  m.loadedItems = 0
+
+  m.data = CreateObject("roSGNode", "ContentNode")
+  m.itemGrid.content = m.data
+
+  m.genreData = CreateObject("roSGNode", "ContentNode")
+  m.genreList.focusXOffset = 0
+  m.genreList.rowLabelOffset = [0, 21]
+  m.genreList.observeField("rowItemFocused", "onGenreItemFocused")
+  m.genreList.observeField("itemSelected", "onGenreItemSelected")
+  m.genreList.content = m.genreData
+
+  m.itemGrid.observeField("itemFocused", "onItemFocused")
+  m.itemGrid.observeField("itemSelected", "onItemSelected")
+
+  ' Voice filter setup
+  m.voiceBox.opacity = 0.0001
+  m.voiceBox.voiceEnabled = true
+  m.voiceBox.active = true
+  m.voiceBox.observeField("text", "onVoiceFilter")
+  m.voiceBox.hintText = tr("Use voice remote to search")
+
+  ' Sort/filter defaults
+  m.sortField = "SortName"
+  m.sortAscending = true
+  m.filter = "All"
+  m.filterOptions = {}
+  m.favorite = "Favorite"
+
+  ' Create load task
+  m.loadItemsTask = createObject("roSGNode", "LoadItemsTask2")
+  m.loadItemsTask.totalRecordCount = 0
+
+  ' Get reset folder setting
+  m.resetGrid = userSettings.itemGridReset
+  m.top.gridTitles = userSettings.itemGridTitles
+
+  ' Presenter (set via setPresenter function)
+  m.presenter = invalid
+
+  m.log.debug("end init()")
+end sub
+
+sub setupNodes()
+  m.options = m.top.findNode("options")
+  m.itemGrid = m.top.findNode("itemGrid")
+  m.voiceBox = m.top.findNode("VoiceBox")
+  m.emptyText = m.top.findNode("emptyText")
+  m.alpha = m.top.findNode("alpha")
+  m.alphaMenu = m.alpha.findNode("alphaMenu")
+  m.genreList = m.top.findNode("genreList")
+  m.presentationBackdrop = m.top.findNode("presentationBackdrop")
+  m.presentationInfo = m.top.findNode("presentationInfo")
+end sub
+
+' ============================================================================
+' Presenter Management
+' ============================================================================
+
+' Called when presenterType field changes - creates the appropriate presenter
+sub onPresenterTypeChanged()
+  presenterType = m.top.presenterType
+  if presenterType = "" then return
+
+  m.log.debug("Creating presenter of type:", presenterType)
+
+  if presenterType = "movie"
+    m.presenter = new MoviePresenter()
+  else if presenterType = "music"
+    m.presenter = new MusicPresenter()
+  else if presenterType = "tvshow"
+    m.presenter = new TVShowPresenter()
+  else
+    m.presenter = new GenericPresenter()
+  end if
+
+  if isValid(m.presenter)
+    m.presenter.onInit(m)
+  end if
+end sub
+
+' ============================================================================
+' Lifecycle
+' ============================================================================
+
+sub OnScreenShown()
+  ' Clear global backdrop - we handle our own backdrops
+  m.global.sceneManager.callFunc("setBackgroundImage", "")
+
+  if isValid(m.top.lastFocus)
+    m.top.lastFocus.setFocus(true)
+  else
+    m.top.setFocus(true)
+  end if
+end sub
+
+' ============================================================================
+' Data Loading
+' ============================================================================
+
+' Prepare for data loading by stopping any active task, showing spinner, and hiding empty text
+' @param {boolean} [disableRemote=false] - Whether to disable remote input during loading
+sub prepareDataLoad(disableRemote = false as boolean)
+  m.loadItemsTask.control = "stop"
+  startLoadingSpinner(disableRemote)
+  m.emptyText.visible = false
+end sub
+
+sub loadInitialItems()
+  m.log.debug("start loadInitialItems()")
+  prepareDataLoad(false)
+
+  if isValid(m.top.parentItem.json) and m.top.parentItem.json.Type = "CollectionFolder"
+    m.top.HomeLibraryItem = m.top.parentItem.Id
+  end if
+
+  ' Load saved display settings
+  libraryId = m.top.parentItem.Id
+  m.sortField = getLibraryDisplaySetting(libraryId, "sortField", "SortName")
+  m.filter = getLibraryDisplaySetting(libraryId, "filter", "All")
+  m.filterOptions = parseJson(getLibraryDisplaySetting(libraryId, "filterOptions", "{}"))
+  m.view = getLibraryDisplaySetting(libraryId, "landing", invalid)
+  m.sortAscending = getLibraryDisplaySetting(libraryId, "sortAscending", true)
+
+  ' Set default view if not saved
+  if not isValid(m.view)
+    m.view = getDefaultView()
+  end if
+
+  ' Keep currentView in sync with the finalized view
+  m.top.currentView = m.view
+
+  ' Configure backdrop based on presenter
+  configureBackdrop()
+
+  ' Configure grid based on presenter and view
+  configureGrid()
+
+  ' Alpha search
+  if m.loadItemsTask.nameStartsWith = m.top.alphaSelected
+    m.loadItemsTask.nameStartsWith = ""
+  else
+    m.loadItemsTask.nameStartsWith = m.alpha.letterSelected
+  end if
+
+  m.loadItemsTask.searchTerm = m.voiceBox.text
+  m.loadItemsTask.sortField = m.sortField
+  m.loadItemsTask.sortAscending = m.sortAscending
+  m.loadItemsTask.filter = m.filter
+  m.loadItemsTask.filterOptions = m.filterOptions
+  m.loadItemsTask.startIndex = 0
+
+  ' Set default itemId - presenter can override if needed
+  m.loadItemsTask.itemId = m.top.parentItem.Id
+
+  ' Reset stateful fields to prevent leakage from previous operations
+  ' recursive defaults to true (matches LoadItemsTask2.xml) - presenters can override
+  m.loadItemsTask.recursive = true
+  m.loadItemsTask.itemType = ""
+  m.loadItemsTask.view = ""
+  m.loadItemsTask.studioIds = ""
+  m.loadItemsTask.genreIds = ""
+
+  ' Let presenter configure the load task (can override any defaults)
+  if isValid(m.presenter)
+    m.presenter.configureLoadTask(m.loadItemsTask, m.top.parentItem, m.view)
+  end if
+
+  ' Update title after all task fields are configured
+  updateTitle()
+
+  m.loadItemsTask.observeField("content", "ItemDataLoaded")
+  m.loadItemsTask.control = "RUN"
+
+  SetUpOptions()
+  m.log.debug("end loadInitialItems()")
+end sub
+
+function getDefaultView() as string
+  ' Let presenter determine default view, or use fallback
+  ' Movies and TV default to grid mode for consistency
+  collectionType = getCollectionType()
+  if collectionType = "movies"
+    return "MoviesGrid"
+  else if collectionType = "music"
+    return "AlbumArtistsGrid"
+  else if collectionType = "tvshows"
+    return "Shows"
+  end if
+
+  ' Fallback to presenterType for genres and other items without collectionType
+  presenterType = m.top.presenterType
+  if presenterType = "movie"
+    return "MoviesGrid"
+  else if presenterType = "music"
+    return "AlbumArtistsGrid"
+  else if presenterType = "tvshow"
+    return "Shows"
+  end if
+
+  return ""
+end function
+
+sub configureBackdrop()
+  if not isValid(m.presenter) then return
+
+  backdropMode = m.presenter.getBackdropMode()
+
+  if backdropMode = "presentation"
+    ' Clear fullscreen backdrop first to avoid overlap during transition
+    m.global.sceneManager.callFunc("setBackgroundImage", "")
+
+    ' Use presentation backdrop (right half of screen)
+    m.presentationBackdrop.visible = true
+
+    ' Set initial backdrop from parent item
+    if isValid(m.top.parentItem.backdropUrl)
+      m.presentationBackdrop.uri = m.top.parentItem.backdropUrl
+    else
+      m.presentationBackdrop.uri = ""
+    end if
+
+    ' Show presentation info if presenter supports it
+    showInfo = m.presenter.shouldShowPresentationInfo(m.view)
+    m.presentationInfo.visible = showInfo
+  else
+    ' Use fullscreen backdrop via scene manager
+    m.presentationBackdrop.visible = false
+    m.presentationInfo.visible = false
+
+    if isValid(m.top.parentItem.backdropUrl)
+      m.global.sceneManager.callFunc("setBackgroundImage", m.top.parentItem.backdropUrl)
+    end if
+  end if
+end sub
+
+sub configureGrid()
+  if not isValid(m.presenter) then return
+
+  config = m.presenter.getGridConfig(m.view)
+
+  if isValid(config.translation)
+    if type(config.translation) = "roArray"
+      m.itemGrid.translation = config.translation
+    else
+      m.itemGrid.translation = config.translation
+    end if
+  end if
+
+  if isValid(config.itemSize)
+    m.itemGrid.itemSize = config.itemSize
+  end if
+
+  if isValid(config.rowHeights)
+    m.itemGrid.rowHeights = config.rowHeights
+  end if
+
+  if isValid(config.numRows)
+    m.itemGrid.numRows = config.numRows
+  end if
+
+  if isValid(config.numColumns)
+    m.itemGrid.numColumns = config.numColumns
+  end if
+
+  if isValid(config.imageDisplayMode)
+    m.top.imageDisplayMode = config.imageDisplayMode
+  end if
+
+  ' Configure item titles visibility
+  userSettings = m.global.user.settings
+  showInfo = m.presenter.shouldShowPresentationInfo(m.view)
+  if showInfo
+    m.top.showItemTitles = "hidealways"
+  else
+    m.top.showItemTitles = userSettings.itemGridTitles
+  end if
+end sub
+
+sub ItemDataLoaded(msg)
+  m.log.debug("start ItemDataLoaded()")
+  itemData = msg.GetData()
+  m.loadItemsTask.unobserveField("content")
+  m.loadItemsTask.content = []
+
+  if not isValid(itemData)
+    m.loading = false
+    stopLoadingSpinner()
+    return
+  end if
+
+  ' Route to genre rowlist for movies/TV, but use regular grid for music
+  if m.loadItemsTask.view = "Genres"
+    ' Check if this is music genres (MusicGenre) or movie/TV genres (Genre)
+    ' Must check json.Type since the node Type gets overridden to "Folder"
+    isMusicGenre = false
+    if itemData.Count() > 0 and isValid(itemData[0])
+      if isValid(itemData[0].json) and isValid(itemData[0].json.Type)
+        if itemData[0].json.Type = "MusicGenre"
+          isMusicGenre = true
+        end if
+      end if
+    end if
+
+    ' Only use rowlist for movie/TV genres, not music
+    if not isMusicGenre
+      ' Reset genre list data
+      m.genreData.removeChildren(m.genreData.getChildren(-1, 0))
+
+      for each item in itemData
+        m.genreData.appendChild(item)
+      end for
+
+      m.itemGrid.opacity = "0"
+      m.genreList.opacity = "1"
+
+      m.itemGrid.setFocus(false)
+      m.genreList.setFocus(true)
+
+      m.loading = false
+      stopLoadingSpinner()
+
+      ' Return focus to options menu if it was opened while library was loading
+      if m.options.visible
+        m.options.setFocus(true)
+      end if
+      return
+    end if
+    ' Music genres fall through to use regular grid below
+  end if
+
+  ' keep focus on alpha menu if it's active
+  if m.top.alphaActive
+    m.alphaMenu.setFocus(true)
+  else
+    m.itemGrid.opacity = "1"
+    m.genreList.opacity = "0"
+
+    m.alphaMenu.setFocus(false)
+    m.itemGrid.setFocus(true)
+    m.genreList.setFocus(false)
+  end if
+
+  if m.data.getChildCount() = 0
+    m.itemGrid.jumpToItem = 0
+  end if
+
+  for each item in itemData
+    m.data.appendChild(item)
+  end for
+
+  ' Update the stored counts
+  m.loadedItems = m.itemGrid.content.getChildCount()
+  m.loadedRows = m.loadedItems / m.itemGrid.numColumns
+  m.loading = false
+
+  ' If there are no items to display, show message
+  if m.loadedItems = 0
+    m.presentationInfo.visible = false
+    m.emptyText.text = tr("NO_ITEMS").Replace("%1", m.top.parentItem.Type)
+    m.emptyText.visible = true
+  end if
+
+  stopLoadingSpinner()
+
+  ' Return focus to options menu if it was opened while library was loading
+  if m.options.visible
+    m.options.setFocus(true)
+  end if
+  m.log.debug("end ItemDataLoaded()")
+end sub
+
+sub loadMoreData()
+  m.log.debug("start loadMoreData()")
+  if m.loading = true then return
+
+  prepareDataLoad(false)
+  m.loading = true
+  m.loadItemsTask.startIndex = m.loadedItems
+  m.loadItemsTask.observeField("content", "ItemDataLoaded")
+  m.loadItemsTask.control = "RUN"
+  m.log.debug("end loadMoreData()")
+end sub
+
+' ============================================================================
+' Focus Handling
+' ============================================================================
+
+sub onItemFocused()
+  focusedRow = m.itemGrid.currFocusRow
+  itemInt = m.itemGrid.itemFocused
+
+  if itemInt = -1 then return
+
+  updateTitle()
+  m.selectedFavoriteItem = m.itemGrid.content.getChild(m.itemGrid.itemFocused)
+
+  ' Load more data if focus is within last 5 rows
+  if focusedRow >= m.loadedRows - 5 and m.loadedItems < m.loadItemsTask.totalRecordCount
+    loadMoreData()
+  end if
+
+  ' Update backdrop
+  updateBackdropForFocusedItem()
+
+  ' Let presenter handle item-specific metadata display
+  if isValid(m.presenter) and isValid(m.selectedFavoriteItem)
+    m.presenter.onItemFocused(m.selectedFavoriteItem, m.view)
+  end if
+end sub
+
+' Bridge callback for presenter logo loading - forwards to presenter.onLogoLoaded()
+' This is needed because Roku observers look for functions at component scope,
+' not on class instances. Presenters should observe with "onPresenterLogoLoaded".
+sub onPresenterLogoLoaded(event as object)
+  if isValid(m.presenter)
+    m.presenter.onLogoLoaded(event)
+  end if
+end sub
+
+' Bridge callback for presenter filters loading - forwards to presenter.onFiltersLoaded()
+' This is needed because Roku observers look for functions at component scope,
+' not on class instances. Presenters should observe with "onPresenterFiltersLoaded".
+sub onPresenterFiltersLoaded(event as object)
+  if isValid(m.presenter)
+    m.presenter.onFiltersLoaded(event)
+  end if
+end sub
+
+sub updateBackdropForFocusedItem()
+  if not isValid(m.selectedFavoriteItem) then return
+
+  backdropUrl = m.selectedFavoriteItem.backdropUrl
+
+  if isValid(m.presenter)
+    backdropMode = m.presenter.getBackdropMode()
+    if backdropMode = "presentation"
+      ' Clear fullscreen backdrop to prevent overlap with presentation backdrop
+      m.global.sceneManager.callFunc("setBackgroundImage", "")
+      m.presentationBackdrop.uri = backdropUrl
+    else
+      m.global.sceneManager.callFunc("setBackgroundImage", backdropUrl)
+    end if
+  else
+    m.global.sceneManager.callFunc("setBackgroundImage", backdropUrl)
+  end if
+end sub
+
+' ============================================================================
+' Selection Handling
+' ============================================================================
+
+sub onItemSelected()
+  m.top.selectedItem = m.itemGrid.content.getChild(m.itemGrid.itemSelected)
+end sub
+
+sub onGenreItemSelected()
+  m.top.selectedItem = m.genreList.content.getChild(m.genreList.rowItemSelected[0]).getChild(m.genreList.rowItemSelected[1])
+end sub
+
+sub onGenreItemFocused()
+  ' rowItemFocused can be -1 (integer) when no item is focused, or [row, col] array when focused
+  rowItemFocused = m.genreList.rowItemFocused
+  if type(rowItemFocused) <> "roArray" then return
+  if rowItemFocused.count() < 2 then return
+
+  rowNode = m.genreList.content.getChild(rowItemFocused[0])
+  if not isValid(rowNode) then return
+
+  focusedItem = rowNode.getChild(rowItemFocused[1])
+  if not isValid(focusedItem) then return
+
+  ' Update backdrop with focused item's backdrop
+  backdropUrl = focusedItem.backdropUrl
+  if isValid(backdropUrl)
+    m.global.sceneManager.callFunc("setBackgroundImage", backdropUrl)
+  end if
+end sub
+
+function getItemFocused()
+  if m.itemGrid.isinFocusChain() and isValid(m.itemGrid.itemFocused)
+    return m.itemGrid.content.getChild(m.itemGrid.itemFocused)
+  else if m.genreList.isinFocusChain() and isValid(m.genreList.rowItemFocused)
+    return m.genreList.content.getChild(m.genreList.rowItemFocused[0]).getChild(m.genreList.rowItemFocused[1])
+  end if
+  return invalid
+end function
+
+' ============================================================================
+' Options
+' ============================================================================
+
+sub SetUpOptions()
+  options = {
+    views: [],
+    sort: [],
+    filter: [],
+    favorite: []
+  }
+
+  ' Let presenter provide options
+  if isValid(m.presenter)
+    presenterOptions = m.presenter.getOptions(m.top.parentItem)
+    if isValid(presenterOptions.views) then options.views = presenterOptions.views
+    if isValid(presenterOptions.sort) then options.sort = presenterOptions.sort
+    if isValid(presenterOptions.filter) then options.filter = presenterOptions.filter
+  end if
+
+  ' Set selected view option
+  for each o in options.views
+    if LCase(o.Name) = LCase(m.view)
+      o.Selected = true
+      o.Ascending = m.sortAscending
+      m.options.view = o.Name
+    end if
+  end for
+
+  ' Set selected sort option
+  for each o in options.sort
+    if LCase(o.Name) = LCase(m.sortField)
+      o.Selected = true
+      o.Ascending = m.sortAscending
+      m.options.sortField = o.Name
+    end if
+  end for
+
+  ' Set selected filter option
+  for each o in options.filter
+    if LCase(o.Name) = LCase(m.filter)
+      o.Selected = true
+      m.options.filter = o.Name
+    end if
+
+    ' Select selected filter options
+    if isValid(o.options) and isValid(m.filterOptions)
+      if o.options.Count() > 0 and m.filterOptions.Count() > 0
+        if LCase(o.Name) = LCase(m.filterOptions.keys()[0])
+          selectedFilterOptions = m.filterOptions[m.filterOptions.keys()[0]].split(o.delimiter)
+          checkedState = []
+
+          for each availableFilterOption in o.options
+            matchFound = false
+            for each selectedFilterOption in selectedFilterOptions
+              if LCase(toString(availableFilterOption).trim()) = LCase(selectedFilterOption.trim())
+                matchFound = true
+              end if
+            end for
+            checkedState.push(matchFound)
+          end for
+
+          o.checkedState = checkedState
+        end if
+      end if
+    end if
+  end for
+
+  m.options.options = options
+end sub
+
+sub optionsClosed()
+  reload = false
+
+  if m.options.sortField <> m.sortField or m.options.sortAscending <> m.sortAscending
+    m.sortField = m.options.sortField
+    m.sortAscending = m.options.sortAscending
+    reload = true
+
+    sortAscendingStr = "true"
+    if not m.sortAscending
+      sortAscendingStr = "false"
+    end if
+
+    libraryId = m.top.parentItem.Id
+    setLibraryDisplaySetting(libraryId, "sortField", m.sortField)
+    setLibraryDisplaySetting(libraryId, "sortAscending", sortAscendingStr)
+  end if
+
+  if m.options.filter <> m.filter
+    m.filter = m.options.filter
+    updateTitle()
+    reload = true
+    libraryId = m.top.parentItem.Id
+    setLibraryDisplaySetting(libraryId, "filter", m.options.filter)
+  end if
+
+  if not isValid(m.options.filterOptions)
+    m.options.filterOptions = {}
+  end if
+
+  if not AssocArrayEqual(m.options.filterOptions, m.filterOptions)
+    m.filterOptions = m.options.filterOptions
+    reload = true
+    libraryId = m.top.parentItem.Id
+    setLibraryDisplaySetting(libraryId, "filterOptions", FormatJson(m.options.filterOptions))
+  end if
+
+  ' Check if view changed
+  libraryId = m.top.parentItem.Id
+
+  if m.options.view <> m.view
+    m.view = m.options.view
+    m.top.currentView = m.view
+    setLibraryDisplaySetting(libraryId, "landing", m.view)
+
+    ' Reset any filtering or search terms
+    m.voiceBox.text = ""
+    m.top.alphaSelected = ""
+    m.loadItemsTask.NameStartsWith = " "
+    m.loadItemsTask.searchTerm = ""
+    m.filter = "All"
+    m.filterOptions = {}
+    m.sortField = "SortName"
+    m.sortAscending = true
+
+    ' Reset view to defaults
+    setLibraryDisplaySetting(libraryId, "sortField", m.sortField)
+    setLibraryDisplaySetting(libraryId, "sortAscending", "true")
+    setLibraryDisplaySetting(libraryId, "filter", m.filter)
+    setLibraryDisplaySetting(libraryId, "filterOptions", FormatJson(m.filterOptions))
+
+    reload = true
+  end if
+
+  if reload
+    m.loadedRows = 0
+    m.loadedItems = 0
+    m.data = CreateObject("roSGNode", "ContentNode")
+    m.itemGrid.content = m.data
+    loadInitialItems()
+  end if
+
+  m.itemGrid.setFocus(m.itemGrid.opacity = 1)
+  m.genreList.setFocus(m.genreList.opacity = 1)
+end sub
+
+' ============================================================================
+' Alpha / Voice Search
+' ============================================================================
+
+sub alphaSelectedChanged()
+  if m.top.alphaSelected <> ""
+    m.loadedRows = 0
+    m.loadedItems = 0
+
+    m.data = CreateObject("roSGNode", "ContentNode")
+    m.itemGrid.content = m.data
+
+    m.genreData = CreateObject("roSGNode", "ContentNode")
+    m.genreList.content = m.genreData
+
+    m.loadItemsTask.searchTerm = ""
+    m.voiceBox.text = ""
+    loadInitialItems()
+  end if
+end sub
+
+sub alphaActiveChanged()
+  m.log.debug("start alphaActiveChanged()", m.top.alphaActive)
+
+  if m.top.alphaActive
+    ' Clear backdrop when alpha menu is active
+    if isValid(m.presenter)
+      backdropMode = m.presenter.getBackdropMode()
+      if backdropMode = "presentation"
+        m.presentationBackdrop.uri = ""
+      else
+        m.global.sceneManager.callFunc("setBackgroundImage", "")
+      end if
+    else
+      m.global.sceneManager.callFunc("setBackgroundImage", "")
+    end if
+  end if
+
+  m.log.debug("end alphaActiveChanged()")
+end sub
+
+sub onVoiceFilter()
+  if m.voiceBox.text <> ""
+    m.loadedRows = 0
+    m.loadedItems = 0
+    m.data = CreateObject("roSGNode", "ContentNode")
+    m.itemGrid.content = m.data
+    m.top.alphaSelected = ""
+
+    ' Store voice text before any other operations
+    voiceSearchTerm = m.voiceBox.text
+
+    ' Prepare for data loading (stop task, show spinner, hide empty text)
+    prepareDataLoad(false)
+    m.loadItemsTask.NameStartsWith = " "
+    m.loadItemsTask.sortField = m.sortField
+    m.loadItemsTask.sortAscending = m.sortAscending
+    m.loadItemsTask.filter = m.filter
+    m.loadItemsTask.filterOptions = m.filterOptions
+    m.loadItemsTask.startIndex = 0
+    m.loadItemsTask.itemId = m.top.parentItem.Id
+
+    ' Reset stateful fields, then set voice search specific config
+    m.loadItemsTask.itemType = ""
+    m.loadItemsTask.view = ""
+    m.loadItemsTask.studioIds = ""
+    m.loadItemsTask.genreIds = ""
+    m.loadItemsTask.recursive = true
+
+    ' Let presenter override if needed
+    if isValid(m.presenter)
+      m.presenter.configureLoadTask(m.loadItemsTask, m.top.parentItem, m.view)
+      ' Force recursive and searchTerm for voice search even if presenter changes them
+      m.loadItemsTask.recursive = true
+    end if
+
+    ' Set searchTerm after presenter to ensure it's not cleared
+    m.loadItemsTask.searchTerm = voiceSearchTerm
+
+    m.loadItemsTask.observeField("content", "ItemDataLoaded")
+    m.loadItemsTask.control = "RUN"
+
+    if voiceSearchTerm.len() = 1
+      ' move focus to the letter spoken
+      intConversion = voiceSearchTerm.ToInt()
+
+      if voiceSearchTerm = "0" or (isValid(intConversion) and intConversion <> 0)
+        m.alphaMenu.jumpToItem = 0
+      else
+        ' loop through each option until we find a match
+        for i = 1 to m.alphaMenu.numRows - 1
+          alphaMenuOption = m.alphaMenu.content.getChild(i)
+          if Lcase(alphaMenuOption.TITLE) = Lcase(voiceSearchTerm)
+            m.alphaMenu.jumpToItem = i
+            exit for
+          end if
+        end for
+      end if
+    end if
+
+    updateTitle()
+  end if
+end sub
+
+' ============================================================================
+' Utilities
+' ============================================================================
+
+function getCollectionType() as string
+  if not isValid(m.top.parentItem.collectionType)
+    return LCase(m.top.parentItem.Type)
+  else
+    return LCase(m.top.parentItem.CollectionType)
+  end if
+end function
+
+' ============================================================================
+' Key Events
+' ============================================================================
+
+function onKeyEvent(key as string, press as boolean) as boolean
+  if not press then return false
+
+  if key = "left" and m.voiceBox.isinFocusChain()
+    m.itemGrid.setFocus(m.itemGrid.opacity = 1)
+    m.genreList.setFocus(m.genreList.opacity = 1)
+    m.voiceBox.setFocus(false)
+  end if
+
+  if key = "options"
+    if m.options.visible = true
+      m.options.visible = false
+      m.top.removeChild(m.options)
+      optionsClosed()
+    else
+      ' Rebuild options before showing dialog (to include any dynamically loaded filters)
+      SetUpOptions()
+
+      itemSelected = m.selectedFavoriteItem
+      if isValid(itemSelected)
+        m.options.selectedFavoriteItem = itemSelected
+      end if
+
+      m.options.visible = true
+      m.top.appendChild(m.options)
+      m.options.setFocus(true)
+    end if
+    return true
+  else if key = "back"
+    if m.options.visible = true
+      m.options.visible = false
+      optionsClosed()
+      return true
+    else
+      ' Cleanup presenter
+      if isValid(m.presenter)
+        m.presenter.destroy()
+        m.presenter = invalid
+      end if
+
+      m.global.sceneManager.callfunc("popScene")
+      m.loadItemsTask.control = "stop"
+      return true
+    end if
+  else if key = "play"
+    itemToPlay = getItemFocused()
+
+    if isValid(itemToPlay)
+      m.top.quickPlayNode = itemToPlay
+      return true
+    end if
+  else if key = "left"
+    if m.itemGrid.isinFocusChain()
+      m.top.alphaActive = true
+      m.itemGrid.setFocus(false)
+      m.alphaMenu.setFocus(true)
+      return true
+    else if m.genreList.isinFocusChain()
+      m.top.alphaActive = true
+      m.genreList.setFocus(false)
+      m.alphaMenu.setFocus(true)
+      return true
+    end if
+  else if key = "right" and m.alpha.isinFocusChain()
+    m.top.alphaActive = false
+    m.alphaMenu.setFocus(false)
+
+    m.itemGrid.setFocus(m.itemGrid.opacity = 1)
+    m.genreList.setFocus(m.genreList.opacity = 1)
+
+    return true
+  else if key = "replay" and m.itemGrid.isinFocusChain()
+    if m.resetGrid = true
+      m.itemGrid.animateToItem = 0
+    else
+      m.itemGrid.jumpToItem = 0
+    end if
+    return true
+  else if key = "replay" and m.genreList.isinFocusChain()
+    if m.resetGrid = true
+      m.genreList.animateToItem = 0
+    else
+      m.genreList.jumpToItem = 0
+    end if
+    return true
+  end if
+
+  if key = "replay"
+    ' Clear all search/filter state
+    m.voiceBox.text = ""
+    m.loadItemsTask.searchTerm = ""
+    m.loadItemsTask.nameStartsWith = ""
+    m.top.alphaSelected = ""
+    m.loadItemsTask.filter = "All"
+    m.filter = "All"
+    m.filterOptions = {}
+    ' Reset stateful fields to ensure clean state
+    m.loadItemsTask.recursive = false
+    m.loadItemsTask.itemType = ""
+    m.loadItemsTask.view = ""
+    m.loadItemsTask.studioIds = ""
+    m.loadItemsTask.genreIds = ""
+    m.data = CreateObject("roSGNode", "ContentNode")
+    m.itemGrid.content = m.data
+    loadInitialItems()
+    return true
+  end if
+
+  return false
+end function
+
+' ============================================================================
+' Overhang Title
+' ============================================================================
+
+sub updateTitle()
+  m.top.overhangTitle = m.top.parentItem.title
+
+  if m.filter = "Favorites"
+    m.top.overhangTitle = m.top.parentItem.title + " " + tr("(Favorites)")
+  end if
+
+  ' Voice search and alpha filters take precedence over view-specific titles
+  if m.voiceBox.text <> ""
+    m.top.overhangTitle = m.top.parentItem.title + tr(" (Filtered by ") + m.voiceBox.text + ")"
+    return
+  end if
+
+  if m.loadItemsTask.nameStartsWith <> ""
+    m.top.overhangTitle = m.top.parentItem.title + tr(" (Filtered by ") + m.loadItemsTask.nameStartsWith + ")"
+    return
+  end if
+
+  ' View-specific titles (only when no active filters)
+  lowerView = LCase(m.view)
+  if lowerView = "networks"
+    m.top.overhangTitle = "%s (%s)".Format(m.top.parentItem.title, tr("Networks"))
+  else if lowerView = "studios"
+    m.top.overhangTitle = "%s (%s)".Format(m.top.parentItem.title, tr("Studios"))
+  else if lowerView = "genres"
+    m.top.overhangTitle = "%s (%s)".Format(m.top.parentItem.title, tr("Genres"))
+  else if lowerView = "artistsgrid"
+    m.top.overhangTitle = "%s (%s)".Format(m.top.parentItem.title, tr("Artists"))
+  else if lowerView = "albumartistsgrid"
+    m.top.overhangTitle = "%s (%s)".Format(m.top.parentItem.title, tr("Album Artists"))
+  else if lowerView = "albums"
+    m.top.overhangTitle = "%s (%s)".Format(m.top.parentItem.title, tr("Albums"))
+  end if
+
+  ' Add item count if enabled
+  actInt = m.itemGrid.itemFocused + 1
+  if m.showItemCount and m.loadItemsTask.totalRecordCount > 0 and lowerView <> "genres"
+    m.top.overhangTitle += " (" + tr("%1 of %2").Replace("%1", actInt.toStr()).Replace("%2", m.loadItemsTask.totalRecordCount.toStr()) + ")"
+  end if
+end sub

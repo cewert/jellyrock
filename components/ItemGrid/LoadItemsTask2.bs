@@ -42,6 +42,12 @@ sub loadItems()
     return
   end if
 
+  ' Build Fields string dynamically - start with Overview, add optional fields
+  fields = "Overview"
+  if m.top.additionalFields <> ""
+    fields = fields + "," + m.top.additionalFields
+  end if
+
   params = {
     limit: m.top.limit,
     StartIndex: m.top.startIndex,
@@ -49,7 +55,7 @@ sub loadItems()
     SortBy: sort_field,
     SortOrder: sort_order,
     recursive: m.top.recursive,
-    Fields: "Overview",
+    Fields: fields,
     StudioIds: m.top.studioIds,
     genreIds: m.top.genreIds
   }
@@ -115,18 +121,26 @@ sub loadItems()
     params.append({ UserId: globalUser.id, includeItemTypes: m.top.itemType })
   else if m.top.ItemType = "MusicArtist"
     url = "Artists"
+    ' Merge Genres with existing fields instead of overriding
+    if fields.Instr(",Genres") = -1 and fields <> "Genres"
+      fields = fields + ",Genres"
+    end if
     params.append({
       UserId: globalUser.id,
-      Fields: "Genres"
+      Fields: fields,
+      IncludeItemTypes: "MusicAlbum,Audio"
     })
-    params.IncludeItemTypes = "MusicAlbum,Audio"
   else if m.top.ItemType = "AlbumArtists"
     url = "Artists/AlbumArtists"
+    ' Merge Genres with existing fields instead of overriding
+    if fields.Instr(",Genres") = -1 and fields <> "Genres"
+      fields = fields + ",Genres"
+    end if
     params.append({
       UserId: globalUser.id,
-      Fields: "Genres"
+      Fields: fields,
+      IncludeItemTypes: "MusicAlbum,Audio"
     })
-    params.IncludeItemTypes = "MusicAlbum,Audio"
   else if m.top.ItemType = "MusicAlbum"
     url = Substitute("Users/{0}/Items/", globalUser.id)
     params.append({ ImageTypeLimit: 1 })
@@ -195,6 +209,9 @@ sub loadItems()
         tmp.image = PosterImage(item.id, { "maxHeight": 425, "maxWidth": 290, "quality": "90" })
       else if item.type = "Episode"
         tmp = CreateObject("roSGNode", "TVEpisode")
+      else if item.type = "Season"
+        tmp = CreateObject("roSGNode", "TVSeasonData")
+        tmp.type = "Season"
       else if LCase(item.Type) = "recording"
         tmp = CreateObject("roSGNode", "RecordingData")
       else if item.Type = "Genre"
@@ -206,9 +223,9 @@ sub loadItems()
           SortOrder: "Ascending",
           IncludeItemTypes: m.top.itemType,
           Recursive: true,
-          Fields: "PrimaryImageAspectRatio,MediaSourceCount,BasicSyncInfo",
+          Fields: "PrimaryImageAspectRatio,MediaSourceCount,BasicSyncInfo,BackdropImageTags",
           ImageTypeLimit: 1,
-          EnableImageTypes: "Primary",
+          EnableImageTypes: "Primary,Backdrop",
           Limit: 6,
           GenreIds: item.id,
           EnableTotalRecordCount: false,
@@ -224,22 +241,22 @@ sub loadItems()
           row.json = item
           row.type = "Folder"
 
-          if LCase(m.top.itemType) = "movie"
-            genreItemImage = api.items.GetImageURL(item.id)
-          else
-            genreItemImage = invalid
-            row.posterURL = invalid
-          end if
-
-          row.FHDPOSTERURL = genreItemImage
-          row.HDPOSTERURL = genreItemImage
-          row.SDPOSTERURL = genreItemImage
+          ' "View all" items have no image (blank background)
+          row.posterURL = invalid
+          row.FHDPOSTERURL = invalid
+          row.HDPOSTERURL = invalid
+          row.SDPOSTERURL = invalid
         end if
 
         for each genreItem in genreData.Items
           if LCase(m.top.itemType) = "movie"
             row = tmp.createChild("MovieData")
+          else if LCase(m.top.itemType) = "series"
+            row = tmp.createChild("SeriesData")
+          else if LCase(m.top.itemType) = "musicalbum"
+            row = tmp.createChild("MusicAlbumData")
           else
+            ' Default to SeriesData for backward compatibility
             row = tmp.createChild("SeriesData")
           end if
 
@@ -268,14 +285,15 @@ sub loadItems()
       else if item.Type = "Audio"
         tmp = CreateObject("roSGNode", "MusicSongData")
         tmp.type = "Audio"
-        tmp.image = api.items.GetImageURL(item.id, "primary", 0, { "maxHeight": 280, "maxWidth": 280, "quality": "90" })
+        tmp.posterURL = api.items.GetImageURL(item.id, "primary", 0, { "maxHeight": 280, "maxWidth": 280, "quality": "90" })
       else if item.Type = "MusicGenre"
         tmp = CreateObject("roSGNode", "FolderData")
         tmp.title = item.name
         tmp.parentFolder = m.top.itemId
         tmp.json = item
         tmp.type = "Folder"
-        tmp.posterUrl = api.items.GetImageURL(item.id, "primary", 0, { "maxHeight": 280, "maxWidth": 280, "quality": "90" })
+        ' Use 1:1 square dimensions for music genre posters
+        tmp.posterUrl = api.items.GetImageURL(item.id, "primary", 0, { "maxHeight": 440, "maxWidth": 440, "quality": "90" })
 
       else
         m.log.warn("Unknown Type", item.Type)

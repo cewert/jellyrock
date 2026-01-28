@@ -116,7 +116,6 @@ sub setOnScreenTextValues(json)
 end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
-  ' print "[AlbumView] onKeyEvent: key=", key, ", press=", press
   if not press then return false
 
   if key = "options"

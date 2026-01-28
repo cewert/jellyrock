@@ -1,0 +1,155 @@
+' GridPresenterBase: Base class for library grid presenters
+'
+' Defines the interface contract for presenter classes used by BaseGridView.
+' Each media type (Movie, Music, TVShow, etc.) has its own presenter that
+' extends this base class and implements media-specific behavior.
+'
+' Usage:
+'   presenter = new MoviePresenter(baseGridView)
+'   baseGridView.setPresenter(presenter)
+
+class GridPresenterBase
+  ' Reference to the BaseGridView component
+  private view
+
+  ' Reference to the log instance
+  private log
+
+  ' Constructor - view is set later via onInit()
+  sub new()
+    m.view = invalid
+    m.log = invalid
+  end sub
+
+  ' ============================================================================
+  ' Backdrop Configuration
+  ' ============================================================================
+
+  ' Returns the backdrop mode for this presenter
+  ' @return {string} "presentation" | "fullscreen" | "none"
+  function getBackdropMode() as string
+    return "fullscreen"
+  end function
+
+  ' ============================================================================
+  ' Initialization
+  ' ============================================================================
+
+  ' Called after presenter is attached to BaseGridView
+  ' Stores view reference and performs initialization
+  ' @param {object} view - Reference to BaseGridView component
+  ' Override in subclass but call super.onInit(view) first
+  sub onInit(view as object)
+    m.view = view
+  end sub
+
+  ' ============================================================================
+  ' Options Configuration
+  ' ============================================================================
+
+  ' Returns the options configuration for ItemGridOptions
+  ' @param {object} parentItem - The library item being displayed
+  ' @return {object} Options object with views, sort, filter arrays
+  function getOptions(parentItem as object) as object
+    return {
+      views: [],
+      sort: [],
+      filter: []
+    }
+  end function
+
+  ' Called when options dialog is closed
+  ' Override to handle presenter-specific option changes
+  ' @param {object} options - The ItemGridOptions component
+  sub onOptionsClosed(options as object)
+    ' Override in subclass
+  end sub
+
+  ' ============================================================================
+  ' Load Task Configuration
+  ' ============================================================================
+
+  ' Configures the LoadItemsTask2 for data loading
+  ' @param {object} task - The LoadItemsTask2 node
+  ' @param {object} parentItem - The library item being displayed
+  ' @param {string} viewMode - Current view mode (e.g., "Movies", "MoviesGrid")
+  sub configureLoadTask(task as object, parentItem as object, viewMode as string)
+    ' Override in subclass
+  end sub
+
+  ' Returns the item type(s) to load
+  ' @return {string} Item type(s) for API query (e.g., "Movie", "Series,Movie")
+  function getItemType() as string
+    return ""
+  end function
+
+  ' ============================================================================
+  ' Grid Configuration
+  ' ============================================================================
+
+  ' Returns grid layout configuration for the specified view mode
+  ' @param {string} viewMode - Current view mode
+  ' @return {object} Grid config with properties:
+  '   - translation: [x, y] grid position
+  '   - itemSize: [width, height] size of each grid cell
+  '   - rowHeights: [height] array of row heights
+  '   - numRows: string number of visible rows
+  '   - numColumns: string number of columns
+  '   - imageDisplayMode: "scaleToZoom" | "scaleToFit"
+  function getGridConfig(viewMode as string) as object
+    return {
+      translation: [96, 60],
+      itemSize: [264, 396],
+      rowHeights: [396],
+      numRows: "4",
+      numColumns: "6",
+      imageDisplayMode: "scaleToZoom"
+    }
+  end function
+
+  ' Returns whether to show presentation info panel for the view mode
+  ' @param {string} viewMode - Current view mode
+  ' @return {boolean} True to show info panel
+  function shouldShowPresentationInfo(viewMode as string) as boolean
+    return false
+  end function
+
+  ' ============================================================================
+  ' Focus Handling
+  ' ============================================================================
+
+  ' Called when an item receives focus
+  ' Override to update presentation info display
+  ' @param {object} item - The focused ContentNode item
+  ' @param {string} currentView - The current view mode (e.g., "Movies", "MoviesGrid")
+  sub onItemFocused(item as object, currentView as string)
+    ' Override in subclass
+  end sub
+
+  ' ============================================================================
+  ' Presentation Info
+  ' ============================================================================
+
+  ' Creates presenter-specific info nodes in the presentationInfo group
+  ' Called during onInit() if presenter needs custom info display
+  ' @param {object} infoGroup - The presentationInfo Group node
+  sub createInfoNodes(infoGroup as object)
+    ' Override in subclass
+  end sub
+
+  ' Clears/hides the presentation info display
+  sub clearPresentationInfo()
+    ' Override in subclass
+  end sub
+
+  ' ============================================================================
+  ' Cleanup
+  ' ============================================================================
+
+  ' Called when presenter is being destroyed
+  ' Override to clean up resources, stop tasks, unobserve fields
+  sub destroy()
+    m.view = invalid
+    m.log = invalid
+  end sub
+end class

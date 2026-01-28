@@ -1,0 +1,134 @@
+' PresentationBackdrop: Handles backdrop image display and crossfade animations
+' for presentation views. Follows BackdropFader pattern with reduced shade.
+' Positioned on right half of screen at 960x540.
+
+sub init()
+  m.background = m.top.findNode("background")
+  m.oldBackground = m.top.findNode("oldBackground")
+  m.oldbackgroundInterpolator = m.top.findNode("oldbackgroundInterpolator")
+  m.shade = m.top.findNode("shade")
+  m.oldBackgroundFadeout = m.top.findNode("oldBackgroundFadeout")
+  m.shadeFadeoutAnimation = m.top.findNode("shadeFadeoutAnimation")
+  m.fadeinAnimation = m.top.findNode("fadeinAnimation")
+  m.currentUri = "pkg:/images/transparent-16x9.png"
+
+  ' Queue for backdrop changes during animation (from MovieLibraryView pattern)
+  m.queuedUri = ""
+
+  applyTheme()
+
+  m.background.observeField("bitmapWidth", "onBackgroundLoaded")
+  m.top.observeField("uri", "onUriChange")
+end sub
+
+sub applyTheme()
+  constants = m.global.constants
+
+  leftGradient = m.top.findNode("leftGradient")
+  leftGradient.endColor = constants.colorBackgroundPrimary + constants.alpha0
+  leftGradient.startColor = constants.colorBackgroundPrimary + constants.alpha100
+
+  ' Set shade color (fully opaque, we'll control visibility with opacity field)
+  m.shade.color = constants.colorBlack + constants.alpha100
+  m.shade.opacity = 0
+end sub
+
+sub onBackgroundLoaded()
+  transparentImage = "pkg:/images/transparent-16x9.png"
+
+  ' Handle opacity changes
+  if m.currentUri = transparentImage
+    ' Keep background transparent (don't touch oldBackground - let fadeout animation handle it)
+    m.background.opacity = 0
+  else if m.top.isAnimated
+    ' Fade in new background and show shade (reduced opacity for presentation views)
+    m.shade.opacity = 0.3
+    m.shade.visible = true
+    m.fadeinAnimation.control = "start"
+  else
+    ' No animation: immediately show background and shade
+    m.background.opacity = 1.0
+    m.oldBackground.opacity = 0
+    m.shade.opacity = 0.3
+    m.shade.visible = true
+  end if
+end sub
+
+sub onUriChange()
+  changeImage(m.top.uri, m.top.isAnimated)
+end sub
+
+sub changeImage(uri as string, isAnimated as boolean)
+  oldUrl = m.currentUri
+  transparentImage = "pkg:/images/transparent-16x9.png"
+
+  ' Normalize empty URI to transparent image for comparison
+  newUri = uri
+  if uri = invalid or uri = ""
+    newUri = transparentImage
+  end if
+
+  ' Early return if URI hasn't changed - no need to re-set same image
+  if newUri = oldUrl then return
+
+  ' Queue change if animation is in progress (from MovieLibraryView pattern)
+  if m.fadeinAnimation.state = "running" or m.oldBackgroundFadeout.state = "running"
+    m.queuedUri = uri
+    return
+  end if
+
+  ' Handle empty URI - use transparent image
+  if uri = invalid or uri = ""
+    m.currentUri = transparentImage
+    m.background.uri = transparentImage
+    m.background.opacity = 0
+  else
+    ' Set new URI for real image
+    m.currentUri = uri
+    m.background.uri = m.currentUri
+  end if
+
+  ' Stop any ongoing fadeout animations
+  m.oldBackgroundFadeout.control = "stop"
+  m.shadeFadeoutAnimation.control = "stop"
+
+  ' Handle transition from old image (same logic for both transparent and real images)
+  if oldUrl <> invalid and oldUrl <> "" and oldUrl <> transparentImage
+    m.oldBackground.uri = oldUrl
+
+    if isAnimated
+      ' Animate the old background from its current opacity to 0
+      m.oldbackgroundInterpolator.keyValue = [1.0, 0.0]
+      m.oldBackgroundFadeout.control = "start"
+
+      ' Only fade out shade if transitioning TO transparent image
+      if m.currentUri = transparentImage
+        m.shadeFadeoutAnimation.control = "start"
+      end if
+    else
+      m.background.opacity = 1.0
+      m.oldBackground.opacity = 0
+      ' Immediately hide shade for non-animated transitions
+      if m.currentUri = transparentImage
+        m.shade.opacity = 0
+      end if
+    end if
+  end if
+
+  ' Process queued URI after animation completes
+  m.fadeinAnimation.observeField("state", "onAnimationComplete")
+end sub
+
+' Handle animation completion to process queued changes
+sub onAnimationComplete()
+  if m.fadeinAnimation.state <> "stopped" then return
+
+  m.fadeinAnimation.unobserveField("state")
+
+  ' Process queued URI if any
+  if m.queuedUri <> "" and m.queuedUri <> m.currentUri
+    queuedUri = m.queuedUri
+    m.queuedUri = ""
+    changeImage(queuedUri, m.top.isAnimated)
+  end if
+end sub

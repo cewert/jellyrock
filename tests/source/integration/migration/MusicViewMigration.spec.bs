@@ -1,0 +1,390 @@
+
+namespace tests
+
+  @suite("Music View Migration - v1.10.0 Migration")
+  @tags("migration")
+  class MusicViewMigrationTests extends tests.BaseTestSuite
+
+    protected override sub setup()
+      m.needsRegistrySetup = true
+      super.setup()
+    end sub
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("ArtistsPresentation Migration")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("migrates ArtistsPresentation to ArtistsGrid")
+    function _()
+      ' GIVEN: User on v1.9.0 with ArtistsPresentation view saved
+      testUserId = "test-music-view-001"
+      libraryId = "test-library-music-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
+      reg.write("LastRunVersion", "1.9.0")
+      reg.write(`display.${libraryId}.landing`, "ArtistsPresentation")
+      reg.flush()
+
+      ' WHEN: Migration runs
+      runRegistryUserMigrations([testUserId])
+
+      ' THEN: View is migrated to ArtistsGrid
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read(`display.${libraryId}.landing`), "ArtistsGrid", "Should migrate to ArtistsGrid")
+    end function
+
+    @it("migrates artistspresentation (lowercase) to ArtistsGrid")
+    function _()
+      testUserId = "test-music-view-002"
+      libraryId = "test-library-music-002"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
+      reg.write("LastRunVersion", "1.9.0")
+      reg.write(`display.${libraryId}.landing`, "artistspresentation")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read(`display.${libraryId}.landing`), "ArtistsGrid", "Should migrate lowercase to ArtistsGrid")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("AlbumArtistsPresentation Migration")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("migrates AlbumArtistsPresentation to AlbumArtistsGrid")
+    function _()
+      testUserId = "test-music-view-003"
+      libraryId = "test-library-music-003"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
+      reg.write("LastRunVersion", "1.9.0")
+      reg.write(`display.${libraryId}.landing`, "AlbumArtistsPresentation")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read(`display.${libraryId}.landing`), "AlbumArtistsGrid", "Should migrate to AlbumArtistsGrid")
+    end function
+
+    @it("migrates albumartistspresentation (lowercase) to AlbumArtistsGrid")
+    function _()
+      testUserId = "test-music-view-004"
+      libraryId = "test-library-music-004"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
+      reg.write("LastRunVersion", "1.9.0")
+      reg.write(`display.${libraryId}.landing`, "albumartistspresentation")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read(`display.${libraryId}.landing`), "AlbumArtistsGrid", "Should migrate lowercase to AlbumArtistsGrid")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Multiple Library Migration")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("migrates multiple libraries for same user")
+    function _()
+      testUserId = "test-music-view-005"
+      library1 = "test-library-music-lib1"
+      library2 = "test-library-music-lib2"
+      library3 = "test-library-music-lib3"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
+      reg.write("LastRunVersion", "1.9.0")
+      reg.write(`display.${library1}.landing`, "ArtistsPresentation")
+      reg.write(`display.${library2}.landing`, "AlbumArtistsPresentation")
+      reg.write(`display.${library3}.landing`, "Albums") ' Should not change
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read(`display.${library1}.landing`), "ArtistsGrid", "Library 1 should migrate")
+      m.assertEqual(reg.read(`display.${library2}.landing`), "AlbumArtistsGrid", "Library 2 should migrate")
+      m.assertEqual(reg.read(`display.${library3}.landing`), "Albums", "Library 3 should remain unchanged")
+    end function
+
+    @it("migrates multiple users with presentation views")
+    function _()
+      user1 = "test-music-view-multi-001"
+      user2 = "test-music-view-multi-002"
+      user3 = "test-music-view-multi-003"
+      libraryId = "test-library-music-shared"
+
+      reg1 = CreateObject("roRegistrySection", user1)
+      reg1.write("serverId", m.global.server.id)
+      reg1.write("LastRunVersion", "1.9.0")
+      reg1.write(`display.${libraryId}.landing`, "ArtistsPresentation")
+      reg1.flush()
+
+      reg2 = CreateObject("roRegistrySection", user2)
+      reg2.write("serverId", m.global.server.id)
+      reg2.write("LastRunVersion", "1.9.0")
+      reg2.write(`display.${libraryId}.landing`, "AlbumArtistsPresentation")
+      reg2.flush()
+
+      reg3 = CreateObject("roRegistrySection", user3)
+      reg3.write("serverId", m.global.server.id)
+      reg3.write("LastRunVersion", "1.9.0")
+      reg3.write(`display.${libraryId}.landing`, "ArtistsGrid") ' Already grid view
+      reg3.flush()
+
+      runRegistryUserMigrations([user1, user2, user3])
+
+      reg1 = CreateObject("roRegistrySection", user1)
+      m.assertEqual(reg1.read(`display.${libraryId}.landing`), "ArtistsGrid", "User 1 should migrate")
+
+      reg2 = CreateObject("roRegistrySection", user2)
+      m.assertEqual(reg2.read(`display.${libraryId}.landing`), "AlbumArtistsGrid", "User 2 should migrate")
+
+      reg3 = CreateObject("roRegistrySection", user3)
+      m.assertEqual(reg3.read(`display.${libraryId}.landing`), "ArtistsGrid", "User 3 should remain unchanged")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Non-Music Views Preserved")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("preserves ArtistsGrid view (no migration)")
+    function _()
+      testUserId = "test-music-view-006"
+      libraryId = "test-library-music-006"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
+      reg.write("LastRunVersion", "1.9.0")
+      reg.write(`display.${libraryId}.landing`, "ArtistsGrid")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read(`display.${libraryId}.landing`), "ArtistsGrid", "Should remain unchanged")
+    end function
+
+    @it("preserves AlbumArtistsGrid view (no migration)")
+    function _()
+      testUserId = "test-music-view-007"
+      libraryId = "test-library-music-007"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
+      reg.write("LastRunVersion", "1.9.0")
+      reg.write(`display.${libraryId}.landing`, "AlbumArtistsGrid")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read(`display.${libraryId}.landing`), "AlbumArtistsGrid", "Should remain unchanged")
+    end function
+
+    @it("preserves Albums view (no migration)")
+    function _()
+      testUserId = "test-music-view-008"
+      libraryId = "test-library-music-008"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
+      reg.write("LastRunVersion", "1.9.0")
+      reg.write(`display.${libraryId}.landing`, "Albums")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read(`display.${libraryId}.landing`), "Albums", "Should remain unchanged")
+    end function
+
+    @it("preserves Genres view (no migration)")
+    function _()
+      testUserId = "test-music-view-009"
+      libraryId = "test-library-music-009"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
+      reg.write("LastRunVersion", "1.9.0")
+      reg.write(`display.${libraryId}.landing`, "Genres")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read(`display.${libraryId}.landing`), "Genres", "Should remain unchanged")
+    end function
+
+    @it("preserves movie views (no migration)")
+    function _()
+      testUserId = "test-music-view-010"
+      libraryId = "test-library-movies-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
+      reg.write("LastRunVersion", "1.9.0")
+      reg.write(`display.${libraryId}.landing`, "Movies")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read(`display.${libraryId}.landing`), "Movies", "Movie views should not be affected")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Other Display Settings Preserved")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("preserves other display settings during migration")
+    function _()
+      testUserId = "test-music-view-011"
+      libraryId = "test-library-music-011"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
+      reg.write("LastRunVersion", "1.9.0")
+      reg.write(`display.${libraryId}.landing`, "ArtistsPresentation")
+      reg.write(`display.${libraryId}.sortField`, "DateCreated")
+      reg.write(`display.${libraryId}.sortAscending`, "true")
+      reg.write(`display.${libraryId}.filter`, "Favorites")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read(`display.${libraryId}.landing`), "ArtistsGrid", "Landing view should migrate")
+      m.assertEqual(reg.read(`display.${libraryId}.sortField`), "DateCreated", "Sort field should be preserved")
+      m.assertEqual(reg.read(`display.${libraryId}.sortAscending`), "true", "Sort order should be preserved")
+      m.assertEqual(reg.read(`display.${libraryId}.filter`), "Favorites", "Filter should be preserved")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Edge Cases")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("handles missing landing view setting (no migration)")
+    function _()
+      testUserId = "test-music-view-012"
+      libraryId = "test-library-music-012"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
+      reg.write("LastRunVersion", "1.9.0")
+      ' Don't write any display.*.landing setting
+      reg.write(`display.${libraryId}.sortField`, "SortName")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertFalse(reg.exists(`display.${libraryId}.landing`), "Landing view should not be created")
+      m.assertEqual(reg.read(`display.${libraryId}.sortField`), "SortName", "Other settings should remain")
+    end function
+
+    @it("handles mixed case variations")
+    function _()
+      testUserId = "test-music-view-013"
+      library1 = "test-library-music-mixed1"
+      library2 = "test-library-music-mixed2"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
+      reg.write("LastRunVersion", "1.9.0")
+      reg.write(`display.${library1}.landing`, "ARTISTSPRESENTATION") ' All caps
+      reg.write(`display.${library2}.landing`, "AlbumArtistsPresentation") ' Mixed case
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read(`display.${library1}.landing`), "ArtistsGrid", "All caps should migrate")
+      m.assertEqual(reg.read(`display.${library2}.landing`), "AlbumArtistsGrid", "Mixed case should migrate")
+    end function
+
+    @it("handles user with no display settings")
+    function _()
+      testUserId = "test-music-view-014"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
+      reg.write("LastRunVersion", "1.9.0")
+      ' No display settings at all
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      ' Should complete without errors
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertTrue(reg.exists("serverId"), "User section should still exist")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("Version Checking")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("skips migration when version already >= v1.10.0")
+    function _()
+      testUserId = "test-music-view-skip-001"
+      libraryId = "test-library-music-skip-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
+      reg.write("LastRunVersion", "1.10.0") ' Already on v1.10.0
+      reg.write(`display.${libraryId}.landing`, "ArtistsPresentation")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      ' Should remain unchanged (migration didn't run)
+      m.assertEqual(reg.read(`display.${libraryId}.landing`), "ArtistsPresentation", "Should not migrate")
+    end function
+
+    @it("runs migration for version v1.9.0")
+    function _()
+      testUserId = "test-music-view-v190-001"
+      libraryId = "test-library-music-v190-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
+      reg.write("LastRunVersion", "1.9.0")
+      reg.write(`display.${libraryId}.landing`, "AlbumArtistsPresentation")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read(`display.${libraryId}.landing`), "AlbumArtistsGrid", "Should migrate for v1.9.0")
+    end function
+
+    @it("runs migration for old version v1.5.0")
+    function _()
+      testUserId = "test-music-view-v150-001"
+      libraryId = "test-library-music-v150-001"
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      reg.write("serverId", m.global.server.id)
+      reg.write("LastRunVersion", "1.5.0")
+      reg.write(`display.${libraryId}.landing`, "ArtistsPresentation")
+      reg.flush()
+
+      runRegistryUserMigrations([testUserId])
+
+      reg = CreateObject("roRegistrySection", testUserId)
+      m.assertEqual(reg.read(`display.${libraryId}.landing`), "ArtistsGrid", "Should migrate for v1.5.0")
+    end function
+
+  end class
+
+end namespace

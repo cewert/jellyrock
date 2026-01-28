@@ -1,0 +1,100 @@
+' LibraryViewFactory: Centralized factory for creating library views
+'
+' Creates BaseGridView instances with the appropriate presenter based on
+' the library's collection type. Replaces direct component creation in
+' ShowScenes.bs and Main.bs.
+'
+' Note: Presenter creation happens inside BaseGridView based on presenterType field
+
+' Creates a library view with the appropriate presenter for the given library item
+' @param {object} libraryItem - The library item node (CollectionFolder, Folder, etc.)
+' @return {object} Configured BaseGridView component or invalid
+function CreateLibraryView(libraryItem as object) as dynamic
+  if not isValid(libraryItem) then return invalid
+
+  view = CreateObject("roSGNode", "BaseGridView")
+  if not isValid(view) then return invalid
+
+  ' Set presenter type - this triggers presenter creation inside the component
+  ' Must be set BEFORE parentItem since parentItem triggers loadInitialItems
+  presenterType = DeterminePresenterType(libraryItem)
+  view.presenterType = presenterType
+
+  view.parentItem = libraryItem
+  view.optionsAvailable = true
+
+  return view
+end function
+
+' Determines the presenter type based on the library item's collection type
+' @param {object} libraryItem - The library item node
+' @return {string} Presenter type: "movie" | "music" | "tvshow" | "generic"
+function DeterminePresenterType(libraryItem as object) as string
+  if not isValid(libraryItem) then return "generic"
+
+  collectionType = ""
+  if isValid(libraryItem.collectionType)
+    collectionType = LCase(libraryItem.collectionType)
+  end if
+
+  ' itemType = ""
+  ' if isValid(libraryItem.type)
+  '   itemType = LCase(libraryItem.type)
+  ' end if
+
+  jsonType = ""
+  if isValid(libraryItem.json) and isValid(libraryItem.json.type)
+    jsonType = LCase(libraryItem.json.type)
+  end if
+
+  ' Movie library or movie genre
+  if collectionType = "movies"
+    return "movie"
+  end if
+
+  ' Music library or music genre
+  if collectionType = "music"
+    return "music"
+  end if
+
+  ' TV shows library
+  if collectionType = "tvshows"
+    return "tvshow"
+  end if
+
+  ' Genre folder - check what type of content it contains
+  if jsonType = "genre"
+    ' Check if it's a movie genre (has movies)
+    if isValid(libraryItem.json.MovieCount) and libraryItem.json.MovieCount > 0
+      return "movie"
+    end if
+    ' Check if it's a TV show genre (has series)
+    if isValid(libraryItem.json.SeriesCount) and libraryItem.json.SeriesCount > 0
+      return "tvshow"
+    end if
+    ' Default genre to generic
+    return "generic"
+  end if
+
+  ' Studio folder - check what type of content it contains
+  if jsonType = "studio"
+    ' Check movie count first since studios are more common in movie libraries
+    if isValid(libraryItem.json.MovieCount) and libraryItem.json.MovieCount > 0
+      return "movie"
+    end if
+    ' Check for TV series (Networks)
+    if isValid(libraryItem.json.SeriesCount) and libraryItem.json.SeriesCount > 0
+      return "tvshow"
+    end if
+    ' Default to generic if no content counts available
+    return "generic"
+  end if
+
+  ' Music genre folder
+  if jsonType = "musicgenre"
+    return "music"
+  end if
+
+  ' Default to generic for everything else (LiveTV, Collections, Boxsets, Folders, etc.)
+  return "generic"
+end function
