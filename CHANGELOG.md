@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- update artistView to use the new BackdropFader component ([#306](https://github.com/cewert/jellyrock/pull/306))
 - Consolidate duplicated ItemGrid library components ([#304](https://github.com/cewert/jellyrock/pull/304))
 - enable loadSync for local UI posters ([bc99715](https://github.com/cewert/jellyrock/commit/bc99715))
 - replace ItemGrid maskGroup scaling with JRMarkupGrid focus indicator ([#297](https://github.com/cewert/jellyrock/pull/297))
