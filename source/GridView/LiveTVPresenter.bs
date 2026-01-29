@@ -1,0 +1,83 @@
+' LiveTVPresenter: Presenter for Live TV library views
+'
+' Handles LiveTV-specific:
+' - View options (Channels, TV Guide)
+' - Channel-specific grid configuration (scaleToFit for logos)
+' - Special API handling via itemType="LiveTV" for channels
+' - TV Guide (EPG) integration with Schedule component
+
+import "pkg:/source/GridView/GridPresenterBase.bs"
+import "pkg:/source/roku_modules/log/LogMixin.brs"
+import "pkg:/source/utils/misc.bs"
+
+class LiveTVPresenter extends GridPresenterBase
+
+  private log
+
+  sub new()
+    super()
+    m.log = log.Logger("LiveTVPresenter")
+  end sub
+
+  override sub onInit(view as object)
+    super.onInit(view)
+    m.log.info("LiveTVPresenter initialized")
+  end sub
+
+  ' LiveTV uses fullscreen backdrop
+  override function getBackdropMode() as string
+    return "fullscreen"
+  end function
+
+  ' No presentation info for LiveTV
+  override function shouldShowPresentationInfo(viewMode as string) as boolean
+    return false
+  end function
+
+  override function getOptions(parentItem as object) as object
+    return {
+      views: [
+        { "Title": tr("Channels"), "Name": "livetv" },
+        { "Title": tr("TV Guide"), "Name": "tvGuide" }
+      ],
+      sort: [
+        { "Title": tr("TITLE"), "Name": "SortName" }
+      ],
+      filter: [
+        { "Title": tr("All"), "Name": "All" },
+        { "Title": tr("Favorites"), "Name": "Favorites" }
+      ]
+    }
+  end function
+
+  ' Channel logos need scaleToFit, not scaleToZoom
+  override function getGridConfig(viewMode as string) as object
+    return {
+      translation: [96, 102],
+      itemSize: [264, 396],
+      rowHeights: [396],
+      numRows: "3",
+      numColumns: "6",
+      imageDisplayMode: "scaleToFit"
+    }
+  end function
+
+  override sub configureLoadTask(task as object, parentItem as object, viewMode as string)
+    ' CRITICAL: itemType must be "LiveTV" to route to the LiveTv/Channels API endpoint
+    ' (see LoadItemsTask2.bs line 113-115)
+    task.itemType = "LiveTV"
+    task.recursive = false
+  end sub
+
+  ' Check if current view is TV Guide
+  function isTVGuideView() as boolean
+    if not isValid(m.view) or not isValid(m.view.top) then return false
+    return LCase(m.view.top.currentView) = "tvguide"
+  end function
+
+  override sub destroy()
+    m.log.info("LiveTVPresenter destroyed")
+    super.destroy()
+  end sub
+
+end class

@@ -1,6 +1,6 @@
 ' GenericPresenter: Fallback presenter for library types without specialized views
 '
-' Used for: LiveTV, Collections, Boxsets, Folders, Photos, etc.
+' Used for: Collections, Boxsets, Folders, etc.
 ' Uses full-screen global backdrop and standard grid layout.
 
 import "pkg:/source/GridView/GridPresenterBase.bs"
@@ -22,8 +22,40 @@ class GenericPresenter extends GridPresenterBase
     return false
   end function
 
-  ' Returns default options - can be customized based on parent item type
+  ' Returns options customized based on parent item type
   override function getOptions(parentItem as object) as object
+    ' Check if this is a boxset
+    isBoxset = m.isBoxsetItem(parentItem)
+
+    if isBoxset
+      ' Boxset-specific options with Folders sort
+      return {
+        views: [
+          { "Title": tr("Default"), "Name": "default" }
+        ],
+        sort: [
+          { "Title": tr("TITLE"), "Name": "SortName" },
+          { "Title": tr("Random"), "Name": "Random" },
+          { "Title": tr("IMDB_RATING"), "Name": "CommunityRating" },
+          { "Title": tr("CRITIC_RATING"), "Name": "CriticRating" },
+          { "Title": tr("DATE_ADDED"), "Name": "DateCreated" },
+          { "Title": tr("DATE_PLAYED"), "Name": "DatePlayed" },
+          { "Title": tr("Folders"), "Name": "IsFolder,SortName" },
+          { "Title": tr("OFFICIAL_RATING"), "Name": "OfficialRating" },
+          { "Title": tr("PLAY_COUNT"), "Name": "PlayCount" },
+          { "Title": tr("RELEASE_DATE"), "Name": "PremiereDate" },
+          { "Title": tr("RUNTIME"), "Name": "Runtime" }
+        ],
+        filter: [
+          { "Title": tr("All"), "Name": "All" },
+          { "Title": tr("Favorites"), "Name": "Favorites" },
+          { "Title": tr("Played"), "Name": "Played" },
+          { "Title": tr("Unplayed"), "Name": "Unplayed" }
+        ]
+      }
+    end if
+
+    ' Default generic options
     return {
       views: [
         { "Title": tr("Default"), "Name": "default" }
@@ -39,6 +71,27 @@ class GenericPresenter extends GridPresenterBase
         { "Title": tr("Favorites"), "Name": "Favorites" }
       ]
     }
+  end function
+
+  ' Check if parent item is a boxset
+  private function isBoxsetItem(parentItem as object) as boolean
+    if not isValid(parentItem) then return false
+
+    ' Check json.type
+    if isValid(parentItem.json) and isValid(parentItem.json.type)
+      if LCase(parentItem.json.type) = "boxset"
+        return true
+      end if
+    end if
+
+    ' Check node type directly
+    if isValid(parentItem.type)
+      if LCase(parentItem.type) = "boxset"
+        return true
+      end if
+    end if
+
+    return false
   end function
 
   ' Standard grid layout

@@ -6,8 +6,10 @@
 import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/api/Image.bs"
 import "pkg:/source/GridView/GenericPresenter.bs"
+import "pkg:/source/GridView/LiveTVPresenter.bs"
 import "pkg:/source/GridView/MoviePresenter.bs"
 import "pkg:/source/GridView/MusicPresenter.bs"
+import "pkg:/source/GridView/PhotoPresenter.bs"
 import "pkg:/source/GridView/TVShowPresenter.bs"
 import "pkg:/source/roku_modules/log/LogMixin.brs"
 import "pkg:/source/utils/config.bs"
@@ -65,6 +67,10 @@ sub init()
   ' Presenter (set via setPresenter function)
   m.presenter = invalid
 
+  ' TV Guide state (LiveTV only)
+  m.tvGuide = invalid
+  m.channelFocused = invalid
+
   m.log.debug("end init()")
 end sub
 
@@ -97,6 +103,10 @@ sub onPresenterTypeChanged()
     m.presenter = new MusicPresenter()
   else if presenterType = "tvshow"
     m.presenter = new TVShowPresenter()
+  else if presenterType = "livetv"
+    m.presenter = new LiveTVPresenter()
+  else if presenterType = "photo"
+    m.presenter = new PhotoPresenter()
   else
     m.presenter = new GenericPresenter()
   end if
@@ -118,6 +128,70 @@ sub OnScreenShown()
     m.top.lastFocus.setFocus(true)
   else
     m.top.setFocus(true)
+  end if
+end sub
+
+' ============================================================================
+' TV Guide Integration (LiveTV)
+' ============================================================================
+
+' Show TV Guide (EPG) for LiveTV
+sub showTVGuide()
+  if isValid(m.tvGuide) then return
+
+  m.log.debug("Creating TV Guide")
+  m.top.signalBeacon("EPGLaunchInitiate")
+
+  ' Create Schedule component
+  m.tvGuide = CreateObject("roSGNode", "Schedule")
+  m.tvGuide.observeField("watchChannel", "onTVGuideWatchChannel")
+  m.tvGuide.observeField("focusedChannel", "onTVGuideFocusedChannel")
+
+  ' Pass current filter and search state to TV Guide
+  m.tvGuide.filter = m.filter
+  m.tvGuide.searchTerm = m.voiceBox.text
+
+  ' Hide the grid and show the guide
+  m.itemGrid.visible = false
+  m.top.appendChild(m.tvGuide)
+  m.tvGuide.lastFocus.setFocus(true)
+  m.top.lastFocus = m.tvGuide.lastFocus
+end sub
+
+' Hide TV Guide and return to grid
+sub hideTVGuide()
+  if not isValid(m.tvGuide) then return
+
+  m.log.debug("Hiding TV Guide")
+  m.tvGuide.unobserveField("watchChannel")
+  m.tvGuide.unobserveField("focusedChannel")
+  m.top.removeChild(m.tvGuide)
+  m.tvGuide = invalid
+  m.channelFocused = invalid
+
+  m.itemGrid.visible = true
+  m.itemGrid.setFocus(true)
+  m.top.lastFocus = m.itemGrid
+end sub
+
+' Handle channel selection from TV Guide
+sub onTVGuideWatchChannel()
+  if not isValid(m.tvGuide) or not isValid(m.tvGuide.watchChannel) then return
+
+  m.log.debug("TV Guide channel selected")
+  m.top.lastFocus = m.tvGuide.lastFocus
+
+  ' Clone the node to ensure playback triggers properly
+  m.top.selectedItem = m.tvGuide.watchChannel.clone(false)
+
+  ' Reset watchChannel to allow same channel to be selected again
+  m.tvGuide.watchChannel = invalid
+end sub
+
+' Handle channel focus from TV Guide
+sub onTVGuideFocusedChannel()
+  if isValid(m.tvGuide)
+    m.channelFocused = m.tvGuide.focusedChannel
   end if
 end sub
 
@@ -162,6 +236,20 @@ sub loadInitialItems()
 
   ' Configure grid based on presenter and view
   configureGrid()
+
+  ' Check if LiveTV presenter wants to show TV Guide
+  if m.top.presenterType = "livetv"
+    if LCase(m.view) = "tvguide"
+      ' Update title before early return to ensure overhang shows correct title on first load
+      updateTitle()
+      showTVGuide()
+      stopLoadingSpinner()
+      return
+    else
+      ' Ensure TV Guide is hidden if switching away from it
+      hideTVGuide()
+    end if
+  end if
 
   ' Alpha search
   if m.loadItemsTask.nameStartsWith = m.top.alphaSelected
@@ -648,6 +736,11 @@ sub optionsClosed()
     reload = true
   end if
 
+  ' Let presenter handle any custom option processing (e.g., PhotoPresenter saves slideshow/random settings)
+  if isValid(m.presenter)
+    m.presenter.onOptionsClosed(m.options)
+  end if
+
   if reload
     m.loadedRows = 0
     m.loadedItems = 0
@@ -789,6 +882,25 @@ function onKeyEvent(key as string, press as boolean) as boolean
     m.voiceBox.setFocus(false)
   end if
 
+  ' Handle OK key for photo items - launch PhotoDetails viewer
+  if key = "OK" and m.itemGrid.isinFocusChain()
+    focusedItem = m.itemGrid.content.getChild(m.itemGrid.itemFocused)
+    if isValid(focusedItem) and LCase(focusedItem.type) = "photo"
+      photoPlayer = CreateObject("roSgNode", "PhotoDetails")
+      photoPlayer.itemsNode = m.itemGrid.content
+      photoPlayer.itemIndex = m.itemGrid.itemFocused
+
+      ' Set slideshow/random flags based on current view if using PhotoPresenter
+      if m.top.presenterType = "photo" and isValid(m.presenter)
+        photoPlayer.isSlideshow = m.presenter.isSlideshow()
+        photoPlayer.isRandom = m.presenter.isRandom()
+      end if
+
+      m.global.sceneManager.callfunc("pushScene", photoPlayer)
+      return true
+    end if
+  end if
+
   if key = "options"
     if m.options.visible = true
       m.options.visible = false
@@ -903,12 +1015,13 @@ sub updateTitle()
   end if
 
   ' Voice search and alpha filters take precedence over view-specific titles
-  if m.voiceBox.text <> ""
+  ' Check trim() to avoid showing "(Filtered by )" with empty/whitespace values
+  if m.voiceBox.text.trim() <> ""
     m.top.overhangTitle = m.top.parentItem.title + tr(" (Filtered by ") + m.voiceBox.text + ")"
     return
   end if
 
-  if m.loadItemsTask.nameStartsWith <> ""
+  if m.loadItemsTask.nameStartsWith.trim() <> ""
     m.top.overhangTitle = m.top.parentItem.title + tr(" (Filtered by ") + m.loadItemsTask.nameStartsWith + ")"
     return
   end if

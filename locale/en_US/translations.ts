@@ -219,6 +219,11 @@
       <translation>Choose how rows are displayed throughout the app.</translation>
     </message>
     <message>
+      <source>Channels</source>
+      <translation>Channels</translation>
+      <extracomment>LiveTV view option - shows grid of TV channels</extracomment>
+    </message>
+    <message>
       <source>Cinema Mode</source>
       <translation>Cinema Mode</translation>
       <extracomment>Settings Menu - Title for option</extracomment>
@@ -457,6 +462,11 @@
     <message>
       <source>Filter</source>
       <translation>Filter</translation>
+    </message>
+    <message>
+      <source>Folders</source>
+      <translation>Folders</translation>
+      <extracomment>Sort option - sorts folders first, then by name</extracomment>
     </message>
     <message>
       <source>Friday</source>
@@ -843,6 +853,16 @@
       <extracomment>General use word when we want to randomize data</extracomment>
     </message>
     <message>
+      <source>Random Off</source>
+      <translation>Random Off</translation>
+      <extracomment>Photo view option - sequential photo viewing</extracomment>
+    </message>
+    <message>
+      <source>Random On</source>
+      <translation>Random On</translation>
+      <extracomment>Photo view option - random photo viewing</extracomment>
+    </message>
+    <message>
       <source>Ratings for how good a movie is.</source>
       <translation>Ratings for how good a movie is.</translation>
     </message>
@@ -1057,6 +1077,16 @@
       <extracomment>Settings Menu - Title for option</extracomment>
     </message>
     <message>
+      <source>Slideshow Off</source>
+      <translation>Slideshow Off</translation>
+      <extracomment>Photo view option - view single photos</extracomment>
+    </message>
+    <message>
+      <source>Slideshow On</source>
+      <translation>Slideshow On</translation>
+      <extracomment>Photo view option - automatic slideshow</extracomment>
+    </message>
+    <message>
       <source>Slideshow Paused</source>
       <translation>Slideshow Paused</translation>
     </message>
@@ -1187,6 +1217,11 @@
       <source>Tuesday</source>
       <translation>Tuesday</translation>
       <extracomment>Day of Week</extracomment>
+    </message>
+    <message>
+      <source>TV Guide</source>
+      <translation>TV Guide</translation>
+      <extracomment>LiveTV view option - shows EPG/program guide</extracomment>
     </message>
     <message>
       <source>TV Shows</source>
