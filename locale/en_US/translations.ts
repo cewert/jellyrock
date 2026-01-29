@@ -215,13 +215,13 @@
       <translation>Change user</translation>
     </message>
     <message>
-      <source>Choose how rows are displayed throughout the app.</source>
-      <translation>Choose how rows are displayed throughout the app.</translation>
-    </message>
-    <message>
       <source>Channels</source>
       <translation>Channels</translation>
       <extracomment>LiveTV view option - shows grid of TV channels</extracomment>
+    </message>
+    <message>
+      <source>Choose how rows are displayed throughout the app.</source>
+      <translation>Choose how rows are displayed throughout the app.</translation>
     </message>
     <message>
       <source>Cinema Mode</source>
