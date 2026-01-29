@@ -60,6 +60,10 @@
     <field id="itemGridReset" type="boolean" alwaysNotify="true" />
     <field id="itemGridMovieDefaultView" type="string" alwaysNotify="true" />
 
+    <!-- Photo Settings -->
+    <field id="photosSlideshow" type="boolean" alwaysNotify="true" />
+    <field id="photosRandom" type="boolean" alwaysNotify="true" />
+
     <!-- Home Section Settings -->
     <field id="homeSection0" type="string" alwaysNotify="true" />
     <field id="homeSection1" type="string" alwaysNotify="true" />

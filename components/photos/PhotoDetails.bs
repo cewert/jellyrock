@@ -11,8 +11,8 @@ sub init()
   m.statusTimer = m.top.findNode("statusTimer")
   m.statusTimer.observeField("fire", "statusUpdate")
   userSettings = m.global.user.settings
-  m.slideshow = userSettings.photosSlideshow
-  m.random = userSettings.photosRandom
+  m.slideshow = userSettings.photosSlideshow = true
+  m.random = userSettings.photosRandom = true
 
   m.showStatusAnimation = m.top.findNode("showStatusAnimation")
   m.hideStatusAnimation = m.top.findNode("hideStatusAnimation")
