@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- add LiveTV and Photo `BaseGridView` presenters ([#305](https://github.com/cewert/jellyrock/pull/305))
 - add smart down-key navigation for JRMarkupGrid ([187401d](https://github.com/cewert/jellyrock/commit/187401d))
 
 ### Changed
