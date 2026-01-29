@@ -28,7 +28,7 @@ end function
 
 ' Determines the presenter type based on the library item's collection type
 ' @param {object} libraryItem - The library item node
-' @return {string} Presenter type: "movie" | "music" | "tvshow" | "generic"
+' @return {string} Presenter type: "movie" | "music" | "tvshow" | "livetv" | "photo" | "generic"
 function DeterminePresenterType(libraryItem as object) as string
   if not isValid(libraryItem) then return "generic"
 
@@ -36,11 +36,6 @@ function DeterminePresenterType(libraryItem as object) as string
   if isValid(libraryItem.collectionType)
     collectionType = LCase(libraryItem.collectionType)
   end if
-
-  ' itemType = ""
-  ' if isValid(libraryItem.type)
-  '   itemType = LCase(libraryItem.type)
-  ' end if
 
   jsonType = ""
   if isValid(libraryItem.json) and isValid(libraryItem.json.type)
@@ -60,6 +55,16 @@ function DeterminePresenterType(libraryItem as object) as string
   ' TV shows library
   if collectionType = "tvshows"
     return "tvshow"
+  end if
+
+  ' LiveTV library
+  if collectionType = "livetv"
+    return "livetv"
+  end if
+
+  ' Photo libraries (photos, photoalbum, homevideos)
+  if collectionType = "photos" or collectionType = "photoalbum" or collectionType = "homevideos"
+    return "photo"
   end if
 
   ' Genre folder - check what type of content it contains

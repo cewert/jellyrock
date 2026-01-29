@@ -24,9 +24,11 @@ sub itemContentChanged()
   if isValidToContinue(m.top.itemIndex)
     m.LoadLibrariesTask = createObject("roSGNode", "LoadPhotoTask")
     if isValid(m.top.itemsNode)
-      if isValid(m.top.itemsNode.content)
-        m.LoadLibrariesTask.itemNodeContent = m.top.itemsNode.content.getChild(m.top.itemIndex)
+      ' itemsNode IS the ContentNode containing photo children
+      if m.top.itemsNode.getChildCount() > 0
+        m.LoadLibrariesTask.itemNodeContent = m.top.itemsNode.getChild(m.top.itemIndex)
       else if isValidAndNotEmpty(m.top.itemsNode.id)
+        ' Single photo node passed directly
         m.LoadLibrariesTask.itemNodeContent = m.top.itemsNode
       end if
     else if isValid(m.top.itemsArray)
@@ -69,8 +71,9 @@ sub nextSlide()
     index = invalid
 
     if isValid(m.top.itemsNode)
-      if isValidAndNotEmpty(m.top.itemsNode.content)
-        index = rnd(m.top.itemsNode.content.getChildCount() - 1)
+      ' itemsNode IS the ContentNode containing photo children
+      if m.top.itemsNode.getChildCount() > 0
+        index = rnd(m.top.itemsNode.getChildCount() - 1)
       else
         ' we're dealing with a single photo
         return
@@ -161,11 +164,14 @@ end function
 
 function isValidToContinue(index as integer)
   if isValid(m.top.itemsNode)
-    if isValidAndNotEmpty(m.top.itemsNode.content)
-      if index >= 0 and index < m.top.itemsNode.content.getChildCount()
+    ' itemsNode IS the ContentNode containing photo children
+    childCount = m.top.itemsNode.getChildCount()
+    if childCount > 0
+      if index >= 0 and index < childCount
         return true
       end if
-    else if isValidAndNotEmpty(m.top.itemsNode) and index = 0
+    else if isValidAndNotEmpty(m.top.itemsNode.id) and index = 0
+      ' Single photo node passed directly
       return true
     end if
   else if isValidAndNotEmpty(m.top.itemsArray)
