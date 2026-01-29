@@ -3,7 +3,7 @@
 ' Handles LiveTV-specific:
 ' - View options (Channels, TV Guide)
 ' - Channel-specific grid configuration (scaleToFit for logos)
-' - Special API handling (itemId = " " for channels)
+' - Special API handling via itemType="LiveTV" for channels
 ' - TV Guide (EPG) integration with Schedule component
 
 import "pkg:/source/GridView/GridPresenterBase.bs"
