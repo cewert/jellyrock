@@ -15,6 +15,8 @@ All notable changes to this project are documented in [CHANGELOG.md](CHANGELOG.m
 
 ## Install
 
+JellyRock requires **Roku OS 11** or later.
+
 ### Using your Roku device
 
 - Navigate to Home -> Search -> "JellyRock".
@@ -30,6 +32,9 @@ All notable changes to this project are documented in [CHANGELOG.md](CHANGELOG.m
   </a>
   <a href="docs/screenshots/home.png" target="_blank" title="Home">
     <img src="docs/screenshots/home.png" width="400" alt="Home" />
+  </a>
+  <a href="docs/screenshots/libraryGrid.png" target="_blank" title="Library grid">
+    <img src="docs/screenshots/libraryGrid.png" width="400" alt="Library grid" />
   </a>
   <a href="docs/screenshots/osd.png" target="_blank" title="On-Screen Display(OSD)">
     <img src="docs/screenshots/osd.png" width="400" alt="On-Screen Display(OSD)" />
