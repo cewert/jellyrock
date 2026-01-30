@@ -134,6 +134,15 @@ class SessionDataTransformer
     ' UI Settings
     settingsNode.uiGeneralEpisodeImages = settingsData["uiGeneralEpisodeImages"] ?? ""
     settingsNode.uiFontFallback = toBoolean(settingsData["uiFontFallback"])
+
+    ' Theme Color Settings
+    settingsNode.uiThemeColorPrimary = settingsData["uiThemeColorPrimary"] ?? ""
+    settingsNode.uiThemeColorSecondary = settingsData["uiThemeColorSecondary"] ?? ""
+    settingsNode.uiThemeColorBackgroundPrimary = settingsData["uiThemeColorBackgroundPrimary"] ?? ""
+    settingsNode.uiThemeColorBackgroundSecondary = settingsData["uiThemeColorBackgroundSecondary"] ?? ""
+    settingsNode.uiThemeColorTextPrimary = settingsData["uiThemeColorTextPrimary"] ?? ""
+    settingsNode.uiThemeColorTextSecondary = settingsData["uiThemeColorTextSecondary"] ?? ""
+    settingsNode.uiThemeColorTextDisabled = settingsData["uiThemeColorTextDisabled"] ?? ""
     settingsNode.uiDesignHideClock = toBoolean(settingsData["uiDesignHideClock"])
     if settingsData.DoesExist("uiDetailsMaxDaysNextUp")
       settingsNode.uiDetailsMaxDaysNextUp = Val(settingsData["uiDetailsMaxDaysNextUp"])
