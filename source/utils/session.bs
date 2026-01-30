@@ -6,6 +6,7 @@ import "pkg:/source/api/baserequest.bs"
 import "pkg:/source/api/userauth.bs"
 import "pkg:/source/data/SessionDataTransformer.bs"
 import "pkg:/source/migrations.bs"
+import "pkg:/source/utils/globals.bs"
 import "pkg:/source/utils/misc.bs"
 import "pkg:/source/utils/nodeUtils.bs"
 
@@ -280,6 +281,10 @@ namespace user
     ' Post-login setup
     user.SetServerDeviceName()
     user.LoadUserPreferences()
+
+    ' Apply user's theme color settings to Constants and refresh scene
+    applyThemeColorOverrides(userNode.settings)
+    m.global.sceneManager.callFunc("refreshThemeColors")
   end sub
 
   ' Logout and reset to defaults
@@ -299,7 +304,11 @@ namespace user
     localUser.config = freshConfig
     localUser.policy = freshPolicy
 
+    ' Reset theme colors to defaults from settings.json and refresh scene
+    resetThemeColors()
+
     if isValid(m.global.sceneManager)
+      m.global.sceneManager.callFunc("refreshThemeColors")
       m.global.sceneManager.currentUser = ""
     end if
   end sub
