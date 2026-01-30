@@ -1,0 +1,112 @@
+
+namespace tests
+
+  @suite("globals.bs - isValidHexColor()")
+  class HexColorValidationTests extends tests.BaseTestSuite
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("isValidHexColor(input) - Valid Colors")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("accepts valid 6-character uppercase hex colors")
+    @params("FF5733")
+    @params("8B5CF6")
+    @params("3B82F6")
+    @params("000000")
+    @params("FFFFFF")
+    @params("0D1117")
+    @params("161B22")
+    @params("F0F0F0")
+    @params("A8A8A8")
+    @params("4A4A4A")
+    function _(hexColor)
+      result = isValidHexColor(hexColor)
+      m.assertEqual(result, true, `Valid hex color ${hexColor} should return true`)
+    end function
+
+    @it("accepts valid 6-character lowercase hex colors")
+    @params("ff5733")
+    @params("8b5cf6")
+    @params("3b82f6")
+    @params("0d1117")
+    @params("aabbcc")
+    function _(hexColor)
+      result = isValidHexColor(hexColor)
+      m.assertEqual(result, true, `Valid hex color ${hexColor} should return true`)
+    end function
+
+    @it("accepts valid 6-character mixed case hex colors")
+    @params("Ff5733")
+    @params("8B5cf6")
+    @params("aAbBcC")
+    function _(hexColor)
+      result = isValidHexColor(hexColor)
+      m.assertEqual(result, true, `Valid hex color ${hexColor} should return true`)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("isValidHexColor(input) - Invalid Colors")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("rejects hex colors with # prefix")
+    @params("#FF5733")
+    @params("#8B5CF6")
+    @params("#000000")
+    function _(hexColor)
+      result = isValidHexColor(hexColor)
+      m.assertEqual(result, false, `Hex color with # prefix ${hexColor} should return false`)
+    end function
+
+    @it("rejects hex colors that are too short")
+    @params("FFF")
+    @params("FF573")
+    @params("8B5C")
+    @params("0D1")
+    @params("A")
+    @params("")
+    function _(hexColor)
+      result = isValidHexColor(hexColor)
+      m.assertEqual(result, false, `Too short hex color ${hexColor} should return false`)
+    end function
+
+    @it("rejects hex colors that are too long")
+    @params("FF5733FF")
+    @params("8B5CF6AA")
+    @params("0D111700")
+    @params("FFFFFFFF")
+    @params("FF57331")
+    function _(hexColor)
+      result = isValidHexColor(hexColor)
+      m.assertEqual(result, false, `Too long hex color ${hexColor} should return false`)
+    end function
+
+    @it("rejects hex colors with invalid characters")
+    @params("GGGGGG")
+    @params("ZZZZZZ")
+    @params("FF57GG")
+    @params("8B5CZZ")
+    @params("FF 733")
+    @params("FF-733")
+    function _(hexColor)
+      result = isValidHexColor(hexColor)
+      m.assertEqual(result, false, `Invalid hex color ${hexColor} should return false`)
+    end function
+
+    @it("rejects invalid/null input")
+    function _()
+      result = isValidHexColor(invalid)
+      m.assertEqual(result, false, "invalid input should return false")
+    end function
+
+    @it("rejects non-string input types")
+    function _()
+      m.assertEqual(isValidHexColor(123456), false, "integer input should return false")
+      m.assertEqual(isValidHexColor(16711731.0), false, "float input should return false")
+      m.assertEqual(isValidHexColor(true), false, "boolean input should return false")
+      m.assertEqual(isValidHexColor({}), false, "object input should return false")
+      m.assertEqual(isValidHexColor([]), false, "array input should return false")
+    end function
+
+  end class
+
+end namespace
