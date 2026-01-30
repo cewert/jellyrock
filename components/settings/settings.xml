@@ -31,5 +31,7 @@
 
     <IntegerKeyboard translation="[1034, 510]" id="integerSetting" domain="numeric" visible="false" />
 
+    <HexKeyboard translation="[1034, 510]" id="hexSetting" visible="false" />
+
   </children>
 </component>
