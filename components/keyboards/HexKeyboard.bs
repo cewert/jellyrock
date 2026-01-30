@@ -1,0 +1,94 @@
+sub init()
+  m.top.keyGrid.keyDefinitionUri = "pkg:/components/keyboards/HexKeyboardKDF.json"
+  m.top.keyGrid.mode = "alphanumeric"
+end sub
+
+function onKeyEvent(key as string, press as boolean) as boolean
+  if key = "back"
+    m.top.escape = key
+    return true
+  end if
+
+  if not press then return false
+
+  ' Handle edge navigation for 6x3 grid layout:
+  ' Row 1: 0  1  2  3  4  5
+  ' Row 2: 6  7  8  9  A  B
+  ' Row 3: C  D  E  F  [backspace] [submit]
+
+  if key = "left"
+    ' Left edge: column 0 (keys: 0, 6, C) and textEditBox
+    if m.top.textEditBox.hasFocus()
+      m.top.escape = key
+      return true
+    else if m.top.focusedChild.keyFocused = "0"
+      m.top.escape = key
+      return true
+    else if m.top.focusedChild.keyFocused = "6"
+      m.top.escape = key
+      return true
+    else if m.top.focusedChild.keyFocused = "C"
+      m.top.escape = key
+      return true
+    end if
+  end if
+
+  if key = "right"
+    ' Right edge: column 5 (keys: 5, B, submit) and textEditBox
+    if m.top.textEditBox.hasFocus()
+      m.top.escape = key
+      return true
+    else if m.top.focusedChild.keyFocused = "5"
+      m.top.escape = key
+      return true
+    else if m.top.focusedChild.keyFocused = "B"
+      m.top.escape = key
+      return true
+    else if m.top.focusedChild.keyFocused = "submit"
+      m.top.escape = key
+      return true
+    end if
+  end if
+
+  if key = "up"
+    ' Top edge: textEditBox
+    if m.top.textEditBox.hasFocus()
+      m.top.escape = key
+      return true
+    end if
+  end if
+
+  if key = "down"
+    ' Bottom edge: row 3 (keys: C, D, E, F, backspace, submit)
+    if m.top.focusedChild.keyFocused = "C"
+      m.top.escape = key
+      return true
+    else if m.top.focusedChild.keyFocused = "D"
+      m.top.escape = key
+      return true
+    else if m.top.focusedChild.keyFocused = "E"
+      m.top.escape = key
+      return true
+    else if m.top.focusedChild.keyFocused = "F"
+      m.top.escape = key
+      return true
+    else if m.top.focusedChild.keyFocused = "backspace"
+      m.top.escape = key
+      return true
+    else if m.top.focusedChild.keyFocused = "submit"
+      m.top.escape = key
+      return true
+    end if
+  end if
+
+  return false
+end function
+
+function keySelected(key as string) as boolean
+  if key = "submit"
+    m.top.submit = true
+    return true
+  end if
+
+  return false
+end function
