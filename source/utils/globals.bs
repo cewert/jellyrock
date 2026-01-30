@@ -80,6 +80,7 @@ sub setGlobalNodes()
 
   sceneManager = CreateObject("roSGNode", "SceneManager")
   sceneManager.observeField("dataReturned", m.port)
+  sceneManager.observeField("reloadHomeRequested", m.port)
   m.global.addFields({ sceneManager: sceneManager })
 
   m.global.addFields({ queueManager: CreateObject("roSGNode", "QueueManager") })
@@ -89,11 +90,101 @@ end sub
 ' Save Constants
 sub setConstants()
   ' Create Constants content node
-  ' All constants are initialized in the XML with their default values
   constantsNode = CreateObject("roSGNode", "Constants")
 
   m.global.addFields({ constants: constantsNode })
+
+  ' Load theme color defaults from settings.json (single source of truth)
+  loadThemeColorDefaults()
 end sub
+
+' ============================================
+' THEME COLOR FUNCTIONS
+' ============================================
+
+' Load theme color defaults from settings.json to Constants
+' This ensures settings.json is the single source of truth for default colors
+sub loadThemeColorDefaults()
+  constants = m.global.constants
+  if not isValid(constants) then return
+
+  configTree = GetConfigTree()
+  if not isValid(configTree) then return
+
+  ' Map setting names to constant field names
+  colorMap = {
+    "uiThemeColorPrimary": "colorPrimary",
+    "uiThemeColorSecondary": "colorSecondary",
+    "uiThemeColorBackgroundPrimary": "colorBackgroundPrimary",
+    "uiThemeColorBackgroundSecondary": "colorBackgroundSecondary",
+    "uiThemeColorTextPrimary": "colorTextPrimary",
+    "uiThemeColorTextSecondary": "colorTextSecondary",
+    "uiThemeColorTextDisabled": "colorTextDisabled"
+  }
+
+  for each settingName in colorMap
+    constantName = colorMap[settingName]
+    settingDef = findConfigTreeKey(settingName, configTree)
+
+    if isValid(settingDef) and isValid(settingDef.default)
+      ' Apply default from settings.json with "0x" prefix
+      constants[constantName] = "0x" + UCase(settingDef.default)
+    end if
+  end for
+end sub
+
+' Apply theme color overrides from user settings to Constants
+' Only applies valid 6-character hex colors; invalid values are ignored (keeps default)
+sub applyThemeColorOverrides(userSettings as object)
+  if not isValid(userSettings) then return
+
+  constants = m.global.constants
+  if not isValid(constants) then return
+
+  ' Map setting names to constant field names
+  colorMap = {
+    "uiThemeColorPrimary": "colorPrimary",
+    "uiThemeColorSecondary": "colorSecondary",
+    "uiThemeColorBackgroundPrimary": "colorBackgroundPrimary",
+    "uiThemeColorBackgroundSecondary": "colorBackgroundSecondary",
+    "uiThemeColorTextPrimary": "colorTextPrimary",
+    "uiThemeColorTextSecondary": "colorTextSecondary",
+    "uiThemeColorTextDisabled": "colorTextDisabled"
+  }
+
+  for each settingName in colorMap
+    constantName = colorMap[settingName]
+    userValue = userSettings[settingName]
+
+    ' Only apply if value exists and is a valid 6-char hex color
+    if isValidHexColor(userValue)
+      constants[constantName] = "0x" + UCase(userValue)
+    end if
+  end for
+end sub
+
+' Reset theme colors to defaults from settings.json
+sub resetThemeColors()
+  loadThemeColorDefaults()
+end sub
+
+' Validate hex color input (exactly 6 hex characters: 0-9, A-F)
+' Returns false for empty, invalid, or wrong-length strings
+function isValidHexColor(input as dynamic) as boolean
+  if not isValid(input) then return false
+  if type(input) <> "roString" and type(input) <> "String" then return false
+  if input.Len() <> 6 then return false
+
+  validChars = "0123456789ABCDEF"
+  for i = 0 to 5
+    char = UCase(input.Mid(i, 1))
+    if Instr(1, validChars, char) = 0
+      return false
+    end if
+  end for
+
+  return true
+end function
 
 ' Save information from roAppInfo to m.global.app
 sub SaveAppToGlobal()
