@@ -155,6 +155,14 @@
       <translation>Backdrop Images</translation>
     </message>
     <message>
+      <source>Background - Primary</source>
+      <translation>Background - Primary</translation>
+    </message>
+    <message>
+      <source>Background - Secondary</source>
+      <translation>Background - Secondary</translation>
+    </message>
+    <message>
       <source>Biographical information for this person is not currently available.</source>
       <translation>Biographical information for this person is not currently available.</translation>
     </message>
@@ -278,6 +286,10 @@
       <source>Custom Subtitles</source>
       <translation>Custom Subtitles</translation>
       <extracomment>Name of a setting - custom subtitles that support CJK fonts</extracomment>
+    </message>
+    <message>
+      <source>Customize the app&apos;s color scheme. Enter 6-digit hex codes (e.g. FF5733).</source>
+      <translation>Customize the app&apos;s color scheme. Enter 6-digit hex codes (e.g. FF5733).</translation>
     </message>
     <message>
       <source>DATE_ADDED</source>
@@ -464,6 +476,10 @@
       <translation>Filter</translation>
     </message>
     <message>
+      <source>Focus highlights and buttons. Default: 8B5CF6</source>
+      <translation>Focus highlights and buttons. Default: 8B5CF6</translation>
+    </message>
+    <message>
       <source>Folders</source>
       <translation>Folders</translation>
       <extracomment>Sort option - sorts folders first, then by name</extracomment>
@@ -573,6 +589,10 @@
       <translation>Instant Mix</translation>
     </message>
     <message>
+      <source>Invalid Color</source>
+      <translation>Invalid Color</translation>
+    </message>
+    <message>
       <source>Item Count</source>
       <translation>Item Count</translation>
       <extracomment>UI -&gt; Media Grid -&gt; Item Count in user setting screen.</extracomment>
@@ -620,6 +640,14 @@
     <message>
       <source>Login attempt failed.</source>
       <translation>Login attempt failed.</translation>
+    </message>
+    <message>
+      <source>Main background color. Default: 0D1117</source>
+      <translation>Main background color. Default: 0D1117</translation>
+    </message>
+    <message>
+      <source>Main text color. Default: F0F0F0</source>
+      <translation>Main text color. Default: F0F0F0</translation>
     </message>
     <message>
       <source>Make the arrangement of the Roku home view sections match the web client&apos;s home screen. JellyRock will need to be closed and reopened for change to take effect.</source>
@@ -683,6 +711,10 @@
       <source>MPEG-4</source>
       <translation>MPEG-4</translation>
       <extracomment>Name of codec used in settings menu</extracomment>
+    </message>
+    <message>
+      <source>Muted/disabled/inactive text. Default: 4A4A4A</source>
+      <translation>Muted/disabled/inactive text. Default: 4A4A4A</translation>
     </message>
     <message>
       <source>My Media</source>
@@ -759,6 +791,10 @@
       <translation>Override web client audio preference. When enabled, use the IsDefault flag to select audio track. When disabled, prefer language match and ignore IsDefault.</translation>
     </message>
     <message>
+      <source>Panel/card background color. Default: 161B22</source>
+      <translation>Panel/card background color. Default: 161B22</translation>
+    </message>
+    <message>
       <source>Parental Ratings</source>
       <translation>Parental Ratings</translation>
       <extracomment>Used in Filter menu</extracomment>
@@ -824,6 +860,10 @@
       <translation>Played</translation>
     </message>
     <message>
+      <source>Please enter exactly 6 hex characters (0-9, A-F).</source>
+      <translation>Please enter exactly 6 hex characters (0-9, A-F).</translation>
+    </message>
+    <message>
       <source>Preferred Surround Audio Codec</source>
       <translation>Preferred Surround Audio Codec</translation>
     </message>
@@ -838,6 +878,14 @@
     <message>
       <source>Press &apos;Back&apos; to Close</source>
       <translation>Press &apos;Back&apos; to Close</translation>
+    </message>
+    <message>
+      <source>Primary</source>
+      <translation>Primary</translation>
+    </message>
+    <message>
+      <source>Progress bars and accents. Default: 3B82F6</source>
+      <translation>Progress bars and accents. Default: 3B82F6</translation>
     </message>
     <message>
       <source>Quick Connect</source>
@@ -959,6 +1007,14 @@
     <message>
       <source>Seasons</source>
       <translation>Seasons</translation>
+    </message>
+    <message>
+      <source>Secondary</source>
+      <translation>Secondary</translation>
+    </message>
+    <message>
+      <source>Secondary text. Default: A8A8A8</source>
+      <translation>Secondary text. Default: A8A8A8</translation>
     </message>
     <message>
       <source>Select a User</source>
@@ -1163,6 +1219,18 @@
       <extracomment>Settings Menu - Description for option</extracomment>
     </message>
     <message>
+      <source>Text - Disabled</source>
+      <translation>Text - Disabled</translation>
+    </message>
+    <message>
+      <source>Text - Primary</source>
+      <translation>Text - Primary</translation>
+    </message>
+    <message>
+      <source>Text - Secondary</source>
+      <translation>Text - Secondary</translation>
+    </message>
+    <message>
       <source>Text Subtitles Only</source>
       <translation>Text Subtitles Only</translation>
       <extracomment>Name of a setting - should we hide subtitles that might transcode</extracomment>
@@ -1171,6 +1239,10 @@
       <source>The source file is entirely compatible with this client and the session is receiving the file without modifications.</source>
       <translation>The source file is entirely compatible with this client and the session is receiving the file without modifications.</translation>
       <extracomment>Direct play info box text in GetPlaybackInfoTask.brs</extracomment>
+    </message>
+    <message>
+      <source>Theme Colors</source>
+      <translation>Theme Colors</translation>
     </message>
     <message>
       <source>There was an error authenticating via Quick Connect.</source>
