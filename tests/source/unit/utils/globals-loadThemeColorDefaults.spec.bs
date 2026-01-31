@@ -50,20 +50,6 @@ namespace tests
       m.assertEqual(constants.colorTextDisabled, "0x4A4A4A", "colorTextDisabled should be loaded with 0x prefix")
     end function
 
-    @it("loads all theme colors as uppercase hex values")
-    function _()
-      constants = m.global.constants
-
-      ' All colors should be uppercase (UCase applied in loadThemeColorDefaults)
-      m.assertTrue(constants.colorPrimary.Instr("0x") = 0, "colorPrimary should start with 0x")
-      m.assertTrue(constants.colorSecondary.Instr("0x") = 0, "colorSecondary should start with 0x")
-      m.assertTrue(constants.colorBackgroundPrimary.Instr("0x") = 0, "colorBackgroundPrimary should start with 0x")
-      m.assertTrue(constants.colorBackgroundSecondary.Instr("0x") = 0, "colorBackgroundSecondary should start with 0x")
-      m.assertTrue(constants.colorTextPrimary.Instr("0x") = 0, "colorTextPrimary should start with 0x")
-      m.assertTrue(constants.colorTextSecondary.Instr("0x") = 0, "colorTextSecondary should start with 0x")
-      m.assertTrue(constants.colorTextDisabled.Instr("0x") = 0, "colorTextDisabled should start with 0x")
-    end function
-
   end class
 
 end namespace

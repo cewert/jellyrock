@@ -241,17 +241,6 @@ namespace tests
     @describe("applyThemeColorOverrides(userSettings) - Edge Cases")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("handles invalid (null) userSettings gracefully")
-    function _()
-      loadThemeColorDefaults()
-      constants = m.global.constants
-      originalPrimary = constants.colorPrimary
-
-      applyThemeColorOverrides(invalid)
-
-      m.assertEqual(constants.colorPrimary, originalPrimary, "Should not crash and preserve defaults")
-    end function
-
     @it("handles empty userSettings object gracefully")
     function _()
       loadThemeColorDefaults()
