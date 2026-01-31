@@ -14,7 +14,7 @@ on:
 jobs:
   label:
     # don't run job on forks
-    if: github.repository == 'cewert/jellyrock'
+    if: github.repository == 'jellyrock/jellyrock'
     name: Labeling 🏷️
     runs-on: ubuntu-latest
     steps:

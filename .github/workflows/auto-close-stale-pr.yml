@@ -5,7 +5,7 @@ on:
 
 jobs:
   stale:
-    if: github.repository == 'cewert/jellyrock'
+    if: github.repository == 'jellyrock/jellyrock'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write

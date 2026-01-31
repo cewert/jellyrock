@@ -17,7 +17,7 @@ import { resolve } from 'path';
 class ChangelogSyncer {
   constructor() {
     this.changelogPath = 'CHANGELOG.md';
-    this.repositoryUrl = 'https://github.com/cewert/jellyrock';
+    this.repositoryUrl = 'https://github.com/jellyrock/jellyrock';
   }
 
   /**
@@ -162,12 +162,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
     // More robust removal of unreleased section
     const lines = changelog.split('\n');
     const unreleasedStart = lines.findIndex(line => line.trim() === '## [Unreleased]');
-    
+
     if (unreleasedStart === -1) {
       // No existing unreleased section, find insertion point after header
-      const headerEndIndex = lines.findIndex((line, index) => 
+      const headerEndIndex = lines.findIndex((line, index) =>
         index > 5 && line.startsWith('## [') && line.match(/## \[\d+\.\d+\.\d+\]/));
-      
+
       if (headerEndIndex === -1) {
         // No version sections, append to end
         return changelog + unreleasedContent;
@@ -177,7 +177,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
         return lines.join('\n');
       }
     }
-    
+
     // Find the end of unreleased section (next version section or end of file)
     let unreleasedEnd = lines.length;
     for (let i = unreleasedStart + 1; i < lines.length; i++) {
@@ -186,7 +186,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
         break;
       }
     }
-    
+
     // Replace the unreleased section
     lines.splice(unreleasedStart, unreleasedEnd - unreleasedStart, ...unreleasedContent.trim().split('\n'), '');
     return lines.join('\n');
@@ -194,11 +194,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
   convertUnreleasedToRelease(changelog, version, commits) {
     const date = new Date().toISOString().split('T')[0];
-    
+
     // Generate proper compare URL based on previous version
     const previousTag = this.getPreviousTag(`v${version}`);
     let compareUrl;
-    
+
     if (previousTag) {
       // Use GitHub compare URL between previous tag and current version
       compareUrl = `${this.repositoryUrl}/compare/${previousTag}...v${version}`;
@@ -327,7 +327,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
   formatCommitEntry(commit) {
     const cleanMessage = this.cleanMessage(commit.message);
-    
+
     // Only show commit link if there's no PR, otherwise show PR link
     if (commit.prNumber) {
       const prLink = `([#${commit.prNumber}](${this.repositoryUrl}/pull/${commit.prNumber}))`;
@@ -722,13 +722,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
               { encoding: 'utf8', stdio: 'pipe' }
             ).trim();
             const parsed = JSON.parse(prInfo);
-            const isDependency = parsed.labels && parsed.labels.some(label => 
+            const isDependency = parsed.labels && parsed.labels.some(label =>
               label.toLowerCase().includes('depend') || label.toLowerCase().includes('deps')
             );
-            const isReleasePrep = parsed.labels && parsed.labels.some(label => 
+            const isReleasePrep = parsed.labels && parsed.labels.some(label =>
               label.toLowerCase().includes('release-prep')
             );
-            
+
             return {
               hash: mergeMatch[1],
               message: parsed.title || `Merged PR #${mergeMatch[2]}`,

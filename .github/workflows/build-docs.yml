@@ -5,8 +5,8 @@ on:
     branches:
       - main
     paths:
-      - '**.bs'
-      - '**.brs'
+      - "**.bs"
+      - "**.brs"
 
 jobs:
   notify-docs-repo:
@@ -16,6 +16,6 @@ jobs:
         uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
         with:
           token: ${{ secrets.JELLYROCK_BOT_TOKEN }}
-          repository: cewert/jellyrock-code-docs
+          repository: jellyrock/api-docs
           event-type: code-update
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'

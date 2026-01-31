@@ -54,7 +54,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cewert/jellyrock.git"
+    "url": "https://github.com/jellyrock/jellyrock.git"
   },
   "keywords": [
     "jellyrock",
@@ -66,7 +66,7 @@
   "author": "Charles Ewert",
   "license": "GPL-2.0",
   "bugs": {
-    "url": "https://github.com/cewert/jellyrock/issues"
+    "url": "https://github.com/jellyrock/jellyrock/issues"
   },
-  "homepage": "https://github.com/cewert/jellyrock"
+  "homepage": "https://github.com/jellyrock/jellyrock"
 }

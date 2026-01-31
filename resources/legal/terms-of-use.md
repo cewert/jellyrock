@@ -1,6 +1,6 @@
 # Terms of Use for JellyRock
 
-Last Updated: August 23, 2025
+Last Updated: January 31, 2026
 
 ## 1. Acceptance of Terms
 
@@ -22,7 +22,7 @@ You are solely responsible for:
 
 ## 4. Intellectual Property
 
-JellyRock is open-source software released under the GNU General Public License v2.0 (GPLv2). The source code is publicly available on GitHub at: <https://github.com/cewert/jellyrock>.
+JellyRock is open-source software released under the GNU General Public License v2.0 (GPLv2). The source code is publicly available on GitHub at: <https://github.com/jellyrock/jellyrock>.
 
 The JellyRock name and logo are trademarks of the JellyRock project. All rights reserved. The Jellyfin® name and logo are trademarks of the Jellyfin Project. All other trademarks mentioned are the property of their respective owners. This App is not certified, sponsored, or endorsed by Roku, Inc. or Jellyfin.
 

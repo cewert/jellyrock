@@ -256,7 +256,7 @@ jobs:
             # Fallback to a simple release note
             RELEASE_NOTES="JellyRock ${{ steps.context.outputs.tag_name }} release.
 
-          See [CHANGELOG.md](https://github.com/cewert/jellyrock/blob/main/CHANGELOG.md) for details."
+          See [CHANGELOG.md](https://github.com/jellyrock/jellyrock/blob/main/CHANGELOG.md) for details."
           fi
 
           # Save to file for multi-line output

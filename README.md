@@ -1,10 +1,10 @@
 <!-- markdownlint-disable MD041 -->
 [![JellyRock](resources/branding/release/channel-poster_sd.png "Download JellyRock ")](https://channelstore.roku.com/details/232f9e82db11ce628e3fe7e01382a330:a85d6e9e520567806e8dae1c0cabadd5/jellyrock)
 
-[![Current Release](https://img.shields.io/github/release/cewert/jellyrock.svg?logo=github "Current Release")](https://github.com/cewert/jellyrock/releases)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/cewert/jellyrock/build.yml?logo=github&branch=main "Build Status")](https://github.com/cewert/jellyrock/actions/workflows/build.yml?query=branch%3Amain)
-[![Code Documentation](https://img.shields.io/badge/Code%20Documentation-purple)](https://cewert.github.io/jellyrock-code-docs/)
-[![License](https://img.shields.io/github/license/cewert/jellyrock.svg "GPL 2.0 License")](LICENSE)
+[![Current Release](https://img.shields.io/github/release/jellyrock/jellyrock.svg?logo=github "Current Release")](https://github.com/jellyrock/jellyrock/releases)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/jellyrock/jellyrock/build.yml?logo=github&branch=main "Build Status")](https://github.com/jellyrock/jellyrock/actions/workflows/build.yml?query=branch%3Amain)
+[![Code Documentation](https://img.shields.io/badge/Code%20Documentation-purple)](https://jellyrock.github.io/api-docs/)
+[![License](https://img.shields.io/github/license/jellyrock/jellyrock.svg "GPL 2.0 License")](LICENSE)
 <!-- [![Translation Status](https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-roku/svg-badge.svg "Translation Status")](https://translate.jellyfin.org/projects/jellyfin/jellyfin-roku/?utm_source=widget) -->
 
 JellyRock is a Jellyfin client for Roku devices with a focus on stability and UX. Originally forked from jellyfin-roku [v2.2.5](https://github.com/jellyfin-archive/jellyfin-roku-legacy/releases/tag/v2.2.5).
@@ -48,7 +48,7 @@ JellyRock requires **Roku OS 11** or later.
 To run the latest version of JellyRock before it hits the Roku Channel Store:
 
 1. Put your Roku device in [Developer Mode](docs/dev/developer-mode.md). Save your password!
-2. Download the latest [build](https://github.com/cewert/jellyrock/actions/workflows/build.yml?query=branch%3Amain) created by GitHub Actions. Select the first item listed then click one of the links at the bottom of the page i.e. `JellyRock-prod-main-e34f4f169ff47531abd23ae3a11c102f6811f907`. This will download a zip file to your computer.
+2. Download the latest [build](https://github.com/jellyrock/jellyrock/actions/workflows/build.yml?query=branch%3Amain) created by GitHub Actions. Select the first item listed then click one of the links at the bottom of the page i.e. `JellyRock-prod-main-e34f4f169ff47531abd23ae3a11c102f6811f907`. This will download a zip file to your computer.
 3. Put your Roku's IP from step 1 into a browser i.e. `http://192.168.1.2` and press enter.
 4. Log in with credentials from step 1.
 5. Upload and install the zip file downloaded in step 2.
@@ -58,7 +58,7 @@ To run the latest version of JellyRock before it hits the Roku Channel Store:
 ## Build
 
 ```bash
-git clone https://github.com/cewert/jellyrock.git
+git clone https://github.com/jellyrock/jellyrock.git
 cd jellyrock
 npm install
 # Note: If npm scripts are disabled, manually run `npm run ropm` to install dependencies

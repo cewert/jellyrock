@@ -1,6 +1,6 @@
 ' Low memory device model prefixes (512MB RAM, ~50MB texture memory)
 ' These devices cannot load large textures (e.g., default trickplay 10x10 320 tiles) into memory
-' See: https://github.com/cewert/jellyrock/issues/299
+' See: https://github.com/jellyrock/jellyrock/issues/299
 const LOW_MEMORY_DEVICE_PREFIXES = [
   ' Current Models
   "3840", ' Roku Streaming Stick (Lakeport) - 512MB - 720p
