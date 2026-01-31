@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Added
+
+- add customizable theme colors user setting ([#309](https://github.com/cewert/jellyrock/pull/309))
+
 ## [1.10.0](https://github.com/cewert/jellyrock/compare/v1.9.1...v1.10.0) - 2026-01-29
 
 ### Added
