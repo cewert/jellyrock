@@ -67,7 +67,7 @@ sub onHexKeyGridSubmit()
   newValue = UCase(m.hexSetting.text)
 
   ' Validate hex color input
-  if not validateHexColor(newValue)
+  if not isValidHexColor(newValue)
     m.global.sceneManager.callFunc("userMessage", tr("Invalid Color"), tr("Please enter exactly 6 hex characters (0-9, A-F)."))
     return
   end if
@@ -88,21 +88,6 @@ sub onHexKeyGridEscape()
     m.settingsMenu.setFocus(true)
   end if
 end sub
-
-' Validate hex color input (exactly 6 hex characters: 0-9, A-F)
-function validateHexColor(input as string) as boolean
-  if input.Len() <> 6 then return false
-
-  validChars = "0123456789ABCDEF"
-  for i = 0 to 5
-    char = UCase(input.Mid(i, 1))
-    if Instr(1, validChars, char) = 0
-      return false
-    end if
-  end for
-
-  return true
-end function
 
 sub LoadMenu(configSection)
   if not isValid(configSection.children)
@@ -282,9 +267,6 @@ end sub
 ' Assumes settings were changed and they affect the device profile.
 ' Posts a new device profile to the server using the task thread.
 sub OnScreenHidden()
-  ' Apply theme color overrides from user settings
-  applyThemeColorOverrides(m.global.user.settings)
-
   ' Post device profile updates
   m.postTask.arrayData = getDeviceCapabilities()
   m.postTask.apiUrl = "/Sessions/Capabilities/Full"
@@ -309,11 +291,6 @@ end function
 
 ' Exit settings screen, refreshing theme colors only if they changed
 sub exitSettingsAndReloadHome()
-  ' Post device profile updates (fire and forget) - always do this
-  m.postTask.arrayData = getDeviceCapabilities()
-  m.postTask.apiUrl = "/Sessions/Capabilities/Full"
-  m.postTask.control = "RUN"
-
   if m.themeColorsChanged
     ' Apply theme color overrides and refresh UI
     applyThemeColorOverrides(m.global.user.settings)
