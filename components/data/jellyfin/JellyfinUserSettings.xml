@@ -39,6 +39,15 @@
 
     <!-- UI Settings -->
     <field id="uiGeneralEpisodeImages" type="string" alwaysNotify="true" />
+
+    <!-- Theme Color Settings -->
+    <field id="uiThemeColorPrimary" type="string" alwaysNotify="true" />
+    <field id="uiThemeColorSecondary" type="string" alwaysNotify="true" />
+    <field id="uiThemeColorBackgroundPrimary" type="string" alwaysNotify="true" />
+    <field id="uiThemeColorBackgroundSecondary" type="string" alwaysNotify="true" />
+    <field id="uiThemeColorTextPrimary" type="string" alwaysNotify="true" />
+    <field id="uiThemeColorTextSecondary" type="string" alwaysNotify="true" />
+    <field id="uiThemeColorTextDisabled" type="string" alwaysNotify="true" />
     <field id="uiFontFallback" type="boolean" alwaysNotify="true" />
     <field id="uiDesignHideClock" type="boolean" alwaysNotify="true" />
     <field id="uiDetailsMaxDaysNextUp" type="integer" alwaysNotify="true" />

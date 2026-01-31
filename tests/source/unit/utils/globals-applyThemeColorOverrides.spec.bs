@@ -1,0 +1,270 @@
+
+namespace tests
+
+  @suite("globals.bs - applyThemeColorOverrides()")
+  class ApplyThemeColorOverridesTests extends tests.BaseTestSuite
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("applyThemeColorOverrides(userSettings) - Valid Overrides")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("applies valid hex color override for colorPrimary")
+    function _()
+      ' Reset to defaults first
+      loadThemeColorDefaults()
+      constants = m.global.constants
+
+      userSettings = { "uiThemeColorPrimary": "FF5733" }
+      applyThemeColorOverrides(userSettings)
+
+      m.assertEqual(constants.colorPrimary, "0xFF5733", "Valid override should be applied with 0x prefix")
+    end function
+
+    @it("applies valid hex color override for colorSecondary")
+    function _()
+      loadThemeColorDefaults()
+      constants = m.global.constants
+
+      userSettings = { "uiThemeColorSecondary": "00FF00" }
+      applyThemeColorOverrides(userSettings)
+
+      m.assertEqual(constants.colorSecondary, "0x00FF00", "Valid override should be applied with 0x prefix")
+    end function
+
+    @it("applies valid hex color override for colorBackgroundPrimary")
+    function _()
+      loadThemeColorDefaults()
+      constants = m.global.constants
+
+      userSettings = { "uiThemeColorBackgroundPrimary": "1A1A1A" }
+      applyThemeColorOverrides(userSettings)
+
+      m.assertEqual(constants.colorBackgroundPrimary, "0x1A1A1A", "Valid override should be applied with 0x prefix")
+    end function
+
+    @it("applies valid hex color override for colorBackgroundSecondary")
+    function _()
+      loadThemeColorDefaults()
+      constants = m.global.constants
+
+      userSettings = { "uiThemeColorBackgroundSecondary": "2B2B2B" }
+      applyThemeColorOverrides(userSettings)
+
+      m.assertEqual(constants.colorBackgroundSecondary, "0x2B2B2B", "Valid override should be applied with 0x prefix")
+    end function
+
+    @it("applies valid hex color override for colorTextPrimary")
+    function _()
+      loadThemeColorDefaults()
+      constants = m.global.constants
+
+      userSettings = { "uiThemeColorTextPrimary": "FFFFFF" }
+      applyThemeColorOverrides(userSettings)
+
+      m.assertEqual(constants.colorTextPrimary, "0xFFFFFF", "Valid override should be applied with 0x prefix")
+    end function
+
+    @it("applies valid hex color override for colorTextSecondary")
+    function _()
+      loadThemeColorDefaults()
+      constants = m.global.constants
+
+      userSettings = { "uiThemeColorTextSecondary": "CCCCCC" }
+      applyThemeColorOverrides(userSettings)
+
+      m.assertEqual(constants.colorTextSecondary, "0xCCCCCC", "Valid override should be applied with 0x prefix")
+    end function
+
+    @it("applies valid hex color override for colorTextDisabled")
+    function _()
+      loadThemeColorDefaults()
+      constants = m.global.constants
+
+      userSettings = { "uiThemeColorTextDisabled": "666666" }
+      applyThemeColorOverrides(userSettings)
+
+      m.assertEqual(constants.colorTextDisabled, "0x666666", "Valid override should be applied with 0x prefix")
+    end function
+
+    @it("applies lowercase hex colors and converts to uppercase")
+    function _()
+      loadThemeColorDefaults()
+      constants = m.global.constants
+
+      userSettings = { "uiThemeColorPrimary": "abcdef" }
+      applyThemeColorOverrides(userSettings)
+
+      m.assertEqual(constants.colorPrimary, "0xABCDEF", "Lowercase should be converted to uppercase")
+    end function
+
+    @it("applies multiple valid overrides simultaneously")
+    function _()
+      loadThemeColorDefaults()
+      constants = m.global.constants
+
+      userSettings = {
+        "uiThemeColorPrimary": "111111",
+        "uiThemeColorSecondary": "222222",
+        "uiThemeColorTextPrimary": "333333"
+      }
+      applyThemeColorOverrides(userSettings)
+
+      m.assertEqual(constants.colorPrimary, "0x111111", "Multiple overrides - colorPrimary")
+      m.assertEqual(constants.colorSecondary, "0x222222", "Multiple overrides - colorSecondary")
+      m.assertEqual(constants.colorTextPrimary, "0x333333", "Multiple overrides - colorTextPrimary")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("applyThemeColorOverrides(userSettings) - Invalid Overrides Preserve Defaults")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("ignores invalid hex color with # prefix and preserves default")
+    function _()
+      loadThemeColorDefaults()
+      constants = m.global.constants
+
+      userSettings = { "uiThemeColorPrimary": "#FF5733" }
+      applyThemeColorOverrides(userSettings)
+
+      m.assertEqual(constants.colorPrimary, "0x8B5CF6", "Invalid override should be ignored, default preserved")
+    end function
+
+    @it("ignores hex color that is too short and preserves default")
+    function _()
+      loadThemeColorDefaults()
+      constants = m.global.constants
+
+      userSettings = { "uiThemeColorPrimary": "FFF" }
+      applyThemeColorOverrides(userSettings)
+
+      m.assertEqual(constants.colorPrimary, "0x8B5CF6", "Too short hex should be ignored, default preserved")
+    end function
+
+    @it("ignores hex color that is too long and preserves default")
+    function _()
+      loadThemeColorDefaults()
+      constants = m.global.constants
+
+      userSettings = { "uiThemeColorPrimary": "FF5733FF" }
+      applyThemeColorOverrides(userSettings)
+
+      m.assertEqual(constants.colorPrimary, "0x8B5CF6", "Too long hex should be ignored, default preserved")
+    end function
+
+    @it("ignores hex color with invalid characters and preserves default")
+    function _()
+      loadThemeColorDefaults()
+      constants = m.global.constants
+
+      userSettings = { "uiThemeColorPrimary": "GGGGGG" }
+      applyThemeColorOverrides(userSettings)
+
+      m.assertEqual(constants.colorPrimary, "0x8B5CF6", "Invalid chars should be ignored, default preserved")
+    end function
+
+    @it("ignores empty string and preserves default")
+    function _()
+      loadThemeColorDefaults()
+      constants = m.global.constants
+
+      userSettings = { "uiThemeColorPrimary": "" }
+      applyThemeColorOverrides(userSettings)
+
+      m.assertEqual(constants.colorPrimary, "0x8B5CF6", "Empty string should be ignored, default preserved")
+    end function
+
+    @it("ignores invalid (null) value and preserves default")
+    function _()
+      loadThemeColorDefaults()
+      constants = m.global.constants
+
+      userSettings = { "uiThemeColorPrimary": invalid }
+      applyThemeColorOverrides(userSettings)
+
+      m.assertEqual(constants.colorPrimary, "0x8B5CF6", "Invalid value should be ignored, default preserved")
+    end function
+
+    @it("ignores non-string value (integer) and preserves default")
+    function _()
+      loadThemeColorDefaults()
+      constants = m.global.constants
+
+      userSettings = { "uiThemeColorPrimary": 123456 }
+      applyThemeColorOverrides(userSettings)
+
+      m.assertEqual(constants.colorPrimary, "0x8B5CF6", "Integer should be ignored, default preserved")
+    end function
+
+    @it("applies valid overrides while ignoring invalid ones in same call")
+    function _()
+      loadThemeColorDefaults()
+      constants = m.global.constants
+
+      userSettings = {
+        "uiThemeColorPrimary": "FF0000",
+        "uiThemeColorSecondary": "#INVALID",
+        "uiThemeColorTextPrimary": "00FF00"
+      }
+      applyThemeColorOverrides(userSettings)
+
+      m.assertEqual(constants.colorPrimary, "0xFF0000", "Valid override should be applied")
+      m.assertEqual(constants.colorSecondary, "0x3B82F6", "Invalid override should preserve default")
+      m.assertEqual(constants.colorTextPrimary, "0x00FF00", "Valid override should be applied")
+    end function
+
+    @it("preserves all defaults when all overrides are invalid")
+    function _()
+      loadThemeColorDefaults()
+      constants = m.global.constants
+
+      userSettings = {
+        "uiThemeColorPrimary": "#BAD",
+        "uiThemeColorSecondary": "TOOLONG123",
+        "uiThemeColorBackgroundPrimary": "",
+        "uiThemeColorBackgroundSecondary": invalid,
+        "uiThemeColorTextPrimary": "ZZZ",
+        "uiThemeColorTextSecondary": 999999,
+        "uiThemeColorTextDisabled": "X"
+      }
+      applyThemeColorOverrides(userSettings)
+
+      m.assertEqual(constants.colorPrimary, "0x8B5CF6", "Default preserved for colorPrimary")
+      m.assertEqual(constants.colorSecondary, "0x3B82F6", "Default preserved for colorSecondary")
+      m.assertEqual(constants.colorBackgroundPrimary, "0x0D1117", "Default preserved for colorBackgroundPrimary")
+      m.assertEqual(constants.colorBackgroundSecondary, "0x161B22", "Default preserved for colorBackgroundSecondary")
+      m.assertEqual(constants.colorTextPrimary, "0xF0F0F0", "Default preserved for colorTextPrimary")
+      m.assertEqual(constants.colorTextSecondary, "0xA8A8A8", "Default preserved for colorTextSecondary")
+      m.assertEqual(constants.colorTextDisabled, "0x4A4A4A", "Default preserved for colorTextDisabled")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("applyThemeColorOverrides(userSettings) - Edge Cases")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("handles empty userSettings object gracefully")
+    function _()
+      loadThemeColorDefaults()
+      constants = m.global.constants
+
+      applyThemeColorOverrides({})
+
+      m.assertEqual(constants.colorPrimary, "0x8B5CF6", "Empty object should preserve defaults")
+    end function
+
+    @it("handles userSettings with unrelated keys gracefully")
+    function _()
+      loadThemeColorDefaults()
+      constants = m.global.constants
+
+      userSettings = {
+        "someOtherSetting": "value",
+        "anotherSetting": 123
+      }
+      applyThemeColorOverrides(userSettings)
+
+      m.assertEqual(constants.colorPrimary, "0x8B5CF6", "Unrelated keys should not affect colors")
+    end function
+
+  end class
+
+end namespace

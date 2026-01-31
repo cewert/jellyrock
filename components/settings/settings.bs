@@ -1,5 +1,6 @@
 import "pkg:/source/roku_modules/log/LogMixin.brs"
 import "pkg:/source/utils/config.bs"
+import "pkg:/source/utils/globals.bs"
 import "pkg:/source/utils/misc.bs"
 ' post device profile
 import "pkg:/source/utils/deviceCapabilities.bs"
@@ -10,6 +11,7 @@ sub init()
   m.top.optionsAvailable = false
 
   m.userLocation = []
+  m.themeColorsChanged = false
 
   versionLabel = m.top.findNode("versionLabel")
   versionLabel.text = "v" + m.global.app.version
@@ -22,9 +24,13 @@ sub init()
   m.boolSetting = m.top.findNode("boolSetting")
   m.integerSetting = m.top.findNode("integerSetting")
   m.radioSetting = m.top.findNode("radioSetting")
+  m.hexSetting = m.top.findNode("hexSetting")
 
   m.integerSetting.observeField("submit", "onKeyGridSubmit")
   m.integerSetting.observeField("escape", "onKeyGridEscape")
+
+  m.hexSetting.observeField("submit", "onHexKeyGridSubmit")
+  m.hexSetting.observeField("escape", "onHexKeyGridEscape")
 
   m.settingsMenu.setFocus(true)
   m.settingsMenu.observeField("itemFocused", "settingFocused")
@@ -52,6 +58,33 @@ end sub
 
 sub onKeyGridEscape()
   if m.integerSetting.escape = "left" or m.integerSetting.escape = "back"
+    m.settingsMenu.setFocus(true)
+  end if
+end sub
+
+sub onHexKeyGridSubmit()
+  selectedSetting = m.userLocation.peek().children[m.settingsMenu.itemFocused]
+  newValue = UCase(m.hexSetting.text)
+
+  ' Validate hex color input
+  if not isValidHexColor(newValue)
+    m.global.sceneManager.callFunc("userMessage", tr("Invalid Color"), tr("Please enter exactly 6 hex characters (0-9, A-F)."))
+    return
+  end if
+
+  ' Track if theme color changed (requires UI refresh on exit)
+  if selectedSetting.settingName.left(12) = "uiThemeColor"
+    m.themeColorsChanged = true
+  end if
+
+  ' Update node field - observer handles registry persistence
+  user.settings.Save(selectedSetting.settingName, newValue)
+
+  m.settingsMenu.setFocus(true)
+end sub
+
+sub onHexKeyGridEscape()
+  if m.hexSetting.escape = "left" or m.hexSetting.escape = "back"
     m.settingsMenu.setFocus(true)
   end if
 end sub
@@ -103,6 +136,7 @@ sub settingFocused()
   m.boolSetting.visible = false
   m.integerSetting.visible = false
   m.radioSetting.visible = false
+  m.hexSetting.visible = false
 
   userSettings = m.global.user.settings
 
@@ -143,6 +177,15 @@ sub settingFocused()
     m.radioSetting.content = radioContent
 
     m.radioSetting.visible = true
+  else if selectedSetting.type = "text"
+    ' Text input type (used for hex color codes)
+    textValue = userSettings[selectedSetting.settingName]
+    if isValid(textValue)
+      m.hexSetting.text = textValue
+    else
+      m.hexSetting.text = ""
+    end if
+    m.hexSetting.visible = true
   else
     m.log.warn("Unknown setting type", selectedSetting.type)
   end if
@@ -157,12 +200,12 @@ sub settingSelected()
   if isValid(selectedItem.type) ' Show setting
     if selectedItem.type = "bool"
       m.boolSetting.setFocus(true)
-    end if
-    if selectedItem.type = "integer"
+    else if selectedItem.type = "integer"
       m.integerSetting.setFocus(true)
-    end if
-    if (selectedItem.type) = "radio"
+    else if selectedItem.type = "radio"
       m.radioSetting.setFocus(true)
+    else if selectedItem.type = "text"
+      m.hexSetting.setFocus(true)
     end if
   else if isValid(selectedItem.children) and selectedItem.children.Count() > 0 ' Show sub menu
     LoadMenu(selectedItem)
@@ -240,11 +283,25 @@ end sub
 
 ' Returns true if any of the data entry forms are in focus
 function isFormInFocus() as boolean
-  if isValid(m.settingDetail.focusedChild) or m.radioSetting.hasFocus() or m.boolSetting.hasFocus() or m.integerSetting.hasFocus()
+  if isValid(m.settingDetail.focusedChild) or m.radioSetting.hasFocus() or m.boolSetting.hasFocus() or m.integerSetting.hasFocus() or m.hexSetting.hasFocus()
     return true
   end if
   return false
 end function
+
+' Exit settings screen, refreshing theme colors only if they changed
+sub exitSettingsAndReloadHome()
+  if m.themeColorsChanged
+    ' Apply theme color overrides and refresh UI
+    applyThemeColorOverrides(m.global.user.settings)
+    m.global.sceneManager.callFunc("refreshThemeColors")
+    ' Clear all scenes and reload home with fresh theme colors
+    m.global.sceneManager.callFunc("reloadHome")
+  else
+    ' No theme changes - just pop the settings screen
+    m.global.sceneManager.callFunc("popScene")
+  end if
+end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
   if not press then return false
@@ -255,10 +312,14 @@ function onKeyEvent(key as string, press as boolean) as boolean
   else if (key = "back" or key = "left") and isFormInFocus()
     m.settingsMenu.setFocus(true)
     return true
+  else if key = "back" and isValid(m.settingsMenu.focusedChild) and m.userLocation.Count() = 1
+    ' Exiting Settings - apply theme colors and reload home screen
+    exitSettingsAndReloadHome()
+    return true
   end if
 
   if key = "options"
-    m.global.sceneManager.callFunc("popScene")
+    exitSettingsAndReloadHome()
     return true
   end if
 

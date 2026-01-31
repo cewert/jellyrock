@@ -1001,6 +1001,10 @@ sub Main (args as dynamic) as void
           end if
         end if
       end if
+    else if isNodeEvent(msg, "reloadHomeRequested")
+      ' Theme colors changed - reload home screen with fresh state
+      m.global.sceneManager.callFunc("clearScenes")
+      createAndShowHomeGroup()
     else
       print "Unhandled " type(msg)
       print msg

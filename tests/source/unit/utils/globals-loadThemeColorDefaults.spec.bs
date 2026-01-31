@@ -1,0 +1,55 @@
+
+namespace tests
+
+  @suite("globals.bs - loadThemeColorDefaults()")
+  class LoadThemeColorDefaultsTests extends tests.BaseTestSuite
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("loadThemeColorDefaults() - Loading from settings.json")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("loads colorPrimary default from settings.json with 0x prefix")
+    function _()
+      constants = m.global.constants
+      m.assertEqual(constants.colorPrimary, "0x8B5CF6", "colorPrimary should be loaded with 0x prefix")
+    end function
+
+    @it("loads colorSecondary default from settings.json with 0x prefix")
+    function _()
+      constants = m.global.constants
+      m.assertEqual(constants.colorSecondary, "0x3B82F6", "colorSecondary should be loaded with 0x prefix")
+    end function
+
+    @it("loads colorBackgroundPrimary default from settings.json with 0x prefix")
+    function _()
+      constants = m.global.constants
+      m.assertEqual(constants.colorBackgroundPrimary, "0x0D1117", "colorBackgroundPrimary should be loaded with 0x prefix")
+    end function
+
+    @it("loads colorBackgroundSecondary default from settings.json with 0x prefix")
+    function _()
+      constants = m.global.constants
+      m.assertEqual(constants.colorBackgroundSecondary, "0x161B22", "colorBackgroundSecondary should be loaded with 0x prefix")
+    end function
+
+    @it("loads colorTextPrimary default from settings.json with 0x prefix")
+    function _()
+      constants = m.global.constants
+      m.assertEqual(constants.colorTextPrimary, "0xF0F0F0", "colorTextPrimary should be loaded with 0x prefix")
+    end function
+
+    @it("loads colorTextSecondary default from settings.json with 0x prefix")
+    function _()
+      constants = m.global.constants
+      m.assertEqual(constants.colorTextSecondary, "0xA8A8A8", "colorTextSecondary should be loaded with 0x prefix")
+    end function
+
+    @it("loads colorTextDisabled default from settings.json with 0x prefix")
+    function _()
+      constants = m.global.constants
+      m.assertEqual(constants.colorTextDisabled, "0x4A4A4A", "colorTextDisabled should be loaded with 0x prefix")
+    end function
+
+  end class
+
+end namespace

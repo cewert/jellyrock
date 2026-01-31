@@ -9,23 +9,26 @@
   ALPHAS: All alpha values are 2 hex digits
   Usage: node.color = constants.colorPrimary (direct use)
          node.color = constants.colorBlack + constants.alpha60 (with alpha)
+
+  THEME COLORS: Default values are loaded from settings.json via loadThemeColorDefaults()
+  in globals.bs. This ensures settings.json is the single source of truth for theme colors.
 -->
 <component name="Constants" extends="ContentNode">
   <interface>
-    <!-- Theme Colors (6 hex digits, no alpha) -->
-    <field id="colorPrimary" type="string" value="0x8b5cf6" />
-    <field id="colorSecondary" type="string" value="0x3b82f6" />
+    <!-- Theme Colors (defaults loaded from settings.json) -->
+    <field id="colorPrimary" type="string" />
+    <field id="colorSecondary" type="string" />
     <field id="colorYellow" type="string" value="0xEAB308" />
 
-    <!-- Text Colors (6 hex digits, no alpha) -->
-    <field id="colorTextPrimary" type="string" value="0xf0f0f0" />
-    <field id="colorTextSecondary" type="string" value="0xa8a8a8" />
-    <field id="colorTextDisabled" type="string" value="0x4a4a4a" />
+    <!-- Text Colors (defaults loaded from settings.json) -->
+    <field id="colorTextPrimary" type="string" />
+    <field id="colorTextSecondary" type="string" />
+    <field id="colorTextDisabled" type="string" />
     <field id="colorTextError" type="string" value="0xff0000" />
 
-    <!-- Background Colors (6 hex digits, no alpha) -->
-    <field id="colorBackgroundPrimary" type="string" value="0x0d1117" />
-    <field id="colorBackgroundSecondary" type="string" value="0x161b22" />
+    <!-- Background Colors (defaults loaded from settings.json) -->
+    <field id="colorBackgroundPrimary" type="string" />
+    <field id="colorBackgroundSecondary" type="string" />
 
     <!-- Black for Alpha Assembly (6 hex digits) -->
     <field id="colorBlack" type="string" value="0x000000" />

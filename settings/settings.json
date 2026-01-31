@@ -333,6 +333,61 @@
             ]
           },
           {
+            "title": "Theme Colors",
+            "description": "Customize the app's color scheme. Enter 6-digit hex codes (e.g. FF5733).",
+            "children": [
+              {
+                "title": "Primary",
+                "description": "Focus highlights and buttons. Default: 8B5CF6",
+                "settingName": "uiThemeColorPrimary",
+                "type": "text",
+                "default": "8B5CF6"
+              },
+              {
+                "title": "Secondary",
+                "description": "Progress bars and accents. Default: 3B82F6",
+                "settingName": "uiThemeColorSecondary",
+                "type": "text",
+                "default": "3B82F6"
+              },
+              {
+                "title": "Background - Primary",
+                "description": "Main background color. Default: 0D1117",
+                "settingName": "uiThemeColorBackgroundPrimary",
+                "type": "text",
+                "default": "0D1117"
+              },
+              {
+                "title": "Background - Secondary",
+                "description": "Panel/card background color. Default: 161B22",
+                "settingName": "uiThemeColorBackgroundSecondary",
+                "type": "text",
+                "default": "161B22"
+              },
+              {
+                "title": "Text - Primary",
+                "description": "Main text color. Default: F0F0F0",
+                "settingName": "uiThemeColorTextPrimary",
+                "type": "text",
+                "default": "F0F0F0"
+              },
+              {
+                "title": "Text - Secondary",
+                "description": "Secondary text. Default: A8A8A8",
+                "settingName": "uiThemeColorTextSecondary",
+                "type": "text",
+                "default": "A8A8A8"
+              },
+              {
+                "title": "Text - Disabled",
+                "description": "Muted/disabled/inactive text. Default: 4A4A4A",
+                "settingName": "uiThemeColorTextDisabled",
+                "type": "text",
+                "default": "4A4A4A"
+              }
+            ]
+          },
+          {
             "title": "Use Web Client's Home Section Arrangement",
             "description": "Make the arrangement of the Roku home view sections match the web client's home screen. JellyRock will need to be closed and reopened for change to take effect.",
             "settingName": "uiHomeUseWebArrangement",

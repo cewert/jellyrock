@@ -1,0 +1,87 @@
+{
+  "keyboardWidthFHD": 660,
+  "keyboardHeightFHD": 225,
+  "keyboardWidthHD": 432,
+  "keyboardHeightHD": 150,
+  "sections": [
+    {
+      "grids": [
+        {
+          "rows": [
+            {
+              "keys": [
+                {
+                  "label": "0"
+                },
+                {
+                  "label": "1"
+                },
+                {
+                  "label": "2"
+                },
+                {
+                  "label": "3"
+                },
+                {
+                  "label": "4"
+                },
+                {
+                  "label": "5"
+                }
+              ]
+            },
+            {
+              "keys": [
+                {
+                  "label": "6"
+                },
+                {
+                  "label": "7"
+                },
+                {
+                  "label": "8"
+                },
+                {
+                  "label": "9"
+                },
+                {
+                  "label": "A"
+                },
+                {
+                  "label": "B"
+                }
+              ]
+            },
+            {
+              "keys": [
+                {
+                  "label": "C"
+                },
+                {
+                  "label": "D"
+                },
+                {
+                  "label": "E"
+                },
+                {
+                  "label": "F"
+                },
+                {
+                  "icon": "theme:DKB_DeleteKeyBitmap",
+                  "focusIcon": "theme:DKB_DeleteKeyFocusBitmap",
+                  "autoRepeat": 1,
+                  "strOut": "backspace"
+                },
+                {
+                  "icon": "pkg:/images/icons/check-white.png",
+                  "focusIcon": "pkg:/images/icons/check-black.png",
+                  "strOut": "submit"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

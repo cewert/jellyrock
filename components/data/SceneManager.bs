@@ -141,6 +141,12 @@ sub clearScenes()
   m.groups = []
 end sub
 
+' Signal that home screen should be reloaded (used after theme color changes)
+' Main.bs observes reloadHomeRequested field and handles the actual reload
+sub reloadHome()
+  m.top.reloadHomeRequested = true
+end sub
+
 ' Clear previous scene from group stack
 sub clearPreviousScene()
   m.groups.pop()
@@ -329,3 +335,52 @@ end sub
 function isDialogOpen() as boolean
   return isValid(m.scene.dialog)
 end function
+
+' Refresh theme colors on JRScene and overhang
+' Called after theme color settings change to apply new colors without app restart
+sub refreshThemeColors()
+  constants = m.global.constants
+
+  ' Update JRScene background color
+  m.scene.backgroundColor = constants.colorBackgroundPrimary
+
+  ' Update overhang themed elements (no recreation needed)
+  if isValid(m.overhang)
+    ' Update title label color (ScrollingLabelPrimaryLarge uses colorTextPrimary)
+    titleLabel = m.overhang.findNode("title")
+    if isValid(titleLabel)
+      titleLabel.color = constants.colorTextPrimary
+    end if
+
+    ' Update username label color (LabelSecondaryMedium uses colorTextSecondary)
+    usernameLabel = m.overhang.findNode("username")
+    if isValid(usernameLabel)
+      usernameLabel.color = constants.colorTextSecondary
+    end if
+
+    ' Update user image blendColor if it's the default icon (not a profile picture)
+    userImage = m.overhang.findNode("userImage")
+    if isValid(userImage) and userImage.uri = "pkg:/images/icons/person_36px.png"
+      userImage.blendColor = constants.colorTextSecondary
+    end if
+
+    ' Update clock label colors (LabelSecondaryLarger/Large use colorTextSecondary)
+    clock = m.overhang.findNode("clock")
+    if isValid(clock)
+      hoursLabel = clock.findNode("hours")
+      if isValid(hoursLabel)
+        hoursLabel.color = constants.colorTextSecondary
+      end if
+
+      minutesLabel = clock.findNode("minutes")
+      if isValid(minutesLabel)
+        minutesLabel.color = constants.colorTextSecondary
+      end if
+
+      timeSeparator = clock.findNode("timeSeperator")
+      if isValid(timeSeparator)
+        timeSeparator.color = constants.colorTextSecondary
+      end if
+    end if
+  end if
+end sub

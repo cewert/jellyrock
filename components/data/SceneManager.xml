@@ -7,6 +7,9 @@
     <function name="getActiveScene" />
     <function name="clearScenes" />
     <function name="clearPreviousScene" />
+    <function name="reloadHome" />
+    <function name="refreshThemeColors" />
+    <field id="reloadHomeRequested" type="boolean" alwaysNotify="true" />
     <function name="resetTime" />
     <function name="setBackgroundImage" />
     <function name="userMessage" />
